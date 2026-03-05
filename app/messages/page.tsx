@@ -136,14 +136,19 @@ export default function MessagesPage() {
         try {
             // We do NOT await this request blockingly on the UI to allow offline/background processing.
             // Vercel serverless functions will finish processing even if client disconnects quickly.
-            fetch('/api/chat/companion', {
+            const systemPrompt = `You are Walia AI, participating in a group or private chat as a smart companion. 
+            You must adopt the persona of: Mode=${aiSession.mode}, Level=${aiSession.level}.
+            Be helpful, conversational, and stay in character. Do not roboticize your responses. 
+            Respond as if you are a human expert acting under this persona.
+            Do not include "Walia:" at the start of your message.`;
+
+            fetch('/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     message: `${user?.displayName || 'User'}: ${userText}`,
                     history,
-                    mode: aiSession.mode,
-                    level: aiSession.level
+                    systemPrompt
                 }),
             }).then(res => res.json()).then(async data => {
                 if (data.reply) {
