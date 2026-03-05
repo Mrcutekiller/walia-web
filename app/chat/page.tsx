@@ -153,15 +153,21 @@ export default function ChatPage() {
             });
             clearTimeout(timeout);
             const data = await res.json();
+
+            if (!res.ok) throw new Error(data.reply || 'API Error');
+
             await addDoc(collection(db, 'users', user.uid, 'messages'), {
                 role: 'assistant',
                 content: data.reply || "I'm here to help! Try rephrasing your question.",
                 createdAt: serverTimestamp(),
             });
-        } catch {
+        } catch (error: any) {
+            console.error('Chat error:', error);
             await addDoc(collection(db, 'users', user.uid, 'messages'), {
                 role: 'assistant',
-                content: 'Sorry, I had trouble connecting. Please try again.',
+                content: error.name === 'AbortError'
+                    ? 'The request took too long. Please try a shorter message.'
+                    : `Error: ${error.message || 'I had trouble connecting.'}`,
                 createdAt: serverTimestamp(),
             });
         }

@@ -19,11 +19,13 @@ const getSystemPrompt = (mode: string, level: string) => {
 
 export async function POST(req: NextRequest) {
     try {
-        const { message, history = [], mode, level } = await req.json();
-
-        if (!process.env.GEMINI_API_KEY) {
+        const apiKey = process.env.GEMINI_API_KEY;
+        if (!apiKey) {
             return NextResponse.json({ reply: 'Walia AI is offline. Please configure GEMINI_API_KEY.' });
         }
+
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const { message, history = [], mode, level } = await req.json();
 
         const model = genAI.getGenerativeModel({
             model: 'gemini-1.5-flash',
@@ -43,9 +45,9 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ reply });
     } catch (error: any) {
         console.error('Companion API error:', error);
-        return NextResponse.json(
-            { reply: 'Sorry, I am having connection issues right now.' },
-            { status: 200 }
-        );
+        const errorMsg = error.message?.includes('API_KEY_INVALID')
+            ? 'API Key Invalid. Please check your setup.'
+            : 'AI Connection unstable. retrying...';
+        return NextResponse.json({ reply: errorMsg }, { status: 200 });
     }
 }

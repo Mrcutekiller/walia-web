@@ -14,6 +14,7 @@ interface CalendarEvent {
     year: number;
     label: string;
     color: string;
+    completed?: boolean;
 }
 
 const COLORS = ['bg-rose-500', 'bg-amber-500', 'bg-indigo-500', 'bg-emerald-500', 'bg-pink-500'];
@@ -67,6 +68,10 @@ export default function CalendarPage() {
         setEvents(events.filter(e => e.id !== id));
     };
 
+    const toggleComplete = (id: string) => {
+        setEvents(events.map(e => e.id === id ? { ...e, completed: !e.completed } : e));
+    };
+
     const currentEvents = events.filter(e => e.month === month && e.year === year);
 
     return (
@@ -103,8 +108,8 @@ export default function CalendarPage() {
                             const isToday = day === now.getDate() && month === now.getMonth() && year === now.getFullYear();
                             return (
                                 <div key={i} onClick={() => handleDayClick(day)} className={`aspect-square flex flex-col items-center justify-center rounded-xl text-xs font-bold transition-all relative ${!day ? '' :
-                                        isToday ? 'bg-white text-black' :
-                                            'hover:bg-white/8 text-white/60 cursor-pointer'
+                                    isToday ? 'bg-white text-black' :
+                                        'hover:bg-white/8 text-white/60 cursor-pointer'
                                     }`}>
                                     {day && <span>{day}</span>}
                                     {dayEvents.length > 0 && (
@@ -154,8 +159,11 @@ export default function CalendarPage() {
                         <p className="text-xs text-white/30 italic">No events for this month. Click a day to add one.</p>
                     ) : currentEvents.map(e => (
                         <div key={e.id} className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/8 group">
+                            <button onClick={() => toggleComplete(e.id)} className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${e.completed ? 'bg-indigo-500 border-indigo-500' : 'border-white/20'}`}>
+                                {e.completed && <div className="w-2 h-2 rounded-full bg-white" />}
+                            </button>
                             <div className={`w-2 h-2 rounded-full shrink-0 ${e.color}`} />
-                            <p className="text-sm font-semibold text-white">{e.label}</p>
+                            <p className={`text-sm font-semibold transition-all ${e.completed ? 'text-white/30 line-through' : 'text-white'}`}>{e.label}</p>
                             <p className="ml-auto text-[10px] text-white/30 mr-2">Day {e.day}</p>
                             <button onClick={() => deleteEvent(e.id)} className="w-6 h-6 rounded-md bg-rose-500/10 text-rose-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                 <X className="w-3 h-3" />
