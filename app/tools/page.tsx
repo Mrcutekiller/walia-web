@@ -30,14 +30,24 @@ export default function ToolsPage() {
         if (!input.trim() || !user || !active) return;
         setLoading(true); setOutput('');
         try {
+            const systemPrompt = `You are a specialized Walia AI study tool: ${active}. 
+            Your goal is to process the following input and return high-quality results exactly matching the tool's purpose.
+            Be structured, helpful, and academic.`;
+
             const res = await fetch('/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: `${active}: ${input}`, userId: user.uid }),
+                body: JSON.stringify({
+                    message: input,
+                    systemPrompt
+                }),
             });
             const data = await res.json();
+            if (!res.ok) throw new Error(data.reply || 'API Error');
             setOutput(data.reply || 'No response. Try again.');
-        } catch { setOutput('Connection error. Please try again.'); }
+        } catch (error: any) {
+            setOutput(`Error: ${error.message || 'Connection unstable. Please try again.'}`);
+        }
         setLoading(false);
     };
 

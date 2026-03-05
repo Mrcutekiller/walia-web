@@ -1,9 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { NextRequest, NextResponse } from 'next/server';
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
-
-const SYSTEM_PROMPT = `You are Walia AI, a friendly and knowledgeable study assistant built for students. 
+const DEFAULT_SYSTEM_PROMPT = `You are Walia AI, a friendly and knowledgeable study assistant built for students. 
 Help with homework, explain concepts, create flashcards, write essays, solve math problems, and anything academic.
 Be concise, clear, and encouraging. Always respond in the same language the user writes in.
 If asked about trading or stocks, politely redirect to study topics instead.`;
@@ -13,12 +11,12 @@ export async function POST(req: NextRequest) {
         const apiKey = process.env.GEMINI_API_KEY;
         if (!apiKey) {
             return NextResponse.json({
-                reply: "I'm Walia AI! I need a GEMINI_API_KEY to work. Please check your environment variables."
-            });
+                reply: "I'm Walia AI! My brain isn't connected yet (Missing API Key). Please check the environment configuration."
+            }, { status: 500 });
         }
 
         const genAI = new GoogleGenerativeAI(apiKey);
-        const { message, history = [], attachments = [] } = await req.json();
+        const { message, history = [], attachments = [], systemPrompt } = await req.json();
 
         if (!message?.trim() && attachments.length === 0) {
             return NextResponse.json({ reply: 'Please send a message or an attachment.' }, { status: 400 });
@@ -26,7 +24,7 @@ export async function POST(req: NextRequest) {
 
         const model = genAI.getGenerativeModel({
             model: 'gemini-1.5-flash',
-            systemInstruction: SYSTEM_PROMPT,
+            systemInstruction: systemPrompt || DEFAULT_SYSTEM_PROMPT,
         });
 
         // Prepare parts for the prompt
@@ -34,7 +32,7 @@ export async function POST(req: NextRequest) {
 
         // Add attachments if present
         for (const attr of attachments) {
-            if (attr.type.startsWith('image/')) {
+            if (attr.type?.startsWith('image/')) {
                 promptParts.push({
                     inlineData: {
                         data: attr.base64.split(',')[1],
@@ -61,9 +59,15 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ reply });
     } catch (error: any) {
         console.error('Chat API error:', error);
-        const errorMsg = error.message?.includes('API_KEY_INVALID')
-            ? 'Your Gemini API key appears to be invalid. Please check your settings.'
-            : 'I had trouble connecting to the AI brain. Please try again in a moment.';
+
+        // Better error categorization
+        let errorMsg = 'I had trouble connecting to the AI brain. Please try again in a moment.';
+        if (error.message?.includes('API_KEY_INVALID')) {
+            errorMsg = 'Configuration Error: Invalid Gemini API key.';
+        } else if (error.name === 'AbortError' || error.message?.includes('timeout')) {
+            errorMsg = 'Request timed out. The AI is taking longer than usual.';
+        }
+
         return NextResponse.json({ reply: errorMsg }, { status: 200 });
     }
 }
