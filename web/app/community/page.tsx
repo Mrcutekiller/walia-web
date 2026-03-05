@@ -3,8 +3,8 @@
 import DashboardShell from '@/components/DashboardShell';
 import { useAuth } from '@/context/AuthContext';
 import { db } from '@/lib/firebase';
-import { addDoc, collection, onSnapshot, orderBy, query, serverTimestamp } from 'firebase/firestore';
-import { Heart, MessageCircle, Plus } from 'lucide-react';
+import { addDoc, collection, doc, getDocs, increment, onSnapshot, orderBy, query, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { Heart, MessageCircle, Plus, Send, Share2, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface Post {
@@ -31,6 +31,10 @@ export default function CommunityPage() {
     const [quizOptions, setQuizOptions] = useState(['', '', '', '']);
     const [correctAnswer, setCorrectAnswer] = useState(0);
     const [quizStates, setQuizStates] = useState<Record<string, number>>({});
+    const [activeCommentPost, setActiveCommentPost] = useState<string | null>(null);
+    const [comments, setComments] = useState<Record<string, any[]>>({});
+    const [commentText, setCommentText] = useState('');
+    const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({});
 
     useEffect(() => {
         const q = query(collection(db, 'community'), orderBy('createdAt', 'desc'));
@@ -65,6 +69,58 @@ export default function CommunityPage() {
         setQuizStates(prev => ({ ...prev, [postId]: idx }));
     };
 
+    const handleLike = async (postId: string) => {
+        if (!user || likedPosts[postId]) return;
+        setLikedPosts(prev => ({ ...prev, [postId]: true }));
+        const postRef = doc(db, 'community', postId);
+        await updateDoc(postRef, { likes: increment(1) });
+    };
+
+    const toggleComments = async (postId: string) => {
+        if (activeCommentPost === postId) {
+            setActiveCommentPost(null);
+            return;
+        }
+        setActiveCommentPost(postId);
+        // Load comments for this post
+        const q = query(collection(db, 'community', postId, 'comments'), orderBy('createdAt', 'asc'));
+        const snap = await getDocs(q);
+        setComments(prev => ({ ...prev, [postId]: snap.docs.map(d => ({ id: d.id, ...d.data() })) }));
+
+        // Listen for new comments
+        onSnapshot(q, snap => {
+            setComments(prev => ({ ...prev, [postId]: snap.docs.map(d => ({ id: d.id, ...d.data() })) }));
+        });
+    };
+
+    const addComment = async (postId: string) => {
+        if (!commentText.trim() || !user) return;
+        const text = commentText;
+        setCommentText('');
+        await addDoc(collection(db, 'community', postId, 'comments'), {
+            text,
+            authorName: user.displayName || 'User',
+            authorId: user.uid,
+            createdAt: serverTimestamp()
+        });
+    };
+
+    const handleShare = async (post: Post) => {
+        const shareData = {
+            title: 'Walia Post',
+            text: post.content,
+            url: window.location.href
+        };
+        try {
+            if (navigator.share) {
+                await navigator.share(shareData);
+            } else {
+                await navigator.clipboard.writeText(window.location.href);
+                alert('Link copied to clipboard!');
+            }
+        } catch (err) { console.error(err); }
+    };
+
     return (
         <DashboardShell>
             <div className="p-6 max-w-2xl mx-auto pb-20">
@@ -86,8 +142,8 @@ export default function CommunityPage() {
                             {(['text', 'quiz', 'note', 'ai_share'] as const).map(t => (
                                 <button key={t} onClick={() => setType(t)}
                                     className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border ${type === t
-                                            ? 'bg-black dark:bg-white text-white dark:text-black border-transparent'
-                                            : 'bg-transparent text-black/40 dark:text-white/40 border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20'
+                                        ? 'bg-black dark:bg-white text-white dark:text-black border-transparent'
+                                        : 'bg-transparent text-black/40 dark:text-white/40 border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20'
                                         }`}>
                                     {t.replace('_', ' ')}
                                 </button>
@@ -200,13 +256,46 @@ export default function CommunityPage() {
                                 )}
 
                                 <div className="flex items-center gap-6 mt-6 pt-4 border-t border-black/5 dark:border-white/5">
-                                    <button className="flex items-center gap-2 text-[10px] font-black text-black/30 dark:text-white/30 hover:text-rose-500 transition-colors uppercase tracking-widest">
-                                        <Heart className="w-4 h-4" /> {post.likes} Likes
+                                    <button onClick={() => handleLike(post.id)}
+                                        className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-colors ${likedPosts[post.id] ? 'text-rose-500' : 'text-black/30 dark:text-white/30 hover:text-rose-500'}`}>
+                                        <Heart className={`w-4 h-4 ${likedPosts[post.id] ? 'fill-current' : ''}`} /> {post.likes} Likes
                                     </button>
-                                    <button className="flex items-center gap-2 text-[10px] font-black text-black/30 dark:text-white/30 hover:text-indigo-500 transition-colors uppercase tracking-widest">
+                                    <button onClick={() => toggleComments(post.id)}
+                                        className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-colors ${activeCommentPost === post.id ? 'text-indigo-600' : 'text-black/30 dark:text-white/30 hover:text-indigo-500'}`}>
                                         <MessageCircle className="w-4 h-4" /> Reply
                                     </button>
+                                    <button onClick={() => handleShare(post)}
+                                        className="flex items-center gap-2 text-[10px] font-black text-black/30 dark:text-white/30 hover:text-indigo-500 transition-colors uppercase tracking-widest">
+                                        <Share2 className="w-4 h-4" /> Share
+                                    </button>
                                 </div>
+
+                                {/* Comments Section */}
+                                {activeCommentPost === post.id && (
+                                    <div className="mt-4 p-4 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 animate-in slide-in-from-top-2 duration-200">
+                                        <div className="space-y-3 mb-4">
+                                            {comments[post.id]?.length === 0 && <p className="text-[10px] text-black/30 dark:text-white/30 text-center py-2">No comments yet.</p>}
+                                            {comments[post.id]?.map(c => (
+                                                <div key={c.id} className="flex gap-2">
+                                                    <div className="w-6 h-6 rounded-full bg-black/10 dark:bg-white/10 flex items-center justify-center shrink-0">
+                                                        <User className="w-3 h-3 text-black/40 dark:text-white/40" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-[10px] font-bold text-black dark:text-white">{c.authorName}</p>
+                                                        <p className="text-[11px] text-black/70 dark:text-white/70">{c.text}</p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <input value={commentText} onChange={e => setCommentText(e.target.value)} placeholder="Write a reply..."
+                                                className="flex-1 bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-xl px-3 py-2 text-xs text-black dark:text-white outline-none focus:border-indigo-600" />
+                                            <button onClick={() => addComment(post.id)} className="w-9 h-9 rounded-xl bg-black dark:bg-white text-white dark:text-black flex items-center justify-center shadow-md hover:scale-105 transition-transform">
+                                                <Send className="w-3 h-3" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         );
                     })}
