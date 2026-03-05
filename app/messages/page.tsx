@@ -9,14 +9,18 @@ import {
     collection,
     doc,
     getDoc,
+    getDocs,
+    limit,
     onSnapshot,
     orderBy,
     query,
     serverTimestamp,
     setDoc,
-    updateDoc
+    updateDoc,
+    where
 } from 'firebase/firestore';
-import { ChevronLeft, MessageSquare, Plus, Search, Send, Sparkles, Users } from 'lucide-react';
+import { ChevronLeft, MessageSquare, Plus, Search, Send, Sparkles, User, Users } from 'lucide-react';
+import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 
 interface ChatRoom {
@@ -189,6 +193,8 @@ export default function MessagesPage() {
     const [showGroupModal, setShowGroupModal] = useState(false);
     const [newGroupName, setNewGroupName] = useState('');
 
+    const [userSearchResults, setUserSearchResults] = useState<any[]>([]);
+
     const createGroup = async () => {
         if (!newGroupName.trim() || !user) return;
         const ref = await addDoc(collection(db, 'chats'), {
@@ -197,6 +203,43 @@ export default function MessagesPage() {
         setActiveRoomId(ref.id);
         setShowGroupModal(false);
         setNewGroupName('');
+    };
+
+    const searchUsers = async (val: string) => {
+        setSearch(val);
+        if (val.startsWith('@') && val.length > 2) {
+            const q = query(
+                collection(db, 'users'),
+                where('username', '>=', val),
+                where('username', '<=', val + '\uf8ff'),
+                limit(5)
+            );
+            const snap = await getDocs(q);
+            setUserSearchResults(snap.docs.map(d => ({ uid: d.id, ...d.data() })).filter(u => u.uid !== user?.uid));
+        } else {
+            setUserSearchResults([]);
+        }
+    };
+
+    const startPrivateChat = async (targetUser: any) => {
+        if (!user) return;
+        const roomId = user.uid < targetUser.uid ? `${user.uid}_${targetUser.uid}` : `${targetUser.uid}_${user.uid}`;
+        const roomRef = doc(db, 'chats', roomId);
+        const roomSnap = await getDoc(roomRef);
+
+        if (!roomSnap.exists()) {
+            await setDoc(roomRef, {
+                name: targetUser.name || targetUser.username,
+                type: 'private',
+                participants: [user.uid, targetUser.uid],
+                lastMessage: 'Chat started',
+                updatedAt: serverTimestamp(),
+                photoURL: targetUser.photoURL || ''
+            });
+        }
+        setActiveRoomId(roomId);
+        setSearch('');
+        setUserSearchResults([]);
     };
 
     const filtered = rooms.filter(r => r.name?.toLowerCase().includes(search.toLowerCase()));
@@ -217,10 +260,28 @@ export default function MessagesPage() {
                                 <Plus className="w-5 h-5" />
                             </button>
                         </div>
-                        <div className="relative">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-black/25 dark:text-white/25" />
-                            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search conversations..."
-                                className="w-full pl-10 pr-4 py-3 rounded-xl bg-black/5 dark:bg-white/5 border border-black/8 dark:border-white/8 text-black dark:text-white text-sm placeholder:text-black/20 dark:placeholder:text-white/10 outline-none focus:border-black/25 dark:focus:border-white/25 transition-colors" />
+                        <div className="relative group">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-black/25 dark:text-white/25 group-focus-within:text-indigo-600 transition-colors" />
+                            <input value={search} onChange={e => searchUsers(e.target.value)} placeholder="Search chats or @username..."
+                                className="w-full pl-10 pr-4 py-3 rounded-xl bg-black/5 dark:bg-white/5 border border-black/8 dark:border-white/8 text-black dark:text-white text-sm placeholder:text-black/20 dark:placeholder:text-white/10 outline-none focus:border-indigo-600 transition-all shadow-sm dark:shadow-none" />
+
+                            {/* Search Results Dropdown */}
+                            {userSearchResults.length > 0 && (
+                                <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#1a1a1a] rounded-2xl border border-black/10 dark:border-white/10 shadow-2xl p-2 z-[60] animate-in slide-in-from-top-2 duration-200">
+                                    <p className="text-[9px] font-black text-black/30 dark:text-white/30 uppercase tracking-widest px-3 py-2">Users</p>
+                                    {userSearchResults.map(u => (
+                                        <button key={u.uid} onClick={() => startPrivateChat(u)} className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-all text-left group">
+                                            <div className="w-9 h-9 rounded-full bg-black/10 dark:bg-white/10 flex items-center justify-center overflow-hidden shrink-0">
+                                                {u.photoURL ? <Image src={u.photoURL} alt="" width={36} height={36} className="object-cover" /> : <User className="w-4 h-4 text-black/30 dark:text-white/30" />}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-xs font-bold text-black dark:text-white truncate group-hover:text-indigo-600 transition-colors">{u.name || u.username}</p>
+                                                <p className="text-[10px] text-black/40 dark:text-white/40 truncate">{u.username}</p>
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
 
