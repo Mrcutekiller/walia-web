@@ -70,13 +70,18 @@ export default function MessagesPage() {
         });
     }, [user]);
 
-    // Load Rooms (Just showing all rooms for this demo since we don't have a complex participant relation yet)
+    // Load User Rooms (Filtered by participation)
     useEffect(() => {
-        const q = query(collection(db, 'chats'), orderBy('updatedAt', 'desc'));
+        if (!user) return;
+        const q = query(
+            collection(db, 'chats'),
+            where('participants', 'array-contains', user.uid),
+            orderBy('updatedAt', 'desc')
+        );
         return onSnapshot(q, snap => {
             setRooms(snap.docs.map(d => ({ id: d.id, ...d.data() } as ChatRoom)));
         });
-    }, []);
+    }, [user]);
 
     // Load active room messages
     useEffect(() => {

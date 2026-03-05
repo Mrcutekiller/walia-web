@@ -29,18 +29,26 @@ export default function SettingsPage() {
         if (!user) return;
         getDoc(doc(db, 'users', user.uid)).then(d => {
             if (d.exists()) {
-                setPlan(d.data().plan || 'free');
+                const data = d.data();
+                setPlan(data.plan || 'free');
+
+                // Read theme from Firestore if it exists
+                if (data.theme) {
+                    const isDark = data.theme === 'dark';
+                    setDarkMode(isDark);
+                    if (isDark) document.documentElement.classList.add('dark');
+                    else document.documentElement.classList.remove('dark');
+                } else {
+                    // Fallback to local logic if not yet in Firestore
+                    const isDark = document.documentElement.classList.contains('dark') ||
+                        (localStorage.getItem('theme') === 'dark') ||
+                        (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                    setDarkMode(isDark);
+                    if (isDark) document.documentElement.classList.add('dark');
+                    else document.documentElement.classList.remove('dark');
+                }
             }
         });
-
-        // Initial theme check
-        const isDark = document.documentElement.classList.contains('dark') ||
-            (localStorage.getItem('theme') === 'dark') ||
-            (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
-
-        setDarkMode(isDark);
-        if (isDark) document.documentElement.classList.add('dark');
-        else document.documentElement.classList.remove('dark');
     }, [user]);
 
     useEffect(() => {
@@ -56,7 +64,7 @@ export default function SettingsPage() {
         return () => mediaQuery.removeEventListener('change', handleChange);
     }, []);
 
-    const toggleDark = (v: boolean) => {
+    const toggleDark = async (v: boolean) => {
         setDarkMode(v);
         if (v) {
             document.documentElement.classList.add('dark');
@@ -64,6 +72,14 @@ export default function SettingsPage() {
         } else {
             document.documentElement.classList.remove('dark');
             localStorage.setItem('theme', 'light');
+        }
+
+        // Persist to Firestore
+        if (user) {
+            const { updateDoc, doc } = await import('firebase/firestore');
+            await updateDoc(doc(db, 'users', user.uid), {
+                theme: v ? 'dark' : 'light'
+            });
         }
     };
 

@@ -32,6 +32,9 @@ const NAV = [
     { icon: Settings, label: 'Settings', href: '/settings' },
 ];
 
+import { db } from '@/lib/firebase';
+import { doc, onSnapshot } from 'firebase/firestore';
+
 export default function DashboardShell({ children }: { children: React.ReactNode }) {
     const { user, loading } = useAuth();
     const router = useRouter();
@@ -41,6 +44,21 @@ export default function DashboardShell({ children }: { children: React.ReactNode
     useEffect(() => {
         if (!loading && !user) router.replace('/login');
     }, [user, loading, router]);
+
+    // Global theme listener
+    useEffect(() => {
+        if (!user) return;
+        const unsub = onSnapshot(doc(db, 'users', user.uid), (snap) => {
+            if (snap.exists()) {
+                const theme = snap.data().theme;
+                if (theme) {
+                    if (theme === 'dark') document.documentElement.classList.add('dark');
+                    else document.documentElement.classList.remove('dark');
+                }
+            }
+        });
+        return () => unsub();
+    }, [user]);
 
     if (loading || !user) {
         return (
