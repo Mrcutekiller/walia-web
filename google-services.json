@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "962189431750",
+    "project_id": "walia-b8584",
+    "storage_bucket": "walia-b8584.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:962189431750:android:ea0cb44553b056b59818c7",
+        "android_client_info": {
+          "package_name": "com.company.waliaai"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "962189431750-ie339hbet20br7o0o7bcg66ss441e98f.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBMb5Ez-VgIvSxIkTEKm3opn_O2M0fnPfU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "962189431750-ie339hbet20br7o0o7bcg66ss441e98f.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
