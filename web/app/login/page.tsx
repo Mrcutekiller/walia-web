@@ -8,10 +8,10 @@ import {
 import { AlertCircle, ArrowRight, Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useState } from 'react';
 
-export default function LoginPage() {
+function LoginContent() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -19,18 +19,24 @@ export default function LoginPage() {
     const [googleLoading, setGoogleLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const router = useRouter();
+    const searchParams = useSearchParams();
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(''); setLoading(true);
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const redirect = searchParams.get('redirect');
+
             if (userCredential.user.email === 'admin@walia.com') {
                 router.replace('/admin');
-            } else {
+            } else if (redirect === 'review') {
                 router.replace('/dashboard/ai');
+            } else {
+                router.replace('/dashboard');
             }
-        } catch {
+        } catch (err: any) {
+            console.error("Login error:", err);
             setError('Invalid email or password. Please try again.');
         } finally { setLoading(false); }
     };
@@ -39,19 +45,26 @@ export default function LoginPage() {
         setError(''); setGoogleLoading(true);
         try {
             await signInWithPopup(auth, googleProvider);
-            await new Promise(r => setTimeout(r, 300));
-            router.replace('/chat');
+            await new Promise(r => setTimeout(r, 500));
+
+            const redirect = searchParams.get('redirect');
+            if (redirect === 'review') {
+                router.replace('/dashboard/ai');
+            } else {
+                router.replace('/dashboard');
+            }
         } catch (err: any) {
+            console.error("Google sign-in error:", err);
             if (err?.code !== 'auth/popup-closed-by-user') {
-                setError('Google sign-in failed. Please try again.');
+                setError(err.message?.includes('auth/operation-not-supported')
+                    ? 'Google sign-in is not enabled. Please use email/password.'
+                    : 'Google sign-in failed. Please try again.');
             }
         } finally { setGoogleLoading(false); }
     };
 
     return (
         <main className="h-screen w-screen overflow-hidden relative">
-
-            {/* ── FULLSCREEN VIDEO BACKGROUND ── */}
             <video
                 autoPlay muted loop playsInline
                 className="absolute inset-0 w-full h-full object-cover"
@@ -76,8 +89,6 @@ export default function LoginPage() {
             </div>
 
             {/* ── LOGIN CARD ── */}
-            {/* Desktop: right side, vertically centered */}
-            {/* Mobile: centered on screen, floating over video */}
             <div className="absolute inset-0 z-10 flex items-end pb-8 justify-center md:items-center md:pb-0 md:justify-end md:pr-20">
                 <div className="w-[85%] max-w-sm bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl shadow-black/30 p-5 sm:p-6 md:p-8 overflow-y-auto max-h-[80vh]">
 
@@ -170,6 +181,18 @@ export default function LoginPage() {
                 </div>
             </div>
         </main>
+    );
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={
+            <div className="h-screen w-screen bg-black flex items-center justify-center">
+                <div className="w-8 h-8 border-4 border-white/10 border-t-white rounded-full animate-spin" />
+            </div>
+        }>
+            <LoginContent />
+        </Suspense>
     );
 }
 

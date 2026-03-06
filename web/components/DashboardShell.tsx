@@ -23,17 +23,18 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 const NAV = [
-    { icon: Bot, label: 'AI Chat', href: '/chat' },
-    { icon: Wrench, label: 'Tools', href: '/tools' },
-    { icon: Users, label: 'Community', href: '/community' },
-    { icon: MessageSquare, label: 'Messages', href: '/messages' },
-    { icon: Calendar, label: 'Calendar', href: '/calendar' },
-    { icon: User, label: 'Profile', href: '/profile' },
-    { icon: Settings, label: 'Settings', href: '/settings' },
+    { icon: Bot, label: 'AI Hub', href: '/dashboard/ai' },
+    { icon: MessageSquare, label: 'AI Chat', href: '/chat' },
+    { icon: Wrench, label: 'Tools', href: '/dashboard/tools' },
+    { icon: Users, label: 'Community', href: '/dashboard/community' },
+    { icon: MessagesSquareEmoji, label: 'Messages', href: '/dashboard/messages' },
+    { icon: Calendar, label: 'Calendar', href: '/dashboard/calendar' },
+    { icon: User, label: 'Profile', href: '/dashboard/profile' },
+    { icon: Settings, label: 'Settings', href: '/dashboard/settings' },
 ];
 
-import { db } from '@/lib/firebase';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { MessagesSquare as MessagesSquareEmoji } from 'lucide-react';
+
 
 export default function DashboardShell({ children }: { children: React.ReactNode }) {
     const { user, loading } = useAuth();
@@ -45,20 +46,6 @@ export default function DashboardShell({ children }: { children: React.ReactNode
         if (!loading && !user) router.replace('/login');
     }, [user, loading, router]);
 
-    // Global theme listener
-    useEffect(() => {
-        if (!user) return;
-        const unsub = onSnapshot(doc(db, 'users', user.uid), (snap) => {
-            if (snap.exists()) {
-                const theme = snap.data().theme;
-                if (theme) {
-                    if (theme === 'dark') document.documentElement.classList.add('dark');
-                    else document.documentElement.classList.remove('dark');
-                }
-            }
-        });
-        return () => unsub();
-    }, [user]);
 
     if (loading || !user) {
         return (

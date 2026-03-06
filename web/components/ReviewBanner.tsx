@@ -96,8 +96,8 @@ export default function ReviewBanner() {
                                     >
                                         <Star
                                             className={`w-5 h-5 ${(hover || rating) >= star
-                                                    ? 'fill-walia-primary text-walia-primary'
-                                                    : 'text-white/20'
+                                                ? 'fill-[#FFD700] text-[#FFD700]'
+                                                : 'text-white/20'
                                                 } transition-colors`}
                                         />
                                     </button>

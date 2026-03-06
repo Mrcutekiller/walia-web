@@ -1,5 +1,6 @@
 'use client';
 
+import AvatarSelector from '@/components/AvatarSelector';
 import { auth, db, googleProvider } from '@/lib/firebase';
 import {
     createUserWithEmailAndPassword,
@@ -55,31 +56,46 @@ export default function SignupPage() {
     const [school, setSchool] = useState('');
     const [useCases, setUseCases] = useState<string[]>([]);
     const [whyWalia, setWhyWalia] = useState('');
+    const [avatar, setAvatar] = useState('/avatars/avatar1.jpg');
 
     const toggleUseCase = (label: string) => {
         setUseCases(prev => prev.includes(label) ? prev.filter(u => u !== label) : [...prev, label]);
     };
 
-    const saveProfileAndRedirect = async (uid: string, displayName: string) => {
-        await setDoc(doc(db, 'users', uid), {
-            name: displayName,
-            username: username || displayName.toLowerCase().replace(/\s+/g, ''),
-            email: auth.currentUser?.email,
-            gender, age, schoolLevel, school, useCases, whyWalia,
-            plan: 'free',
-            createdAt: serverTimestamp(),
-        });
-        await new Promise(r => setTimeout(r, 300));
-        router.replace('/chat');
+    const saveProfileAndRedirect = async (uid: string, displayName: string, photoURL?: string) => {
+        try {
+            await setDoc(doc(db, 'users', uid), {
+                name: displayName,
+                username: username || displayName.toLowerCase().replace(/\s+/g, ''),
+                email: auth.currentUser?.email || email,
+                photoURL: photoURL || avatar,
+                gender, age, schoolLevel, school, useCases, whyWalia,
+                plan: 'free',
+                createdAt: serverTimestamp(),
+            });
+            // Small delay to ensure Firestore sync before redirect
+            await new Promise(r => setTimeout(r, 500));
+            router.replace('/dashboard');
+        } catch (err: any) {
+            console.error("Firestore save error:", err);
+            setError("Account created, but failed to save profile. You can update it later in settings.");
+            // Still redirect so they aren't stuck
+            router.replace('/dashboard');
+        }
     };
 
     const handleGoogle = async () => {
         setError(''); setGoogleLoading(true);
         try {
             const result = await signInWithPopup(auth, googleProvider);
-            await saveProfileAndRedirect(result.user.uid, result.user.displayName || result.user.email?.split('@')[0] || 'User');
+            await saveProfileAndRedirect(result.user.uid, result.user.displayName || result.user.email?.split('@')[0] || 'User', result.user.photoURL || undefined);
         } catch (err: any) {
-            if (err?.code !== 'auth/popup-closed-by-user') setError('Google sign-in failed.');
+            console.error("Google sign-in error:", err);
+            if (err?.code !== 'auth/popup-closed-by-user') {
+                setError(err.message?.includes('auth/operation-not-supported')
+                    ? 'Google sign-in is not enabled. Please use email/password.'
+                    : 'Google sign-in failed. Please try again.');
+            }
         } finally { setGoogleLoading(false); }
     };
 
@@ -87,18 +103,42 @@ export default function SignupPage() {
         setError(''); setLoading(true);
         try {
             const cred = await createUserWithEmailAndPassword(auth, email, password);
-            await updateProfile(cred.user, { displayName: name });
-            await saveProfileAndRedirect(cred.user.uid, name);
+
+            // Try updating profile, but don't block everything if it fails
+            try {
+                await updateProfile(cred.user, {
+                    displayName: name,
+                    photoURL: avatar
+                });
+            } catch (pErr) {
+                console.warn("Profile update failed:", pErr);
+            }
+
+            await saveProfileAndRedirect(cred.user.uid, name, avatar);
         } catch (err: any) {
+            console.error("Signup error:", err);
             setError(err.message?.replace('Firebase: ', '') || 'Failed to create account.');
             setLoading(false);
         }
     };
 
-    const next = () => {
+    const next = async () => {
         setError('');
         if (step === 0) {
             if (!name.trim()) { setError('Enter your full name.'); return; }
+            if (username.trim()) {
+                const { checkUsernameUnique } = require('@/lib/user');
+                setLoading(true);
+                try {
+                    const isUnique = await checkUsernameUnique(username);
+                    if (!isUnique) { setError('Username is already taken.'); return; }
+                } catch (err) {
+                    console.error("Username check error:", err);
+                } finally {
+                    setLoading(true); // Keep loading state if we are moving to next step? No.
+                    setLoading(false);
+                }
+            }
             if (!email.trim()) { setError('Enter your email.'); return; }
             if (password.length < 6) { setError('Password must be 6+ characters.'); return; }
         }
@@ -225,6 +265,8 @@ export default function SignupPage() {
                     {/* ══ STEP 1: Profile ══ */}
                     {step === 1 && (
                         <div className="space-y-4">
+                            <AvatarSelector selectedAvatar={avatar} onSelect={setAvatar} />
+
                             <div className="space-y-1.5">
                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Gender</label>
                                 <div className="grid grid-cols-3 gap-2">

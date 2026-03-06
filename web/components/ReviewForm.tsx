@@ -28,9 +28,9 @@ export default function ReviewForm({ onSuccess }: ReviewFormProps) {
         setError('');
         try {
             await addDoc(collection(db, 'reviews'), {
-                name: user.displayName || user.email?.split('@')[0] || 'Anonymous',
+                userName: user.displayName || user.email?.split('@')[0] || 'Anonymous',
                 rating,
-                text: text.trim(),
+                comment: text.trim(),
                 userId: user.uid,
                 createdAt: serverTimestamp(),
             });

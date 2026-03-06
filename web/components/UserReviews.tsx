@@ -3,6 +3,7 @@
 import { useAuth } from '@/context/AuthContext';
 import { db } from '@/lib/firebase';
 import {
+    addDoc,
     collection,
     deleteDoc,
     doc,
@@ -73,14 +74,57 @@ export default function UserReviews() {
     };
 
     if (loading) return null;
-    if (reviews.length === 0) return null;
 
     return (
         <div className="mt-12 space-y-6">
             <div className="flex items-center justify-between border-b border-black/5 dark:border-white/5 pb-4">
                 <h3 className="text-sm font-black text-black dark:text-white uppercase tracking-widest">Your Reviews</h3>
-                <span className="px-2 py-0.5 rounded-md bg-walia-primary/10 text-[9px] text-walia-primary font-black uppercase">{reviews.length} Feedback Item{reviews.length !== 1 ? 's' : ''}</span>
+                {reviews.length > 0 && <span className="px-2 py-0.5 rounded-md bg-walia-primary/10 text-[9px] text-walia-primary font-black uppercase">{reviews.length} Feedback Item{reviews.length !== 1 ? 's' : ''}</span>}
             </div>
+
+            {reviews.length === 0 && (
+                <div className="p-6 rounded-3xl bg-white dark:bg-white/5 border border-black/5 dark:border-white/8 shadow-sm dark:shadow-none">
+                    <p className="text-xs text-black/40 dark:text-white/40 mb-4 font-medium italic">You haven't left a review yet. Your feedback helps Walia grow!</p>
+                    <div className="flex items-center gap-2 mb-4">
+                        {[1, 2, 3, 4, 5].map((s) => (
+                            <button key={s} onClick={() => setEditRating(s)} className="transition-transform hover:scale-110">
+                                <Star className={`w-6 h-6 ${editRating >= s ? 'fill-[#FFD700] text-[#FFD700]' : 'text-black/10 dark:text-white/20'}`} />
+                            </button>
+                        ))}
+                    </div>
+                    <textarea
+                        value={editComment}
+                        onChange={(e) => setEditComment(e.target.value)}
+                        placeholder="Share your thoughts about Walia..."
+                        className="w-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-black dark:text-white outline-none focus:border-walia-primary/30 transition-all resize-none mb-4"
+                        rows={3}
+                    />
+                    <button
+                        onClick={async () => {
+                            if (!user || editRating === 0) return;
+                            try {
+                                await addDoc(collection(db, 'reviews'), {
+                                    userId: user.uid,
+                                    userName: user.displayName || 'Anonymous',
+                                    userPhoto: user.photoURL || '',
+                                    rating: editRating,
+                                    comment: editComment,
+                                    createdAt: serverTimestamp(),
+                                    updatedAt: serverTimestamp(),
+                                });
+                                setEditRating(0);
+                                setEditComment('');
+                            } catch (e) {
+                                console.error(e);
+                            }
+                        }}
+                        disabled={editRating === 0}
+                        className="w-full py-3 rounded-xl bg-walia-primary text-white font-black text-xs uppercase tracking-widest hover:opacity-90 transition-all disabled:opacity-30 shadow-lg shadow-walia-primary/20"
+                    >
+                        Submit Feedback
+                    </button>
+                </div>
+            )}
 
             <div className="space-y-4">
                 <AnimatePresence mode="popLayout">
@@ -97,7 +141,7 @@ export default function UserReviews() {
                                     <div className="flex items-center gap-1">
                                         {[1, 2, 3, 4, 5].map((s) => (
                                             <button key={s} onClick={() => setEditRating(s)}>
-                                                <Star className={`w-5 h-5 ${editRating >= s ? 'fill-walia-primary text-walia-primary' : 'text-white/20'}`} />
+                                                <Star className={`w-5 h-5 ${editRating >= s ? 'fill-[#FFD700] text-[#FFD700]' : 'text-white/20'}`} />
                                             </button>
                                         ))}
                                     </div>
@@ -121,7 +165,7 @@ export default function UserReviews() {
                                     <div className="flex items-center justify-between mb-3">
                                         <div className="flex items-center gap-1">
                                             {[1, 2, 3, 4, 5].map((s) => (
-                                                <Star key={s} className={`w-3.5 h-3.5 ${review.rating >= s ? 'fill-walia-primary text-walia-primary' : 'text-black/10 dark:text-white/10'}`} />
+                                                <Star key={s} className={`w-3.5 h-3.5 ${review.rating >= s ? 'fill-[#FFD700] text-[#FFD700]' : 'text-black/10 dark:text-white/10'}`} />
                                             ))}
                                         </div>
                                         <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all">
