@@ -5,7 +5,7 @@ import {
     signInWithEmailAndPassword,
     signInWithPopup
 } from 'firebase/auth';
-import { AlertCircle, ArrowRight, Lock, Mail } from 'lucide-react';
+import { AlertCircle, ArrowRight, Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -17,14 +17,19 @@ export default function LoginPage() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [googleLoading, setGoogleLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
     const router = useRouter();
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(''); setLoading(true);
         try {
-            await signInWithEmailAndPassword(auth, email, password);
-            router.replace('/chat');
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            if (userCredential.user.email === 'admin@walia.com') {
+                router.replace('/admin');
+            } else {
+                router.replace('/dashboard/ai');
+            }
         } catch {
             setError('Invalid email or password. Please try again.');
         } finally { setLoading(false); }
@@ -133,10 +138,17 @@ export default function LoginPage() {
                             <div className="relative group">
                                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 group-focus-within:text-black transition-colors" />
                                 <input
-                                    type="password" value={password} onChange={e => setPassword(e.target.value)}
+                                    type={showPassword ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)}
                                     placeholder="••••••••" required
-                                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:border-black outline-none text-sm font-medium text-black placeholder:text-gray-300 transition-colors"
+                                    className="w-full pl-10 pr-12 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:border-black outline-none text-sm font-medium text-black placeholder:text-gray-300 transition-colors"
                                 />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black transition-colors"
+                                >
+                                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                </button>
                             </div>
                         </div>
                         <button
