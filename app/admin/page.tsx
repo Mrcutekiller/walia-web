@@ -9,6 +9,7 @@ import {
     CreditCard,
     Globe,
     Image as ImageIcon,
+    LucideIcon,
     MessageSquare,
     UserCheck,
     UserPlus,
@@ -16,7 +17,15 @@ import {
     Zap
 } from 'lucide-react';
 
-const stats = [
+interface StatItem {
+    title: string;
+    value: string;
+    change: number;
+    icon: LucideIcon;
+    color: 'success' | 'blue' | 'purple' | 'orange';
+}
+
+const stats: StatItem[] = [
     { title: 'Total Profiles', value: '12,456', change: 12.5, icon: Users, color: 'success' },
     { title: 'Active Users', value: '8,230', change: 4.2, icon: UserCheck, color: 'blue' },
     { title: 'New This Week', value: '+450', change: 18.2, icon: UserPlus, color: 'purple' },

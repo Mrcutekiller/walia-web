@@ -16,7 +16,17 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 
-const mockImages = [
+interface ImageItem {
+    id: string;
+    title: string;
+    type: string;
+    status: string;
+    url: string;
+    size: string;
+    date: string;
+}
+
+const mockImages: ImageItem[] = [
     { id: '1', title: 'Study Hub Banner', type: 'System', status: 'Approved', url: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=400&h=300&auto=format&fit=crop', size: '1.2 MB', date: '2024-03-01' },
     { id: '2', title: 'AI Avatar Concept', type: 'System', status: 'Approved', url: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=400&h=300&auto=format&fit=crop', size: '2.4 MB', date: '2024-03-02' },
     { id: '3', title: 'User Upload #452', type: 'User', status: 'Pending', url: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=400&h=300&auto=format&fit=crop', size: '0.8 MB', date: '2024-03-06' },

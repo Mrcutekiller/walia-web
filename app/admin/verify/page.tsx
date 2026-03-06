@@ -12,7 +12,16 @@ import {
     XCircle
 } from 'lucide-react';
 
-const mockVerifications = [
+interface VerificationRequest {
+    id: string;
+    name: string;
+    type: string;
+    status: string;
+    submitted: string;
+    email: string;
+}
+
+const mockVerifications: VerificationRequest[] = [
     { id: 'V-001', name: 'Biruk Anteneh', type: 'Student ID', status: 'Pending', submitted: '2024-03-05', email: 'biruk@example.com' },
     { id: 'V-002', name: 'Antonio Samuel', type: 'Identity', status: 'Approved', submitted: '2024-03-02', email: 'antonio@walia.com' },
     { id: 'V-003', name: 'Kris Payer', type: 'Student ID', status: 'Rejected', submitted: '2024-03-04', email: 'kris.payer@gmail.com' },

@@ -11,7 +11,18 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 
-const mockPosts = [
+interface Post {
+    id: string;
+    author: string;
+    content: string;
+    type: string;
+    status: string;
+    likes: number;
+    comments: number;
+    time: string;
+}
+
+const mockPosts: Post[] = [
     { id: '1', author: 'Biruk A.', content: 'Just finished my first AI study session! This tool is incredible.', type: 'Success', status: 'Approved', likes: 24, comments: 5, time: '2h ago' },
     { id: '2', author: 'Anonymous', content: 'Anyone has notes for Advanced Calculus? I really need them for my finals.', type: 'Question', status: 'Pending', likes: 0, comments: 2, time: '4h ago' },
     { id: '3', author: 'Sarah M.', content: 'Check out this cool prompt I used to generate a study plan! [Link]', type: 'Sharing', status: 'Reported', likes: 12, comments: 8, time: '1d ago' },

@@ -9,11 +9,22 @@ import {
     MoreVertical,
     Search,
     Shield,
+    TrendingUp,
     Zap
 } from 'lucide-react';
 import { useState } from 'react';
 
-const mockUsers = [
+interface User {
+    id: string;
+    name: string;
+    email: string;
+    plan: string;
+    status: string;
+    joined: string;
+    avatar: string;
+}
+
+const mockUsers: User[] = [
     { id: '1', name: 'Biruk Anteneh', email: 'biruk@example.com', plan: 'Pro', status: 'Active', joined: '2024-02-15', avatar: 'B' },
     { id: '2', name: 'Antonio Samuel', email: 'antonio@walia.com', plan: 'Admin', status: 'Active', joined: '2023-11-20', avatar: 'A' },
     { id: '3', name: 'Kris Payer', email: 'kris.payer@gmail.com', plan: 'Free', status: 'Pending', joined: '2024-03-01', avatar: 'K' },

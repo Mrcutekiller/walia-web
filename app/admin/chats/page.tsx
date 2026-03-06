@@ -13,7 +13,17 @@ import {
     User
 } from 'lucide-react';
 
-const mockChats = [
+interface ChatRoom {
+    id: string;
+    room: string;
+    participants: number;
+    lastMsg: string;
+    type: string;
+    status: string;
+    time: string;
+}
+
+const mockChats: ChatRoom[] = [
     { id: 'C-001', room: 'Calculus Study Group', participants: 12, lastMsg: 'Walia: The derivative of sin(x) is cos(x)...', type: 'AI Active', status: 'Monitored', time: '10m ago' },
     { id: 'C-002', room: 'Organic Chemistry', participants: 5, lastMsg: 'User: How do I name this compound?', type: 'Q&A', status: 'Flagged', time: '1h ago' },
     { id: 'C-003', room: '1-on-1 with Mentor', participants: 2, lastMsg: 'Mentor: Great progress on the project!', type: 'Private', status: 'Secure', time: '2h ago' },

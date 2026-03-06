@@ -5,10 +5,21 @@ import {
     CreditCard,
     DollarSign,
     Download,
+    TrendingUp,
     XCircle
 } from 'lucide-react';
 
-const mockTransactions = [
+interface Transaction {
+    id: string;
+    user: string;
+    plan: string;
+    amount: string;
+    status: string;
+    date: string;
+    method: string;
+}
+
+const mockTransactions: Transaction[] = [
     { id: 'TX-90210', user: 'Biruk Anteneh', plan: 'Pro Monthly', amount: '$9.99', status: 'Completed', date: '2024-03-05 14:20', method: 'Visa ****4242' },
     { id: 'TX-90211', user: 'Sarah Miller', plan: 'Pro Annual', amount: '$89.00', status: 'Completed', date: '2024-03-05 11:45', method: 'Mastercard ****8812' },
     { id: 'TX-90212', user: 'John Doe', plan: 'Pro Monthly', amount: '$9.99', status: 'Failed', date: '2024-03-04 09:15', method: 'Visa ****1111' },
@@ -108,10 +119,4 @@ export default function AdminPayments() {
             </div>
         </div>
     );
-}
-
-function TrendingUp(props: any) {
-    return (
-        <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trending-up"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" /><polyline points="16 7 22 7 22 13" /></svg>
-    )
 }
