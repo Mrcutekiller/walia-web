@@ -35,7 +35,7 @@ const SUGGESTIONS = [
     'Summarise a chapter on Newton\'s laws',
 ];
 
-const FREE_DAILY_LIMIT = 5;
+const FREE_DAILY_LIMIT = 1000;
 
 export default function ChatPage() {
     const { user } = useAuth();
@@ -122,26 +122,26 @@ export default function ChatPage() {
             ? `${content}\n${currentAttachments.map(a => `[Attached ${a.name}]`).join('\n')}`
             : content;
 
-        // Save user message
-        await addDoc(collection(db, 'users', user.uid, 'messages'), {
-            role: 'user', content: userContent, createdAt: serverTimestamp(),
-        });
-
-        // Update usage count for free plan
-        if (plan === 'free') {
-            const today = new Date().toISOString().split('T')[0];
-            const usageRef = doc(db, 'usage', `${user.uid}_${today}`);
-            const newCount = usageCount + 1;
-            await setDoc(usageRef, { count: newCount, userId: user.uid, date: today }, { merge: true });
-            setUsageCount(newCount);
-        }
-
-        // Call API
-        const recentHistory = messages.slice(-10).map(m => ({ role: m.role, content: m.content }));
-
         try {
+            // Save user message
+            await addDoc(collection(db, 'users', user.uid, 'messages'), {
+                role: 'user', content: userContent, createdAt: serverTimestamp(),
+            });
+
+            // Update usage count for free plan
+            if (plan === 'free') {
+                const today = new Date().toISOString().split('T')[0];
+                const usageRef = doc(db, 'usage', `${user.uid}_${today}`);
+                const newCount = usageCount + 1;
+                await setDoc(usageRef, { count: newCount, userId: user.uid, date: today }, { merge: true });
+                setUsageCount(newCount);
+            }
+
+            // Call API
+            const recentHistory = messages.slice(-10).map(m => ({ role: m.role, content: m.content }));
+
             const controller = new AbortController();
-            const timeout = setTimeout(() => controller.abort(), 35000);
+            const timeout = setTimeout(() => controller.abort(), 40000); // 40s timeout
             const res = await fetch('/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -153,6 +153,7 @@ export default function ChatPage() {
                 signal: controller.signal,
             });
             clearTimeout(timeout);
+
             const data = await res.json();
 
             if (!res.ok) throw new Error(data.reply || 'API Error');
@@ -167,12 +168,13 @@ export default function ChatPage() {
             await addDoc(collection(db, 'users', user.uid, 'messages'), {
                 role: 'assistant',
                 content: error.name === 'AbortError'
-                    ? 'The request took too long. Please try a shorter message.'
+                    ? 'The AI is taking too long to respond. Please try again.'
                     : `Error: ${error.message || 'I had trouble connecting.'}`,
                 createdAt: serverTimestamp(),
             });
+        } finally {
+            setSending(false);
         }
-        setSending(false);
     };
 
     return (
@@ -267,7 +269,7 @@ export default function ChatPage() {
                 {/* Limit banner */}
                 {limitReached && (
                     <div className="mx-4 mb-2 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-center">
-                        <p className="text-xs text-amber-400 font-bold">Free daily limit reached (5/5).</p>
+                        <p className="text-xs text-amber-400 font-bold">Free daily limit reached ({usageCount}/{FREE_DAILY_LIMIT}).</p>
                         <a href="/upgrade" className="text-xs text-amber-300 underline">Upgrade to Pro for unlimited messages →</a>
                     </div>
                 )}

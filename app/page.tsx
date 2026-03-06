@@ -308,11 +308,8 @@ export default function Home() {
                   >
                     {/* Stars */}
                     <div className="flex items-center gap-1 mb-4">
-                      {[...Array(5)].map((_, j) => (
-                        <Star
-                          key={j}
-                          className={`w-4 h-4 ${j < review.rating ? 'fill-black text-black' : 'fill-gray-200 text-gray-200'}`}
-                        />
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className={`w-3.5 h-3.5 ${i < review.rating ? 'fill-[#FFD700] text-[#FFD700]' : 'text-black/10 dark:text-white/10'}`} />
                       ))}
                       <span className="text-xs text-gray-400 ml-2 font-medium">{review.rating}.0</span>
                     </div>
