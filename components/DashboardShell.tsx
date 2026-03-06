@@ -23,14 +23,17 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 const NAV = [
-    { icon: Bot, label: 'AI Chat', href: '/chat' },
-    { icon: Wrench, label: 'Tools', href: '/tools' },
-    { icon: Users, label: 'Community', href: '/community' },
-    { icon: MessageSquare, label: 'Messages', href: '/messages' },
-    { icon: Calendar, label: 'Calendar', href: '/calendar' },
-    { icon: User, label: 'Profile', href: '/profile' },
-    { icon: Settings, label: 'Settings', href: '/settings' },
+    { icon: Bot, label: 'AI Hub', href: '/dashboard/ai' },
+    { icon: MessageSquare, label: 'AI Chat', href: '/chat' },
+    { icon: Wrench, label: 'Tools', href: '/dashboard/tools' },
+    { icon: Users, label: 'Community', href: '/dashboard/community' },
+    { icon: MessagesSquareEmoji, label: 'Messages', href: '/dashboard/messages' },
+    { icon: Calendar, label: 'Calendar', href: '/dashboard/calendar' },
+    { icon: User, label: 'Profile', href: '/dashboard/profile' },
+    { icon: Settings, label: 'Settings', href: '/dashboard/settings' },
 ];
+
+import { MessagesSquare as MessagesSquareEmoji } from 'lucide-react';
 
 import { db } from '@/lib/firebase';
 import { doc, onSnapshot } from 'firebase/firestore';

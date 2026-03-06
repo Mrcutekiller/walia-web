@@ -63,17 +63,25 @@ export default function SignupPage() {
     };
 
     const saveProfileAndRedirect = async (uid: string, displayName: string, photoURL?: string) => {
-        await setDoc(doc(db, 'users', uid), {
-            name: displayName,
-            username: username || displayName.toLowerCase().replace(/\s+/g, ''),
-            email: auth.currentUser?.email,
-            photoURL: photoURL || avatar,
-            gender, age, schoolLevel, school, useCases, whyWalia,
-            plan: 'free',
-            createdAt: serverTimestamp(),
-        });
-        await new Promise(r => setTimeout(r, 300));
-        router.replace('/chat');
+        try {
+            await setDoc(doc(db, 'users', uid), {
+                name: displayName,
+                username: username || displayName.toLowerCase().replace(/\s+/g, ''),
+                email: auth.currentUser?.email || email,
+                photoURL: photoURL || avatar,
+                gender, age, schoolLevel, school, useCases, whyWalia,
+                plan: 'free',
+                createdAt: serverTimestamp(),
+            });
+            // Small delay to ensure Firestore sync before redirect
+            await new Promise(r => setTimeout(r, 500));
+            router.replace('/dashboard');
+        } catch (err: any) {
+            console.error("Firestore save error:", err);
+            setError("Account created, but failed to save profile. You can update it later in settings.");
+            // Still redirect so they aren't stuck
+            router.replace('/dashboard');
+        }
     };
 
     const handleGoogle = async () => {
@@ -82,7 +90,12 @@ export default function SignupPage() {
             const result = await signInWithPopup(auth, googleProvider);
             await saveProfileAndRedirect(result.user.uid, result.user.displayName || result.user.email?.split('@')[0] || 'User', result.user.photoURL || undefined);
         } catch (err: any) {
-            if (err?.code !== 'auth/popup-closed-by-user') setError('Google sign-in failed.');
+            console.error("Google sign-in error:", err);
+            if (err?.code !== 'auth/popup-closed-by-user') {
+                setError(err.message?.includes('auth/operation-not-supported')
+                    ? 'Google sign-in is not enabled. Please use email/password.'
+                    : 'Google sign-in failed. Please try again.');
+            }
         } finally { setGoogleLoading(false); }
     };
 
@@ -90,12 +103,20 @@ export default function SignupPage() {
         setError(''); setLoading(true);
         try {
             const cred = await createUserWithEmailAndPassword(auth, email, password);
-            await updateProfile(cred.user, {
-                displayName: name,
-                photoURL: avatar
-            });
+
+            // Try updating profile, but don't block everything if it fails
+            try {
+                await updateProfile(cred.user, {
+                    displayName: name,
+                    photoURL: avatar
+                });
+            } catch (pErr) {
+                console.warn("Profile update failed:", pErr);
+            }
+
             await saveProfileAndRedirect(cred.user.uid, name, avatar);
         } catch (err: any) {
+            console.error("Signup error:", err);
             setError(err.message?.replace('Firebase: ', '') || 'Failed to create account.');
             setLoading(false);
         }
