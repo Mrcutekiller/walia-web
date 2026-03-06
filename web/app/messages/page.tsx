@@ -19,7 +19,7 @@ import {
     updateDoc,
     where
 } from 'firebase/firestore';
-import { ChevronLeft, MessageSquare, Plus, Search, Send, Sparkles, User, Users } from 'lucide-react';
+import { ChevronLeft, MessageSquare, Plus, Search, Send, Sparkles, User, Users, X } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 
@@ -70,13 +70,18 @@ export default function MessagesPage() {
         });
     }, [user]);
 
-    // Load Rooms (Just showing all rooms for this demo since we don't have a complex participant relation yet)
+    // Load User Rooms (Filtered by participation)
     useEffect(() => {
-        const q = query(collection(db, 'chats'), orderBy('updatedAt', 'desc'));
+        if (!user) return;
+        const q = query(
+            collection(db, 'chats'),
+            where('participants', 'array-contains', user.uid),
+            orderBy('updatedAt', 'desc')
+        );
         return onSnapshot(q, snap => {
             setRooms(snap.docs.map(d => ({ id: d.id, ...d.data() } as ChatRoom)));
         });
-    }, []);
+    }, [user]);
 
     // Load active room messages
     useEffect(() => {
@@ -131,14 +136,19 @@ export default function MessagesPage() {
         try {
             // We do NOT await this request blockingly on the UI to allow offline/background processing.
             // Vercel serverless functions will finish processing even if client disconnects quickly.
-            fetch('/api/chat/companion', {
+            const systemPrompt = `You are Walia AI, participating in a group or private chat as a smart companion. 
+            You must adopt the persona of: Mode=${aiSession.mode}, Level=${aiSession.level}.
+            Be helpful, conversational, and stay in character. Do not roboticize your responses. 
+            Respond as if you are a human expert acting under this persona.
+            Do not include "Walia:" at the start of your message.`;
+
+            fetch('/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     message: `${user?.displayName || 'User'}: ${userText}`,
                     history,
-                    mode: aiSession.mode,
-                    level: aiSession.level
+                    systemPrompt
                 }),
             }).then(res => res.json()).then(async data => {
                 if (data.reply) {
@@ -195,14 +205,22 @@ export default function MessagesPage() {
 
     const [userSearchResults, setUserSearchResults] = useState<any[]>([]);
 
+    const [selectedParticipants, setSelectedParticipants] = useState<any[]>([]);
+
     const createGroup = async () => {
         if (!newGroupName.trim() || !user) return;
+        const participantIds = [user.uid, ...selectedParticipants.map(p => p.uid)];
         const ref = await addDoc(collection(db, 'chats'), {
-            name: newGroupName, type: 'group', lastMessage: 'Group created', updatedAt: serverTimestamp()
+            name: newGroupName,
+            type: 'group',
+            participants: participantIds,
+            lastMessage: 'Group created',
+            updatedAt: serverTimestamp()
         });
         setActiveRoomId(ref.id);
         setShowGroupModal(false);
         setNewGroupName('');
+        setSelectedParticipants([]);
     };
 
     const searchUsers = async (val: string) => {
@@ -394,32 +412,81 @@ export default function MessagesPage() {
 
                 {/* Group Creation Modal */}
                 {showGroupModal && (
-                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-                        <div className="bg-white dark:bg-[#0f0f0f] w-full max-w-sm rounded-[32px] p-8 shadow-2xl border border-white/5 animate-in zoom-in-95 duration-200">
-                            <h2 className="text-2xl font-black text-black dark:text-white mb-2">Create Group</h2>
-                            <p className="text-sm text-black/40 dark:text-white/40 mb-6">Start a new study group or community chat.</p>
+                    <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
+                        <div className="bg-[#111] w-full max-w-md rounded-[32px] overflow-hidden shadow-2xl border border-white/10 flex flex-col max-h-[90vh]">
+                            <div className="p-8 pb-0">
+                                <h2 className="text-2xl font-black text-white mb-2">New Group</h2>
+                                <p className="text-xs text-white/40 mb-6 uppercase tracking-widest font-black">Step 1: Group Identity</p>
 
-                            <input
-                                autoFocus
-                                value={newGroupName}
-                                onChange={e => setNewGroupName(e.target.value)}
-                                placeholder="Group Name..."
-                                className="w-full px-4 py-3.5 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/10 text-black dark:text-white placeholder:text-black/20 dark:placeholder:text-white/20 outline-none focus:border-indigo-500/50 transition-all mb-6"
-                            />
+                                <input
+                                    autoFocus
+                                    value={newGroupName}
+                                    onChange={e => setNewGroupName(e.target.value)}
+                                    placeholder="Group Name..."
+                                    className="w-full px-5 py-4 rounded-2xl bg-white/5 border border-white/10 text-white placeholder:text-white/20 outline-none focus:border-indigo-500/50 transition-all mb-6 text-sm"
+                                />
 
-                            <div className="flex flex-col gap-2">
+                                <p className="text-xs text-white/40 mb-3 uppercase tracking-widest font-black">Step 2: Add Members (@username)</p>
+                                <div className="relative mb-4">
+                                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
+                                    <input
+                                        placeholder="Search people..."
+                                        onChange={(e) => searchUsers(e.target.value)}
+                                        className="w-full pl-11 pr-4 py-3.5 rounded-xl bg-white/5 border border-white/8 text-white text-xs outline-none focus:border-indigo-500/30"
+                                    />
+                                </div>
+
+                                {selectedParticipants.length > 0 && (
+                                    <div className="flex flex-wrap gap-2 mb-4 max-h-24 overflow-y-auto p-1">
+                                        {selectedParticipants.map(p => (
+                                            <div key={p.uid} className="flex items-center gap-2 pl-2 pr-1 py-1 rounded-full bg-indigo-500/20 border border-indigo-500/30">
+                                                <span className="text-[10px] font-bold text-indigo-300">{p.username}</span>
+                                                <button onClick={() => setSelectedParticipants(prev => prev.filter(x => x.uid !== p.uid))} className="w-4 h-4 rounded-full bg-indigo-500/40 flex items-center justify-center hover:bg-indigo-500">
+                                                    <X className="w-2.5 h-2.5 text-white" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="flex-1 overflow-y-auto px-8 space-y-2 pb-4">
+                                {userSearchResults.map(u => (
+                                    <button key={u.uid}
+                                        onClick={() => {
+                                            if (!selectedParticipants.find(p => p.uid === u.uid)) {
+                                                setSelectedParticipants(prev => [...prev, u]);
+                                            }
+                                        }}
+                                        className="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-white/5 transition-all text-left">
+                                        <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center overflow-hidden shrink-0">
+                                            {u.photoURL ? <Image src={u.photoURL} alt="" width={32} height={32} /> : <User className="w-3.5 h-3.5 text-white/20" />}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-xs font-bold text-white truncate">{u.name || u.username}</p>
+                                            <p className="text-[10px] text-white/30 truncate">{u.username}</p>
+                                        </div>
+                                        <Plus className="w-4 h-4 text-indigo-500" />
+                                    </button>
+                                ))}
+                            </div>
+
+                            <div className="p-8 pt-4 bg-white/5 border-t border-white/5 flex flex-col gap-2">
                                 <button
                                     onClick={createGroup}
-                                    disabled={!newGroupName.trim()}
-                                    className="w-full bg-black dark:bg-white text-white dark:text-black font-black py-4 rounded-2xl hover:opacity-90 transition-all disabled:opacity-30 shadow-lg"
+                                    disabled={!newGroupName.trim() || selectedParticipants.length === 0}
+                                    className="w-full bg-white text-black font-black py-4 rounded-2xl hover:opacity-90 transition-all disabled:opacity-30 shadow-xl text-sm"
                                 >
-                                    Create Group
+                                    Launch Group
                                 </button>
                                 <button
-                                    onClick={() => setShowGroupModal(false)}
-                                    className="w-full py-3 text-black/40 dark:text-white/40 font-bold text-xs"
+                                    onClick={() => {
+                                        setShowGroupModal(false);
+                                        setSelectedParticipants([]);
+                                    }}
+                                    className="w-full py-2 text-white/30 font-bold text-[10px] uppercase tracking-widest"
                                 >
-                                    Cancel
+                                    Discard
                                 </button>
                             </div>
                         </div>

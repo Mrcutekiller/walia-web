@@ -1,8 +1,11 @@
 'use client';
 
 import DashboardShell from '@/components/DashboardShell';
+import { useAuth } from '@/context/AuthContext';
+import { db } from '@/lib/firebase';
+import { addDoc, collection, deleteDoc, doc, onSnapshot, query, updateDoc } from 'firebase/firestore';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -14,20 +17,33 @@ interface CalendarEvent {
     year: number;
     label: string;
     color: string;
+    completed?: boolean;
 }
 
 const COLORS = ['bg-rose-500', 'bg-amber-500', 'bg-indigo-500', 'bg-emerald-500', 'bg-pink-500'];
 
 export default function CalendarPage() {
+    const { user } = useAuth();
     const now = new Date();
     const [year, setYear] = useState(now.getFullYear());
     const [month, setMonth] = useState(now.getMonth());
 
-    // Initial dummy events
-    const [events, setEvents] = useState<CalendarEvent[]>([
-        { id: '1', day: 5, month, year, label: 'Physics Exam', color: 'bg-rose-500' },
-        { id: '2', day: 12, month, year, label: 'Essay Due', color: 'bg-amber-500' },
-    ]);
+    // State for events from Firestore
+    const [events, setEvents] = useState<CalendarEvent[]>([]);
+
+    // Loading state
+    const [loading, setLoading] = useState(true);
+
+    // Initial dummy events removal, load from Firestore instead
+    useEffect(() => {
+        if (!user) return;
+        const q = query(collection(db, 'users', user.uid, 'calendar'));
+        const unsub = onSnapshot(q, (snap) => {
+            setEvents(snap.docs.map(d => ({ id: d.id, ...d.data() } as CalendarEvent)));
+            setLoading(false);
+        });
+        return () => unsub();
+    }, [user]);
 
     // Add event modal state
     const [showAdd, setShowAdd] = useState(false);
@@ -49,22 +65,36 @@ export default function CalendarPage() {
         setShowAdd(true);
     };
 
-    const addEvent = (e: React.FormEvent) => {
+    const addEvent = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!newEventLabel.trim() || !selectedDay) return;
-        const newEvnt: CalendarEvent = {
-            id: Math.random().toString(),
+        if (!newEventLabel.trim() || !selectedDay || !user) return;
+
+        const newEvnt = {
             day: selectedDay, month, year,
-            label: newEventLabel, color: newEventColor
+            label: newEventLabel, color: newEventColor,
+            completed: false
         };
-        setEvents([...events, newEvnt].sort((a, b) => a.day - b.day));
+
+        await addDoc(collection(db, 'users', user.uid, 'calendar'), newEvnt);
+
         setShowAdd(false);
         setNewEventLabel('');
         setSelectedDay(null);
     };
 
-    const deleteEvent = (id: string) => {
-        setEvents(events.filter(e => e.id !== id));
+    const deleteEvent = async (id: string) => {
+        if (!user) return;
+        await deleteDoc(doc(db, 'users', user.uid, 'calendar', id));
+    };
+
+    const toggleComplete = async (id: string) => {
+        if (!user) return;
+        const event = events.find(e => e.id === id);
+        if (event) {
+            await updateDoc(doc(db, 'users', user.uid, 'calendar', id), {
+                completed: !event.completed
+            });
+        }
     };
 
     const currentEvents = events.filter(e => e.month === month && e.year === year);
@@ -103,8 +133,8 @@ export default function CalendarPage() {
                             const isToday = day === now.getDate() && month === now.getMonth() && year === now.getFullYear();
                             return (
                                 <div key={i} onClick={() => handleDayClick(day)} className={`aspect-square flex flex-col items-center justify-center rounded-xl text-xs font-bold transition-all relative ${!day ? '' :
-                                        isToday ? 'bg-white text-black' :
-                                            'hover:bg-white/8 text-white/60 cursor-pointer'
+                                    isToday ? 'bg-white text-black' :
+                                        'hover:bg-white/8 text-white/60 cursor-pointer'
                                     }`}>
                                     {day && <span>{day}</span>}
                                     {dayEvents.length > 0 && (
@@ -154,8 +184,11 @@ export default function CalendarPage() {
                         <p className="text-xs text-white/30 italic">No events for this month. Click a day to add one.</p>
                     ) : currentEvents.map(e => (
                         <div key={e.id} className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/8 group">
+                            <button onClick={() => toggleComplete(e.id)} className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${e.completed ? 'bg-indigo-500 border-indigo-500' : 'border-white/20'}`}>
+                                {e.completed && <div className="w-2 h-2 rounded-full bg-white" />}
+                            </button>
                             <div className={`w-2 h-2 rounded-full shrink-0 ${e.color}`} />
-                            <p className="text-sm font-semibold text-white">{e.label}</p>
+                            <p className={`text-sm font-semibold transition-all ${e.completed ? 'text-white/30 line-through' : 'text-white'}`}>{e.label}</p>
                             <p className="ml-auto text-[10px] text-white/30 mr-2">Day {e.day}</p>
                             <button onClick={() => deleteEvent(e.id)} className="w-6 h-6 rounded-md bg-rose-500/10 text-rose-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                 <X className="w-3 h-3" />
