@@ -1,5 +1,6 @@
 'use client';
 
+import AvatarSelector from '@/components/AvatarSelector';
 import { auth, db, googleProvider } from '@/lib/firebase';
 import {
     createUserWithEmailAndPassword,
@@ -55,16 +56,18 @@ export default function SignupPage() {
     const [school, setSchool] = useState('');
     const [useCases, setUseCases] = useState<string[]>([]);
     const [whyWalia, setWhyWalia] = useState('');
+    const [avatar, setAvatar] = useState('/avatars/avatar1.jpg');
 
     const toggleUseCase = (label: string) => {
         setUseCases(prev => prev.includes(label) ? prev.filter(u => u !== label) : [...prev, label]);
     };
 
-    const saveProfileAndRedirect = async (uid: string, displayName: string) => {
+    const saveProfileAndRedirect = async (uid: string, displayName: string, photoURL?: string) => {
         await setDoc(doc(db, 'users', uid), {
             name: displayName,
             username: username || displayName.toLowerCase().replace(/\s+/g, ''),
             email: auth.currentUser?.email,
+            photoURL: photoURL || avatar,
             gender, age, schoolLevel, school, useCases, whyWalia,
             plan: 'free',
             createdAt: serverTimestamp(),
@@ -77,7 +80,7 @@ export default function SignupPage() {
         setError(''); setGoogleLoading(true);
         try {
             const result = await signInWithPopup(auth, googleProvider);
-            await saveProfileAndRedirect(result.user.uid, result.user.displayName || result.user.email?.split('@')[0] || 'User');
+            await saveProfileAndRedirect(result.user.uid, result.user.displayName || result.user.email?.split('@')[0] || 'User', result.user.photoURL || undefined);
         } catch (err: any) {
             if (err?.code !== 'auth/popup-closed-by-user') setError('Google sign-in failed.');
         } finally { setGoogleLoading(false); }
@@ -87,8 +90,11 @@ export default function SignupPage() {
         setError(''); setLoading(true);
         try {
             const cred = await createUserWithEmailAndPassword(auth, email, password);
-            await updateProfile(cred.user, { displayName: name });
-            await saveProfileAndRedirect(cred.user.uid, name);
+            await updateProfile(cred.user, {
+                displayName: name,
+                photoURL: avatar
+            });
+            await saveProfileAndRedirect(cred.user.uid, name, avatar);
         } catch (err: any) {
             setError(err.message?.replace('Firebase: ', '') || 'Failed to create account.');
             setLoading(false);
@@ -225,6 +231,8 @@ export default function SignupPage() {
                     {/* ══ STEP 1: Profile ══ */}
                     {step === 1 && (
                         <div className="space-y-4">
+                            <AvatarSelector selectedAvatar={avatar} onSelect={setAvatar} />
+
                             <div className="space-y-1.5">
                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Gender</label>
                                 <div className="grid grid-cols-3 gap-2">

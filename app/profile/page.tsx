@@ -1,15 +1,13 @@
 'use client';
 
+import AvatarSelector from '@/components/AvatarSelector';
 import DashboardShell from '@/components/DashboardShell';
 import UserReviews from '@/components/UserReviews';
 import { useAuth } from '@/context/AuthContext';
 import { auth, db } from '@/lib/firebase';
 import { updateProfile } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { Camera, Save, User } from 'lucide-react';
-import Image from 'next/image';
-import { useEffect, useState } from 'react';
-
+import { Save } from 'lucide-react';
 export default function ProfilePage() {
     const { user } = useAuth();
     const [name, setName] = useState('');
@@ -28,12 +26,13 @@ export default function ProfilePage() {
         getDoc(doc(db, 'users', user.uid)).then(d => {
             if (d.exists()) {
                 const data = d.data();
+                setName(data.name || user.displayName || '');
                 setUsername(data.username || '');
+                setPhotoURL(data.photoURL || user.photoURL || '');
                 setSchool(data.school || '');
                 setLevel(data.schoolLevel || '');
                 setBio(data.bio || '');
             } else {
-                // Set default username if not exists
                 setUsername(user.displayName?.toLowerCase().replace(/\s+/g, '') || user.email?.split('@')[0] || '');
             }
         });
@@ -64,43 +63,17 @@ export default function ProfilePage() {
         }
     };
 
-    const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setPhotoURL(reader.result as string);
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-
     return (
         <DashboardShell>
-            <div className="p-6 max-w-xl mx-auto">
+            <div className="p-6 max-w-xl mx-auto pb-20">
                 <div className="mb-8 border-b border-black/5 dark:border-white/5 pb-4">
                     <p className="text-[10px] font-black text-black/30 dark:text-white/30 uppercase tracking-widest mb-1">Account</p>
                     <h1 className="text-3xl font-black text-black dark:text-white tracking-tight">Profile</h1>
                 </div>
 
-                {/* Avatar */}
-                <div className="flex items-center gap-5 mb-8 p-5 rounded-2xl bg-white dark:bg-white/5 border border-black/5 dark:border-white/8 shadow-sm dark:shadow-none transition-colors">
-                    <div className="relative">
-                        <div className="w-16 h-16 rounded-full bg-black/10 dark:bg-white/10 flex items-center justify-center overflow-hidden border border-black/5 dark:border-white/10">
-                            {photoURL
-                                ? <Image src={photoURL} alt="Avatar" width={64} height={64} className="object-cover" />
-                                : <User className="w-8 h-8 text-black/30 dark:text-white/30" />}
-                        </div>
-                        <label className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center shadow-lg border-2 border-white dark:border-[#0a0a0a] cursor-pointer hover:bg-indigo-700 transition-colors">
-                            <Camera className="w-3.5 h-3.5 text-white" />
-                            <input type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
-                        </label>
-                    </div>
-                    <div>
-                        <p className="text-base font-black text-black dark:text-white">{name || 'Your Name'}</p>
-                        <p className="text-xs text-black/35 dark:text-white/35 font-medium">{username || '@username'}</p>
-                        <span className="mt-1.5 inline-block px-2 py-0.5 rounded-md bg-indigo-600/10 text-[9px] text-indigo-600 dark:text-indigo-400 font-black uppercase tracking-wider">Free Plan</span>
-                    </div>
+                {/* Selection Area */}
+                <div className="mb-10 p-2 sm:p-5 rounded-3xl bg-white dark:bg-white/5 border border-black/5 dark:border-white/8 shadow-sm dark:shadow-none">
+                    <AvatarSelector selectedAvatar={photoURL} onSelect={setPhotoURL} />
                 </div>
 
                 {/* Form */}
