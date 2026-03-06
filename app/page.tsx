@@ -11,9 +11,9 @@ import { useEffect, useState } from 'react';
 // ─── Types ───
 interface Review {
   id: string;
-  name: string;
+  userName: string;
   rating: number;
-  text: string;
+  comment: string;
   createdAt: Timestamp;
 }
 
@@ -295,7 +295,7 @@ export default function Home() {
               <div className="text-center py-20 reveal">
                 <div className="text-5xl mb-4">💬</div>
                 <p className="text-gray-400 font-medium">No reviews yet. Login and be the first!</p>
-                <Link href="/login" className="mt-6 inline-flex items-center px-6 py-3 rounded-xl bg-black text-white font-bold hover:-translate-y-1 transition-all">
+                <Link href="/login?redirect=review" className="mt-6 inline-flex items-center px-6 py-3 rounded-xl bg-black text-white font-bold hover:-translate-y-1 transition-all">
                   Log in to Review
                 </Link>
               </div>
@@ -317,14 +317,14 @@ export default function Home() {
                       <span className="text-xs text-gray-400 ml-2 font-medium">{review.rating}.0</span>
                     </div>
                     {/* Text */}
-                    <p className="text-sm text-gray-600 leading-relaxed font-medium mb-6">"{review.text}"</p>
+                    <p className="text-sm text-gray-600 leading-relaxed font-medium mb-6">"{review.comment}"</p>
                     {/* Author */}
                     <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
                       <div className="w-9 h-9 rounded-full bg-black flex items-center justify-center shrink-0">
-                        <span className="text-white text-sm font-black">{review.name.charAt(0).toUpperCase()}</span>
+                        <span className="text-white text-sm font-black">{review.userName.charAt(0).toUpperCase()}</span>
                       </div>
                       <div>
-                        <p className="text-sm font-black text-black">{review.name}</p>
+                        <p className="text-sm font-black text-black">{review.userName}</p>
                         <p className="text-xs text-gray-400 font-medium">Walia User</p>
                       </div>
                     </div>
@@ -336,7 +336,7 @@ export default function Home() {
             {/* CTA to leave a review */}
             <div className="text-center mt-12 reveal">
               <Link
-                href="/dashboard/profile"
+                href="/login?redirect=review"
                 className="inline-flex items-center px-8 py-4 rounded-2xl bg-black text-white font-bold hover:bg-zinc-800 transition-all hover:-translate-y-1 shadow-lg"
               >
                 <Star className="w-5 h-5 mr-3" />
