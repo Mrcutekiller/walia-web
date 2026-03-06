@@ -1,10 +1,12 @@
 'use client';
 
+import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
 import {
     Calendar as CalendarIcon,
     MessageSquare,
     Settings,
+    Shield,
     Sparkles,
     User,
     Users,
@@ -27,6 +29,15 @@ const sidebarLinks = [
 
 export default function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
     const pathname = usePathname();
+    const { user } = useAuth();
+
+    // Strict Admin check - Only admin@walia.com can see this link
+    const isAdmin = user?.email === 'admin@walia.com';
+
+    const extendedLinks = [
+        ...sidebarLinks,
+        ...(isAdmin ? [{ name: 'Admin Panel', href: '/admin', icon: Shield }] : [])
+    ];
 
     return (
         <>
@@ -62,7 +73,7 @@ export default function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose:
                     {/* Navigation */}
                     <nav className="flex-1 px-4 py-4 space-y-2 overflow-y-auto custom-scrollbar">
                         <p className="px-4 text-[10px] font-black text-white/20 uppercase tracking-[0.2em] mb-4">Main Menu</p>
-                        {sidebarLinks.map((link) => {
+                        {extendedLinks.map((link) => {
                             const isActive = pathname === link.href;
                             return (
                                 <Link
