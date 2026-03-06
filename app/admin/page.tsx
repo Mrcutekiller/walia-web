@@ -1,36 +1,28 @@
 'use client';
 
 import AdminStatCard from '@/components/AdminStatCard';
+import { db } from '@/lib/firebase';
 import { cn } from '@/lib/utils';
+import {
+    collection,
+    onSnapshot,
+    query,
+    where
+} from 'firebase/firestore';
 import { motion } from 'framer-motion';
 import {
+    Activity,
     ArrowUpRight,
     BarChart3,
     CreditCard,
     Globe,
     Image as ImageIcon,
-    LucideIcon,
     MessageSquare,
-    UserCheck,
-    UserPlus,
+    TrendingUp,
     Users,
     Zap
 } from 'lucide-react';
-
-interface StatItem {
-    title: string;
-    value: string;
-    change: number;
-    icon: LucideIcon;
-    color: 'success' | 'blue' | 'purple' | 'orange';
-}
-
-const stats: StatItem[] = [
-    { title: 'Total Profiles', value: '12,456', change: 12.5, icon: Users, color: 'success' },
-    { title: 'Active Users', value: '8,230', change: 4.2, icon: UserCheck, color: 'blue' },
-    { title: 'New This Week', value: '+450', change: 18.2, icon: UserPlus, color: 'purple' },
-    { title: 'Total Revenue', value: '$45,200', change: 22.1, icon: CreditCard, color: 'orange' },
-];
+import { useEffect, useState } from 'react';
 
 const mockGrowthData = [
     { month: 'Jan', value: 40 },
@@ -48,6 +40,49 @@ const mockCategories = [
 ];
 
 export default function AdminDashboard() {
+    const [stats, setStats] = useState({
+        totalUsers: 0,
+        activeProfiles: 0,
+        newUsersThisWeek: 0,
+        totalRevenue: 0,
+        growth: '+12.5%'
+    });
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        // Real-time Listeners
+        const unsubUsers = onSnapshot(collection(db, 'users'), (snap) => {
+            const total = snap.size;
+            setStats(prev => ({ ...prev, totalUsers: total, activeProfiles: total })); // Mocking profiles as users for now
+        });
+
+        const unsubPayments = onSnapshot(collection(db, 'payments'), (snap) => {
+            let totalRev = 0;
+            snap.forEach(doc => {
+                const data = doc.data();
+                if (data.status === 'Completed' || data.status === 'succeeded') {
+                    totalRev += Number(data.amount) || 0;
+                }
+            });
+            setStats(prev => ({ ...prev, totalRevenue: totalRev }));
+        });
+
+        // Weekly growth - simple count of users created in last 7 days
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+        const qGrowth = query(collection(db, 'users'), where('createdAt', '>=', sevenDaysAgo));
+        const unsubGrowth = onSnapshot(qGrowth, (snap) => {
+            setStats(prev => ({ ...prev, newUsersThisWeek: snap.size }));
+        });
+
+        return () => {
+            unsubUsers();
+            unsubPayments();
+            unsubGrowth();
+        };
+    }, []);
+
     return (
         <div className="space-y-10 py-6">
             {/* Greeting & Header */}
@@ -75,9 +110,10 @@ export default function AdminDashboard() {
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {stats.map((stat, i) => (
-                    <AdminStatCard key={stat.title} {...stat} index={i} />
-                ))}
+                <AdminStatCard title="Total Profiles" value={stats.activeProfiles.toLocaleString()} change={12.5} icon={Users} color="blue" />
+                <AdminStatCard title="Total Users" value={stats.totalUsers.toLocaleString()} change={18.2} icon={Activity} color="purple" />
+                <AdminStatCard title="Weekly Growth" value={`+${stats.newUsersThisWeek}`} change={5.4} icon={TrendingUp} color="success" />
+                <AdminStatCard title="Total Revenue" value={`$${stats.totalRevenue.toLocaleString()}`} change={10.1} icon={CreditCard} color="orange" />
             </div>
 
             {/* Charts & Detailed Info */}

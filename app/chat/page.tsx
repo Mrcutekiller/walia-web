@@ -1,6 +1,7 @@
 'use client';
 
 import DashboardShell from '@/components/DashboardShell';
+import ReviewBanner from '@/components/ReviewBanner';
 import { useAuth } from '@/context/AuthContext';
 import { db } from '@/lib/firebase';
 import {
@@ -176,32 +177,36 @@ export default function ChatPage() {
 
     return (
         <DashboardShell>
-            <div className="flex flex-col h-full">
+            <div className="flex flex-col h-full overflow-hidden">
                 {/* Header */}
-                <div className="flex items-center justify-between px-5 py-4 border-b border-white/5 shrink-0">
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center">
-                            <Sparkles className="w-4 h-4 text-white" />
-                        </div>
-                        <div>
-                            <p className="text-sm font-black text-white">Walia AI</p>
-                            <div className="flex items-center gap-1.5">
-                                <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-                                <p className="text-[10px] text-white/30">Online · Gemini 1.5 Flash</p>
+                <div className="px-5 py-4 border-b border-white/5 shrink-0 flex flex-col gap-0 p-0 overflow-visible">
+                    <div className="flex items-center justify-between pb-0">
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center">
+                                <Sparkles className="w-4 h-4 text-white" />
+                            </div>
+                            <div>
+                                <p className="text-sm font-black text-white">Walia AI</p>
+                                <div className="flex items-center gap-1.5">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                                    <p className="text-[10px] text-white/30">Online · Gemini 1.5 Flash</p>
+                                </div>
                             </div>
                         </div>
+                        {plan === 'free' && (
+                            <div className="text-right">
+                                <p className="text-[10px] text-white/30">
+                                    {usageCount}/{FREE_DAILY_LIMIT} free messages today
+                                </p>
+                                <div className="w-24 h-1 bg-white/10 rounded-full mt-1 overflow-hidden">
+                                    <div className="h-full bg-white/40 rounded-full transition-all" style={{ width: `${(usageCount / FREE_DAILY_LIMIT) * 100}%` }} />
+                                </div>
+                            </div>
+                        )}
                     </div>
-                    {plan === 'free' && (
-                        <div className="text-right">
-                            <p className="text-[10px] text-white/30">
-                                {usageCount}/{FREE_DAILY_LIMIT} free messages today
-                            </p>
-                            <div className="w-24 h-1 bg-white/10 rounded-full mt-1 overflow-hidden">
-                                <div className="h-full bg-white/40 rounded-full transition-all" style={{ width: `${(usageCount / FREE_DAILY_LIMIT) * 100}%` }} />
-                            </div>
-                        </div>
-                    )}
                 </div>
+
+                <ReviewBanner />
 
                 {/* Messages */}
                 <div className="flex-1 overflow-y-auto px-4 py-6 space-y-5">

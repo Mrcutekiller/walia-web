@@ -1,6 +1,7 @@
 'use client';
 
 import DashboardShell from '@/components/DashboardShell';
+import UserReviews from '@/components/UserReviews';
 import { useAuth } from '@/context/AuthContext';
 import { auth, db } from '@/lib/firebase';
 import { updateProfile } from 'firebase/auth';
@@ -125,6 +126,9 @@ export default function ProfilePage() {
                         className="flex items-center gap-2 px-8 py-3.5 rounded-xl bg-black dark:bg-white text-white dark:text-black font-black text-sm hover:opacity-90 transition-all disabled:opacity-40 shadow-lg mt-4">
                         <Save className="w-4 h-4" />{saved ? 'Saved! ✓' : saving ? 'Saving...' : 'Save Changes'}
                     </button>
+
+                    {/* User reviews management */}
+                    <UserReviews />
                 </div>
             </div>
         </DashboardShell>
