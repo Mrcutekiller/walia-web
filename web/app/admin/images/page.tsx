@@ -1,6 +1,8 @@
 'use client';
 
+import { db } from '@/lib/firebase';
 import { cn } from '@/lib/utils';
+import { collection, deleteDoc, doc, onSnapshot, orderBy, query, updateDoc } from 'firebase/firestore';
 import { motion } from 'framer-motion';
 import {
     Check,
@@ -9,24 +11,62 @@ import {
     Grid,
     Image as ImageIcon,
     List,
-    MoreVertical,
     Search,
+    Trash2,
     Upload,
     X
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-const mockImages = [
-    { id: '1', title: 'Study Hub Banner', type: 'System', status: 'Approved', url: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=400&h=300&auto=format&fit=crop', size: '1.2 MB', date: '2024-03-01' },
-    { id: '2', title: 'AI Avatar Concept', type: 'System', status: 'Approved', url: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=400&h=300&auto=format&fit=crop', size: '2.4 MB', date: '2024-03-02' },
-    { id: '3', title: 'User Upload #452', type: 'User', status: 'Pending', url: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=400&h=300&auto=format&fit=crop', size: '0.8 MB', date: '2024-03-06' },
-    { id: '4', title: 'Walia Logo Dark', type: 'System', status: 'Approved', url: 'https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=400&h=300&auto=format&fit=crop', size: '0.5 MB', date: '2024-02-15' },
-    { id: '5', title: 'User Upload #453', type: 'User', status: 'Rejected', url: 'https://images.unsplash.com/photo-1531297484001-80022131f5a1?q=80&w=400&h=300&auto=format&fit=crop', size: '1.5 MB', date: '2024-03-05' },
-    { id: '6', title: 'Study Tips Infographic', type: 'Asset', status: 'Pending', url: 'https://images.unsplash.com/photo-1454165833267-0303837cfba4?q=80&w=400&h=300&auto=format&fit=crop', size: '3.1 MB', date: '2024-03-06' },
-];
+interface ImageItem {
+    id: string;
+    title: string;
+    type: string;
+    status: string;
+    url: string;
+    size: string;
+    date: string;
+}
 
 export default function AdminImages() {
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+    const [images, setImages] = useState<ImageItem[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
+
+    useEffect(() => {
+        const q = query(collection(db, 'images'), orderBy('date', 'desc'));
+        const unsub = onSnapshot(q, (snap) => {
+            setImages(snap.docs.map(d => ({
+                id: d.id,
+                ...d.data(),
+                date: d.data().date || d.data().createdAt?.toDate().toLocaleDateString() || 'N/A'
+            } as ImageItem)));
+            setLoading(false);
+        });
+        return () => unsub();
+    }, []);
+
+    const updateImageStatus = async (imageId: string, status: string) => {
+        try {
+            await updateDoc(doc(db, 'images', imageId), { status });
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const deleteImage = async (imageId: string) => {
+        if (!confirm('Are you sure you want to delete this image?')) return;
+        try {
+            await deleteDoc(doc(db, 'images', imageId));
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const filteredImages = images.filter(img =>
+        img.title.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     return (
         <div className="space-y-8 animate-fade-in-up">
@@ -78,67 +118,73 @@ export default function AdminImages() {
 
             {/* Image Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {mockImages.map((img, i) => (
-                    <motion.div
-                        key={img.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.05 }}
-                        className="group relative overflow-hidden rounded-[32px] bg-[#141415] border border-white/5 hover:border-walia-success/30 transition-all duration-500"
-                    >
-                        {/* Status Badge */}
-                        <div className={cn(
-                            "absolute top-4 left-4 z-10 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest backdrop-blur-md border",
-                            img.status === 'Approved' ? "bg-walia-success/20 text-walia-success border-walia-success/20" :
-                                img.status === 'Rejected' ? "bg-red-500/20 text-red-500 border-red-500/20" :
-                                    "bg-orange-500/20 text-orange-500 border-orange-500/20"
-                        )}>
-                            {img.status}
-                        </div>
-
-                        {/* Image Thumb */}
-                        <div className="relative aspect-[4/3] overflow-hidden">
-                            <img
-                                src={img.url}
-                                alt={img.title}
-                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                            />
-                            {/* Overlay Controls */}
-                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center space-x-3">
-                                <button className="p-3 rounded-full bg-walia-success text-black hover:scale-110 active:scale-95 transition-all">
-                                    <Check className="w-5 h-5" />
-                                </button>
-                                <button className="p-3 rounded-full bg-red-500 text-white hover:scale-110 active:scale-95 transition-all">
-                                    <X className="w-5 h-5" />
-                                </button>
+                {loading ? (
+                    <div className="col-span-full py-20 text-center text-white/20 text-xs font-black uppercase tracking-[0.3em]">Loading gallery...</div>
+                ) : filteredImages.length === 0 ? (
+                    <div className="col-span-full py-20 text-center text-white/20 text-xs font-black uppercase tracking-[0.3em]">No assets found</div>
+                ) : (
+                    filteredImages.map((img, i) => (
+                        <motion.div
+                            key={img.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: i * 0.05 }}
+                            className="group relative overflow-hidden rounded-[32px] bg-[#141415] border border-white/5 hover:border-walia-primary/30 transition-all duration-500"
+                        >
+                            {/* Status Badge */}
+                            <div className={cn(
+                                "absolute top-4 left-4 z-10 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest backdrop-blur-md border",
+                                img.status === 'Approved' ? "bg-walia-success/20 text-walia-success border-walia-success/20" :
+                                    img.status === 'Rejected' ? "bg-red-500/20 text-red-500 border-red-500/20" :
+                                        "bg-orange-500/20 text-orange-500 border-orange-500/20"
+                            )}>
+                                {img.status}
                             </div>
-                        </div>
 
-                        {/* Details */}
-                        <div className="p-5 space-y-3">
-                            <div className="flex items-start justify-between">
-                                <div>
-                                    <h3 className="text-xs font-bold text-white tracking-tight truncate max-w-[140px]">{img.title}</h3>
-                                    <p className="text-[9px] text-white/30 font-medium uppercase tracking-widest mt-1">{img.type} Item</p>
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-[9px] font-black text-white/60">{img.size}</p>
-                                    <p className="text-[8px] text-white/20 mt-1">{img.date}</p>
+                            {/* Image Thumb */}
+                            <div className="relative aspect-[4/3] overflow-hidden">
+                                <img
+                                    src={img.url}
+                                    alt={img.title}
+                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                />
+                                {/* Overlay Controls */}
+                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center space-x-3">
+                                    <button onClick={() => updateImageStatus(img.id, 'Approved')} className="p-3 rounded-full bg-walia-success text-black hover:scale-110 active:scale-95 transition-all">
+                                        <Check className="w-5 h-5" />
+                                    </button>
+                                    <button onClick={() => updateImageStatus(img.id, 'Rejected')} className="p-3 rounded-full bg-red-500 text-white hover:scale-110 active:scale-95 transition-all">
+                                        <X className="w-5 h-5" />
+                                    </button>
                                 </div>
                             </div>
 
-                            <div className="flex items-center justify-between pt-3 border-t border-white/5">
-                                <button className="text-[10px] font-black text-white/20 hover:text-walia-success transition-colors uppercase tracking-[0.1em] flex items-center space-x-1.5">
-                                    <Download className="w-3 h-3" />
-                                    <span>Download</span>
-                                </button>
-                                <button className="text-white/20 hover:text-white transition-colors">
-                                    <MoreVertical className="w-4 h-4" />
-                                </button>
+                            {/* Details */}
+                            <div className="p-5 space-y-3">
+                                <div className="flex items-start justify-between">
+                                    <div className="flex-1 min-w-0">
+                                        <h3 className="text-xs font-bold text-white tracking-tight truncate">{img.title}</h3>
+                                        <p className="text-[9px] text-white/30 font-medium uppercase tracking-widest mt-1">{img.type || 'Asset'}</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-[9px] font-black text-white/60">{img.size || '0.5 MB'}</p>
+                                        <p className="text-[8px] text-white/20 mt-1">{img.date}</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center justify-between pt-3 border-t border-white/5">
+                                    <a href={img.url} target="_blank" rel="noopener noreferrer" className="text-[10px] font-black text-white/20 hover:text-walia-primary transition-colors uppercase tracking-[0.1em] flex items-center space-x-1.5">
+                                        <Download className="w-3 h-3" />
+                                        <span>View Full</span>
+                                    </a>
+                                    <button onClick={() => deleteImage(img.id)} className="text-white/20 hover:text-red-500 transition-colors">
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                    </motion.div>
-                ))}
+                        </motion.div>
+                    ))
+                )}
             </div>
 
             {/* Storage Metric */}

@@ -1,6 +1,8 @@
 'use client';
 
+import { db } from '@/lib/firebase';
 import { cn } from '@/lib/utils';
+import { collection, doc, onSnapshot, orderBy, query, updateDoc } from 'firebase/firestore';
 import {
     ArrowUpRight,
     Clock,
@@ -9,26 +11,51 @@ import {
     MoreVertical,
     Search,
     Shield,
+    TrendingUp,
     Zap
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-const mockUsers = [
-    { id: '1', name: 'Biruk Anteneh', email: 'biruk@example.com', plan: 'Pro', status: 'Active', joined: '2024-02-15', avatar: 'B' },
-    { id: '2', name: 'Antonio Samuel', email: 'antonio@walia.com', plan: 'Admin', status: 'Active', joined: '2023-11-20', avatar: 'A' },
-    { id: '3', name: 'Kris Payer', email: 'kris.payer@gmail.com', plan: 'Free', status: 'Pending', joined: '2024-03-01', avatar: 'K' },
-    { id: '4', name: 'Sarah Miller', email: 'sarah.m@outlook.com', plan: 'Pro', status: 'Active', joined: '2024-01-10', avatar: 'S' },
-    { id: '5', name: 'John Doe', email: 'john@doe.net', plan: 'Free', status: 'Banned', joined: '2023-12-05', avatar: 'J' },
-    { id: '6', name: 'Emma Wilson', email: 'emma@wilson.io', plan: 'Pro', status: 'Active', joined: '2024-02-28', avatar: 'E' },
-];
+interface User {
+    id: string;
+    name: string;
+    email: string;
+    plan: string;
+    status: string;
+    joined: string;
+    avatar: string;
+}
 
 export default function AdminUsers() {
-    const [searchQuery, setSearchQuery] = useState('');
-    const [selectedUser, setSelectedUser] = useState<string | null>(null);
+    const [users, setUsers] = useState<User[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
 
-    const filteredUsers = mockUsers.filter(user =>
-        user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchQuery.toLowerCase())
+    useEffect(() => {
+        const q = query(collection(db, 'users'), orderBy('joined', 'desc'));
+        const unsub = onSnapshot(collection(db, 'users'), (snap) => {
+            setUsers(snap.docs.map(d => ({
+                id: d.id,
+                ...d.data(),
+                joined: d.data().joined || d.data().createdAt?.toDate().toLocaleDateString() || 'N/A'
+            } as User)));
+            setLoading(false);
+        });
+        return () => unsub();
+    }, []);
+
+    const toggleStatus = async (user: User) => {
+        const newStatus = user.status === 'Active' ? 'Banned' : 'Active';
+        try {
+            await updateDoc(doc(db, 'users', user.id), { status: newStatus });
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const filteredUsers = users.filter(user =>
+        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
@@ -45,10 +72,10 @@ export default function AdminUsers() {
                         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-walia-success transition-colors" />
                         <input
                             type="text"
-                            placeholder="Find user by name or email..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="bg-white/5 border border-white/5 rounded-2xl pl-10 pr-4 py-3 text-sm text-white placeholder:text-white/20 outline-none focus:bg-white/10 focus:border-walia-success/20 transition-all w-full md:w-64"
+                            placeholder="Search by name, email or ID..."
+                            className="w-full bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-2xl pl-12 pr-4 py-3 text-sm text-black dark:text-white placeholder:text-black/20 dark:placeholder:text-white/20 outline-none focus:border-walia-primary/30 transition-all shadow-sm dark:shadow-none"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
                 </div>
@@ -116,12 +143,11 @@ export default function AdminUsers() {
                                     <td className="px-6 py-4">
                                         <div className="flex items-center space-x-2">
                                             <button
-                                                onClick={() => setSelectedUser(user.id)}
                                                 className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/40 hover:text-white transition-all shadow-sm active:scale-95"
                                             >
                                                 <ExternalLink className="w-4 h-4" />
                                             </button>
-                                            <button className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white/40 hover:text-white transition-all shadow-sm active:scale-95">
+                                            <button className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-black/30 dark:text-white/30 transition-colors">
                                                 <MoreVertical className="w-4 h-4" />
                                             </button>
                                         </div>

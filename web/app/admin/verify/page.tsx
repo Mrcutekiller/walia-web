@@ -1,9 +1,11 @@
 'use client';
 
+import { db } from '@/lib/firebase';
 import { cn } from '@/lib/utils';
+import { collection, doc, onSnapshot, orderBy, query, updateDoc } from 'firebase/firestore';
 import { motion } from 'framer-motion';
 import {
-    CheckCircle2,
+    Check,
     Clock,
     ExternalLink,
     Eye,
@@ -11,15 +13,42 @@ import {
     ShieldCheck,
     XCircle
 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
-const mockVerifications = [
-    { id: 'V-001', name: 'Biruk Anteneh', type: 'Student ID', status: 'Pending', submitted: '2024-03-05', email: 'biruk@example.com' },
-    { id: 'V-002', name: 'Antonio Samuel', type: 'Identity', status: 'Approved', submitted: '2024-03-02', email: 'antonio@walia.com' },
-    { id: 'V-003', name: 'Kris Payer', type: 'Student ID', status: 'Rejected', submitted: '2024-03-04', email: 'kris.payer@gmail.com' },
-    { id: 'V-004', name: 'Sarah Miller', type: 'Institution', status: 'Pending', submitted: '2024-03-06', email: 'sarah.m@outlook.com' },
-];
+interface VerificationRequest {
+    id: string;
+    name: string;
+    type: string;
+    status: string;
+    submitted: string;
+    email: string;
+    proofUrl?: string;
+}
 
 export default function AdminVerify() {
+    const [verifications, setVerifications] = useState<VerificationRequest[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const q = query(collection(db, 'verifications'), orderBy('submitted', 'desc'));
+        const unsub = onSnapshot(q, (snap) => {
+            setVerifications(snap.docs.map(d => ({
+                id: d.id,
+                ...d.data(),
+                submitted: d.data().submitted || (d.data().createdAt?.toDate ? d.data().createdAt.toDate().toLocaleDateString() : 'Recently')
+            } as VerificationRequest)));
+            setLoading(false);
+        });
+        return () => unsub();
+    }, []);
+
+    const updateStatus = async (id: string, status: string) => {
+        try {
+            await updateDoc(doc(db, 'verifications', id), { status });
+        } catch (err) {
+            console.error(err);
+        }
+    };
     return (
         <div className="space-y-8 animate-fade-in-up">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -37,54 +66,66 @@ export default function AdminVerify() {
             </div>
 
             <div className="grid grid-cols-1 gap-6">
-                {mockVerifications.map((v, i) => (
-                    <motion.div
-                        key={v.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.05 }}
-                        className="p-6 rounded-[32px] bg-[#141415] border border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-6 group hover:border-white/10 transition-all"
-                    >
-                        <div className="flex items-center space-x-5">
-                            <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center">
-                                <ShieldCheck className={cn("w-6 h-6", v.status === 'Approved' ? "text-walia-success" : "text-white/20")} />
-                            </div>
-                            <div className="space-y-1">
-                                <h3 className="text-sm font-black text-white">{v.name}</h3>
-                                <div className="flex items-center space-x-3 text-[10px] text-white/30 font-bold uppercase tracking-tighter">
-                                    <span className="flex items-center text-walia-success"><FileText className="w-3 h-3 mr-1" /> {v.type}</span>
-                                    <span>•</span>
-                                    <span>{v.email}</span>
-                                    <span>•</span>
-                                    <span>Submitted {v.submitted}</span>
+                {loading ? (
+                    <div className="py-20 text-center text-white/20 text-xs font-black uppercase tracking-[0.3em]">Querying identity vault...</div>
+                ) : verifications.length === 0 ? (
+                    <div className="py-20 text-center text-white/20 text-xs font-black uppercase tracking-[0.3em]">No pending verifications</div>
+                ) : (
+                    verifications.map((v, i) => (
+                        <motion.div
+                            key={v.id}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: i * 0.05 }}
+                            className="p-6 rounded-[32px] bg-[#141415] border border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-6 group hover:border-walia-primary/30 transition-all"
+                        >
+                            <div className="flex items-center space-x-5">
+                                <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center overflow-hidden">
+                                    {v.proofUrl ? (
+                                        <img src={v.proofUrl} alt="Proof" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <ShieldCheck className={cn("w-6 h-6", v.status === 'Approved' ? "text-walia-success" : "text-white/20")} />
+                                    )}
+                                </div>
+                                <div className="space-y-1">
+                                    <h3 className="text-sm font-black text-white">{v.name}</h3>
+                                    <div className="flex items-center space-x-3 text-[10px] text-white/30 font-bold uppercase tracking-tighter">
+                                        <span className="flex items-center text-walia-success"><FileText className="w-3 h-3 mr-1" /> {v.type}</span>
+                                        <span>•</span>
+                                        <span>{v.email}</span>
+                                        <span>•</span>
+                                        <span>Submitted {v.submitted}</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div className="flex items-center space-x-3">
-                            <div className={cn(
-                                "px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest border",
-                                v.status === 'Approved' ? "bg-walia-success/10 text-walia-success border-walia-success/20" :
-                                    v.status === 'Rejected' ? "bg-red-500/10 text-red-500 border-red-500/20" :
-                                        "bg-orange-500/10 text-orange-500 border-orange-500/20"
-                            )}>
-                                {v.status}
+                            <div className="flex items-center space-x-3">
+                                <div className={cn(
+                                    "px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest border",
+                                    v.status === 'Approved' ? "bg-walia-success/10 text-walia-success border-walia-success/20" :
+                                        v.status === 'Rejected' ? "bg-red-500/10 text-red-500 border-red-500/20" :
+                                            "bg-orange-500/10 text-orange-500 border-orange-500/20"
+                                )}>
+                                    {v.status}
+                                </div>
+
+                                <div className="h-8 w-px bg-white/5 mx-1" />
+
+                                <button onClick={() => updateStatus(v.id, 'Approved')} className="p-2.5 rounded-xl bg-walia-success/10 text-walia-success hover:bg-walia-success hover:text-black transition-all active:scale-95 shadow-lg shadow-walia-success/10">
+                                    <Check className="w-4 h-4" />
+                                </button>
+                                <button onClick={() => updateStatus(v.id, 'Rejected')} className="p-2.5 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all active:scale-95">
+                                    <XCircle className="w-4 h-4" />
+                                </button>
+                                {v.proofUrl && (
+                                    <a href={v.proofUrl} target="_blank" rel="noopener noreferrer" className="p-2.5 rounded-xl bg-white/5 text-white/40 hover:text-white hover:bg-white/10 transition-all active:scale-95">
+                                        <Eye className="w-4 h-4" />
+                                    </a>
+                                )}
                             </div>
-
-                            <div className="h-8 w-px bg-white/5 mx-1" />
-
-                            <button className="p-2.5 rounded-xl bg-white/5 text-white/40 hover:text-white hover:bg-white/10 transition-all active:scale-95">
-                                <Eye className="w-4 h-4" />
-                            </button>
-                            <button className="p-2.5 rounded-xl bg-white/5 text-white/40 hover:text-walia-success hover:bg-walia-success/10 transition-all active:scale-95">
-                                <CheckCircle2 className="w-4 h-4" />
-                            </button>
-                            <button className="p-2.5 rounded-xl bg-white/5 text-white/40 hover:text-red-500 hover:bg-red-500/10 transition-all active:scale-95">
-                                <XCircle className="w-4 h-4" />
-                            </button>
-                        </div>
-                    </motion.div>
-                ))}
+                        </motion.div>
+                    ))
+                )}
             </div>
 
             {/* Verification Footer */}
