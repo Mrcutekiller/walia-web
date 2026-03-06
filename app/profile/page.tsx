@@ -8,6 +8,8 @@ import { auth, db } from '@/lib/firebase';
 import { updateProfile } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { Save } from 'lucide-react';
+import { useEffect, useState } from 'react';
+
 export default function ProfilePage() {
     const { user } = useAuth();
     const [name, setName] = useState('');
