@@ -93,9 +93,7 @@ export default function Home() {
             loop
             muted
             playsInline
-            preload="auto"
-            poster="/walia-logo.png"
-            className="absolute inset-0 w-full h-full object-cover blur-[2px] opacity-80"
+            className="absolute inset-0 w-full h-full object-cover"
             src="/3d-logo.mp4"
           />
 
