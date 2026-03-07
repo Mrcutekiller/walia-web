@@ -21,6 +21,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import NotificationPanel from './NotificationPanel';
 
 const NAV = [
     { icon: Bot, label: 'AI Hub', href: '/dashboard/ai' },
@@ -145,6 +146,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
                             <p className="text-xs font-bold text-black dark:text-white truncate">{user.displayName || user.email?.split('@')[0] || 'User'}</p>
                             <p className="text-[10px] text-black/30 dark:text-white/30 truncate">{user.email}</p>
                         </div>
+                        <NotificationPanel />
                         <button onClick={handleLogout} title="Log out" className="text-black/20 dark:text-white/20 hover:text-rose-600 dark:hover:text-white transition-colors">
                             <LogOut className="w-4 h-4" />
                         </button>
@@ -163,9 +165,12 @@ export default function DashboardShell({ children }: { children: React.ReactNode
                         <Image src="/walia-logo.png" alt="Walia" width={22} height={22} className="object-contain" />
                         <span className="text-black dark:text-white font-black tracking-tighter">Walia</span>
                     </div>
-                    <Link href="/upgrade" className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-[10px] font-black uppercase tracking-wider">
-                        <Zap className="w-3 h-3" /> Pro
-                    </Link>
+                    <div className="flex items-center gap-1">
+                        <NotificationPanel />
+                        <Link href="/upgrade" className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-[10px] font-black uppercase tracking-wider">
+                            <Zap className="w-3 h-3" /> Pro
+                        </Link>
+                    </div>
                 </header>
 
                 <main className="flex-1 overflow-y-auto">

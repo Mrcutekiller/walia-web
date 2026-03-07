@@ -12,7 +12,8 @@ import {
     MessageSquare,
     Search,
     Settings,
-    Users
+    Users,
+    Zap
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -24,6 +25,7 @@ const adminLinks = [
     { name: 'Posts', href: '/admin/posts', icon: MessageSquare },
     { name: 'Images', href: '/admin/images', icon: Camera },
     { name: 'Payments', href: '/admin/payments', icon: CreditCard },
+    { name: 'Upgrades', href: '/admin/upgrades', icon: Zap },
 ];
 
 const secondaryLinks = [

@@ -5,7 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import { auth, db } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
-import { Bell, Globe, Lock, LogOut, Moon, Palette, Shield, Trash2 } from 'lucide-react';
+import { Bell, Globe, Lock, LogOut, Moon, Palette, Shield, Trash2, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -25,12 +25,24 @@ export default function SettingsPage() {
     const [sounds, setSounds] = useState(false);
     const [ai, setAi] = useState('gemini');
 
+    // New settings
+    const [twoFactor, setTwoFactor] = useState(false);
+    const [experimental, setExperimental] = useState(false);
+
+    const [saving, setSaving] = useState(false);
+    const [saved, setSaved] = useState(false);
+
     useEffect(() => {
         if (!user) return;
         getDoc(doc(db, 'users', user.uid)).then(d => {
             if (d.exists()) {
                 const data = d.data();
                 setPlan(data.plan || 'free');
+                if (data.notifs !== undefined) setNotifs(data.notifs);
+                if (data.sounds !== undefined) setSounds(data.sounds);
+                if (data.twoFactor !== undefined) setTwoFactor(data.twoFactor);
+                if (data.experimental !== undefined) setExperimental(data.experimental);
+                if (data.ai) setAi(data.ai);
 
                 // Read theme from Firestore if it exists
                 if (data.theme) {
@@ -64,7 +76,7 @@ export default function SettingsPage() {
         return () => mediaQuery.removeEventListener('change', handleChange);
     }, []);
 
-    const toggleDark = async (v: boolean) => {
+    const toggleDark = (v: boolean) => {
         setDarkMode(v);
         if (v) {
             document.documentElement.classList.add('dark');
@@ -73,13 +85,27 @@ export default function SettingsPage() {
             document.documentElement.classList.remove('dark');
             localStorage.setItem('theme', 'light');
         }
+    };
 
-        // Persist to Firestore
-        if (user) {
+    const saveSettings = async () => {
+        if (!user) return;
+        setSaving(true);
+        try {
             const { updateDoc, doc } = await import('firebase/firestore');
             await updateDoc(doc(db, 'users', user.uid), {
-                theme: v ? 'dark' : 'light'
+                theme: darkMode ? 'dark' : 'light',
+                notifs,
+                sounds,
+                twoFactor,
+                experimental,
+                ai
             });
+            setSaved(true);
+            setTimeout(() => setSaved(false), 2000);
+        } catch (error) {
+            console.error('Error saving settings', error);
+        } finally {
+            setSaving(false);
         }
     };
 
@@ -87,10 +113,10 @@ export default function SettingsPage() {
 
     return (
         <DashboardShell>
-            <div className="p-6 max-w-xl mx-auto">
+            <div className="p-6 max-w-xl mx-auto pb-20">
                 <div className="mb-8">
                     <p className="text-[10px] font-black text-black/30 dark:text-white/30 uppercase tracking-widest mb-1">Preferences</p>
-                    <h1 className="text-3xl font-black text-black dark:text-white tracking-tight">Settings</h1>
+                    <h1 className="text-3xl font-black text-black dark:text-white tracking-tight">Manage Settings</h1>
                 </div>
 
                 <div className="space-y-3">
@@ -131,11 +157,22 @@ export default function SettingsPage() {
                         {plan === 'free' && <p className="text-[10px] text-amber-500">Upgrade to Pro to use GPT-4o and Claude 3.5 Sonnet.</p>}
                     </div>
 
-                    {/* Account */}
+                    {/* Experimental Features */}
                     <div className="p-5 rounded-2xl bg-white dark:bg-white/5 border border-black/5 dark:border-white/8 space-y-4 shadow-sm dark:shadow-none transition-colors">
-                        <p className="text-[10px] font-black text-black/30 dark:text-white/30 uppercase tracking-widest">Account</p>
+                        <p className="text-[10px] font-black text-black/30 dark:text-white/30 uppercase tracking-widest">Experimental Features</p>
+                        <Row icon={Globe} label="Beta Access" sub="Try new features before anyone else" right={<Toggle val={experimental} set={setExperimental} />} />
+                    </div>
+
+                    {/* Account & Security */}
+                    <div className="p-5 rounded-2xl bg-white dark:bg-white/5 border border-black/5 dark:border-white/8 space-y-4 shadow-sm dark:shadow-none transition-colors">
+                        <p className="text-[10px] font-black text-black/30 dark:text-white/30 uppercase tracking-widest">Account & Security</p>
+                        <Row icon={User} label="Edit Profile" sub="Update avatar, name, and bio" right={<button onClick={() => router.push('/profile')} className="text-xs text-indigo-600 dark:text-indigo-400 font-bold cursor-pointer hover:underline">Edit</button>} />
                         <Row icon={Lock} label="Change Password" sub="Update your password" right={<span className="text-xs text-indigo-600 dark:text-indigo-400 font-bold cursor-pointer hover:underline">Change</span>} />
-                        <Row icon={Shield} label="Privacy" sub="Data and security settings" right={<span className="text-xs text-black/30 dark:text-white/30 font-semibold cursor-pointer">›</span>} />
+                        <Row icon={Shield} label="Two-Factor Authentication" sub="Add an extra layer of security" right={<Toggle val={twoFactor} set={setTwoFactor} />} />
+                        <Row icon={Lock} label="Billing & Payment" sub="Manage your subscription" right={<button onClick={() => router.push('/upgrade')} className="text-xs text-indigo-600 dark:text-indigo-400 font-bold cursor-pointer hover:underline">Manage</button>} />
+
+                        <div className="h-px bg-black/5 dark:bg-white/5 my-4" />
+
                         <button onClick={logout} className="flex items-center gap-3 w-full text-left text-rose-600 dark:text-rose-400 hover:text-rose-500 transition-colors">
                             <LogOut className="w-5 h-5 shrink-0 text-rose-500" />
                             <div>
@@ -148,6 +185,12 @@ export default function SettingsPage() {
                             <p className="text-sm font-semibold">Delete Account</p>
                         </button>
                     </div>
+                </div>
+
+                <div className="mt-8">
+                    <button onClick={saveSettings} disabled={saving} className="w-full py-4 rounded-xl bg-black dark:bg-white text-white dark:text-black font-bold text-sm hover:opacity-90 transition-all shadow-lg flex justify-center items-center">
+                        {saved ? 'Saved ✓' : saving ? 'Saving...' : 'Save Settings'}
+                    </button>
                 </div>
             </div>
         </DashboardShell>
