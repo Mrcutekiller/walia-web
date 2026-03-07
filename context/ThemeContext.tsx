@@ -16,7 +16,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const { user } = useAuth();
-    const [theme, setTheme] = useState<Theme>('dark');
+    const [theme, setTheme] = useState<Theme>('light');
 
     // 1. Initial load from localStorage
     useEffect(() => {
@@ -25,8 +25,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
             setTheme(savedTheme);
             applyTheme(savedTheme);
         } else {
-            // Default to dark
-            applyTheme('dark');
+            // Default to light
+            applyTheme('light');
         }
     }, []);
 

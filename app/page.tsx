@@ -22,17 +22,30 @@ interface Review {
 // ─── Scroll reveal hook ───
 function useScrollReveal() {
   useEffect(() => {
+    let ticking = false;
     const observer = new IntersectionObserver(
       (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) entry.target.classList.add('visible');
-        });
+        if (!ticking) {
+          window.requestAnimationFrame(() => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                // Optional: stop observing once visible to save CPU
+                observer.unobserve(entry.target);
+              }
+            });
+            ticking = false;
+          });
+          ticking = true;
+        }
       },
       { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
     );
-    document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale').forEach((el) => {
-      observer.observe(el);
-    });
+
+    // Select elements
+    const elements = document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale');
+    elements.forEach((el) => observer.observe(el));
+
     return () => observer.disconnect();
   }, []);
 }
@@ -80,7 +93,9 @@ export default function Home() {
             loop
             muted
             playsInline
-            className="absolute inset-0 w-full h-full object-cover"
+            preload="auto"
+            poster="/walia-logo.png"
+            className="absolute inset-0 w-full h-full object-cover blur-[2px] opacity-80"
             src="/3d-logo.mp4"
           />
 
@@ -97,7 +112,7 @@ export default function Home() {
             <div className="max-w-2xl">
 
               {/* Badge */}
-              <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm mb-6">
+              <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-white/10 border border-white/20 md:backdrop-blur-sm mb-6">
                 <span className="w-2 h-2 rounded-full bg-green-400 mr-3 animate-pulse" />
                 <span className="text-xs font-bold text-white/80 tracking-wide">v1.0 — Now on Android</span>
               </div>

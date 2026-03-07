@@ -1,10 +1,11 @@
 'use client';
 
-import { auth, googleProvider } from '@/lib/firebase';
+import { auth, db, googleProvider } from '@/lib/firebase';
 import {
     signInWithEmailAndPassword,
     signInWithPopup
 } from 'firebase/auth';
+import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { AlertCircle, ArrowRight, Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -44,7 +45,25 @@ function LoginContent() {
     const handleGoogle = async () => {
         setError(''); setGoogleLoading(true);
         try {
-            await signInWithPopup(auth, googleProvider);
+            const result = await signInWithPopup(auth, googleProvider);
+            const user = result.user;
+
+            // Check if user exists in Firestore
+            const userDoc = await getDoc(doc(db, 'users', user.uid));
+
+            if (!userDoc.exists()) {
+                // Auto-create basic profile for new Google users gracefully
+                await setDoc(doc(db, 'users', user.uid), {
+                    name: user.displayName || user.email?.split('@')[0] || 'User',
+                    username: user.email?.split('@')[0]?.toLowerCase().replace(/[^a-z0-9]/g, '') || `user${Math.floor(Math.random() * 10000)}`,
+                    email: user.email,
+                    photoURL: user.photoURL || '/avatars/avatar1.jpg',
+                    plan: 'free',
+                    createdAt: serverTimestamp(),
+                });
+            }
+
+            // Small delay to ensure auth state and firestore syncs
             await new Promise(r => setTimeout(r, 500));
 
             const redirect = searchParams.get('redirect');
@@ -58,20 +77,13 @@ function LoginContent() {
             if (err?.code !== 'auth/popup-closed-by-user') {
                 setError(err.message?.includes('auth/operation-not-supported')
                     ? 'Google sign-in is not enabled. Please use email/password.'
-                    : 'Google sign-in failed. Please try again.');
+                    : 'Google sign-in failed. Please verify your internet connection or try again.');
             }
         } finally { setGoogleLoading(false); }
     };
 
     return (
-        <main className="h-screen w-screen overflow-hidden relative">
-            <video
-                autoPlay muted loop playsInline
-                className="absolute inset-0 w-full h-full object-cover"
-                src="/3d-logo.mp4"
-            />
-            <div className="absolute inset-0 bg-black/50" />
-
+        <main className="h-screen w-screen overflow-hidden relative bg-gray-50 dark:bg-[#0A0A18] transition-colors duration-300">
             {/* Logo top-left */}
             <Link href="/" className="absolute top-5 left-5 z-20 flex items-center gap-2">
                 <div className="w-9 h-9 rounded-full bg-white/90 flex items-center justify-center">
@@ -82,8 +94,8 @@ function LoginContent() {
 
             {/* Brand text — bottom left on desktop, top area on mobile */}
             <div className="absolute bottom-10 left-8 z-10 hidden md:block">
-                <p className="text-white/40 text-[10px] font-black uppercase tracking-[0.5em] mb-2">From the Mountains of Ethiopia</p>
-                <h1 className="text-5xl font-black text-white tracking-tight leading-tight">
+                <p className="text-black/40 dark:text-white/40 text-[10px] font-black uppercase tracking-[0.5em] mb-2">From the Mountains of Ethiopia</p>
+                <h1 className="text-5xl font-black text-black dark:text-white tracking-tight leading-tight">
                     Climb Higher.<br />Think Smarter.
                 </h1>
             </div>

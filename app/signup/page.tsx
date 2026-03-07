@@ -88,13 +88,30 @@ export default function SignupPage() {
         setError(''); setGoogleLoading(true);
         try {
             const result = await signInWithPopup(auth, googleProvider);
-            await saveProfileAndRedirect(result.user.uid, result.user.displayName || result.user.email?.split('@')[0] || 'User', result.user.photoURL || undefined);
+            const user = result.user;
+
+            // Check if user already exists
+            const { getDoc, doc } = await import('firebase/firestore');
+            const userDoc = await getDoc(doc(db, 'users', user.uid));
+
+            if (userDoc.exists()) {
+                // They already have an account, just redirect them
+                router.replace('/dashboard');
+                return;
+            }
+
+            // New user, create profile
+            await saveProfileAndRedirect(
+                user.uid,
+                user.displayName || user.email?.split('@')[0] || 'User',
+                user.photoURL || undefined
+            );
         } catch (err: any) {
             console.error("Google sign-in error:", err);
             if (err?.code !== 'auth/popup-closed-by-user') {
                 setError(err.message?.includes('auth/operation-not-supported')
                     ? 'Google sign-in is not enabled. Please use email/password.'
-                    : 'Google sign-in failed. Please try again.');
+                    : 'Google sign-in failed. Please verify your internet connection or try again.');
             }
         } finally { setGoogleLoading(false); }
     };
@@ -149,16 +166,7 @@ export default function SignupPage() {
     const isLastStep = step === STEPS.length - 1;
 
     return (
-        <main className="h-screen w-screen overflow-hidden relative">
-
-            {/* ── FULLSCREEN VIDEO BACKGROUND ── */}
-            <video
-                autoPlay muted loop playsInline
-                className="absolute inset-0 w-full h-full object-cover"
-                src="/3d-logo.mp4"
-            />
-            <div className="absolute inset-0 bg-black/50" />
-
+        <main className="h-screen w-screen overflow-hidden relative bg-gray-50 dark:bg-[#0A0A18] transition-colors duration-300">
             {/* Logo top-left */}
             <Link href="/" className="absolute top-5 left-5 z-20 flex items-center gap-2">
                 <div className="w-9 h-9 rounded-full bg-white/90 flex items-center justify-center">
@@ -169,8 +177,8 @@ export default function SignupPage() {
 
             {/* Brand text — bottom right on desktop */}
             <div className="absolute bottom-10 right-8 z-10 text-right hidden md:block">
-                <p className="text-white/40 text-[10px] font-black uppercase tracking-[0.5em] mb-2">Walia AI</p>
-                <h1 className="text-4xl font-black text-white tracking-tight leading-tight">
+                <p className="text-black/40 dark:text-white/40 text-[10px] font-black uppercase tracking-[0.5em] mb-2">Walia AI</p>
+                <h1 className="text-4xl font-black text-black dark:text-white tracking-tight leading-tight">
                     Your AI study<br />companion.
                 </h1>
             </div>
