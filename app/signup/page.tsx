@@ -7,7 +7,7 @@ import {
     signInWithPopup,
     updateProfile
 } from 'firebase/auth';
-import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
+import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import {
     AlertCircle, ArrowLeft,
     BookOpen, Brain, ChevronRight, Loader2,
@@ -91,7 +91,6 @@ export default function SignupPage() {
             const user = result.user;
 
             // Check if user already exists
-            const { getDoc, doc } = await import('firebase/firestore');
             const userDoc = await getDoc(doc(db, 'users', user.uid));
 
             if (userDoc.exists()) {
@@ -144,7 +143,7 @@ export default function SignupPage() {
         if (step === 0) {
             if (!name.trim()) { setError('Enter your full name.'); return; }
             if (username.trim()) {
-                const { checkUsernameUnique } = require('@/lib/user');
+                const { checkUsernameUnique } = await import('@/lib/user');
                 setLoading(true);
                 try {
                     const isUnique = await checkUsernameUnique(username);

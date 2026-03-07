@@ -4,6 +4,7 @@ import { useAuth } from '@/context/AuthContext';
 import { auth, db, storage } from '@/lib/firebase';
 import { deleteAccount } from '@/lib/user';
 import { formatTimeAgo } from '@/lib/utils';
+import { updateProfile } from 'firebase/auth';
 import { doc, updateDoc } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -76,7 +77,6 @@ export default function ProfilePage() {
                 displayName: formData.displayName, // Ensure consistency
             });
             // Update Auth profile as well
-            const { updateProfile } = require('firebase/auth');
             await updateProfile(user, { displayName: formData.displayName });
 
             setSaveSuccess(true);

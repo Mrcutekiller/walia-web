@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/context/AuthContext';
 import { db } from '@/lib/firebase';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 type Theme = 'light' | 'dark';
@@ -33,7 +33,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     // 2. Load from User Settings if logged in
     useEffect(() => {
         if (!user) return;
-        const { onSnapshot, doc } = require('firebase/firestore');
         const unsub = onSnapshot(doc(db, 'users', user.uid), (snap: any) => {
             if (snap.exists()) {
                 const firestoreTheme = snap.data().theme as Theme;
