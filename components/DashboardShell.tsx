@@ -35,8 +35,6 @@ const NAV = [
 
 import { MessagesSquare as MessagesSquareEmoji } from 'lucide-react';
 
-import { db } from '@/lib/firebase';
-import { doc, onSnapshot } from 'firebase/firestore';
 
 export default function DashboardShell({ children }: { children: React.ReactNode }) {
     const { user, loading } = useAuth();
@@ -48,20 +46,6 @@ export default function DashboardShell({ children }: { children: React.ReactNode
         if (!loading && !user) router.replace('/login');
     }, [user, loading, router]);
 
-    // Global theme listener
-    useEffect(() => {
-        if (!user) return;
-        const unsub = onSnapshot(doc(db, 'users', user.uid), (snap) => {
-            if (snap.exists()) {
-                const theme = snap.data().theme;
-                if (theme) {
-                    if (theme === 'dark') document.documentElement.classList.add('dark');
-                    else document.documentElement.classList.remove('dark');
-                }
-            }
-        });
-        return () => unsub();
-    }, [user]);
 
     if (loading || !user) {
         return (

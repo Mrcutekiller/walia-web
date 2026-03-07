@@ -122,10 +122,23 @@ export default function SignupPage() {
         }
     };
 
-    const next = () => {
+    const next = async () => {
         setError('');
         if (step === 0) {
             if (!name.trim()) { setError('Enter your full name.'); return; }
+            if (username.trim()) {
+                const { checkUsernameUnique } = require('@/lib/user');
+                setLoading(true);
+                try {
+                    const isUnique = await checkUsernameUnique(username);
+                    if (!isUnique) { setError('Username is already taken.'); return; }
+                } catch (err) {
+                    console.error("Username check error:", err);
+                } finally {
+                    setLoading(true); // Keep loading state if we are moving to next step? No.
+                    setLoading(false);
+                }
+            }
             if (!email.trim()) { setError('Enter your email.'); return; }
             if (password.length < 6) { setError('Password must be 6+ characters.'); return; }
         }

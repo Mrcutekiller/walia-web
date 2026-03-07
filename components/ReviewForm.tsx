@@ -28,9 +28,10 @@ export default function ReviewForm({ onSuccess }: ReviewFormProps) {
         setError('');
         try {
             await addDoc(collection(db, 'reviews'), {
-                name: user.displayName || user.email?.split('@')[0] || 'Anonymous',
+                userName: user.displayName || user.email?.split('@')[0] || 'Anonymous',
+                userPhotoURL: user.photoURL || '',
                 rating,
-                text: text.trim(),
+                comment: text.trim(),
                 userId: user.uid,
                 createdAt: serverTimestamp(),
             });
@@ -39,6 +40,7 @@ export default function ReviewForm({ onSuccess }: ReviewFormProps) {
             setText('');
             onSuccess?.();
         } catch (err) {
+            console.error('Review submission error:', err);
             setError('Failed to submit. Please try again.');
         } finally {
             setLoading(false);

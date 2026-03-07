@@ -17,6 +17,7 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import ThemeToggle from './ThemeToggle';
 
 const sidebarLinks = [
     { name: 'AI Hub', href: '/dashboard/ai', icon: Sparkles },
@@ -122,6 +123,11 @@ export default function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose:
                                 </div>
                             </div>
                         </Link>
+                    </div>
+
+                    {/* Theme Toggle */}
+                    <div className="px-4 mb-4">
+                        <ThemeToggle />
                     </div>
 
                     {/* User Section */}

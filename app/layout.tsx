@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   description: 'Download Walia, the ultimate AI companion app with advanced study tools, 1-on-1 AI chat, and a community of learners.',
 };
 
+import ReviewPopup from '@/components/ReviewPopup';
+import { ThemeProvider } from '@/context/ThemeContext';
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -17,9 +20,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.className} bg-[#0A0A18] text-white antialiased`}>
+      <body className={`${inter.className} bg-white dark:bg-[#0A0A18] text-black dark:text-white antialiased transition-colors duration-300`}>
         <AuthProvider>
-          {children}
+          <ThemeProvider>
+            {children}
+            <ReviewPopup />
+          </ThemeProvider>
         </AuthProvider>
       </body>
     </html>

@@ -3,6 +3,7 @@
 import Footer from '@/components/Footer';
 import Navbar from '@/components/Navbar';
 import { db } from '@/lib/firebase';
+import { formatTimeAgo } from '@/lib/utils';
 import { collection, onSnapshot, orderBy, query, Timestamp } from 'firebase/firestore';
 import { ArrowRight, Brain, Calendar, ChevronRight, Download, MessageSquare, Sparkles, Star, Users, Wrench, Zap } from 'lucide-react';
 import Link from 'next/link';
@@ -12,6 +13,7 @@ import { useEffect, useState } from 'react';
 interface Review {
   id: string;
   userName: string;
+  userPhotoURL?: string;
   rating: number;
   comment: string;
   createdAt: Timestamp;
@@ -317,12 +319,16 @@ export default function Home() {
                     <p className="text-sm text-gray-600 leading-relaxed font-medium mb-6">"{review.comment}"</p>
                     {/* Author */}
                     <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
-                      <div className="w-9 h-9 rounded-full bg-black flex items-center justify-center shrink-0">
-                        <span className="text-white text-sm font-black">{review.userName.charAt(0).toUpperCase()}</span>
+                      <div className="w-9 h-9 rounded-full bg-black overflow-hidden flex items-center justify-center shrink-0">
+                        {review.userPhotoURL ? (
+                          <img src={review.userPhotoURL} alt={review.userName} className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-white text-sm font-black">{review.userName.charAt(0).toUpperCase()}</span>
+                        )}
                       </div>
                       <div>
                         <p className="text-sm font-black text-black">{review.userName}</p>
-                        <p className="text-xs text-gray-400 font-medium">Walia User</p>
+                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">{formatTimeAgo(review.createdAt)}</p>
                       </div>
                     </div>
                   </div>
