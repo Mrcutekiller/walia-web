@@ -9,23 +9,20 @@ import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
     Bell,
+    Calendar,
     Camera,
-    Check,
     ChevronRight,
-    Crown,
     Edit3,
-    HelpCircle,
     Loader2,
     Lock,
     LogOut,
+    Mail,
     MessageSquare,
-    Moon,
     Shield,
     Trash2,
     User
 } from 'lucide-react';
 import Image from 'next/image';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
@@ -110,217 +107,204 @@ export default function ProfilePage() {
     };
 
     return (
-        <div className="animate-fade-in flex flex-col pb-8 bg-[#f8f9fa] dark:bg-[#0a0a0a] min-h-full">
+        <div className="min-h-screen bg-[#F8FAFC] pb-20 md:pb-10">
+            {/* Header Section */}
+            <div className="relative h-64 md:h-72 overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-500" />
+                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#F8FAFC] via-transparent to-transparent" />
 
-            {/* Header Background */}
-            <div className="h-40 bg-gradient-to-br from-[#6C63FF] to-[#7C75FF] dark:from-[#1A1A2E] dark:to-[#0D0D1A] -mx-4 -mt-4 md:-mx-6 md:-mt-6 lg:-mx-10 lg:-mt-10 relative shrink-0">
-                <div className="absolute top-6 right-6 px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full border border-white/30 hidden">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-white">Free Plan</span>
-                </div>
-            </div>
-
-            <div className="max-w-3xl mx-auto w-full">
-
-                {/* Profile Info Overlap */}
-                <div className="px-6 -mt-16 flex flex-col items-center mb-8 relative z-10">
-                    <div className="relative mb-4 group">
-                        <div className="w-32 h-32 rounded-full bg-white dark:bg-zinc-900 flex items-center justify-center font-black text-indigo-600 dark:text-white text-5xl border-4 border-[#f8f9fa] dark:border-[#0a0a0a] shadow-xl overflow-hidden relative">
-                            {profile?.photoURL ? (
-                                <Image src={profile.photoURL} alt="Avatar" fill className="object-cover" />
-                            ) : (
-                                <span>{formData.displayName.charAt(0)?.toUpperCase() || 'U'}</span>
-                            )}
-                            {uploading && (
-                                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                                    <Loader2 className="w-8 h-8 text-white animate-spin" />
-                                </div>
-                            )}
-                        </div>
-                        <button
-                            onClick={() => fileInputRef.current?.click()}
-                            disabled={uploading}
-                            className="absolute bottom-1 right-1 p-2.5 rounded-full bg-indigo-600 text-white border-2 border-[#f8f9fa] dark:border-[#0a0a0a] shadow-lg hover:scale-110 transition-transform z-20"
-                        >
-                            <Camera className="w-4 h-4" />
-                        </button>
-                        <input type="file" ref={fileInputRef} onChange={handleAvatarUpload} className="hidden" accept="image/*" />
-                    </div>
-
-                    {isEditing ? (
-                        <div className="w-full max-w-sm space-y-3 mt-2">
-                            <input
-                                className="w-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-xl px-4 py-2.5 text-lg font-black text-black dark:text-white outline-none focus:border-indigo-500 text-center"
-                                value={formData.displayName}
-                                onChange={e => setFormData({ ...formData, displayName: e.target.value })}
-                                placeholder="Your Name"
-                            />
-                            <textarea
-                                className="w-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm text-black/70 dark:text-white/70 outline-none focus:border-indigo-500 h-20 resize-none text-center"
-                                value={formData.bio}
-                                placeholder="Write a short bio..."
-                                onChange={e => setFormData({ ...formData, bio: e.target.value })}
-                            />
-                            <div className="flex justify-center gap-2 pt-2">
-                                <button onClick={() => setIsEditing(false)} className="px-5 py-2 rounded-full bg-black/10 dark:bg-white/10 text-xs font-bold text-black/60 dark:text-white/60">Cancel</button>
-                                <button onClick={handleSave} disabled={loading} className="px-6 py-2 rounded-full bg-indigo-600 text-white text-xs font-bold shadow-md disabled:opacity-50">{loading ? 'Saving...' : 'Save'}</button>
+                <div className="absolute bottom-0 left-0 right-0 p-6 md:p-12">
+                    <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center md:items-end gap-6 md:gap-8">
+                        <div className="relative group">
+                            <div className="w-32 h-32 md:w-40 md:h-40 rounded-[32px] border-4 border-white shadow-2xl overflow-hidden bg-slate-100 ring-8 ring-white/10">
+                                {user?.photoURL ? (
+                                    <Image src={user.photoURL} alt="Profile" fill className="object-cover" />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center bg-indigo-50">
+                                        <User className="w-16 h-16 text-indigo-200" />
+                                    </div>
+                                )}
+                                {uploading && (
+                                    <div className="absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center">
+                                        <Loader2 className="w-8 h-8 text-white animate-spin" />
+                                    </div>
+                                )}
                             </div>
+                            <button
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={uploading}
+                                className="absolute bottom-2 right-2 p-3 rounded-2xl bg-white text-indigo-600 shadow-xl hover:scale-110 active:scale-95 transition-all border border-slate-100 group-hover:shadow-indigo-500/20"
+                            >
+                                <Camera className="w-5 h-5" />
+                            </button>
+                            <input type="file" ref={fileInputRef} onChange={handleAvatarUpload} className="hidden" accept="image/*" />
                         </div>
-                    ) : (
-                        <div className="text-center">
-                            <div className="flex items-center justify-center gap-2 mb-1">
-                                <h2 className="text-2xl font-black text-black dark:text-white">{formData.displayName || 'Student User'}</h2>
-                                <button onClick={() => setIsEditing(true)} className="p-1.5 rounded-full text-black/30 dark:text-white/30 hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+
+                        <div className="text-center md:text-left pb-2">
+                            <div className="flex items-center justify-center md:justify-start gap-3 mb-2">
+                                <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
+                                    {formData.displayName || 'Set Name'}
+                                </h1>
+                                <button onClick={() => setIsEditing(true)} className="p-2 rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-white transition-all shadow-sm">
                                     <Edit3 className="w-4 h-4" />
                                 </button>
                             </div>
-                            <p className="text-sm font-bold text-indigo-600 dark:text-indigo-400 mb-3">@{profile?.username || user?.email?.split('@')[0]}</p>
-
-                            {formData.bio && (
-                                <p className="text-black/50 dark:text-white/50 text-xs font-medium max-w-xs mx-auto mb-4">{formData.bio}</p>
-                            )}
-
-                            <AnimatePresence>
-                                {saveSuccess && (
-                                    <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="inline-flex items-center px-3 py-1 rounded-full bg-green-500/10 text-green-600 text-[10px] font-bold uppercase tracking-widest mt-2">
-                                        <Check className="w-3 h-3 mr-1" /> Profile Saved
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-                        </div>
-                    )}
-                </div>
-
-                <div className="px-4 space-y-6 max-w-lg mx-auto w-full">
-                    {/* Pro Banner */}
-                    {profile?.plan !== 'pro' && (
-                        <Link href="/dashboard/upgrade" className="block p-5 rounded-3xl bg-gradient-to-br from-indigo-600 to-purple-700 shadow-xl shadow-indigo-600/20 relative overflow-hidden group">
-                            <div className="absolute -right-4 -top-4 text-white/10 rotate-12 group-hover:scale-110 transition-transform">
-                                <Crown className="w-32 h-32" />
-                            </div>
-                            <div className="relative z-10 flex items-center justify-between">
-                                <div>
-                                    <h3 className="text-lg font-black text-white mb-1">Unlock Walia Pro</h3>
-                                    <p className="text-xs text-white/70 font-medium">Ultimate study tools & unlimited AI.</p>
-                                </div>
-                                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">
-                                    <ChevronRight className="w-5 h-5 text-white" />
-                                </div>
-                            </div>
-                        </Link>
-                    )}
-
-                    {/* Settings Sections */}
-
-                    {/* Account */}
-                    <div>
-                        <h4 className="text-[10px] font-black text-black/40 dark:text-white/40 uppercase tracking-widest mb-3 pl-2">Account Options</h4>
-                        <div className="bg-white dark:bg-[#1A1A2E] rounded-3xl border border-black/5 dark:border-white/5 overflow-hidden shadow-sm">
-                            <div className="flex items-center justify-between p-4 border-b border-black/5 dark:border-white/5 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors" onClick={() => setIsEditing(true)}>
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center"><User className="w-4 h-4 text-blue-500" /></div>
-                                    <span className="text-sm font-bold text-black dark:text-white">Edit Profile</span>
-                                </div>
-                                <ChevronRight className="w-4 h-4 text-black/20 dark:text-white/20" />
-                            </div>
-                            <div className="flex items-center justify-between p-4 border-b border-black/5 dark:border-white/5 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-purple-500/10 flex items-center justify-center"><Bell className="w-4 h-4 text-purple-500" /></div>
-                                    <span className="text-sm font-bold text-black dark:text-white">Notifications</span>
-                                </div>
-                                <ChevronRight className="w-4 h-4 text-black/20 dark:text-white/20" />
-                            </div>
-                            <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center"><Shield className="w-4 h-4 text-emerald-500" /></div>
-                                    <span className="text-sm font-bold text-black dark:text-white">Privacy & Security</span>
-                                </div>
-                                <ChevronRight className="w-4 h-4 text-black/20 dark:text-white/20" />
+                            <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
+                                <span className="px-3 py-1 rounded-full bg-indigo-50 text-indigo-600 font-bold text-[10px] uppercase tracking-widest border border-indigo-100">
+                                    @{profile?.username || 'student'}
+                                </span>
+                                <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-500 font-bold text-[10px] uppercase tracking-widest border border-slate-200">
+                                    Free Plan
+                                </span>
                             </div>
                         </div>
-                    </div>
-
-                    {/* Preferences */}
-                    <div>
-                        <h4 className="text-[10px] font-black text-black/40 dark:text-white/40 uppercase tracking-widest mb-3 pl-2">Preferences</h4>
-                        <div className="bg-white dark:bg-[#1A1A2E] rounded-3xl border border-black/5 dark:border-white/5 overflow-hidden shadow-sm">
-                            <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-indigo-500/10 flex items-center justify-center"><Moon className="w-4 h-4 text-indigo-500" /></div>
-                                    <span className="text-sm font-bold text-black dark:text-white">Appearance</span>
-                                </div>
-                                <ChevronRight className="w-4 h-4 text-black/20 dark:text-white/20" />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Support */}
-                    <div>
-                        <h4 className="text-[10px] font-black text-black/40 dark:text-white/40 uppercase tracking-widest mb-3 pl-2">Support</h4>
-                        <div className="bg-white dark:bg-[#1A1A2E] rounded-3xl border border-black/5 dark:border-white/5 overflow-hidden shadow-sm">
-                            <div className="flex items-center justify-between p-4 border-b border-black/5 dark:border-white/5 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center"><HelpCircle className="w-4 h-4 text-amber-500" /></div>
-                                    <span className="text-sm font-bold text-black dark:text-white">Help Center</span>
-                                </div>
-                                <ChevronRight className="w-4 h-4 text-black/20 dark:text-white/20" />
-                            </div>
-                            <div className="flex items-center justify-between p-4 border-b border-black/5 dark:border-white/5 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors" onClick={() => window.dispatchEvent(new CustomEvent('trigger-review-popup'))}>
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-indigo-500/10 flex items-center justify-center"><MessageSquare className="w-4 h-4 text-indigo-500" /></div>
-                                    <span className="text-sm font-bold text-black dark:text-white">Give Feedback</span>
-                                </div>
-                                <ChevronRight className="w-4 h-4 text-black/20 dark:text-white/20" />
-                            </div>
-                            <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-gray-500/10 flex items-center justify-center"><Lock className="w-4 h-4 text-gray-500" /></div>
-                                    <span className="text-sm font-bold text-black dark:text-white">Legal & Policies</span>
-                                </div>
-                                <ChevronRight className="w-4 h-4 text-black/20 dark:text-white/20" />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Action Zone */}
-                    <div className="pt-2 pb-6">
-                        <button onClick={handleLogout} className="w-full p-4 rounded-full bg-white dark:bg-[#1A1A2E] border border-black/5 dark:border-white/5 text-black/60 dark:text-white/60 font-bold text-sm hover:bg-black/5 dark:hover:bg-white/5 transition-all flex items-center justify-center shadow-sm mb-4">
-                            <LogOut className="w-5 h-5 mr-2" /> Log Out
-                        </button>
-
-                        <button onClick={() => setShowDeleteConfirm(true)} className="w-full text-center text-xs font-bold text-red-500/70 hover:text-red-500 transition-colors uppercase tracking-widest p-2">
-                            Delete Account
-                        </button>
                     </div>
                 </div>
-
-                {/* Delete Confirmation Modal */}
-                <AnimatePresence>
-                    {showDeleteConfirm && (
-                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
-                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowDeleteConfirm(false)} className="absolute inset-0 bg-black/80 backdrop-blur-md" />
-                            <motion.div initial={{ scale: 0.9, opacity: 0, y: 30 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 30 }} className="relative w-full max-w-sm p-8 rounded-[40px] bg-white dark:bg-zinc-900 border border-black/10 dark:border-white/10 shadow-2xl text-center space-y-6">
-                                <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto">
-                                    <Trash2 className="w-8 h-8 text-red-500" />
-                                </div>
-                                <div>
-                                    <h3 className="text-2xl font-black text-black dark:text-white mb-2">Delete Account?</h3>
-                                    <p className="text-black/50 dark:text-white/50 text-sm font-medium leading-relaxed">
-                                        All your data, AI chats, and study progress will be permanently erased.
-                                    </p>
-                                </div>
-                                <div className="space-y-2 pt-2">
-                                    <button onClick={handleDeleteAccount} disabled={loading} className="w-full py-4 rounded-full bg-red-500 text-white font-black uppercase tracking-widest text-xs shadow-lg shadow-red-500/20 disabled:opacity-50">
-                                        {loading ? 'Deleting...' : 'Delete Everything'}
-                                    </button>
-                                    <button onClick={() => setShowDeleteConfirm(false)} className="w-full py-4 rounded-full bg-black/5 dark:bg-white/5 text-black/60 dark:text-white/60 font-bold uppercase tracking-widest text-xs">
-                                        Cancel
-                                    </button>
-                                </div>
-                            </motion.div>
-                        </div>
-                    )}
-                </AnimatePresence>
             </div>
+
+            <div className="max-w-5xl mx-auto px-6 py-12">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Left Column: Form / Info */}
+                    <div className="lg:col-span-2 space-y-8">
+                        {isEditing ? (
+                            <section className="bg-white border border-slate-100 rounded-[32px] p-8 shadow-sm space-y-6">
+                                <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest">Edit Profile</h2>
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Display Name</label>
+                                        <input
+                                            className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 text-slate-900 outline-none focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/5 transition-all font-semibold"
+                                            value={formData.displayName}
+                                            onChange={e => setFormData({ ...formData, displayName: e.target.value })}
+                                            placeholder="Your full name"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1 mb-2 block">Bio</label>
+                                        <textarea
+                                            className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-3.5 text-slate-900 outline-none focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/5 transition-all font-medium h-32 resize-none"
+                                            value={formData.bio}
+                                            placeholder="Tell the community about yourself..."
+                                            onChange={e => setFormData({ ...formData, bio: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="flex gap-3 pt-4">
+                                    <button onClick={() => setIsEditing(false)} className="flex-1 py-4 rounded-2xl bg-slate-50 text-slate-500 font-bold text-xs uppercase tracking-widest hover:bg-slate-100 transition-all">Cancel</button>
+                                    <button onClick={handleSave} disabled={loading} className="flex-[2] py-4 rounded-2xl bg-indigo-600 text-white font-bold text-xs uppercase tracking-widest shadow-lg shadow-indigo-600/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50">
+                                        {loading ? 'Saving...' : 'Save Changes'}
+                                    </button>
+                                </div>
+                            </section>
+                        ) : (
+                            <section className="bg-white border border-slate-100 rounded-[32px] p-8 shadow-sm">
+                                <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest mb-6">About Me</h2>
+                                <p className="text-slate-600 leading-relaxed font-medium">
+                                    {formData.bio || "No biography provided yet. Click the edit button to share your story!"}
+                                </p>
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-10">
+                                    {[
+                                        { icon: User, label: 'Identity', value: 'Verified Student' },
+                                        { icon: Mail, label: 'Contact', value: user?.email },
+                                        { icon: Calendar, label: 'Member Since', value: user?.metadata.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString() : 'N/A' },
+                                    ].map((item, i) => (
+                                        <div key={i} className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                                            <item.icon className="w-5 h-5 text-indigo-500 mb-3" />
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{item.label}</p>
+                                            <p className="text-xs font-bold text-slate-900 truncate">{item.value}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+                        )}
+
+                        <section className="bg-white border border-slate-100 rounded-[32px] p-8 shadow-sm">
+                            <h2 className="text-sm font-bold text-slate-900 uppercase tracking-widest mb-6">Security & Preferences</h2>
+                            <div className="space-y-2">
+                                {[
+                                    { icon: Lock, label: 'Privacy Settings', desc: 'Control who sees your activity' },
+                                    { icon: Bell, label: 'Email Notifications', desc: 'Manage your alerts and updates' },
+                                    { icon: Shield, label: 'Account Security', desc: 'Secure your login and data' },
+                                ].map((item, i) => (
+                                    <button key={i} className="w-full flex items-center justify-between p-4 rounded-2xl hover:bg-slate-50 transition-all group">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:text-indigo-600 transition-colors">
+                                                <item.icon className="w-5 h-5" />
+                                            </div>
+                                            <div className="text-left">
+                                                <p className="text-sm font-bold text-slate-900">{item.label}</p>
+                                                <p className="text-[10px] text-slate-400 font-medium">{item.desc}</p>
+                                            </div>
+                                        </div>
+                                        <ChevronRight className="w-4 h-4 text-slate-300 group-hover:translate-x-1 transition-transform" />
+                                    </button>
+                                ))}
+                            </div>
+                        </section>
+                    </div>
+
+                    {/* Right Column: Actions / Stats */}
+                    <div className="space-y-8">
+                        <section className="bg-white border border-slate-100 rounded-[32px] p-2 shadow-sm">
+                            <button onClick={() => window.dispatchEvent(new CustomEvent('trigger-review-popup'))} className="w-full flex items-center gap-4 p-4 rounded-2xl hover:bg-indigo-50 transition-all group">
+                                <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600">
+                                    <MessageSquare className="w-5 h-5" />
+                                </div>
+                                <div className="flex-1 text-left">
+                                    <p className="text-sm font-bold text-slate-900">Feedback</p>
+                                    <p className="text-xs text-slate-400 font-medium">Help us improve</p>
+                                </div>
+                                <ChevronRight className="w-4 h-4 text-slate-300 group-hover:translate-x-1 transition-transform" />
+                            </button>
+                            <button onClick={handleLogout} className="w-full flex items-center gap-4 p-4 rounded-2xl hover:bg-rose-50 transition-all group mt-1">
+                                <div className="w-10 h-10 rounded-xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600">
+                                    <LogOut className="w-5 h-5" />
+                                </div>
+                                <div className="flex-1 text-left">
+                                    <p className="text-sm font-bold text-slate-900">Logout</p>
+                                    <p className="text-xs text-slate-400 font-medium">Securely sign out</p>
+                                </div>
+                            </button>
+                        </section>
+
+                        <section className="bg-rose-50/50 border border-rose-100 rounded-[32px] p-8 text-center">
+                            <p className="text-[10px] font-bold text-rose-400 uppercase tracking-widest mb-4">Danger Zone</p>
+                            <button onClick={() => setShowDeleteConfirm(true)} className="text-xs font-bold text-rose-600 hover:text-rose-700 underline underline-offset-4">
+                                Delete Account Permanently
+                            </button>
+                        </section>
+                    </div>
+                </div>
+            </div>
+
+            {/* Delete Confirmation Modal */}
+            <AnimatePresence>
+                {showDeleteConfirm && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowDeleteConfirm(false)} className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" />
+                        <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative w-full max-w-sm p-8 rounded-[40px] bg-white border border-slate-100 shadow-2xl text-center space-y-6">
+                            <div className="w-16 h-16 bg-rose-100 rounded-3xl flex items-center justify-center mx-auto text-rose-600">
+                                <Trash2 className="w-8 h-8" />
+                            </div>
+                            <div>
+                                <h3 className="text-2xl font-extrabold text-slate-900 mb-2">Delete Account?</h3>
+                                <p className="text-slate-500 text-sm font-medium leading-relaxed">
+                                    This action is final. You will lose all your study data and AI history forever.
+                                </p>
+                            </div>
+                            <div className="space-y-2 pt-2">
+                                <button onClick={handleDeleteAccount} disabled={loading} className="w-full py-4 rounded-2xl bg-rose-600 text-white font-bold uppercase tracking-widest text-[10px] shadow-lg shadow-rose-600/20 hover:bg-rose-700 transition-all">
+                                    {loading ? 'Deleting...' : 'Delete Permanently'}
+                                </button>
+                                <button onClick={() => setShowDeleteConfirm(false)} className="w-full py-4 rounded-2xl bg-slate-50 text-slate-500 font-bold uppercase tracking-widest text-[10px] hover:bg-slate-100 transition-all">
+                                    Keep My Account
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

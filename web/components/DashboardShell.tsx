@@ -3,9 +3,11 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
 import { auth } from '@/lib/firebase';
+import { motion } from 'framer-motion';
 import {
     Bot,
     Calendar,
+    ChevronRight,
     MessagesSquare as MessagesSquareEmoji,
     Moon,
     User,
@@ -52,121 +54,129 @@ export default function DashboardShell({ children }: { children: React.ReactNode
         router.push('/');
     };
 
+    // Define navItems for the new structure
+    const navItems = [
+        { icon: Bot, label: 'AI', path: '/dashboard/ai' },
+        { icon: MessagesSquareEmoji, label: 'Chat', path: '/dashboard/chat' },
+        { icon: Wrench, label: 'Tools', path: '/dashboard/tools' },
+        { icon: Calendar, label: 'Calendar', path: '/dashboard/calendar' },
+        { icon: User, label: 'Profile', path: '/dashboard/profile' },
+    ];
+
     return (
-        <div className="min-h-screen bg-[#f8f9fa] dark:bg-[#0a0a0a] text-black dark:text-white transition-colors duration-300 flex">
-            {/* ── DESKTOP SIDEBAR (Hidden on Mobile) ── */}
-            <aside className="hidden md:flex flex-col w-72 shrink-0 border-r border-black/5 dark:border-white/5 bg-white dark:bg-[#1A1A2E] sticky top-0 h-screen select-none">
-                {/* Logo Area */}
-                <div className="h-20 flex items-center px-6 border-b border-black/5 dark:border-white/5 shrink-0">
-                    <Link href="/dashboard/chat" className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-indigo-600/10 dark:bg-white/10 flex items-center justify-center">
-                            <Image src="/walia-logo.png" alt="Walia" width={24} height={24} className="object-contain" />
+        <div className="min-h-screen bg-[#F8FAFC] flex transition-colors duration-300">
+            {/* ── DESKTOP SIDEBAR ── */}
+            <aside className="hidden md:flex flex-col w-72 bg-white border-r border-slate-100 h-screen sticky top-0 z-30 select-none">
+                <div className="p-8">
+                    <Link href="/" className="flex items-center gap-3 group">
+                        <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-200 transition-all group-hover:border-indigo-500 group-hover:shadow-lg group-hover:shadow-indigo-500/10">
+                            <Image src="/walia-logo.png" alt="Logo" width={24} height={24} className="object-contain" />
                         </div>
-                        <span className="text-black dark:text-white font-black tracking-tighter text-xl">Walia</span>
+                        <span className="text-xl font-extrabold text-slate-900 tracking-tight">Walia</span>
                     </Link>
                 </div>
 
-                {/* Navigation Links */}
-                <nav className="flex-1 overflow-y-auto px-4 py-6 space-y-2 custom-scrollbar">
-                    <p className="px-4 text-[10px] font-black uppercase tracking-widest text-black/40 dark:text-white/40 mb-4">Main Menu</p>
-                    {NAV.map(({ icon: Icon, label, href }) => {
-                        const active = pathname === href || pathname.startsWith(href + '/');
+                <nav className="flex-1 px-4 py-4 space-y-1.5 overflow-y-auto custom-scrollbar">
+                    <p className="px-4 text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-4">Main Menu</p>
+                    {NAV.map((item) => {
+                        const active = pathname === item.href || pathname.startsWith(item.href + '/');
                         return (
                             <Link
-                                key={href}
-                                href={href}
+                                key={item.href}
+                                href={item.href}
                                 className={cn(
-                                    "flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 group",
+                                    "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group",
                                     active
-                                        ? "bg-black dark:bg-white text-white dark:text-black shadow-lg shadow-black/10 dark:shadow-white/10"
-                                        : "hover:bg-black/5 dark:hover:bg-white/5 text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white"
+                                        ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20"
+                                        : "text-slate-500 hover:bg-slate-50 hover:text-indigo-600"
                                 )}
                             >
-                                <Icon className={cn("w-5 h-5", active ? "text-white dark:text-black" : "text-black/40 dark:text-white/40 group-hover:text-black dark:group-hover:text-white")} />
-                                <span className={cn("font-bold text-sm", active ? "" : "")}>{label}</span>
+                                <item.icon className={cn("w-5 h-5 transition-transform duration-300 group-hover:scale-110", active ? "text-white" : "text-slate-400 group-hover:text-indigo-600")} />
+                                <span className="text-sm font-semibold tracking-tight">{item.label}</span>
+                                {active && (
+                                    <motion.div layoutId="sidebarActive" className="ml-auto w-1.5 h-1.5 rounded-full bg-white/40" />
+                                )}
                             </Link>
                         );
                     })}
                 </nav>
 
-                {/* Bottom Profile Area & Theme Toggle */}
-                <div className="p-4 border-t border-black/5 dark:border-white/5 shrink-0 space-y-2">
-                    <Link href="/dashboard/upgrade" className="flex items-center justify-between p-4 rounded-2xl bg-indigo-600/10 dark:bg-indigo-600/20 text-indigo-600 dark:text-indigo-400 border border-indigo-600/20 group hover:bg-indigo-600 hover:text-white transition-all shadow-sm">
+                <div className="p-4 border-t border-slate-100 space-y-4">
+                    <Link href="/dashboard/upgrade" className="flex items-center justify-between p-4 rounded-2xl bg-indigo-50 text-indigo-600 border border-indigo-100 group hover:bg-indigo-600 hover:text-white transition-all shadow-sm">
                         <div className="flex items-center gap-2">
-                            <Zap className="w-4 h-4" />
-                            <span className="font-black text-xs uppercase tracking-wider">Upgrade to Pro</span>
+                            <Zap className="w-4 h-4 fill-current" />
+                            <span className="font-bold text-[11px] uppercase tracking-wider">Upgrade to Pro</span>
                         </div>
+                        <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                     </Link>
 
-                    <div className="flex items-center justify-between px-2 pt-2 pb-1">
-                        <div className="flex items-center gap-3 w-full">
-                            <div className="w-10 h-10 rounded-full bg-black/5 dark:bg-white/10 overflow-hidden shrink-0 border border-black/10 dark:border-white/10">
+                    <div className="flex items-center gap-3 p-2 rounded-2xl">
+                        <Link href="/dashboard/profile" className="flex items-center gap-3 flex-1 min-w-0 group">
+                            <div className="w-10 h-10 rounded-xl overflow-hidden border border-slate-200 bg-slate-100 shrink-0 group-hover:border-indigo-500 transition-colors">
                                 {user?.photoURL ? (
-                                    <Image src={user.photoURL} alt="Avatar" width={40} height={40} className="w-full h-full object-cover" />
+                                    <img src={user.photoURL} alt="Avatar" className="w-full h-full object-cover" />
                                 ) : (
-                                    <div className="w-full h-full flex items-center justify-center font-bold text-xs">
+                                    <div className="w-full h-full flex items-center justify-center font-bold text-slate-400 text-xs">
                                         {(profile?.displayName || user.displayName || 'U').charAt(0).toUpperCase()}
                                     </div>
                                 )}
                             </div>
                             <div className="flex-1 min-w-0">
-                                <p className="text-sm font-bold text-black dark:text-white truncate">{profile?.displayName || user.displayName}</p>
-                                <p className="text-[10px] text-black/50 dark:text-white/50 truncate font-medium">{user.email}</p>
+                                <p className="text-sm font-bold text-slate-900 truncate group-hover:text-indigo-600 transition-colors">{profile?.displayName || user.displayName || 'User'}</p>
+                                <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">Free Plan</p>
                             </div>
-                            <button onClick={toggleTheme} className="p-2 rounded-xl bg-black/5 dark:bg-white/5 text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
-                                <Moon className="w-4 h-4" />
-                            </button>
-                        </div>
+                        </Link>
+                        <button onClick={toggleTheme} className="p-2.5 rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-slate-50 transition-all">
+                            <Moon className="w-4 h-4" />
+                        </button>
                     </div>
                 </div>
             </aside>
 
-            {/* ── MOBILE / DESKTOP CONTENT AREA ── */}
-            <div className="flex-1 flex flex-col min-w-0 relative">
-
-                {/* ── MOBILE TOP HEADER ── */}
-                <header className="md:hidden h-16 flex items-center justify-between px-5 bg-white/80 dark:bg-[#1A1A2E]/80 backdrop-blur-md shrink-0 sticky top-0 z-30 border-b border-black/5 dark:border-white/5">
-                    <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-indigo-600/10 dark:bg-white/10 flex items-center justify-center">
-                            <Image src="/walia-logo.png" alt="Walia" width={20} height={20} className="object-contain" />
+            {/* ── CONTENT AREA ── */}
+            <div className="flex-1 flex flex-col min-w-0 relative h-screen">
+                {/* ── MOBILE HEADER ── */}
+                <header className="md:hidden h-16 flex items-center justify-between px-5 bg-white/80 backdrop-blur-md sticky top-0 z-30 border-b border-slate-100">
+                    <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-200">
+                            <Image src="/walia-logo.png" alt="Walia" width={18} height={18} className="object-contain" />
                         </div>
-                        <span className="text-black dark:text-white font-black tracking-tighter text-lg">Walia</span>
+                        <span className="text-slate-900 font-extrabold tracking-tight text-lg">Walia</span>
                     </div>
-
                     <div className="flex items-center gap-3">
                         <NotificationPanel />
-                        <Link href="/dashboard/upgrade" className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-[10px] font-black uppercase tracking-wider shadow-lg shadow-indigo-600/20">
-                            <Zap className="w-3 h-3" /> <span>Pro</span>
+                        <Link href="/dashboard/profile" className="w-8 h-8 rounded-full overflow-hidden border border-slate-200">
+                            <img src={user?.photoURL || '/avatars/avatar1.jpg'} alt="Avatar" className="w-full h-full object-cover" />
                         </Link>
                     </div>
                 </header>
 
                 {/* ── MAIN CONTENT ── */}
-                <main className="flex-1 overflow-y-auto pb-[90px] md:pb-0 relative custom-scrollbar bg-[#f8f9fa] dark:bg-[#0a0a0a]">
-                    <div className="h-full">
-                        {children}
-                    </div>
+                <main className="flex-1 overflow-y-auto pb-24 md:pb-0 relative custom-scrollbar">
+                    {children}
                 </main>
 
-                {/* ── MOBILE BOTTOM TAB BAR ── */}
-                <div className="md:hidden absolute bottom-6 left-0 right-0 flex justify-center pointer-events-none z-50 px-4">
-                    <nav className="flex items-center bg-white dark:bg-[#1A1A2E] rounded-full px-3 py-2.5 shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] pointer-events-auto border border-black/5 dark:border-white/5 w-full max-w-[90%] gap-1">
-                        {NAV.map(({ icon: Icon, label, href }) => {
-                            const active = pathname === href || pathname.startsWith(href + '/');
+                {/* ── MOBILE TAB BAR ── */}
+                <div className="md:hidden fixed bottom-6 left-0 right-0 flex justify-center pointer-events-none z-50 px-6">
+                    <nav className="flex items-center bg-white rounded-full px-2 py-2 shadow-[0_8px_30px_rgba(0,0,0,0.08)] pointer-events-auto border border-slate-100 w-full max-w-sm gap-1">
+                        {NAV.map((item) => {
+                            const active = pathname === item.href || pathname.startsWith(item.href + '/');
                             return (
                                 <Link
-                                    key={href}
-                                    href={href}
-                                    className={`flex items-center justify-center transition-all duration-300 rounded-full py-2.5 ${active
-                                        ? 'flex-[1.8] bg-black dark:bg-white text-white dark:text-black'
-                                        : 'flex-1 text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white'
-                                        }`}
+                                    key={item.href}
+                                    href={item.href}
+                                    className={cn(
+                                        "flex items-center justify-center transition-all duration-500 rounded-full h-11 shrink-0",
+                                        active
+                                            ? "flex-[2] bg-indigo-600 text-white shadow-lg shadow-indigo-600/20"
+                                            : "flex-1 text-slate-400 hover:text-indigo-600"
+                                    )}
                                 >
                                     <div className="flex items-center gap-2">
-                                        <Icon className={`w-5 h-5 ${active ? 'text-white dark:text-black' : ''}`} />
+                                        <item.icon className={cn("w-5 h-5", active ? "text-white" : "")} />
                                         {active && (
-                                            <span className="text-xs font-bold whitespace-nowrap overflow-hidden">
-                                                {label}
+                                            <span className="text-[11px] font-bold tracking-tight whitespace-nowrap overflow-hidden transition-all duration-500">
+                                                {item.label}
                                             </span>
                                         )}
                                     </div>
@@ -179,3 +189,4 @@ export default function DashboardShell({ children }: { children: React.ReactNode
         </div>
     );
 }
+

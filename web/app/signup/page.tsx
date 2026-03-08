@@ -165,60 +165,56 @@ export default function SignupPage() {
     const isLastStep = step === STEPS.length - 1;
 
     return (
-        <main className="h-screen w-screen overflow-hidden relative bg-gray-50 dark:bg-[#0A0A18] transition-colors duration-300">
-            {/* Logo top-left */}
-            <Link href="/" className="absolute top-5 left-5 z-20 flex items-center gap-2">
-                <div className="w-9 h-9 rounded-full bg-white/90 flex items-center justify-center">
-                    <Image src="/walia-logo.png" alt="Walia" width={28} height={28} className="object-contain" />
-                </div>
-                <span className="text-white font-black text-lg tracking-tighter">Walia</span>
-            </Link>
-
-            {/* Brand text — bottom right on desktop */}
-            <div className="absolute bottom-10 right-8 z-10 text-right hidden md:block">
-                <p className="text-black/40 dark:text-white/40 text-[10px] font-black uppercase tracking-[0.5em] mb-2">Walia AI</p>
-                <h1 className="text-4xl font-black text-black dark:text-white tracking-tight leading-tight">
-                    Your AI study<br />companion.
-                </h1>
+        <main className="h-screen w-screen overflow-hidden relative bg-[#F8FAFC] flex items-center justify-center p-6 transition-colors duration-300">
+            {/* Professional Background Gradient */}
+            <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-500/5 blur-[120px] rounded-full" />
+                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-violet-500/5 blur-[120px] rounded-full" />
             </div>
 
+            {/* Logo top-left */}
+            <Link href="/" className="absolute top-8 left-8 z-20 flex items-center gap-2.5 group">
+                <div className="w-10 h-10 rounded-xl bg-white shadow-sm border border-slate-200 flex items-center justify-center transition-all group-hover:border-indigo-500 group-hover:shadow-indigo-500/10">
+                    <Image src="/walia-logo.png" alt="Walia" width={24} height={24} className="object-contain" />
+                </div>
+                <span className="text-slate-900 font-extrabold text-xl tracking-tight">Walia</span>
+            </Link>
+
             {/* ── SIGNUP CARD ── */}
-            {/* Desktop: left side, vertically centered */}
-            {/* Mobile: centered on screen, floating over video */}
-            <div className="absolute inset-0 z-10 flex items-end pb-6 justify-center md:items-center md:pb-0 md:justify-start md:pl-20">
-                <div className="w-[85%] max-w-sm bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl shadow-black/30 p-5 sm:p-6 md:p-8 overflow-y-auto max-h-[78vh]">
+            <div className="w-full max-w-[440px] relative z-10 flex flex-col items-center">
+                <div className="w-full bg-white border border-slate-200 rounded-[32px] shadow-[0_4px_24px_rgba(0,0,0,0.04)] p-8 md:p-10 overflow-y-auto max-h-[85vh] custom-scrollbar">
 
                     {/* Header + back */}
-                    <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-3">
                             {step > 0 && (
-                                <button onClick={() => setStep(s => s - 1)} className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors">
-                                    <ArrowLeft className="w-3.5 h-3.5 text-gray-500" />
+                                <button onClick={() => setStep(s => s - 1)} className="w-8 h-8 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center hover:bg-slate-100 transition-colors">
+                                    <ArrowLeft className="w-4 h-4 text-slate-500" />
                                 </button>
                             )}
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Step {step + 1}/{STEPS.length}</p>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Step {step + 1} of {STEPS.length}</p>
                         </div>
                     </div>
 
                     {/* Progress bar */}
-                    <div className="flex gap-1.5 mb-4">
+                    <div className="flex gap-2 mb-8">
                         {STEPS.map((_, i) => (
-                            <div key={i} className={`h-1 flex-1 rounded-full transition-all ${i <= step ? 'bg-black' : 'bg-gray-200'}`} />
+                            <div key={i} className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${i <= step ? 'bg-indigo-600' : 'bg-slate-100'}`} />
                         ))}
                     </div>
 
                     {/* Step title */}
-                    <h2 className="text-xl md:text-2xl font-black text-black tracking-tight mb-1">
+                    <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight mb-1.5">
                         {step === 0 && 'Create your account'}
-                        {step === 1 && 'Tell us about yourself'}
-                        {step === 2 && 'Your education'}
-                        {step === 3 && 'Your goals with Walia'}
+                        {step === 1 && 'Personalize profile'}
+                        {step === 2 && 'Academic background'}
+                        {step === 3 && 'Define your goals'}
                     </h2>
-                    <p className="text-gray-400 text-xs mb-4">
-                        {step === 0 && 'Set up your login credentials.'}
-                        {step === 1 && 'Help us personalise your experience.'}
-                        {step === 2 && "We'll tailor tools to your level."}
-                        {step === 3 && 'What will you use Walia for?'}
+                    <p className="text-slate-500 text-sm font-medium mb-8">
+                        {step === 0 && 'Basic details to get you started.'}
+                        {step === 1 && 'Tell us a bit about yourself.'}
+                        {step === 2 && "Tailoring experience to your level."}
+                        {step === 3 && 'What are you aiming to achieve?'}
                     </p>
 
                     {error && (
@@ -229,12 +225,12 @@ export default function SignupPage() {
 
                     {/* ══ STEP 0: Account ══ */}
                     {step === 0 && (
-                        <div className="space-y-2.5">
+                        <div className="space-y-3">
                             <button
                                 onClick={handleGoogle} disabled={googleLoading}
-                                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-white border-2 border-gray-200 hover:border-black/30 hover:shadow-lg transition-all font-bold text-black text-sm disabled:opacity-50"
+                                className="w-full flex items-center justify-center gap-3 py-3 rounded-2xl bg-white border border-slate-200 hover:border-indigo-500 hover:bg-slate-50 transition-all font-bold text-slate-700 text-sm disabled:opacity-50 shadow-sm"
                             >
-                                {googleLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : (
+                                {googleLoading ? <Loader2 className="w-4 h-4 animate-spin text-indigo-600" /> : (
                                     <svg className="w-4 h-4" viewBox="0 0 24 24">
                                         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                                         <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
@@ -242,26 +238,26 @@ export default function SignupPage() {
                                         <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                                     </svg>
                                 )}
-                                Sign up with Google
+                                <span className="tracking-tight">Sign up with Google</span>
                             </button>
-                            <div className="flex items-center gap-3">
-                                <div className="flex-1 h-px bg-gray-200" />
-                                <span className="text-[10px] font-black text-gray-300 uppercase">or</span>
-                                <div className="flex-1 h-px bg-gray-200" />
+                            <div className="flex items-center gap-4 py-2">
+                                <div className="flex-1 h-px bg-slate-100" />
+                                <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">or email</span>
+                                <div className="flex-1 h-px bg-slate-100" />
                             </div>
                             {[
-                                { label: 'Full Name', val: name, set: setName, type: 'text', ph: 'John Doe', Icon: User },
-                                { label: 'Username', val: username, set: setUsername, type: 'text', ph: '@yourname (optional)', Icon: User },
-                                { label: 'Email', val: email, set: setEmail, type: 'email', ph: 'john@example.com', Icon: Mail },
-                                { label: 'Password', val: password, set: setPassword, type: 'password', ph: '6+ characters', Icon: Lock },
+                                { label: 'Full Name', val: name, set: setName, type: 'text', ph: 'Professional Name', Icon: User },
+                                { label: 'Username', val: username, set: setUsername, type: 'text', ph: '@unique_handle', Icon: User },
+                                { label: 'Email', val: email, set: setEmail, type: 'email', ph: 'name@work.com', Icon: Mail },
+                                { label: 'Password', val: password, set: setPassword, type: 'password', ph: '••••••••', Icon: Lock },
                             ].map(({ label, val, set, type, ph, Icon }) => (
-                                <div key={label} className="space-y-0.5">
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{label}</label>
+                                <div key={label} className="space-y-1.5">
+                                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">{label}</label>
                                     <div className="relative group">
-                                        <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 group-focus-within:text-black transition-colors" />
+                                        <Icon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
                                         <input
                                             type={type} value={val} onChange={e => set(e.target.value)} placeholder={ph}
-                                            className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-gray-50/80 border border-gray-200 focus:border-black outline-none text-sm font-medium text-black placeholder:text-gray-300 transition-colors"
+                                            className="w-full pl-11 pr-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/5 outline-none text-sm font-medium text-slate-900 placeholder:text-slate-400 transition-all"
                                         />
                                     </div>
                                 </div>
@@ -271,86 +267,89 @@ export default function SignupPage() {
 
                     {/* ══ STEP 1: Profile ══ */}
                     {step === 1 && (
-                        <div className="space-y-4">
+                        <div className="space-y-6">
                             <AvatarSelector selectedAvatar={avatar} onSelect={setAvatar} />
 
-                            <div className="space-y-1.5">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Gender</label>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Gender</label>
                                 <div className="grid grid-cols-3 gap-2">
                                     {['Male', 'Female', 'Other'].map(g => (
                                         <button key={g} type="button" onClick={() => setGender(g)}
-                                            className={`py-2.5 rounded-xl text-xs font-bold border-2 transition-all ${gender === g ? 'bg-black text-white border-black' : 'bg-gray-50/80 border-gray-200 text-gray-500 hover:border-gray-400'}`}
+                                            className={`py-3 rounded-2xl text-xs font-bold border transition-all ${gender === g ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-600/20' : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-slate-300 hover:bg-white'}`}
                                         >{g}</button>
                                     ))}
                                 </div>
                             </div>
-                            <div className="space-y-1.5">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Age</label>
-                                <input type="number" value={age} onChange={e => setAge(e.target.value)} placeholder="e.g. 21" min={10} max={80}
-                                    className="w-full px-4 py-2.5 rounded-xl bg-gray-50/80 border border-gray-200 focus:border-black outline-none text-sm font-medium text-black transition-colors" />
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Current Age</label>
+                                <input type="number" value={age} onChange={e => setAge(e.target.value)} placeholder="e.g. 24" min={10} max={80}
+                                    className="w-full px-5 py-3 rounded-2xl bg-slate-50 border border-slate-200 focus:border-indigo-500 focus:bg-white outline-none text-sm font-medium text-slate-900 transition-all" />
                             </div>
                         </div>
                     )}
 
                     {/* ══ STEP 2: Education ══ */}
                     {step === 2 && (
-                        <div className="space-y-4">
-                            <div className="space-y-1.5">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Education Level</label>
+                        <div className="space-y-6">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Education Level</label>
                                 <div className="grid grid-cols-2 gap-2">
                                     {SCHOOL_LEVELS.map(lvl => (
                                         <button key={lvl} type="button" onClick={() => setSchoolLevel(lvl)}
-                                            className={`py-2.5 px-3 rounded-xl text-xs font-bold border-2 text-left transition-all ${schoolLevel === lvl ? 'bg-black text-white border-black' : 'bg-gray-50/80 border-gray-200 text-gray-500 hover:border-gray-400'}`}
+                                            className={`py-3 px-4 rounded-2xl text-[11px] font-bold border text-left transition-all ${schoolLevel === lvl ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-600/20' : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-slate-300 hover:bg-white'}`}
                                         >{lvl}</button>
                                     ))}
                                 </div>
                             </div>
-                            <div className="space-y-1.5">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">School / University</label>
-                                <input type="text" value={school} onChange={e => setSchool(e.target.value)} placeholder="e.g. Addis Ababa University"
-                                    className="w-full px-4 py-2.5 rounded-xl bg-gray-50/80 border border-gray-200 focus:border-black outline-none text-sm font-medium text-black transition-colors" />
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Institution Name</label>
+                                <input type="text" value={school} onChange={e => setSchool(e.target.value)} placeholder="e.g. Oxford University"
+                                    className="w-full px-5 py-3 rounded-2xl bg-slate-50 border border-slate-200 focus:border-indigo-500 focus:bg-white outline-none text-sm font-medium text-slate-900 transition-all" />
                             </div>
                         </div>
                     )}
 
                     {/* ══ STEP 3: Goals ══ */}
                     {step === 3 && (
-                        <div className="space-y-4">
-                            <div className="space-y-1.5">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">What will you use Walia for?</label>
+                        <div className="space-y-6">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Primary usage objective</label>
                                 <div className="grid grid-cols-2 gap-2">
                                     {USE_CASES.map(({ label, emoji }) => (
                                         <button key={label} type="button" onClick={() => toggleUseCase(label)}
-                                            className={`py-2 px-3 rounded-xl text-xs font-bold border-2 text-left flex items-center gap-1.5 transition-all ${useCases.includes(label) ? 'bg-black text-white border-black' : 'bg-gray-50/80 border-gray-200 text-gray-500 hover:border-gray-400'}`}
+                                            className={`py-2.5 px-3 rounded-2xl text-[10px] font-bold border text-left flex items-center gap-2 transition-all ${useCases.includes(label) ? 'bg-indigo-600 text-white border-indigo-600 shadow-md shadow-indigo-600/10' : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-slate-300 hover:bg-white'}`}
                                         ><span>{emoji}</span> {label}</button>
                                     ))}
                                 </div>
                             </div>
-                            <div className="space-y-1.5">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Why Walia?</label>
-                                <textarea value={whyWalia} onChange={e => setWhyWalia(e.target.value)} placeholder="I need an AI study assistant because..." rows={2}
-                                    className="w-full px-4 py-3 rounded-xl bg-gray-50/80 border border-gray-200 focus:border-black outline-none text-sm font-medium text-black resize-none transition-colors" />
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Why Walia?</label>
+                                <textarea value={whyWalia} onChange={e => setWhyWalia(e.target.value)} placeholder="Briefly describe your goals..." rows={2}
+                                    className="w-full px-5 py-3 rounded-2xl bg-slate-50 border border-slate-200 focus:border-indigo-500 focus:bg-white outline-none text-sm font-medium text-slate-900 resize-none transition-all" />
                             </div>
                         </div>
                     )}
 
                     {/* Next / Finish */}
                     <button onClick={next} disabled={loading || googleLoading}
-                        className="mt-4 w-full py-3 rounded-xl bg-black text-white font-black flex items-center justify-center gap-2 hover:bg-zinc-800 transition-all shadow-lg disabled:opacity-50 text-sm"
+                        className="mt-8 w-full py-4 rounded-2xl bg-indigo-600 text-white font-extrabold flex items-center justify-center gap-2 hover:bg-indigo-700 active:scale-[0.98] transition-all shadow-lg shadow-indigo-600/20 disabled:opacity-50 text-sm"
                     >
                         {loading ? <Loader2 className="w-5 h-5 animate-spin" /> :
-                            isLastStep ? <>Finish & Start <Sparkles className="w-4 h-4" /></> :
+                            isLastStep ? <>Get Started <Sparkles className="w-4 h-4" /></> :
                                 <>Continue <ChevronRight className="w-4 h-4" /></>}
                     </button>
 
                     {step === 0 && (
-                        <p className="text-center text-xs text-gray-400 mt-3">
-                            Have an account? <Link href="/login" className="font-bold text-black hover:underline">Log in</Link>
+                        <p className="text-center text-sm text-slate-500 mt-6">
+                            Already have an account? <Link href="/login" className="font-bold text-indigo-600 hover:text-indigo-700 transition-colors">Sign in</Link>
                         </p>
                     )}
-                    <p className="text-center text-[10px] text-gray-300 mt-2">
-                        By signing up you agree to our <Link href="/legal/terms" className="underline">Terms</Link> & <Link href="/legal/privacy" className="underline">Privacy</Link>
-                    </p>
+                    <div className="mt-6 flex flex-col items-center gap-2">
+                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.1em]">© 2026 Walia AI</p>
+                        <p className="text-center text-[9px] text-slate-400 font-bold uppercase tracking-widest leading-relaxed">
+                            Agree to our <Link href="/legal/terms" className="text-slate-500 underline hover:text-indigo-600">Terms</Link> & <Link href="/legal/privacy" className="text-slate-500 underline hover:text-indigo-600">Privacy Policy</Link>
+                        </p>
+                    </div>
                 </div>
             </div>
         </main>
