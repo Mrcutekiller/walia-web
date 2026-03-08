@@ -18,6 +18,7 @@ import {
     Loader2,
     Lock,
     LogOut,
+    MessageSquare,
     Moon,
     Shield,
     Trash2,
@@ -260,6 +261,13 @@ export default function ProfilePage() {
                                 <div className="flex items-center gap-3">
                                     <div className="w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center"><HelpCircle className="w-4 h-4 text-amber-500" /></div>
                                     <span className="text-sm font-bold text-black dark:text-white">Help Center</span>
+                                </div>
+                                <ChevronRight className="w-4 h-4 text-black/20 dark:text-white/20" />
+                            </div>
+                            <div className="flex items-center justify-between p-4 border-b border-black/5 dark:border-white/5 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors" onClick={() => window.dispatchEvent(new CustomEvent('trigger-review-popup'))}>
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-indigo-500/10 flex items-center justify-center"><MessageSquare className="w-4 h-4 text-indigo-500" /></div>
+                                    <span className="text-sm font-bold text-black dark:text-white">Give Feedback</span>
                                 </div>
                                 <ChevronRight className="w-4 h-4 text-black/20 dark:text-white/20" />
                             </div>

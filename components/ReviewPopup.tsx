@@ -15,6 +15,7 @@ export default function ReviewPopup() {
     const [text, setText] = useState('');
     const [loading, setLoading] = useState(false);
     const [submitted, setSubmitted] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         // Logic to show popup: after 30 seconds
@@ -25,7 +26,13 @@ export default function ReviewPopup() {
             if (user) setIsOpen(true);
         }, 30000);
 
-        return () => clearTimeout(timer);
+        const handleManualTrigger = () => setIsOpen(true);
+        window.addEventListener('trigger-review-popup', handleManualTrigger);
+
+        return () => {
+            clearTimeout(timer);
+            window.removeEventListener('trigger-review-popup', handleManualTrigger);
+        };
     }, [user]);
 
     const handleClose = () => {
@@ -37,18 +44,41 @@ export default function ReviewPopup() {
         if (!user || rating === 0 || text.trim().length < 5) return;
 
         setLoading(true);
+        setError(null);
+
+        // Create a timeout promise
+        const timeout = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('TIMEOUT')), 10000)
+        );
+
         try {
-            await addDoc(collection(db, 'reviews'), {
+            const reviewData = {
+                userId: user.uid,
                 userName: user.displayName || user.email?.split('@')[0] || 'Anonymous',
+                userPhoto: user.photoURL || '',
                 rating,
                 comment: text.trim(),
-                userId: user.uid,
+                status: 'approved',
                 createdAt: serverTimestamp(),
-            });
+                updatedAt: serverTimestamp(),
+            };
+
+            // Race the firestore call against the timeout
+            await Promise.race([
+                addDoc(collection(db, 'reviews'), reviewData),
+                timeout
+            ]);
+
             setSubmitted(true);
+            localStorage.setItem('walia_review_prompt_seen', 'true');
             setTimeout(() => handleClose(), 2000);
-        } catch (error) {
-            console.error('Error submitting review:', error);
+        } catch (err: any) {
+            console.error('Error submitting review:', err);
+            if (err.message === 'TIMEOUT') {
+                setError('Connection slow. Still trying...');
+            } else {
+                setError('Something went wrong. Please try again.');
+            }
         } finally {
             setLoading(false);
         }
@@ -100,17 +130,35 @@ export default function ReviewPopup() {
                             <textarea
                                 value={text}
                                 onChange={(e) => setText(e.target.value)}
-                                placeholder="Write a short review..."
-                                className="w-full h-24 bg-white/5 border border-white/10 rounded-2xl p-4 text-sm text-white placeholder:text-white/20 outline-none focus:border-white/30 transition-all resize-none"
+                                placeholder="What can we improve?..."
+                                className="w-full h-24 bg-white/5 border border-white/10 rounded-2xl p-4 text-sm text-white placeholder:text-white/20 outline-none focus:border-indigo-500/50 transition-all resize-none font-medium"
                             />
 
-                            <button
-                                onClick={handleSubmit}
-                                disabled={loading || rating === 0 || text.trim().length < 5}
-                                className="w-full py-4 rounded-2xl bg-white text-black font-black text-sm hover:scale-[1.02] active:scale-95 transition-all shadow-lg disabled:opacity-20"
-                            >
-                                {loading ? 'Publishing...' : 'Submit Review'}
-                            </button>
+                            {error && (
+                                <p className="text-[10px] font-bold text-red-400 text-center animate-pulse">{error}</p>
+                            )}
+
+                            <div className="space-y-3">
+                                <button
+                                    onClick={handleSubmit}
+                                    disabled={loading || rating === 0 || text.trim().length < 5}
+                                    className="w-full py-4 rounded-2xl bg-indigo-600 text-white font-black text-xs uppercase tracking-widest hover:bg-indigo-700 active:scale-95 transition-all shadow-lg shadow-indigo-600/20 disabled:opacity-20 flex items-center justify-center gap-2"
+                                >
+                                    {loading ? (
+                                        <>
+                                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                            <span>Publishing...</span>
+                                        </>
+                                    ) : 'Publish Feedback'}
+                                </button>
+
+                                <button
+                                    onClick={handleClose}
+                                    className="w-full text-center text-white/30 hover:text-white/60 text-[10px] font-black uppercase tracking-widest transition-colors py-1"
+                                >
+                                    Remind me later
+                                </button>
+                            </div>
                         </div>
                     ) : (
                         <div className="relative z-10 py-10 text-center space-y-4">
