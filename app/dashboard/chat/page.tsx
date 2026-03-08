@@ -365,14 +365,14 @@ export default function ChatPage() {
             </div>
 
             {/* 3-way Tab Segment */}
-            <div className="flex bg-slate-100 p-1 rounded-2xl mb-8">
+            <div className="flex bg-black/5 dark:bg-white/5 p-1 rounded-full mb-6">
                 {(['messages', 'groups', 'community'] as TabType[]).map((tab) => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
                         className={cn(
-                            "flex-1 py-2.5 text-[10px] font-bold uppercase tracking-[0.15em] rounded-xl transition-all",
-                            activeTab === tab ? "bg-white text-indigo-600 shadow-sm" : "text-slate-400 hover:text-slate-600"
+                            "flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-full transition-all",
+                            activeTab === tab ? "bg-white dark:bg-black text-black dark:text-white shadow-sm" : "text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white"
                         )}
                     >
                         {tab}
@@ -392,28 +392,27 @@ export default function ChatPage() {
                         </div>
 
                         {showSearch && (
-                            <div className="mb-6 animate-fade-in-up">
-                                <div className="relative group">
-                                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
+                            <div className="mb-4 animate-fade-in-up">
+                                <div className="relative">
+                                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-black/30 dark:text-white/30" />
                                     <input
                                         type="text"
-                                        placeholder="Search people to chat with..."
+                                        placeholder="Search students..."
                                         value={searchQuery}
                                         onChange={(e) => handleSearch(e.target.value)}
-                                        className="w-full bg-slate-50 border border-slate-200 focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/5 rounded-2xl pl-11 pr-4 py-3.5 text-sm outline-none text-slate-900 transition-all font-medium"
+                                        className="w-full bg-black/5 dark:bg-white/5 rounded-2xl pl-11 pr-4 py-3 text-sm outline-none text-black dark:text-white"
                                     />
                                 </div>
-                                <div className="mt-3 space-y-2">
+                                <div className="mt-2 space-y-1">
                                     {searchResults.map(u => (
-                                        <div key={u.id} onClick={() => startChat(u)} className="p-3.5 rounded-2xl cursor-pointer flex items-center bg-white border border-slate-100 hover:border-indigo-500 hover:shadow-lg hover:shadow-indigo-500/5 transition-all group">
-                                            <div className="w-11 h-11 rounded-xl overflow-hidden border border-slate-100 relative mr-4">
-                                                {u.photoURL ? <Image src={u.photoURL} alt="" fill className="object-cover" /> : <User className="w-5 h-5 text-slate-400 absolute top-3 left-3" />}
+                                        <div key={u.id} onClick={() => startChat(u)} className="p-3 rounded-2xl cursor-pointer flex items-center bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 transition-all">
+                                            <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 overflow-hidden relative mr-3">
+                                                {u.photoURL ? <Image src={u.photoURL} alt="" fill className="object-cover" /> : <User className="w-5 h-5 text-indigo-500 absolute top-2.5 left-2.5" />}
                                             </div>
                                             <div>
-                                                <p className="text-sm font-bold text-slate-900 group-hover:text-indigo-600 transition-colors uppercase tracking-tight">{u.displayName || u.name}</p>
-                                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">@{u.username || 'student'}</p>
+                                                <p className="text-sm font-bold text-black dark:text-white">{u.displayName || u.name}</p>
+                                                <p className="text-xs text-black/40 dark:text-white/40">@{u.username}</p>
                                             </div>
-                                            <Plus className="ml-auto w-4 h-4 text-slate-300 group-hover:text-indigo-600 transition-colors" />
                                         </div>
                                     ))}
                                 </div>
