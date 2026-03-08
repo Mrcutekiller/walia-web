@@ -44,17 +44,17 @@ export default function ToolsPage() {
             </div>
 
             <div className="px-1 pb-10">
-                {/* 4-Card Grid (Staggered on mobile) */}
-                <div className="grid grid-cols-2 gap-4 mb-8">
+                {/* Grid (Staggered on mobile, 4-col on lg) */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8 lg:px-4">
                     {TOOLS.map((tool, i) => (
                         <Link
                             href={tool.route}
                             key={tool.id}
                             className={cn(
-                                "group relative overflow-hidden flex flex-col justify-between p-5 rounded-3xl bg-gradient-to-br shadow-xl transition-transform hover:scale-[1.02] active:scale-95 h-[170px]",
+                                "group relative overflow-hidden flex flex-col justify-between p-5 rounded-3xl bg-gradient-to-br shadow-xl transition-all hover:scale-[1.02] active:scale-95 h-[170px] lg:h-[200px]",
                                 tool.gradient,
                                 tool.shadow,
-                                i % 2 === 1 && "mt-6" // Staggered effect
+                                i % 2 === 1 && "mt-6 lg:mt-0 lg:-translate-y-4" // Staggered effect (different axis for desktop)
                             )}
                         >
                             <div>

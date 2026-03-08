@@ -244,7 +244,7 @@ export default function ChatPage() {
     if (activeChat) {
         const activeChatData = chats.find(c => c.id === activeChat);
         return (
-            <div className="flex flex-col h-[calc(100vh-64px)] bg-black/5 absolute inset-0 z-40 bg-white dark:bg-[#0a0a0a]">
+            <div className="flex flex-col h-full bg-white dark:bg-[#0a0a0a] md:max-w-5xl md:mx-auto md:border-x md:border-black/5 md:dark:border-white/5 relative">
                 {/* Chat Header */}
                 <header className="h-16 px-4 border-b border-black/5 dark:border-white/5 flex items-center justify-between shrink-0 bg-white/80 dark:bg-black/50 backdrop-blur-md">
                     <div className="flex items-center cursor-pointer group" onClick={() => setShowProfile(true)}>
@@ -299,7 +299,7 @@ export default function ChatPage() {
                 </div>
 
                 {/* Action Bar */}
-                <div className="p-3 bg-white dark:bg-[#0a0a0a] border-t border-black/5 dark:border-white/5 pb-6">
+                <div className="p-3 bg-white dark:bg-[#0a0a0a] border-t border-black/5 dark:border-white/5 pb-6 md:pb-3">
                     <div className="flex items-center space-x-2 bg-black/5 dark:bg-white/5 rounded-full p-1.5 focus-within:ring-2 ring-indigo-500/50 transition-all">
                         <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
                         <button onClick={() => fileInputRef.current?.click()} disabled={uploading} className="p-2.5 rounded-full text-black/40 dark:text-white/40 hover:bg-black/10 dark:hover:bg-white/10 transition-all disabled:opacity-50">
@@ -358,7 +358,7 @@ export default function ChatPage() {
 
     // Default Chat Dashboard View
     return (
-        <div className="animate-fade-in flex flex-col h-full">
+        <div className="animate-fade-in flex flex-col h-full max-w-4xl mx-auto px-4 md:px-0 md:pt-6">
             <div className="mb-6 mt-2">
                 <p className="text-xs font-bold text-black/40 dark:text-white/40 uppercase tracking-widest mb-1">Connect & Learn</p>
                 <h1 className="text-2xl font-black text-black dark:text-white tracking-tight">Walia Social</h1>
