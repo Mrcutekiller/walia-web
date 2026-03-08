@@ -1,7 +1,8 @@
 import { Avatar } from '@/components/ui/Avatar';
 import { PostCard } from '@/components/ui/PostCard';
 import { BorderRadius, FontSize, FontWeight, Spacing } from '@/constants/theme';
-import { POSTS, getUserById } from '@/store/data';
+import { getUserById } from '@/store/data';
+import { useSocial } from '@/store/social';
 import { useTheme } from '@/store/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -17,12 +18,13 @@ export default function PostDetailScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const router = useRouter();
     const { colors, isDark } = useTheme();
-    const [post, setPost] = useState(POSTS.find(p => p.id === id));
+    const { posts, likePost } = useSocial();
     const [comment, setComment] = useState('');
-    const [comments, setComments] = useState(post?.comments || []);
+    const dbPost = posts.find(p => p.id === id);
+    const [comments, setComments] = useState(dbPost?.comments || []);
     const [quizAnswered, setQuizAnswered] = useState<number | null>(null);
 
-    if (!post) return null;
+    if (!dbPost) return null;
 
     const addComment = () => {
         if (!comment.trim()) return;
@@ -31,19 +33,19 @@ export default function PostDetailScreen() {
     };
 
     const handleLike = () => {
-        setPost(p => p ? { ...p, liked: !p.liked, likes: p.liked ? p.likes - 1 : p.likes + 1 } : p);
+        likePost(dbPost.id);
     };
 
     const handleQuizAnswer = (idx: number) => {
         if (quizAnswered !== null) return; // Already answered
         setQuizAnswered(idx);
-        const correct = idx === post.quizAnswer;
+        const correct = idx === dbPost.quizAnswer;
         setTimeout(() => {
             Alert.alert(
                 correct ? '🎉 Correct!' : '❌ Wrong answer',
                 correct
-                    ? `That's right! "${post.quizOptions?.[idx]}" is the correct answer.`
-                    : `The correct answer was "${post.quizOptions?.[post.quizAnswer ?? 0]}". Keep studying! 💪`,
+                    ? `That's right! "${dbPost.quizOptions?.[idx]}" is the correct answer.`
+                    : `The correct answer was "${dbPost.quizOptions?.[dbPost.quizAnswer ?? 0]}". Keep studying! 💪`,
             );
         }, 400);
     };
@@ -74,7 +76,7 @@ export default function PostDetailScreen() {
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: Spacing.xl, paddingBottom: 100 }}>
                 {/* Post card with live like/quiz */}
                 <PostCard
-                    post={post}
+                    post={dbPost}
                     onLike={handleLike}
                     onComment={() => { }}
                     onShare={() => Alert.alert('Shared!', 'Post link copied 📋')}
@@ -100,7 +102,7 @@ export default function PostDetailScreen() {
                     const user = getUserById(c.userId);
                     return (
                         <View key={c.id} style={styles.commentItem}>
-                            <Avatar emoji={user?.avatar || '🧑‍🎓'} size={36} />
+                            <Avatar emoji={user?.photoURL || '🧑‍🎓'} size={36} />
                             <View style={[styles.commentBubble, { backgroundColor: colors.surface }]}>
                                 <View style={styles.commentMeta}>
                                     <Text style={[styles.commentName, { color: colors.text }]}>

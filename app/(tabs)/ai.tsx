@@ -1,13 +1,14 @@
 import { BorderRadius, FontSize, FontWeight, Spacing } from '@/constants/theme';
 import { AIMessage, AIProvider, askAI, PROVIDERS } from '@/services/ai';
+import { db } from '@/services/firebase';
 import { useAuth } from '@/store/auth';
-import { AI_CHATS } from '@/store/data';
 import { useSocial } from '@/store/social';
 import { useTheme } from '@/store/theme';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
+import { addDoc, collection, doc, onSnapshot, orderBy, query, serverTimestamp, updateDoc } from 'firebase/firestore';
 import React, { useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
@@ -90,9 +91,52 @@ export default function AITabScreen() {
     const [message, setMessage] = useState('');
     const [preferredProvider, setPreferredProvider] = useState<AIProvider>('auto');
     const [showModels, setShowModels] = useState(false);
+    const [sessions, setSessions] = useState<{ id: string, title: string, lastText: string, updatedAt: any }[]>([]);
+    const [activeSession, setActiveSession] = useState<string | null>(null);
     const scrollRef = useRef<ScrollView>(null);
 
     const inputRef = useRef<TextInput>(null);
+
+    // Fetch AI Sessions
+    useEffect(() => {
+        if (!user) return;
+        const q = query(
+            collection(db, 'users', user.id, 'ai_sessions'),
+            orderBy('updatedAt', 'desc')
+        );
+        const unsub = onSnapshot(q, (snap) => {
+            setSessions(snap.docs.map(d => ({ id: d.id, ...d.data() } as any)));
+        });
+        return () => unsub();
+    }, [user]);
+
+    // Fetch Messages for Active Session
+    useEffect(() => {
+        if (!activeSession || !user) {
+            setChatMessages([]);
+            return;
+        }
+        const q = query(
+            collection(db, 'users', user.id, 'ai_sessions', activeSession, 'messages'),
+            orderBy('createdAt', 'asc')
+        );
+        const unsub = onSnapshot(q, (snap) => {
+            const msgs = snap.docs.map(d => {
+                const data = d.data();
+                return {
+                    id: d.id,
+                    role: data.role,
+                    text: data.text,
+                    imageUri: data.image,
+                    timestamp: data.createdAt ? new Date(data.createdAt.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    provider: data.provider,
+                } as ChatMessage;
+            });
+            setChatMessages(msgs);
+            setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 150);
+        });
+        return () => unsub();
+    }, [activeSession, user]);
 
     const buildHistory = (msgs: ChatMessage[]): AIMessage[] =>
         msgs.map(m => ({ role: m.role === 'user' ? 'user' : 'model', parts: [{ text: m.text }] }));
@@ -115,7 +159,9 @@ export default function AITabScreen() {
         }
 
         const userMsg: ChatMessage = { id: Date.now().toString(), role: 'user', text: content, imageUri, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) };
-        setChatMessages(prev => [...prev, userMsg]);
+        // Optimistic UI update
+        // setChatMessages(prev => [...prev, userMsg]);
+
         setMessage('');
         setShowAttach(false);
         setIsLoading(true);
@@ -123,11 +169,52 @@ export default function AITabScreen() {
         setShowModels(false);
         setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 150);
 
+        let sessionId = activeSession;
         try {
+            if (!sessionId) {
+                const sessionRef = await addDoc(collection(db, 'users', user!.id, 'ai_sessions'), {
+                    title: content.slice(0, 30) || 'Image Analysis',
+                    lastText: content || 'Image sent',
+                    updatedAt: serverTimestamp(),
+                    createdAt: serverTimestamp()
+                });
+                sessionId = sessionRef.id;
+                setActiveSession(sessionId);
+            }
+
+            // Save user message to Firestore
+            await addDoc(collection(db, 'users', user!.id, 'ai_sessions', sessionId, 'messages'), {
+                role: 'user',
+                text: content,
+                image: imageUri || null,
+                createdAt: serverTimestamp()
+            });
+
+            // Update session
+            await updateDoc(doc(db, 'users', user!.id, 'ai_sessions', sessionId), {
+                title: content.slice(0, 30) || 'Conversation',
+                lastText: content || 'Image shared',
+                updatedAt: serverTimestamp()
+            });
+
             const { text: aiText, provider } = await askAI(content, buildHistory(chatMessages), preferredProvider);
-            setChatMessages(prev => [...prev, { id: (Date.now() + 1).toString(), role: 'ai', text: aiText, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), provider }]);
+
+            // Save AI message to Firestore
+            await addDoc(collection(db, 'users', user!.id, 'ai_sessions', sessionId, 'messages'), {
+                role: 'ai',
+                text: aiText,
+                provider: provider,
+                createdAt: serverTimestamp()
+            });
+
         } catch (e: any) {
-            setChatMessages(prev => [...prev, { id: (Date.now() + 2).toString(), role: 'ai', text: `⚠️ Connection issue.\n\n${e.message}`, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }]);
+            if (sessionId) {
+                await addDoc(collection(db, 'users', user!.id, 'ai_sessions', sessionId, 'messages'), {
+                    role: 'ai',
+                    text: `⚠️ Connection issue.\n\n${e.message}`,
+                    createdAt: serverTimestamp()
+                });
+            }
         } finally {
             setIsLoading(false);
             setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 150);
@@ -185,11 +272,16 @@ export default function AITabScreen() {
                     </View>
 
                     {/* Stats bar */}
-                    {chatMessages.length > 0 && (
+                    {sessions.length > 0 && !activeSession && (
                         <View style={styles.statsBar}>
-                            <Text style={styles.statsText}>{chatMessages.filter(m => m.role === 'user').length} questions asked</Text>
-                            <TouchableOpacity onPress={() => setChatMessages([])}>
-                                <Text style={styles.clearBtn}>Clear chat</Text>
+                            <Text style={styles.statsText}>{sessions.length} total sessions</Text>
+                        </View>
+                    )}
+
+                    {activeSession && (
+                        <View style={styles.statsBar}>
+                            <TouchableOpacity onPress={() => setActiveSession(null)}>
+                                <Text style={styles.clearBtn}>← Back to Home / New Chat</Text>
                             </TouchableOpacity>
                         </View>
                     )}
@@ -267,16 +359,18 @@ export default function AITabScreen() {
                             </View>
 
                             <Text style={[styles.recentLabel, { color: colors.textSecondary }]}>📚 Recent conversations</Text>
-                            {AI_CHATS.filter(c => user?.id === '1').slice(0, 3).map(c => (
-                                <TouchableOpacity key={c.id} style={[styles.recentCard, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={() => router.push(`/ai/${c.id}` as any)}>
+                            {sessions.slice(0, 5).map(c => (
+                                <TouchableOpacity key={c.id} style={[styles.recentCard, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={() => setActiveSession(c.id)}>
                                     <View style={styles.recentIcon}>
                                         <Image source={require('../../assets/images/walia-logo.png')} style={{ width: 24, height: 24 }} resizeMode="contain" />
                                     </View>
                                     <View style={{ flex: 1 }}>
                                         <Text style={[styles.recentTitle, { color: colors.text }]}>{c.title}</Text>
-                                        <Text style={[styles.recentSub, { color: colors.textSecondary }]} numberOfLines={1}>{c.lastMessage}</Text>
+                                        <Text style={[styles.recentSub, { color: colors.textSecondary }]} numberOfLines={1}>{c.lastText}</Text>
                                     </View>
-                                    <Text style={[styles.recentTime, { color: colors.textTertiary }]}>{c.timestamp}</Text>
+                                    <Text style={[styles.recentTime, { color: colors.textTertiary }]}>
+                                        {c.updatedAt ? new Date(c.updatedAt.toDate()).toLocaleDateString() : ''}
+                                    </Text>
                                 </TouchableOpacity>
                             ))}
                         </View>

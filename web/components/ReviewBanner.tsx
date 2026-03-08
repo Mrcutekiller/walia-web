@@ -43,20 +43,33 @@ export default function ReviewBanner() {
     const submitReview = async () => {
         if (!user || rating === 0) return;
         setSubmitting(true);
+
+        const timeout = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('TIMEOUT')), 10000)
+        );
+
         try {
-            await addDoc(collection(db, 'reviews'), {
+            const reviewData = {
                 userId: user.uid,
-                userName: user.displayName || 'Anonymous',
+                userName: user.displayName || user.email?.split('@')[0] || 'Anonymous',
                 userPhoto: user.photoURL || '',
                 rating,
                 comment,
+                status: 'approved',
                 createdAt: serverTimestamp(),
                 updatedAt: serverTimestamp(),
-            });
+            };
+
+            await Promise.race([
+                addDoc(collection(db, 'reviews'), reviewData),
+                timeout
+            ]);
+
             setSubmitted(true);
             setTimeout(() => setIsVisible(false), 2000);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error submitting review:', error);
+            // Optionally show a toast here in the future
         } finally {
             setSubmitting(false);
         }

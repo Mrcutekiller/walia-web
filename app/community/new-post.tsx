@@ -45,7 +45,6 @@ export default function NewPostScreen() {
         }
 
         addPost({
-            userId: '1',
             type,
             title: title.trim() || undefined,
             content: content.trim(),

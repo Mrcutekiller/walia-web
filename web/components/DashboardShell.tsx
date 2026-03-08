@@ -1,51 +1,40 @@
-'use client';
+import { cn } from '@/lib/utils';
 
 import { useAuth } from '@/context/AuthContext';
+import { useTheme } from '@/context/ThemeContext';
 import { auth } from '@/lib/firebase';
-import { signOut } from 'firebase/auth';
 import {
     Bot,
     Calendar,
-    Crown,
-    LogOut,
-    Menu,
-    MessageSquare,
-    Settings,
+    MessagesSquare as MessagesSquareEmoji,
+    Moon,
     User,
-    Users,
     Wrench,
-    X,
-    Zap,
+    Zap
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import NotificationPanel from './NotificationPanel';
 
 const NAV = [
-    { icon: Bot, label: 'AI Hub', href: '/dashboard/ai' },
-    { icon: MessageSquare, label: 'AI Chat', href: '/chat' },
+    { icon: Bot, label: 'AI', href: '/dashboard/ai' },
+    { icon: MessagesSquareEmoji, label: 'Chat', href: '/dashboard/chat' },
     { icon: Wrench, label: 'Tools', href: '/dashboard/tools' },
-    { icon: Users, label: 'Community', href: '/dashboard/community' },
-    { icon: MessagesSquareEmoji, label: 'Messages', href: '/dashboard/messages' },
     { icon: Calendar, label: 'Calendar', href: '/dashboard/calendar' },
     { icon: User, label: 'Profile', href: '/dashboard/profile' },
-    { icon: Settings, label: 'Settings', href: '/dashboard/settings' },
 ];
 
-import { MessagesSquare as MessagesSquareEmoji } from 'lucide-react';
-
-
 export default function DashboardShell({ children }: { children: React.ReactNode }) {
-    const { user, loading } = useAuth();
+    const { user, profile, loading } = useAuth();
+    const { theme, toggleTheme } = useTheme();
     const router = useRouter();
     const pathname = usePathname();
-    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     useEffect(() => {
         if (!loading && !user) router.replace('/login');
     }, [user, loading, router]);
-
 
     if (loading || !user) {
         return (
@@ -59,118 +48,133 @@ export default function DashboardShell({ children }: { children: React.ReactNode
     }
 
     const handleLogout = async () => {
-        await signOut(auth);
-        router.replace('/');
+        await auth.signOut();
+        router.push('/');
     };
 
     return (
-        <div className="flex h-screen bg-[#f8f9fa] dark:bg-[#0a0a0a] text-black dark:text-white overflow-hidden transition-colors duration-300">
-
-            {/* Mobile overlay */}
-            {sidebarOpen && (
-                <div
-                    className="fixed inset-0 bg-black/70 z-40 lg:hidden"
-                    onClick={() => setSidebarOpen(false)}
-                />
-            )}
-
-            {/* ── SIDEBAR ── */}
-            <aside className={`
-                fixed top-0 left-0 bottom-0 z-50 w-64 bg-white dark:bg-black border-r border-black/5 dark:border-white/5 flex flex-col
-                transition-transform duration-300
-                ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-                lg:translate-x-0 lg:static lg:z-auto
-            `}>
-                {/* Logo */}
-                <div className="flex items-center justify-between p-5 border-b border-black/5 dark:border-white/5">
-                    <Link href="/" className="flex items-center gap-3 group">
-                        <div className="w-9 h-9 rounded-full bg-indigo-600/10 dark:bg-white/10 flex items-center justify-center group-hover:bg-indigo-600/20 dark:group-hover:bg-white/20 transition-colors overflow-hidden">
-                            <Image src="/walia-logo.png" alt="Walia" width={28} height={28} className="object-contain" />
+        <div className="min-h-screen bg-[#f8f9fa] dark:bg-[#0a0a0a] text-black dark:text-white transition-colors duration-300 flex">
+            {/* ── DESKTOP SIDEBAR (Hidden on Mobile) ── */}
+            <aside className="hidden md:flex flex-col w-72 shrink-0 border-r border-black/5 dark:border-white/5 bg-white dark:bg-[#1A1A2E] sticky top-0 h-screen select-none">
+                {/* Logo Area */}
+                <div className="h-20 flex items-center px-6 border-b border-black/5 dark:border-white/5 shrink-0">
+                    <Link href="/dashboard/chat" className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-indigo-600/10 dark:bg-white/10 flex items-center justify-center">
+                            <Image src="/walia-logo.png" alt="Walia" width={24} height={24} className="object-contain" />
                         </div>
-                        <span className="text-xl font-black text-black dark:text-white tracking-tighter">Walia</span>
+                        <span className="text-black dark:text-white font-black tracking-tighter text-xl">Walia</span>
                     </Link>
-                    <button className="lg:hidden p-1 text-black/40 dark:text-white/40 hover:text-indigo-600 dark:hover:text-white" onClick={() => setSidebarOpen(false)}>
-                        <X className="w-5 h-5" />
-                    </button>
                 </div>
 
-                {/* Nav links */}
-                <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-                    <p className="px-3 py-2 text-[9px] font-black text-black/20 dark:text-white/20 uppercase tracking-[0.3em]">Main Menu</p>
+                {/* Navigation Links */}
+                <nav className="flex-1 overflow-y-auto px-4 py-6 space-y-2 custom-scrollbar">
+                    <p className="px-4 text-[10px] font-black uppercase tracking-widest text-black/40 dark:text-white/40 mb-4">Main Menu</p>
                     {NAV.map(({ icon: Icon, label, href }) => {
-                        const active = pathname === href;
+                        const active = pathname === href || pathname.startsWith(href + '/');
                         return (
                             <Link
                                 key={href}
                                 href={href}
-                                onClick={() => setSidebarOpen(false)}
-                                className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-all group ${active
-                                    ? 'bg-black dark:bg-white text-white dark:text-black font-bold'
-                                    : 'text-black/50 dark:text-white/50 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/8'
-                                    }`}
+                                className={cn(
+                                    "flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 group",
+                                    active
+                                        ? "bg-black dark:bg-white text-white dark:text-black shadow-lg shadow-black/10 dark:shadow-white/10"
+                                        : "hover:bg-black/5 dark:hover:bg-white/5 text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white"
+                                )}
                             >
-                                <Icon className={`w-5 h-5 shrink-0 ${active ? 'text-white dark:text-black' : 'text-black/30 dark:text-white/30 group-hover:text-black dark:group-hover:text-white'}`} />
-                                <span className="text-sm font-semibold">{label}</span>
-                                {active && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-white dark:bg-black" />}
+                                <Icon className={cn("w-5 h-5", active ? "text-white dark:text-black" : "text-black/40 dark:text-white/40 group-hover:text-black dark:group-hover:text-white")} />
+                                <span className={cn("font-bold text-sm", active ? "" : "")}>{label}</span>
                             </Link>
                         );
                     })}
                 </nav>
 
-                {/* Upgrade card */}
-                <div className="p-3">
-                    <Link href="/upgrade" className="block p-4 rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-700 hover:opacity-90 transition-opacity group">
-                        <div className="flex items-center gap-2 mb-1">
-                            <Crown className="w-4 h-4 text-white/80" />
-                            <span className="text-white font-black text-xs uppercase tracking-widest">Walia Pro</span>
-                        </div>
-                        <p className="text-white/60 text-[11px] mb-3">Unlock unlimited AI + all tools</p>
-                        <div className="w-full py-1.5 rounded-lg bg-white text-indigo-700 text-[10px] font-black uppercase tracking-widest text-center">
-                            Upgrade · $12/mo
+                {/* Bottom Profile Area & Theme Toggle */}
+                <div className="p-4 border-t border-black/5 dark:border-white/5 shrink-0 space-y-2">
+                    <Link href="/dashboard/upgrade" className="flex items-center justify-between p-4 rounded-2xl bg-indigo-600/10 dark:bg-indigo-600/20 text-indigo-600 dark:text-indigo-400 border border-indigo-600/20 group hover:bg-indigo-600 hover:text-white transition-all shadow-sm">
+                        <div className="flex items-center gap-2">
+                            <Zap className="w-4 h-4" />
+                            <span className="font-black text-xs uppercase tracking-wider">Upgrade to Pro</span>
                         </div>
                     </Link>
-                </div>
 
-                {/* User + logout */}
-                <div className="p-3 border-t border-black/5 dark:border-white/5">
-                    <div className="flex items-center gap-3 p-3 rounded-xl bg-black/5 dark:bg-white/5">
-                        <div className="w-8 h-8 rounded-full bg-black/10 dark:bg-white/10 flex items-center justify-center shrink-0 overflow-hidden">
-                            {user.photoURL ? (
-                                <Image src={user.photoURL} alt="Avatar" width={32} height={32} className="rounded-full object-cover" />
-                            ) : (
-                                <User className="w-4 h-4 text-black/50 dark:text-white/50" />
-                            )}
+                    <div className="flex items-center justify-between px-2 pt-2 pb-1">
+                        <div className="flex items-center gap-3 w-full">
+                            <div className="w-10 h-10 rounded-full bg-black/5 dark:bg-white/10 overflow-hidden shrink-0 border border-black/10 dark:border-white/10">
+                                {user?.photoURL ? (
+                                    <Image src={user.photoURL} alt="Avatar" width={40} height={40} className="w-full h-full object-cover" />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center font-bold text-xs">
+                                        {(profile?.displayName || user.displayName || 'U').charAt(0).toUpperCase()}
+                                    </div>
+                                )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-bold text-black dark:text-white truncate">{profile?.displayName || user.displayName}</p>
+                                <p className="text-[10px] text-black/50 dark:text-white/50 truncate font-medium">{user.email}</p>
+                            </div>
+                            <button onClick={toggleTheme} className="p-2 rounded-xl bg-black/5 dark:bg-white/5 text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
+                                <Moon className="w-4 h-4" />
+                            </button>
                         </div>
-                        <div className="flex-1 min-w-0">
-                            <p className="text-xs font-bold text-black dark:text-white truncate">{user.displayName || user.email?.split('@')[0] || 'User'}</p>
-                            <p className="text-[10px] text-black/30 dark:text-white/30 truncate">{user.email}</p>
-                        </div>
-                        <button onClick={handleLogout} title="Log out" className="text-black/20 dark:text-white/20 hover:text-rose-600 dark:hover:text-white transition-colors">
-                            <LogOut className="w-4 h-4" />
-                        </button>
                     </div>
                 </div>
             </aside>
 
-            {/* ── MAIN CONTENT ── */}
-            <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-                {/* Mobile top bar */}
-                <header className="lg:hidden flex items-center justify-between px-4 py-3 border-b border-black/5 dark:border-white/5 bg-white/80 dark:bg-black/50 backdrop-blur-md shrink-0">
-                    <button onClick={() => setSidebarOpen(true)} className="text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white p-1">
-                        <Menu className="w-5 h-5" />
-                    </button>
+            {/* ── MOBILE / DESKTOP CONTENT AREA ── */}
+            <div className="flex-1 flex flex-col min-w-0 relative">
+
+                {/* ── MOBILE TOP HEADER ── */}
+                <header className="md:hidden h-16 flex items-center justify-between px-5 bg-white/80 dark:bg-[#1A1A2E]/80 backdrop-blur-md shrink-0 sticky top-0 z-30 border-b border-black/5 dark:border-white/5">
                     <div className="flex items-center gap-2">
-                        <Image src="/walia-logo.png" alt="Walia" width={22} height={22} className="object-contain" />
-                        <span className="text-black dark:text-white font-black tracking-tighter">Walia</span>
+                        <div className="w-8 h-8 rounded-full bg-indigo-600/10 dark:bg-white/10 flex items-center justify-center">
+                            <Image src="/walia-logo.png" alt="Walia" width={20} height={20} className="object-contain" />
+                        </div>
+                        <span className="text-black dark:text-white font-black tracking-tighter text-lg">Walia</span>
                     </div>
-                    <Link href="/upgrade" className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-[10px] font-black uppercase tracking-wider">
-                        <Zap className="w-3 h-3" /> Pro
-                    </Link>
+
+                    <div className="flex items-center gap-3">
+                        <NotificationPanel />
+                        <Link href="/dashboard/upgrade" className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-[10px] font-black uppercase tracking-wider shadow-lg shadow-indigo-600/20">
+                            <Zap className="w-3 h-3" /> <span>Pro</span>
+                        </Link>
+                    </div>
                 </header>
 
-                <main className="flex-1 overflow-y-auto">
-                    {children}
+                {/* ── MAIN CONTENT ── */}
+                <main className="flex-1 overflow-y-auto pb-[90px] md:pb-0 relative custom-scrollbar bg-[#f8f9fa] dark:bg-[#0a0a0a]">
+                    <div className="h-full">
+                        {children}
+                    </div>
                 </main>
+
+                {/* ── MOBILE BOTTOM TAB BAR ── */}
+                <div className="md:hidden absolute bottom-6 left-0 right-0 flex justify-center pointer-events-none z-50 px-4">
+                    <nav className="flex items-center bg-white dark:bg-[#1A1A2E] rounded-full px-3 py-2.5 shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] pointer-events-auto border border-black/5 dark:border-white/5 w-full max-w-[90%] gap-1">
+                        {NAV.map(({ icon: Icon, label, href }) => {
+                            const active = pathname === href || pathname.startsWith(href + '/');
+                            return (
+                                <Link
+                                    key={href}
+                                    href={href}
+                                    className={`flex items-center justify-center transition-all duration-300 rounded-full py-2.5 ${active
+                                        ? 'flex-[1.8] bg-black dark:bg-white text-white dark:text-black'
+                                        : 'flex-1 text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white'
+                                        }`}
+                                >
+                                    <div className="flex items-center gap-2">
+                                        <Icon className={`w-5 h-5 ${active ? 'text-white dark:text-black' : ''}`} />
+                                        {active && (
+                                            <span className="text-xs font-bold whitespace-nowrap overflow-hidden">
+                                                {label}
+                                            </span>
+                                        )}
+                                    </div>
+                                </Link>
+                            );
+                        })}
+                    </nav>
+                </div>
             </div>
         </div>
     );

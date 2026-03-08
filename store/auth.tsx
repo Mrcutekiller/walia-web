@@ -40,15 +40,18 @@ interface User {
     id: string;
     name: string;
     username: string;
-    level?: string;
-    goal?: string;
-    age: string;
-    studyLevel: string;
-    purpose: string;
     email: string;
-    avatar?: string;
-    bio: string;
-    phone: string;
+    photoURL?: string;
+    gender?: string;
+    age?: string;
+    schoolLevel?: string;
+    school?: string;
+    useCases?: string[];
+    whyWalia?: string;
+    bio?: string;
+    phone?: string;
+    createdAt?: any;
+    plan?: string;
 }
 
 interface AuthContextType {
@@ -70,15 +73,17 @@ const DEFAULT_USER: User = {
     id: '',
     name: 'User',
     username: 'user',
-    level: '',
-    goal: '',
-    age: '',
-    studyLevel: '',
-    purpose: '',
     email: '',
-    avatar: '👤',
+    photoURL: '/avatars/avatar1.jpg',
+    gender: '',
+    age: '',
+    schoolLevel: '',
+    school: '',
+    useCases: [],
+    whyWalia: '',
     bio: '',
     phone: '',
+    plan: 'free',
 };
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -121,6 +126,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                                     email: firebaseUser.email || '',
                                     name: firebaseUser.displayName || 'User',
                                     username: firebaseUser.email?.split('@')[0] || `user_${firebaseUser.uid.slice(0, 5)}`,
+                                    photoURL: firebaseUser.photoURL || '/avatars/avatar1.jpg',
+                                    createdAt: new Date().toISOString(),
                                 };
                                 await setDoc(userDocRef, newUser);
                                 setUser(newUser);
@@ -167,6 +174,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 name: userData.name || firebaseUser.email?.split('@')[0] || 'User',
                 username: userData.username || firebaseUser.email?.split('@')[0] || `user_${firebaseUser.uid.slice(0, 5)}`,
                 email: userData.email || firebaseUser.email || '',
+                photoURL: userData.photoURL || '/avatars/avatar1.jpg',
+                createdAt: new Date().toISOString(),
             };
 
             // Set Firestore doc FIRST so the listener picks it up
@@ -217,7 +226,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const storageRef = ref(storage, `avatars/${auth.currentUser.uid}`);
         await uploadBytes(storageRef, blob);
         const url = await getDownloadURL(storageRef);
-        await updateProfile({ avatar: url });
+        await updateProfile({ photoURL: url });
         return url;
     };
 

@@ -1,9 +1,9 @@
 'use client';
 
 import { db } from '@/lib/firebase';
-import { cn } from '@/lib/utils';
+import { cn, formatTimeAgo } from '@/lib/utils';
 import { collection, limit, onSnapshot, orderBy, query } from 'firebase/firestore';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
     ArrowUpRight,
     Clock,
@@ -13,9 +13,10 @@ import {
     Mic,
     Shield,
     Sparkles,
-    User
+    User,
+    X
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface ChatRoom {
     id: string;
@@ -33,19 +34,42 @@ export default function AdminChats() {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
 
+    // Inspect Modal State
+    const [selectedChat, setSelectedChat] = useState<ChatRoom | null>(null);
+    const [messages, setMessages] = useState<any[]>([]);
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+
     useEffect(() => {
-        // Listen to all chat collection (example path: 'chats')
-        const q = query(collection(db, 'chats'), orderBy('lastActivity', 'desc'), limit(50));
+        // Listen to all chat collection
+        const q = query(collection(db, 'chats'), orderBy('lastMessageAt', 'desc'), limit(50));
         const unsub = onSnapshot(q, (snap) => {
             setChats(snap.docs.map(d => ({
                 id: d.id,
                 ...d.data(),
-                time: d.data().lastActivity?.toDate().toLocaleTimeString() || 'Just now'
+                room: d.data().name || d.data().type,
+                type: d.data().type === 'dm' ? 'Direct Message' : 'Group/AI',
+                status: 'Active',
+                participants: d.data().participants?.length || 2,
+                lastMsg: d.data().lastMessage || 'No recent messages',
+                time: d.data().lastMessageAt?.toDate() ? formatTimeAgo(d.data().lastMessageAt) : 'Just now'
             } as ChatRoom)));
             setLoading(false);
         });
         return () => unsub();
     }, []);
+
+    useEffect(() => {
+        if (!selectedChat) {
+            setMessages([]);
+            return;
+        }
+        const q = query(collection(db, 'chats', selectedChat.id, 'messages'), orderBy('createdAt', 'asc'), limit(100));
+        const unsub = onSnapshot(q, (snap) => {
+            setMessages(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+            setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+        });
+        return () => unsub();
+    }, [selectedChat]);
 
     const filteredChats = chats.filter(chat =>
         chat.room?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -119,7 +143,10 @@ export default function AdminChats() {
                             </div>
 
                             <div className="flex items-center space-x-3">
-                                <button className="flex items-center space-x-2 px-6 py-2.5 rounded-xl bg-white/5 text-white/40 hover:text-white hover:bg-white/10 transition-all text-[10px] font-black uppercase tracking-widest">
+                                <button
+                                    onClick={() => setSelectedChat(chat)}
+                                    className="flex items-center space-x-2 px-6 py-2.5 rounded-xl bg-white/5 text-white/40 hover:text-white hover:bg-white/10 transition-all text-[10px] font-black uppercase tracking-widest"
+                                >
                                     <Eye className="w-4 h-4" />
                                     <span>Inspect Node</span>
                                 </button>
@@ -151,7 +178,7 @@ export default function AdminChats() {
 
                 <div className="p-8 rounded-[40px] bg-gradient-to-br from-walia-success/10 to-transparent border border-walia-success/20 space-y-6">
                     <div className="flex items-center space-x-3">
-                        <div className="p-3 rounded-2xl bg-walia-success text-black shadow-lg shadow-walia-success/20 text-black">
+                        <div className="p-3 rounded-2xl bg-walia-success shadow-lg shadow-walia-success/20 text-black">
                             <ArrowUpRight className="w-6 h-6" />
                         </div>
                         <h4 className="text-lg font-black text-white tracking-tight">Real-time Stream Sync</h4>
@@ -164,6 +191,59 @@ export default function AdminChats() {
                     </button>
                 </div>
             </div>
+
+            {/* Inspect Modal */}
+            <AnimatePresence>
+                {selectedChat && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6 lg:p-10 lg:pl-[300px]">
+                        <motion.div
+                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                            onClick={() => setSelectedChat(null)}
+                            className="absolute inset-0 bg-black/80 backdrop-blur-md"
+                        />
+                        <motion.div
+                            initial={{ scale: 0.95, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                            className="relative w-full max-w-2xl h-[80vh] flex flex-col rounded-[32px] bg-[#141415] border border-white/10 shadow-2xl overflow-hidden z-10"
+                        >
+                            {/* Header */}
+                            <div className="px-6 py-5 border-b border-white/5 flex items-center justify-between bg-black/20 shrink-0">
+                                <div>
+                                    <h3 className="text-lg font-black text-white tracking-tight">{selectedChat.room}</h3>
+                                    <p className="text-xs text-white/40 font-bold uppercase tracking-widest mt-1">Interception Mode Active</p>
+                                </div>
+                                <button onClick={() => setSelectedChat(null)} className="p-2 rounded-full bg-white/5 text-white/40 hover:text-white hover:bg-white/10 transition-all">
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+
+                            {/* Messages */}
+                            <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+                                {messages.length === 0 && (
+                                    <div className="h-full flex items-center justify-center text-white/20 text-xs font-black uppercase tracking-widest">
+                                        No messages found
+                                    </div>
+                                )}
+                                {messages.map((msg: any) => (
+                                    <div key={msg.id} className="flex flex-col items-start bg-white/5 p-4 rounded-2xl border border-white/5">
+                                        <div className="flex items-baseline space-x-2 mb-2">
+                                            <span className="text-xs font-black text-walia-primary">{msg.senderName || 'User'}</span>
+                                            <span className="text-[10px] text-white/30 uppercase font-bold tracking-widest">{msg.createdAt?.toDate() ? formatTimeAgo(msg.createdAt) : 'Just now'}</span>
+                                        </div>
+                                        {msg.image ? (
+                                            <img src={msg.image} alt="content" className="max-w-[200px] rounded-lg border border-white/10" />
+                                        ) : (
+                                            <p className="text-sm text-white/80 leading-relaxed font-medium">{msg.text}</p>
+                                        )}
+                                    </div>
+                                ))}
+                                <div ref={messagesEndRef} />
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

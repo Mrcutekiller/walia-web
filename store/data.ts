@@ -4,7 +4,7 @@ export interface ChatUser {
     id: string;
     name: string;
     username: string;
-    avatar: string;
+    photoURL: string;
     online: boolean;
     bio: string;
     stats: { likes: string; posts: number; views: string };
@@ -22,7 +22,7 @@ export interface Chat {
     id: string;
     type: 'private' | 'group';
     name: string;
-    avatar: string;
+    photoURL: string;
     lastMessage: string;
     lastTime: string;
     unread: number;

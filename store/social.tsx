@@ -15,6 +15,7 @@ import {
     onSnapshot,
     orderBy,
     query,
+    serverTimestamp,
     updateDoc
 } from 'firebase/firestore';
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react';
@@ -35,15 +36,14 @@ export const XP_PER_LEVEL = 500;
 // ─── Types ────────────────────────────────────────────────────────────────────
 export interface SocialPost {
     id: string;
-    userId: string;
-    type: 'quiz' | 'note' | 'ai_share' | 'text';
+    authorId: string;
+    type: 'quiz' | 'note' | 'ai_share' | 'general' | 'text';
     title?: string;
     content: string;
-    timestamp: string;
-    likes: number;
-    liked: boolean;
-    shares: number;
-    comments: Comment[];
+    createdAt: any;
+    likes: string[]; // array of user IDs
+    commentCount: number;
+    comments: Comment[]; // kept for local usage
     quizOptions?: string[];
     quizAnswer?: number;
 }
@@ -182,7 +182,7 @@ export function SocialProvider({ children }: { children: ReactNode }) {
     // ── Real-time Sync ──
     useEffect(() => {
         // 1. Sync Posts
-        const postsQuery = query(collection(db, 'posts'), orderBy('timestamp', 'desc'), firestoreLimit(50));
+        const postsQuery = query(collection(db, 'posts'), orderBy('createdAt', 'desc'), firestoreLimit(50));
         const unsubscribePosts = onSnapshot(postsQuery, (snap: any) => {
             const postsData = snap.docs.map((doc: any) => ({ id: doc.id, ...doc.data() })) as SocialPost[];
             // For authenticated users, we only show real posts. For guests, we show DEFAULT_POSTS if empty.
@@ -293,16 +293,15 @@ export function SocialProvider({ children }: { children: ReactNode }) {
     const isFollowing = useCallback((userId: string) => state.following.includes(userId), [state.following]);
 
     // ── Posts ──
-    const addPost = useCallback(async (post: Omit<SocialPost, 'id' | 'likes' | 'liked' | 'shares' | 'comments' | 'timestamp'>) => {
+    const addPost = useCallback(async (post: Omit<SocialPost, 'id' | 'likes' | 'commentCount' | 'comments' | 'createdAt'>) => {
         if (!auth.currentUser) return;
         const newPostData = {
             ...post,
-            userId: auth.currentUser.uid,
-            likes: 0,
-            liked: false,
-            shares: 0,
+            authorId: auth.currentUser.uid,
+            likes: [],
+            commentCount: 0,
             comments: [],
-            timestamp: new Date().toISOString(),
+            createdAt: serverTimestamp(),
         };
         await addDoc(collection(db, 'posts'), newPostData);
         addXP(XP_REWARDS.post_created, 'Post created 📝');
@@ -312,15 +311,18 @@ export function SocialProvider({ children }: { children: ReactNode }) {
         if (!auth.currentUser) return;
         const postRef = doc(db, 'posts', postId);
         const userRef = doc(db, 'users', auth.currentUser.uid);
-        const alreadyLiked = state.likedPostIds.includes(postId);
+
+        // Find post to check if currently liked
+        const post = state.posts.find(p => p.id === postId);
+        const alreadyLiked = post?.likes?.includes(auth.currentUser.uid) || false;
 
         await updateDoc(postRef, {
-            likes: increment(alreadyLiked ? -1 : 1)
+            likes: alreadyLiked ? arrayRemove(auth.currentUser.uid) : arrayUnion(auth.currentUser.uid)
         });
         await updateDoc(userRef, {
             likedPostIds: alreadyLiked ? arrayRemove(postId) : arrayUnion(postId)
         });
-    }, [state.likedPostIds]);
+    }, [state.posts]);
 
     const addComment = useCallback((postId: string, comment: Omit<Comment, 'id' | 'timestamp'>) => {
         const newComment: Comment = { ...comment, id: Date.now().toString(), timestamp: 'Just now' };

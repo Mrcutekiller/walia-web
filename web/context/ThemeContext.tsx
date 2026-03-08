@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/context/AuthContext';
 import { db } from '@/lib/firebase';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 type Theme = 'light' | 'dark';
@@ -16,7 +16,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const { user } = useAuth();
-    const [theme, setTheme] = useState<Theme>('dark');
+    const [theme, setTheme] = useState<Theme>('light');
 
     // 1. Initial load from localStorage
     useEffect(() => {
@@ -25,15 +25,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
             setTheme(savedTheme);
             applyTheme(savedTheme);
         } else {
-            // Default to dark
-            applyTheme('dark');
+            // Default to light
+            applyTheme('light');
         }
     }, []);
 
     // 2. Load from User Settings if logged in
     useEffect(() => {
         if (!user) return;
-        const { onSnapshot, doc } = require('firebase/firestore');
         const unsub = onSnapshot(doc(db, 'users', user.uid), (snap: any) => {
             if (snap.exists()) {
                 const firestoreTheme = snap.data().theme as Theme;
@@ -44,7 +43,19 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
             }
         });
         return () => unsub();
-    }, [user, theme]); // Added theme dependency to prevent loops if already correct
+    }, [user, theme]);
+
+    // 3. Load Global Appearance Settings
+    useEffect(() => {
+        const unsub = onSnapshot(doc(db, 'settings', 'appearance'), (snap) => {
+            if (snap.exists()) {
+                const data = snap.data();
+                if (data.primary) document.documentElement.style.setProperty('--color-walia-primary', data.primary);
+                if (data.accent) document.documentElement.style.setProperty('--color-walia-accent', data.accent);
+            }
+        });
+        return () => unsub();
+    }, []);
 
     const applyTheme = (t: Theme) => {
         if (t === 'dark') {

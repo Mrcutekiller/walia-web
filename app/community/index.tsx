@@ -1,6 +1,6 @@
 import { PostCard } from '@/components/ui/PostCard';
 import { Colors, FontSize, FontWeight, Spacing } from '@/constants/theme';
-import { POSTS } from '@/store/data';
+import { useSocial } from '@/store/social';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
@@ -9,6 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function CommunityScreen() {
     const router = useRouter();
+    const { posts } = useSocial();
 
     return (
         <SafeAreaView style={styles.container}>
@@ -23,8 +24,8 @@ export default function CommunityScreen() {
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
-                {POSTS.map(p => (
-                    <PostCard key={p.id} post={p} onPress={() => router.push(`/community/post/${p.id}` as any)} />
+                {posts.map(p => (
+                    <PostCard key={p.id} post={p as any} onPress={() => router.push(`/community/post/${p.id}` as any)} />
                 ))}
             </ScrollView>
         </SafeAreaView>

@@ -4,15 +4,16 @@ import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
 import {
     BarChart3,
+    Bell,
     Camera,
     CheckCircle2,
     ChevronRight,
-    CreditCard,
     LayoutDashboard,
     MessageSquare,
     Search,
     Settings,
-    Users
+    Users,
+    Zap
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -21,9 +22,10 @@ import { usePathname } from 'next/navigation';
 const adminLinks = [
     { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
     { name: 'Users', href: '/admin/users', icon: Users },
-    { name: 'Posts', href: '/admin/posts', icon: MessageSquare },
+    { name: 'Upgrades', href: '/admin/upgrades', icon: Zap },
     { name: 'Images', href: '/admin/images', icon: Camera },
-    { name: 'Payments', href: '/admin/payments', icon: CreditCard },
+    { name: 'Chats', href: '/admin/chats', icon: MessageSquare },
+    { name: 'Alerts', href: '/admin/notifications', icon: Bell },
 ];
 
 const secondaryLinks = [

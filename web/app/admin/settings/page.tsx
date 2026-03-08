@@ -1,6 +1,8 @@
 'use client';
 
+import { db } from '@/lib/firebase';
 import { cn } from '@/lib/utils';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { motion } from 'framer-motion';
 import {
     AlertTriangle,
@@ -8,13 +10,47 @@ import {
     Globe,
     Key,
     MonitorOff,
+    Palette,
     RotateCcw,
     Save
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function AdminSettings() {
     const [maintenance, setMaintenance] = useState(false);
+
+    const [primaryColor, setPrimaryColor] = useState('#000000');
+    const [accentColor, setAccentColor] = useState('#6C63FF');
+    const [saving, setSaving] = useState(false);
+
+    useEffect(() => {
+        const loadSettings = async () => {
+            const snap = await getDoc(doc(db, 'settings', 'appearance'));
+            if (snap.exists()) {
+                const data = snap.data();
+                if (data.primary) setPrimaryColor(data.primary);
+                if (data.accent) setAccentColor(data.accent);
+            }
+        };
+        loadSettings();
+    }, []);
+
+    const handleSave = async () => {
+        setSaving(true);
+        try {
+            await setDoc(doc(db, 'settings', 'appearance'), {
+                primary: primaryColor,
+                accent: accentColor,
+                updatedAt: new Date()
+            }, { merge: true });
+            alert('Settings synchronized globally.');
+        } catch (error) {
+            console.error('Error saving settings:', error);
+            alert('Failed to save settings.');
+        } finally {
+            setSaving(false);
+        }
+    };
 
     return (
         <div className="space-y-10 py-6 animate-fade-in-up">
@@ -29,9 +65,13 @@ export default function AdminSettings() {
                         <RotateCcw className="w-4 h-4" />
                         <span>Discard Changes</span>
                     </button>
-                    <button className="flex items-center space-x-2 px-8 py-3 rounded-2xl bg-walia-success text-black text-xs font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg shadow-walia-success/20">
+                    <button
+                        onClick={handleSave}
+                        disabled={saving}
+                        className="flex items-center space-x-2 px-8 py-3 rounded-2xl bg-walia-success text-black text-xs font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg shadow-walia-success/20 disabled:opacity-50"
+                    >
                         <Save className="w-4 h-4" />
-                        <span>Sync System</span>
+                        <span>{saving ? 'Syncing...' : 'Sync System'}</span>
                     </button>
                 </div>
             </div>
@@ -124,6 +164,54 @@ export default function AdminSettings() {
                                     )}
                                 </div>
                             ))}
+                        </div>
+                    </div>
+
+                    {/* Branding / Appearance */}
+                    <div className="p-8 rounded-[40px] bg-[#141415] border border-white/5 space-y-8">
+                        <div className="flex items-center space-x-3">
+                            <Palette className="w-5 h-5 text-indigo-400" />
+                            <h3 className="text-sm font-black text-white uppercase tracking-widest">Appearance & Branding</h3>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            {/* Primary Color */}
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-bold text-white/40 uppercase tracking-tighter">Primary Brand Color</label>
+                                <div className="flex items-center space-x-4 p-4 rounded-2xl bg-black/40 border border-white/5">
+                                    <input
+                                        type="color"
+                                        value={primaryColor}
+                                        onChange={(e) => setPrimaryColor(e.target.value)}
+                                        className="w-10 h-10 rounded-full cursor-pointer bg-transparent border-none p-0"
+                                    />
+                                    <input
+                                        type="text"
+                                        value={primaryColor}
+                                        onChange={(e) => setPrimaryColor(e.target.value)}
+                                        className="flex-1 bg-transparent text-sm text-white font-mono outline-none uppercase"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Accent Color */}
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-bold text-white/40 uppercase tracking-tighter">Accent Color</label>
+                                <div className="flex items-center space-x-4 p-4 rounded-2xl bg-black/40 border border-white/5">
+                                    <input
+                                        type="color"
+                                        value={accentColor}
+                                        onChange={(e) => setAccentColor(e.target.value)}
+                                        className="w-10 h-10 rounded-full cursor-pointer bg-transparent border-none p-0"
+                                    />
+                                    <input
+                                        type="text"
+                                        value={accentColor}
+                                        onChange={(e) => setAccentColor(e.target.value)}
+                                        className="flex-1 bg-transparent text-sm text-white font-mono outline-none uppercase"
+                                    />
+                                </div>
+                            </div>
                         </div>
                     </div>
 

@@ -5,6 +5,7 @@ import { db } from '@/lib/firebase';
 import { cn } from '@/lib/utils';
 import {
     collection,
+    collectionGroup,
     onSnapshot,
     query,
     where
@@ -14,7 +15,6 @@ import {
     Activity,
     ArrowUpRight,
     BarChart3,
-    CreditCard,
     Globe,
     Image as ImageIcon,
     MessageSquare,
@@ -33,18 +33,13 @@ const mockGrowthData = [
     { month: 'Jun', value: 65 },
 ];
 
-const mockCategories = [
-    { name: 'Free Users', value: '65%', color: 'bg-walia-success' },
-    { name: 'Pro Users', value: '25%', color: 'bg-blue-500' },
-    { name: 'Enterprise', value: '10%', color: 'bg-purple-500' },
-];
-
 export default function AdminDashboard() {
     const [stats, setStats] = useState({
         totalUsers: 0,
-        activeProfiles: 0,
+        proUsers: 0,
         newUsersThisWeek: 0,
-        totalRevenue: 0,
+        totalPosts: 0,
+        totalMessages: 0,
         growth: '+12.5%'
     });
     const [loading, setLoading] = useState(true);
@@ -53,19 +48,25 @@ export default function AdminDashboard() {
         // Real-time Listeners
         const unsubUsers = onSnapshot(collection(db, 'users'), (snap) => {
             const total = snap.size;
-            setStats(prev => ({ ...prev, totalUsers: total, activeProfiles: total })); // Mocking profiles as users for now
+            let proCount = 0;
+            snap.forEach(doc => {
+                if (doc.data().plan?.toLowerCase() === 'pro') proCount++;
+            });
+            setStats(prev => ({ ...prev, totalUsers: total, proUsers: proCount }));
         });
 
-        const unsubPayments = onSnapshot(collection(db, 'payments'), (snap) => {
-            let totalRev = 0;
-            snap.forEach(doc => {
-                const data = doc.data();
-                if (data.status === 'Completed' || data.status === 'succeeded') {
-                    totalRev += Number(data.amount) || 0;
-                }
-            });
-            setStats(prev => ({ ...prev, totalRevenue: totalRev }));
+        const unsubPosts = onSnapshot(collection(db, 'posts'), (snap) => {
+            setStats(prev => ({ ...prev, totalPosts: snap.size }));
         });
+
+        let unsubMessages = () => { };
+        try {
+            unsubMessages = onSnapshot(collectionGroup(db, 'messages'), (snap) => {
+                setStats(prev => ({ ...prev, totalMessages: snap.size }));
+            }, (error) => {
+                console.warn('CollectionGroup missing index', error);
+            });
+        } catch (e) { }
 
         // Weekly growth - simple count of users created in last 7 days
         const sevenDaysAgo = new Date();
@@ -78,10 +79,19 @@ export default function AdminDashboard() {
 
         return () => {
             unsubUsers();
-            unsubPayments();
+            unsubPosts();
             unsubGrowth();
+            if (unsubMessages) unsubMessages();
         };
     }, []);
+
+    const freeUsersPct = stats.totalUsers > 0 ? Math.round(((stats.totalUsers - stats.proUsers) / stats.totalUsers) * 100) : 0;
+    const proUsersPct = stats.totalUsers > 0 ? Math.round((stats.proUsers / stats.totalUsers) * 100) : 0;
+
+    const dynamicCategories = [
+        { name: 'Free Users', value: `${freeUsersPct}%`, color: 'bg-walia-success' },
+        { name: 'Pro Users', value: `${proUsersPct}%`, color: 'bg-blue-500' },
+    ];
 
     return (
         <div className="space-y-10 py-6">
@@ -110,10 +120,10 @@ export default function AdminDashboard() {
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <AdminStatCard title="Total Profiles" value={stats.activeProfiles.toLocaleString()} change={12.5} icon={Users} color="blue" />
-                <AdminStatCard title="Total Users" value={stats.totalUsers.toLocaleString()} change={18.2} icon={Activity} color="purple" />
-                <AdminStatCard title="Weekly Growth" value={`+${stats.newUsersThisWeek}`} change={5.4} icon={TrendingUp} color="success" />
-                <AdminStatCard title="Total Revenue" value={`$${stats.totalRevenue.toLocaleString()}`} change={10.1} icon={CreditCard} color="orange" />
+                <AdminStatCard title="Total Users" value={stats.totalUsers.toLocaleString()} change={12.5} icon={Users} color="blue" />
+                <AdminStatCard title="Pro Users" value={stats.proUsers.toLocaleString()} change={18.2} icon={Activity} color="purple" />
+                <AdminStatCard title="Total Posts" value={stats.totalPosts.toLocaleString()} change={5.4} icon={MessageSquare} color="success" />
+                <AdminStatCard title="Total Messages" value={stats.totalMessages.toLocaleString()} change={10.1} icon={TrendingUp} color="orange" />
             </div>
 
             {/* Charts & Detailed Info */}
@@ -176,15 +186,18 @@ export default function AdminDashboard() {
                     {/* Circular Mockup (CSS only) */}
                     <div className="relative w-40 h-40 mx-auto my-8">
                         <div className="absolute inset-0 rounded-full border-[10px] border-white/5" />
-                        <div className="absolute inset-0 rounded-full border-[10px] border-walia-success border-t-transparent border-l-transparent -rotate-45" />
+                        <div
+                            className="absolute inset-0 rounded-full border-[10px] border-blue-500 border-t-transparent border-l-transparent -rotate-45"
+                            style={{ clipPath: `polygon(0 0, 100% 0, 100% 100%, 0 100%)`, transform: `rotate(${(proUsersPct / 100) * 360 - 45}deg)` }}
+                        />
                         <div className="absolute inset-0 flex flex-col items-center justify-center">
-                            <span className="text-2xl font-black text-white">82%</span>
-                            <span className="text-[9px] font-bold text-white/20 uppercase tracking-tighter">Retention</span>
+                            <span className="text-2xl font-black text-white">{proUsersPct}%</span>
+                            <span className="text-[9px] font-bold text-white/20 uppercase tracking-tighter">Pro</span>
                         </div>
                     </div>
 
                     <div className="space-y-4">
-                        {mockCategories.map((cat) => (
+                        {dynamicCategories.map((cat) => (
                             <div key={cat.name} className="flex items-center justify-between">
                                 <div className="flex items-center space-x-3">
                                     <div className={cn("w-2 h-2 rounded-full", cat.color)} />
