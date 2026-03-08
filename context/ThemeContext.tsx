@@ -43,7 +43,19 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
             }
         });
         return () => unsub();
-    }, [user, theme]); // Added theme dependency to prevent loops if already correct
+    }, [user, theme]);
+
+    // 3. Load Global Appearance Settings
+    useEffect(() => {
+        const unsub = onSnapshot(doc(db, 'settings', 'appearance'), (snap) => {
+            if (snap.exists()) {
+                const data = snap.data();
+                if (data.primary) document.documentElement.style.setProperty('--color-walia-primary', data.primary);
+                if (data.accent) document.documentElement.style.setProperty('--color-walia-accent', data.accent);
+            }
+        });
+        return () => unsub();
+    }, []);
 
     const applyTheme = (t: Theme) => {
         if (t === 'dark') {

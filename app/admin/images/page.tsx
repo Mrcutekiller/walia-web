@@ -2,7 +2,7 @@
 
 import { db } from '@/lib/firebase';
 import { cn } from '@/lib/utils';
-import { collection, deleteDoc, doc, onSnapshot, orderBy, query, updateDoc } from 'firebase/firestore';
+import { collection, collectionGroup, deleteDoc, doc, getDocs, query, updateDoc, where } from 'firebase/firestore';
 import { motion } from 'framer-motion';
 import {
     Check,
@@ -26,6 +26,7 @@ interface ImageItem {
     url: string;
     size: string;
     date: string;
+    sourcePath?: string; // e.g. 'users/123' or 'upgrades/abc' or 'chats/xyz/messages/123'
 }
 
 export default function AdminImages() {
@@ -35,30 +36,113 @@ export default function AdminImages() {
     const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
-        const q = query(collection(db, 'images'), orderBy('date', 'desc'));
-        const unsub = onSnapshot(q, (snap) => {
-            setImages(snap.docs.map(d => ({
-                id: d.id,
-                ...d.data(),
-                date: d.data().date || d.data().createdAt?.toDate().toLocaleDateString() || 'N/A'
-            } as ImageItem)));
-            setLoading(false);
-        });
-        return () => unsub();
+        let unsubscribeActive = true;
+
+        const fetchImages = async () => {
+            try {
+                const aggregatedImages: ImageItem[] = [];
+
+                // 1. Fetch Users (Profiles)
+                const usersSnap = await getDocs(collection(db, 'users'));
+                usersSnap.docs.forEach(d => {
+                    const data = d.data();
+                    if (data.photoURL) {
+                        aggregatedImages.push({
+                            id: `user-${d.id}`,
+                            title: `${data.name || 'User'} Profile`,
+                            type: 'Profile Picture',
+                            status: 'Approved',
+                            url: data.photoURL,
+                            size: 'N/A',
+                            date: data.createdAt?.toDate?.()?.toLocaleDateString() || 'Unknown',
+                            sourcePath: `users/${d.id}`
+                        });
+                    }
+                });
+
+                // 2. Fetch Upgrades (Screenshots)
+                const upgradesSnap = await getDocs(collection(db, 'upgrades'));
+                upgradesSnap.docs.forEach(d => {
+                    const data = d.data();
+                    if (data.screenshotURL) {
+                        aggregatedImages.push({
+                            id: `upgrade-${d.id}`,
+                            title: `${data.username || 'User'} Receipt`,
+                            type: 'Payment Screenshot',
+                            status: data.status || 'Pending',
+                            url: data.screenshotURL,
+                            size: 'N/A',
+                            date: data.createdAt?.toDate?.()?.toLocaleDateString() || 'Unknown',
+                            sourcePath: `upgrades/${d.id}`
+                        });
+                    }
+                });
+
+                // 3. Fetch Messages (Chat Images)
+                // Note: collectionGroup requires an index in production Firestore rules
+                try {
+                    const messagesSnap = await getDocs(query(collectionGroup(db, 'messages'), where('image', '!=', null)));
+                    messagesSnap.docs.forEach(d => {
+                        const data = d.data();
+                        if (data.image) {
+                            aggregatedImages.push({
+                                id: `msg-${d.id}`,
+                                title: `Sent by ${data.senderName || 'User'}`,
+                                type: 'Chat Image',
+                                status: 'Approved',
+                                url: data.image,
+                                size: 'N/A',
+                                date: data.createdAt?.toDate?.()?.toLocaleDateString() || 'Unknown',
+                                sourcePath: d.ref.path
+                            });
+                        }
+                    });
+                } catch (e) {
+                    // Ignore index errors for dev
+                    console.warn('CollectionGroup index missing for messages:', e);
+                }
+
+                if (unsubscribeActive) {
+                    // Sort primarily by date descending, but since date is string, just sort array roughly
+                    setImages(aggregatedImages);
+                    setLoading(false);
+                }
+            } catch (err) {
+                console.error("Error fetching images:", err);
+                if (unsubscribeActive) setLoading(false);
+            }
+        };
+
+        fetchImages();
+
+        return () => {
+            unsubscribeActive = false;
+        };
     }, []);
 
-    const updateImageStatus = async (imageId: string, status: string) => {
+    const updateImageStatus = async (image: ImageItem, status: string) => {
+        if (!image.sourcePath) return;
         try {
-            await updateDoc(doc(db, 'images', imageId), { status });
+            if (image.type === 'Payment Screenshot') {
+                await updateDoc(doc(db, image.sourcePath), { status });
+            }
+            setImages(prev => prev.map(img => img.id === image.id ? { ...img, status } : img));
         } catch (err) {
             console.error(err);
         }
     };
 
-    const deleteImage = async (imageId: string) => {
+    const deleteImage = async (image: ImageItem) => {
         if (!confirm('Are you sure you want to delete this image?')) return;
+        if (!image.sourcePath) return;
+
         try {
-            await deleteDoc(doc(db, 'images', imageId));
+            if (image.type === 'Profile Picture') {
+                await updateDoc(doc(db, image.sourcePath), { photoURL: null });
+            } else if (image.type === 'Chat Image' || image.type === 'Payment Screenshot') {
+                await deleteDoc(doc(db, image.sourcePath));
+            }
+            setImages(prev => prev.filter(img => img.id !== image.id));
         } catch (err) {
             console.error(err);
         }
@@ -150,12 +234,16 @@ export default function AdminImages() {
                                 />
                                 {/* Overlay Controls */}
                                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center space-x-3">
-                                    <button onClick={() => updateImageStatus(img.id, 'Approved')} className="p-3 rounded-full bg-walia-success text-black hover:scale-110 active:scale-95 transition-all">
-                                        <Check className="w-5 h-5" />
-                                    </button>
-                                    <button onClick={() => updateImageStatus(img.id, 'Rejected')} className="p-3 rounded-full bg-red-500 text-white hover:scale-110 active:scale-95 transition-all">
-                                        <X className="w-5 h-5" />
-                                    </button>
+                                    {img.type === 'Payment Screenshot' && (
+                                        <>
+                                            <button onClick={() => updateImageStatus(img, 'Approved')} className="p-3 rounded-full bg-walia-success text-black hover:scale-110 active:scale-95 transition-all">
+                                                <Check className="w-5 h-5" />
+                                            </button>
+                                            <button onClick={() => updateImageStatus(img, 'Rejected')} className="p-3 rounded-full bg-red-500 text-white hover:scale-110 active:scale-95 transition-all">
+                                                <X className="w-5 h-5" />
+                                            </button>
+                                        </>
+                                    )}
                                 </div>
                             </div>
 
@@ -177,7 +265,7 @@ export default function AdminImages() {
                                         <Download className="w-3 h-3" />
                                         <span>View Full</span>
                                     </a>
-                                    <button onClick={() => deleteImage(img.id)} className="text-white/20 hover:text-red-500 transition-colors">
+                                    <button onClick={() => deleteImage(img)} className="text-white/20 hover:text-red-500 transition-colors">
                                         <Trash2 className="w-4 h-4" />
                                     </button>
                                 </div>

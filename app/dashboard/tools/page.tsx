@@ -1,93 +1,113 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import {
-    ArrowRight,
-    BookOpen,
-    BrainCircuit,
-    Code,
-    FileText,
-    HelpCircle,
-    Languages,
-    Mic2,
-    Sparkles,
-    TrendingUp
-} from 'lucide-react';
+import { ArrowRight, ChevronRight, FileText, HelpCircle, Layers, PenTool, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 
-const tools = [
-    { id: '1', title: 'AI Summarizer', icon: FileText, color: 'bg-blue-500/20 text-blue-500', desc: 'Paste long texts and get key insights in seconds.' },
-    { id: '2', title: 'Flashcard Gen', icon: BrainCircuit, color: 'bg-emerald-500/20 text-emerald-500', desc: 'Generate custom study cards from your notes.' },
-    { id: '3', title: 'Mock Quiz', icon: HelpCircle, color: 'bg-purple-500/20 text-purple-500', desc: 'Create AI-powered practice tests for any subject.' },
-    { id: '4', title: 'Note Helper', icon: BookOpen, color: 'bg-amber-500/20 text-amber-500', desc: 'Organize and expand your thoughts with AI help.' },
-    { id: '5', title: 'Transcription', icon: Mic2, color: 'bg-red-500/20 text-red-500', desc: 'Convert voice recordings into structured notes.' },
-    { id: '6', title: 'Market AI', icon: TrendingUp, color: 'bg-walia-accent/20 text-walia-accent', desc: 'Scan charts and get real-time trading signals.' },
-    { id: '7', title: 'Translator', icon: Languages, color: 'bg-indigo-500/20 text-indigo-500', desc: 'Communicate across 50+ languages instantly.' },
-    { id: '8', title: 'Code Assistant', icon: Code, color: 'bg-green-500/20 text-green-500', desc: 'Debug and write code snippets with AI guidance.' },
+const TOOLS = [
+    { title: 'Summarize', desc: 'Condense any text to key points', icon: FileText, gradient: 'from-[#6C63FF] to-[#5A52E0]', shadow: 'shadow-[#6C63FF]/30', route: '/dashboard/tools/summarize', emoji: '📄', id: 'summarize', color: '#6C63FF' },
+    { title: 'Quiz', desc: 'Generate & take practice tests', icon: HelpCircle, gradient: 'from-[#FF6B6B] to-[#E53935]', shadow: 'shadow-[#FF6B6B]/30', route: '/dashboard/tools/quiz', emoji: '🧠', id: 'quiz', color: '#FF6B6B' },
+    { title: 'Flashcards', desc: 'Flip-card studying system', icon: Layers, gradient: 'from-[#4ECDC4] to-[#00897B]', shadow: 'shadow-[#4ECDC4]/30', route: '/dashboard/tools/flashcard', emoji: '🃏', id: 'flashcard', color: '#4ECDC4' },
+    { title: 'Notes', desc: 'Write & organize your ideas', icon: PenTool, gradient: 'from-[#FFA502] to-[#E65100]', shadow: 'shadow-[#FFA502]/30', route: '/dashboard/tools/notes', emoji: '📝', id: 'notes', color: '#FFA502' },
 ];
 
 export default function ToolsPage() {
+    // Mock counts since web doesn't have studyHistory ported yet
+    const counts = { quiz: 12, notes: 34, flashcard: 156, summarize: 8 };
+
+    // Mock recent history
+    const recentActivity = [
+        { title: 'Cell Biology Notes', tool: 'notes', date: 'Today' },
+        { title: 'Calculus Ch 4 Summary', tool: 'summarize', date: 'Yesterday' },
+        { title: 'Physics Midterm Prep', tool: 'quiz', date: 'Oct 12' },
+    ];
+
+    const getToolIcon = (toolId: string) => {
+        const found = TOOLS.find(t => t.id === toolId);
+        return found ? { Icon: found.icon, color: found.color } : { Icon: PenTool, color: '#FFA502' };
+    };
+
     return (
-        <div className="space-y-12 animate-fade-in-up">
-            {/* Header */}
-            <div>
-                <h1 className="text-4xl font-black text-white mb-4 tracking-tight">Professional Tools</h1>
-                <p className="text-white/40 text-sm max-w-xl font-medium leading-relaxed">
-                    Unlock your full academic potential with our specialized AI micro-tools.
-                    Each tool is designed to solve a specific study challenge.
-                </p>
-            </div>
-
-            {/* Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                {tools.map((tool) => (
-                    <div
-                        key={tool.id}
-                        className="group relative p-8 rounded-[40px] bg-white/5 border border-white/5 hover:border-white/10 hover:bg-white/10 transition-all cursor-pointer overflow-hidden flex flex-col h-full"
-                    >
-                        {/* Background Glow */}
-                        <div className={cn(
-                            "absolute -top-10 -right-10 w-24 h-24 blur-3xl opacity-0 transition-opacity group-hover:opacity-20",
-                            tool.color.split(' ')[1].replace('text-', 'bg-')
-                        )} />
-
-                        <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center mb-8 shrink-0 border border-white/5 transition-transform group-hover:scale-110", tool.color)}>
-                            <tool.icon className="w-7 h-7" />
-                        </div>
-
-                        <div className="flex-1">
-                            <h3 className="text-lg font-bold text-white mb-3 group-hover:text-walia-primary transition-colors">{tool.title}</h3>
-                            <p className="text-sm text-white/30 leading-relaxed font-medium">
-                                {tool.desc}
-                            </p>
-                        </div>
-
-                        <div className="mt-8 flex items-center text-xs font-black uppercase tracking-widest text-white/20 group-hover:text-walia-primary transition-all">
-                            Launch Tool <ArrowRight className="w-4 h-4 ml-3 group-hover:translate-x-2 transition-transform" />
-                        </div>
+        <div className="animate-fade-in flex flex-col h-full bg-[#f8f9fa] dark:bg-[#0a0a0a]">
+            {/* Header Area */}
+            <div className="p-6 pb-8 bg-gradient-to-br from-[#6C63FF] to-[#7C75FF] dark:from-[#1A1A2E] dark:to-[#0D0D1A] -mx-4 -mt-4 md:-mx-6 md:-mt-6 lg:-mx-10 lg:-mt-10 mb-6 relative overflow-hidden">
+                <div className="relative z-10 flex items-start justify-between">
+                    <div>
+                        <h1 className="text-3xl font-black text-white tracking-tight mb-1">Study Tools 🛠️</h1>
+                        <p className="text-white/70 text-sm font-medium">4 tools to supercharge your learning</p>
                     </div>
-                ))}
+                    <Link href="/dashboard/ai" className="flex items-center gap-2 bg-white/20 border border-white/30 px-3 py-1.5 rounded-full backdrop-blur-sm hover:bg-white/30 transition-colors">
+                        <Sparkles className="w-4 h-4 text-white" />
+                        <span className="text-xs font-bold text-white">Ask AI</span>
+                    </Link>
+                </div>
             </div>
 
-            {/* Upgrade Banner */}
-            <div className="p-12 rounded-[48px] bg-walia-primary/10 border border-walia-primary/30 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8 group">
-                <div className="absolute top-0 right-0 p-8 text-walia-primary/20 rotate-12 transition-transform group-hover:scale-150">
-                    <Sparkles className="w-40 h-40" />
+            <div className="px-1 pb-10">
+                {/* 4-Card Grid (Staggered on mobile) */}
+                <div className="grid grid-cols-2 gap-4 mb-8">
+                    {TOOLS.map((tool, i) => (
+                        <Link
+                            href={tool.route}
+                            key={tool.id}
+                            className={cn(
+                                "group relative overflow-hidden flex flex-col justify-between p-5 rounded-3xl bg-gradient-to-br shadow-xl transition-transform hover:scale-[1.02] active:scale-95 h-[170px]",
+                                tool.gradient,
+                                tool.shadow,
+                                i % 2 === 1 && "mt-6" // Staggered effect
+                            )}
+                        >
+                            <div>
+                                <div className="text-3xl mb-2">{tool.emoji}</div>
+                                <h3 className="text-base font-bold text-white leading-tight mb-1">{tool.title}</h3>
+                                <p className="text-[10px] text-white/80 leading-relaxed max-w-[90%] font-medium">{tool.desc}</p>
+                            </div>
+                            <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center self-end backdrop-blur-sm">
+                                <ArrowRight className="w-3.5 h-3.5 text-white" />
+                            </div>
+                        </Link>
+                    ))}
                 </div>
 
-                <div className="relative z-10 max-w-lg text-center md:text-left">
-                    <h2 className="text-3xl font-black text-white mb-4 leading-tight">Need even more advanced tools?</h2>
-                    <p className="text-white/50 font-medium">
-                        Upgrade to Walia Pro to unlock unlimited usage, custom tool workflows,
-                        and our latest experimental AI models.
-                    </p>
+                {/* Stats Row */}
+                <div className="flex items-center justify-around bg-white dark:bg-[#1A1A2E] p-5 rounded-2xl shadow-sm border border-black/5 dark:border-white/5 mb-8">
+                    {[
+                        { val: counts.quiz, label: 'Quizzes' },
+                        { val: counts.notes, label: 'Notes' },
+                        { val: counts.flashcard, label: 'Cards' },
+                        { val: counts.summarize, label: 'Summaries' }
+                    ].map(stat => (
+                        <div key={stat.label} className="flex flex-col items-center">
+                            <span className="text-xl font-black text-indigo-600 dark:text-indigo-400">{stat.val}</span>
+                            <span className="text-[10px] font-bold text-black/40 dark:text-white/40 uppercase tracking-wider mt-1">{stat.label}</span>
+                        </div>
+                    ))}
                 </div>
 
-                <Link href="/dashboard/upgrade" className="relative z-10 px-10 py-5 rounded-3xl bg-walia-primary text-white font-black hover:bg-walia-secondary transition-all shadow-xl shadow-walia-primary/30 hover:-translate-y-1">
-                    Upgrade Today
-                </Link>
+                {/* Recent Activity */}
+                <div>
+                    <h2 className="text-lg font-black text-black dark:text-white mb-4">Recent Activity</h2>
+                    <div className="bg-white dark:bg-[#1A1A2E] rounded-2xl shadow-sm border border-black/5 dark:border-white/5 overflow-hidden">
+                        {recentActivity.map((item, i) => {
+                            const { Icon, color } = getToolIcon(item.tool);
+                            return (
+                                <div key={i} className="group flex items-center p-4 border-b border-black/5 dark:border-white/5 last:border-0 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                                    <div className="w-11 h-11 rounded-xl flex items-center justify-center mr-4" style={{ backgroundColor: `${color}20` }}>
+                                        <Icon className="w-5 h-5" style={{ color }} />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <h4 className="text-sm font-bold text-black dark:text-white truncate">{item.title}</h4>
+                                        <p className="text-[10px] font-bold text-black/40 dark:text-white/40 uppercase tracking-widest mt-0.5">{item.tool} · {item.date}</p>
+                                    </div>
+                                    <div className="w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" style={{ backgroundColor: `${color}10` }}>
+                                        <ChevronRight className="w-4 h-4" style={{ color }} />
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
             </div>
-
         </div>
     );
 }

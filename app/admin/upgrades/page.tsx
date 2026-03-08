@@ -22,6 +22,7 @@ export default function AdminUpgrades() {
     const [requests, setRequests] = useState<UpgradeRequest[]>([]);
     const [loading, setLoading] = useState(true);
     const [processingId, setProcessingId] = useState<string | null>(null);
+    const [selectedDurations, setSelectedDurations] = useState<Record<string, number>>({});
 
     useEffect(() => {
         const q = query(collection(db, 'upgrades'), where('status', '==', 'Pending'), orderBy('createdAt', 'asc'));
@@ -33,17 +34,24 @@ export default function AdminUpgrades() {
     }, []);
 
     const handleApprove = async (req: UpgradeRequest) => {
-        if (!confirm('Approve this upgrade?')) return;
+        const months = selectedDurations[req.id] || 1; // Default to 1 month
+        if (!confirm(`Approve this upgrade for ${months} month(s)?`)) return;
         setProcessingId(req.id);
 
         try {
+            // Calculate Dates
+            const now = new Date();
+            const expiration = new Date();
+            expiration.setMonth(expiration.getMonth() + months);
+
             // Update request status
-            await updateDoc(doc(db, 'upgrades', req.id), { status: 'Approved' });
+            await updateDoc(doc(db, 'upgrades', req.id), { status: 'Approved', approvedDuration: months });
 
             // Update user to PRO
             await updateDoc(doc(db, 'users', req.userId), {
-                plan: 'pro',
-                // Optional: set expiration Date based on monthly vs yearly
+                plan: 'Pro',
+                proSince: now,
+                proUntil: expiration,
             });
 
             // Optional: send notification
@@ -155,13 +163,26 @@ export default function AdminUpgrades() {
                                 >
                                     {processingId === req.id ? '...' : 'Reject'}
                                 </button>
-                                <button
-                                    onClick={() => handleApprove(req)}
-                                    disabled={processingId !== null}
-                                    className="flex-[2] py-3 rounded-xl bg-indigo-600 text-white font-bold text-xs uppercase tracking-widest hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-indigo-600/20"
-                                >
-                                    <Check className="w-4 h-4" /> {processingId === req.id ? 'Processing...' : 'Approve & Upgrade'}
-                                </button>
+
+                                <div className="flex-[2] flex gap-2">
+                                    <select
+                                        className="bg-[#0A0A0B] border border-white/10 text-white text-xs rounded-xl px-3 outline-none focus:border-indigo-500 transition-colors cursor-pointer"
+                                        value={selectedDurations[req.id] || 1}
+                                        onChange={(e) => setSelectedDurations({ ...selectedDurations, [req.id]: parseInt(e.target.value) })}
+                                    >
+                                        <option value={1}>1 Month</option>
+                                        <option value={3}>3 Months</option>
+                                        <option value={6}>6 Months</option>
+                                        <option value={12}>1 Year</option>
+                                    </select>
+                                    <button
+                                        onClick={() => handleApprove(req)}
+                                        disabled={processingId !== null}
+                                        className="flex-1 py-3 rounded-xl bg-indigo-600 text-white font-bold text-xs uppercase tracking-widest hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-indigo-600/20"
+                                    >
+                                        <Check className="w-4 h-4" /> {processingId === req.id ? 'Processing...' : 'Approve'}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     ))
