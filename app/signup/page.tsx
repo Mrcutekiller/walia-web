@@ -64,21 +64,30 @@ export default function SignupPage() {
 
     const saveProfileAndRedirect = async (uid: string, displayName: string, photoURL?: string) => {
         try {
-            await setDoc(doc(db, 'users', uid), {
-                name: displayName,
-                username: username || displayName.toLowerCase().replace(/\s+/g, ''),
-                email: auth.currentUser?.email || email,
-                photoURL: photoURL || avatar,
-                gender, age, schoolLevel, school, useCases, whyWalia,
-                plan: 'free',
-                createdAt: serverTimestamp(),
-            });
+            // timeout promise: reject after 5s so we don't hang if user loses connection
+            const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000));
+
+            await Promise.race([
+                setDoc(doc(db, 'users', uid), {
+                    name: displayName,
+                    username: username || displayName.toLowerCase().replace(/\s+/g, ''),
+                    email: auth.currentUser?.email || email,
+                    photoURL: photoURL || avatar,
+                    gender, age, schoolLevel, school, useCases, whyWalia,
+                    plan: 'free',
+                    createdAt: serverTimestamp(),
+                }),
+                timeout
+            ]);
+
             // Small delay to ensure Firestore sync before redirect
             await new Promise(r => setTimeout(r, 500));
             router.replace('/dashboard');
         } catch (err: any) {
-            console.error("Firestore save error:", err);
-            setError("Account created, but failed to save profile. You can update it later in settings.");
+            if (err.message !== 'timeout') {
+                console.error("Firestore save error:", err);
+                setError("Account created, but failed to save profile. You can update it later in settings.");
+            }
             // Still redirect so they aren't stuck
             router.replace('/dashboard');
         }
@@ -124,12 +133,16 @@ export default function SignupPage() {
 
             // Try updating profile, but don't block everything if it fails
             try {
-                await updateProfile(cred.user, {
-                    displayName: name,
-                    photoURL: avatar
-                });
+                const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 4000));
+                await Promise.race([
+                    updateProfile(cred.user, {
+                        displayName: name,
+                        photoURL: avatar
+                    }),
+                    timeout
+                ]);
             } catch (pErr) {
-                console.warn("Profile update failed:", pErr);
+                console.warn("Profile update failed or timed out:", pErr);
             }
 
             await saveProfileAndRedirect(cred.user.uid, name, avatar);
@@ -148,9 +161,18 @@ export default function SignupPage() {
                 const { checkUsernameUnique } = await import('@/lib/user');
                 setLoading(true);
                 try {
-                    const isUnique = await checkUsernameUnique(username);
+                    const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000));
+                    const isUnique = await Promise.race([
+                        checkUsernameUnique(username),
+                        timeout
+                    ]);
+                    // @ts-ignore
                     if (!isUnique) { setError('Username is already taken.'); return; }
-                } catch (err) {
+                } catch (err: any) {
+                    if (err.message === 'timeout') {
+                        setError('Network timeout while checking username. Please try again.');
+                        return;
+                    }
                     console.error("Username check error:", err);
                 } finally {
                     setLoading(true); // Keep loading state if we are moving to next step? No.
