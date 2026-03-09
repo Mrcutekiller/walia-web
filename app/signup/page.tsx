@@ -147,8 +147,12 @@ export default function SignupPage() {
 
             await saveProfileAndRedirect(cred.user.uid, name, avatar);
         } catch (err: any) {
-            console.error("Signup error:", err);
-            setError(err.message?.replace('Firebase: ', '') || 'Failed to create account.');
+            console.warn("Signup error:", err.message);
+            if (err?.code === 'auth/email-already-in-use') {
+                setError('This email is already registered. Please sign in instead.');
+            } else {
+                setError(err.message?.replace('Firebase: ', '') || 'Failed to create account.');
+            }
             setLoading(false);
         }
     };
