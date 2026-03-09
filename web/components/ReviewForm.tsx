@@ -17,11 +17,7 @@ export default function ReviewForm({ onSuccess }: ReviewFormProps) {
     const [text, setText] = useState('');
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
-<<<<<<< HEAD
     const [error, setError] = useState<string | null>(null);
-=======
-    const [error, setError] = useState('');
->>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
 
     const handleSubmit = async () => {
         if (!user) { setError('Please log in to submit a review.'); return; }
@@ -29,7 +25,6 @@ export default function ReviewForm({ onSuccess }: ReviewFormProps) {
         if (text.trim().length < 10) { setError('Please write at least 10 characters.'); return; }
 
         setLoading(true);
-<<<<<<< HEAD
         setError(null);
 
         const timeout = new Promise((_, reject) =>
@@ -53,22 +48,10 @@ export default function ReviewForm({ onSuccess }: ReviewFormProps) {
                 timeout
             ]);
 
-=======
-        setError('');
-        try {
-            await addDoc(collection(db, 'reviews'), {
-                name: user.displayName || user.email?.split('@')[0] || 'Anonymous',
-                rating,
-                text: text.trim(),
-                userId: user.uid,
-                createdAt: serverTimestamp(),
-            });
->>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
             setSuccess(true);
             setRating(0);
             setText('');
             onSuccess?.();
-<<<<<<< HEAD
         } catch (err: any) {
             console.error('Review submission error:', err);
             if (err.message === 'TIMEOUT') {
@@ -76,10 +59,6 @@ export default function ReviewForm({ onSuccess }: ReviewFormProps) {
             } else {
                 setError('Failed to submit. Please try again.');
             }
-=======
-        } catch (err) {
-            setError('Failed to submit. Please try again.');
->>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
         } finally {
             setLoading(false);
         }

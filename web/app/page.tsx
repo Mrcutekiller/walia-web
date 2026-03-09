@@ -3,10 +3,7 @@
 import Footer from '@/components/Footer';
 import Navbar from '@/components/Navbar';
 import { db } from '@/lib/firebase';
-<<<<<<< HEAD
 import { formatTimeAgo } from '@/lib/utils';
-=======
->>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
 import { collection, onSnapshot, orderBy, query, Timestamp } from 'firebase/firestore';
 import { ArrowRight, Brain, Calendar, ChevronRight, Download, MessageSquare, Sparkles, Star, Users, Wrench, Zap } from 'lucide-react';
 import Link from 'next/link';
@@ -15,23 +12,16 @@ import { useEffect, useState } from 'react';
 // ─── Types ───
 interface Review {
   id: string;
-<<<<<<< HEAD
   userName: string;
   userPhotoURL?: string;
   rating: number;
   comment: string;
-=======
-  name: string;
-  rating: number;
-  text: string;
->>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
   createdAt: Timestamp;
 }
 
 // ─── Scroll reveal hook ───
 function useScrollReveal() {
   useEffect(() => {
-<<<<<<< HEAD
     let ticking = false;
     const observer = new IntersectionObserver(
       (entries) => {
@@ -56,19 +46,6 @@ function useScrollReveal() {
     const elements = document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale');
     elements.forEach((el) => observer.observe(el));
 
-=======
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) entry.target.classList.add('visible');
-        });
-      },
-      { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
-    );
-    document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale').forEach((el) => {
-      observer.observe(el);
-    });
->>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
     return () => observer.disconnect();
   }, []);
 }
@@ -133,11 +110,7 @@ export default function Home() {
             <div className="max-w-2xl">
 
               {/* Badge */}
-<<<<<<< HEAD
               <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-white/10 border border-white/20 md:backdrop-blur-sm mb-6">
-=======
-              <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm mb-6">
->>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
                 <span className="w-2 h-2 rounded-full bg-green-400 mr-3 animate-pulse" />
                 <span className="text-xs font-bold text-white/80 tracking-wide">v1.0 — Now on Android</span>
               </div>
@@ -337,11 +310,7 @@ export default function Home() {
               <div className="text-center py-20 reveal">
                 <div className="text-5xl mb-4">💬</div>
                 <p className="text-gray-400 font-medium">No reviews yet. Login and be the first!</p>
-<<<<<<< HEAD
                 <Link href="/login?redirect=review" className="mt-6 inline-flex items-center px-6 py-3 rounded-xl bg-black text-white font-bold hover:-translate-y-1 transition-all">
-=======
-                <Link href="/login" className="mt-6 inline-flex items-center px-6 py-3 rounded-xl bg-black text-white font-bold hover:-translate-y-1 transition-all">
->>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
                   Log in to Review
                 </Link>
               </div>
@@ -354,21 +323,12 @@ export default function Home() {
                   >
                     {/* Stars */}
                     <div className="flex items-center gap-1 mb-4">
-<<<<<<< HEAD
                       {[...Array(5)].map((_, i) => (
                         <Star key={i} className={`w-3.5 h-3.5 ${i < review.rating ? 'fill-[#FFD700] text-[#FFD700]' : 'text-black/10 dark:text-white/10'}`} />
-=======
-                      {[...Array(5)].map((_, j) => (
-                        <Star
-                          key={j}
-                          className={`w-4 h-4 ${j < review.rating ? 'fill-black text-black' : 'fill-gray-200 text-gray-200'}`}
-                        />
->>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
                       ))}
                       <span className="text-xs text-gray-400 ml-2 font-medium">{review.rating}.0</span>
                     </div>
                     {/* Text */}
-<<<<<<< HEAD
                     <p className="text-sm text-gray-600 leading-relaxed font-medium mb-6">"{review.comment}"</p>
                     {/* Author */}
                     <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
@@ -382,17 +342,6 @@ export default function Home() {
                       <div>
                         <p className="text-sm font-black text-black">{review.userName}</p>
                         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">{formatTimeAgo(review.createdAt)}</p>
-=======
-                    <p className="text-sm text-gray-600 leading-relaxed font-medium mb-6">"{review.text}"</p>
-                    {/* Author */}
-                    <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
-                      <div className="w-9 h-9 rounded-full bg-black flex items-center justify-center shrink-0">
-                        <span className="text-white text-sm font-black">{review.name.charAt(0).toUpperCase()}</span>
-                      </div>
-                      <div>
-                        <p className="text-sm font-black text-black">{review.name}</p>
-                        <p className="text-xs text-gray-400 font-medium">Walia User</p>
->>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
                       </div>
                     </div>
                   </div>
@@ -403,11 +352,7 @@ export default function Home() {
             {/* CTA to leave a review */}
             <div className="text-center mt-12 reveal">
               <Link
-<<<<<<< HEAD
                 href="/login?redirect=review"
-=======
-                href="/dashboard/profile"
->>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
                 className="inline-flex items-center px-8 py-4 rounded-2xl bg-black text-white font-bold hover:bg-zinc-800 transition-all hover:-translate-y-1 shadow-lg"
               >
                 <Star className="w-5 h-5 mr-3" />
