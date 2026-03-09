@@ -76,7 +76,7 @@ export default function EventsPage() {
         if (!title || !date || !user) return;
 
         try {
-            if (editingEvent) {
+            if (editingEvent?.id) {
                 await updateDoc(doc(db, 'users', user.uid, 'events', editingEvent.id), {
                     title, time, date, type, color,
                     updatedAt: serverTimestamp()
@@ -103,7 +103,7 @@ export default function EventsPage() {
     };
 
     const openModal = (event?: Event) => {
-        if (event) {
+        if (event && event.id) {
             setEditingEvent(event);
             setTitle(event.title);
             setTime(event.time);
@@ -112,11 +112,11 @@ export default function EventsPage() {
             setColor(event.color);
         } else {
             setEditingEvent(null);
-            setTitle('');
-            setTime('');
-            setDate('');
-            setType('Study');
-            setColor('bg-black');
+            setTitle(event?.title || '');
+            setTime(event?.time || '');
+            setDate(event?.date || '');
+            setType(event?.type || 'Study');
+            setColor(event?.color || 'bg-black');
         }
         setShowAddModal(true);
     };
