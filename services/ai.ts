@@ -5,9 +5,9 @@
  */
 
 // ─── API keys ─────────────────────────────────────────────────────────────────
-const GEMINI_API_KEY = 'REDACTED';
-const OPENAI_API_KEY = 'REDACTED';
-const DEEPSEEK_API_KEY = 'REDACTED';
+const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY || '';
+const OPENAI_API_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY || process.env.NEXT_PUBLIC_OPENAI_API_KEY || process.env.OPENAI_API_KEY || '';
+const DEEPSEEK_API_KEY = process.env.EXPO_PUBLIC_DEEPSEEK_API_KEY || process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY || process.env.DEEPSEEK_API_KEY || '';
 
 // ─── System prompt ────────────────────────────────────────────────────────────
 const SYSTEM_PROMPT = `You are Walia AI, an intelligent and friendly AI study companion built into the Walia app for Ethiopian students.
