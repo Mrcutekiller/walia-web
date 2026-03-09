@@ -1,9 +1,11 @@
 import { deleteUser } from 'firebase/auth';
 import {
+    addDoc,
     collection,
     doc,
     getDocs,
     query,
+    serverTimestamp,
     where,
     writeBatch
 } from 'firebase/firestore';
@@ -75,7 +77,6 @@ export async function getOrCreateChat(user1Id: string, user2Id: string) {
 
     if (!snap.empty) return snap.docs[0].id;
 
-    const { addDoc, serverTimestamp } = require('firebase/firestore');
     const newChat = await addDoc(collection(db, 'chats'), {
         participants,
         type: 'dm',
@@ -87,7 +88,6 @@ export async function getOrCreateChat(user1Id: string, user2Id: string) {
 }
 
 export async function createGroupChat(creatorId: string, participantIds: string[], name: string) {
-    const { addDoc, serverTimestamp } = require('firebase/firestore');
     const participants = Array.from(new Set([creatorId, ...participantIds]));
     const newChat = await addDoc(collection(db, 'chats'), {
         participants,
