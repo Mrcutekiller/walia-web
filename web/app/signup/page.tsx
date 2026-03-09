@@ -106,8 +106,10 @@ export default function SignupPage() {
                 user.photoURL || undefined
             );
         } catch (err: any) {
-            console.error("Google sign-in error:", err);
-            if (err?.code !== 'auth/popup-closed-by-user') {
+            if (err?.code !== 'auth/popup-closed-by-user' && err?.code !== 'auth/cancelled-popup-request') {
+                if (err?.code !== 'unavailable') {
+                    console.error("Google sign-in error:", err);
+                }
                 setError(err.message?.includes('auth/operation-not-supported')
                     ? 'Google sign-in is not enabled. Please use email/password.'
                     : 'Google sign-in failed. Please verify your internet connection or try again.');
