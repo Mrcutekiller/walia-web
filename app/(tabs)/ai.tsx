@@ -1,14 +1,22 @@
 import { BorderRadius, FontSize, FontWeight, Spacing } from '@/constants/theme';
 import { AIMessage, AIProvider, askAI, PROVIDERS } from '@/services/ai';
+<<<<<<< HEAD
 import { db } from '@/services/firebase';
 import { useAuth } from '@/store/auth';
+=======
+import { useAuth } from '@/store/auth';
+import { AI_CHATS } from '@/store/data';
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
 import { useSocial } from '@/store/social';
 import { useTheme } from '@/store/theme';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
+<<<<<<< HEAD
 import { addDoc, collection, doc, onSnapshot, orderBy, query, serverTimestamp, updateDoc } from 'firebase/firestore';
+=======
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
 import React, { useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
@@ -91,12 +99,16 @@ export default function AITabScreen() {
     const [message, setMessage] = useState('');
     const [preferredProvider, setPreferredProvider] = useState<AIProvider>('auto');
     const [showModels, setShowModels] = useState(false);
+<<<<<<< HEAD
     const [sessions, setSessions] = useState<{ id: string, title: string, lastText: string, updatedAt: any }[]>([]);
     const [activeSession, setActiveSession] = useState<string | null>(null);
+=======
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
     const scrollRef = useRef<ScrollView>(null);
 
     const inputRef = useRef<TextInput>(null);
 
+<<<<<<< HEAD
     // Fetch AI Sessions
     useEffect(() => {
         if (!user) return;
@@ -138,6 +150,8 @@ export default function AITabScreen() {
         return () => unsub();
     }, [activeSession, user]);
 
+=======
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
     const buildHistory = (msgs: ChatMessage[]): AIMessage[] =>
         msgs.map(m => ({ role: m.role === 'user' ? 'user' : 'model', parts: [{ text: m.text }] }));
 
@@ -159,9 +173,13 @@ export default function AITabScreen() {
         }
 
         const userMsg: ChatMessage = { id: Date.now().toString(), role: 'user', text: content, imageUri, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) };
+<<<<<<< HEAD
         // Optimistic UI update
         // setChatMessages(prev => [...prev, userMsg]);
 
+=======
+        setChatMessages(prev => [...prev, userMsg]);
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
         setMessage('');
         setShowAttach(false);
         setIsLoading(true);
@@ -169,6 +187,7 @@ export default function AITabScreen() {
         setShowModels(false);
         setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 150);
 
+<<<<<<< HEAD
         let sessionId = activeSession;
         try {
             if (!sessionId) {
@@ -215,6 +234,13 @@ export default function AITabScreen() {
                     createdAt: serverTimestamp()
                 });
             }
+=======
+        try {
+            const { text: aiText, provider } = await askAI(content, buildHistory(chatMessages), preferredProvider);
+            setChatMessages(prev => [...prev, { id: (Date.now() + 1).toString(), role: 'ai', text: aiText, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), provider }]);
+        } catch (e: any) {
+            setChatMessages(prev => [...prev, { id: (Date.now() + 2).toString(), role: 'ai', text: `⚠️ Connection issue.\n\n${e.message}`, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }]);
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
         } finally {
             setIsLoading(false);
             setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 150);
@@ -272,6 +298,7 @@ export default function AITabScreen() {
                     </View>
 
                     {/* Stats bar */}
+<<<<<<< HEAD
                     {sessions.length > 0 && !activeSession && (
                         <View style={styles.statsBar}>
                             <Text style={styles.statsText}>{sessions.length} total sessions</Text>
@@ -282,6 +309,13 @@ export default function AITabScreen() {
                         <View style={styles.statsBar}>
                             <TouchableOpacity onPress={() => setActiveSession(null)}>
                                 <Text style={styles.clearBtn}>← Back to Home / New Chat</Text>
+=======
+                    {chatMessages.length > 0 && (
+                        <View style={styles.statsBar}>
+                            <Text style={styles.statsText}>{chatMessages.filter(m => m.role === 'user').length} questions asked</Text>
+                            <TouchableOpacity onPress={() => setChatMessages([])}>
+                                <Text style={styles.clearBtn}>Clear chat</Text>
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
                             </TouchableOpacity>
                         </View>
                     )}
@@ -359,18 +393,29 @@ export default function AITabScreen() {
                             </View>
 
                             <Text style={[styles.recentLabel, { color: colors.textSecondary }]}>📚 Recent conversations</Text>
+<<<<<<< HEAD
                             {sessions.slice(0, 5).map(c => (
                                 <TouchableOpacity key={c.id} style={[styles.recentCard, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={() => setActiveSession(c.id)}>
+=======
+                            {AI_CHATS.filter(c => user?.id === '1').slice(0, 3).map(c => (
+                                <TouchableOpacity key={c.id} style={[styles.recentCard, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={() => router.push(`/ai/${c.id}` as any)}>
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
                                     <View style={styles.recentIcon}>
                                         <Image source={require('../../assets/images/walia-logo.png')} style={{ width: 24, height: 24 }} resizeMode="contain" />
                                     </View>
                                     <View style={{ flex: 1 }}>
                                         <Text style={[styles.recentTitle, { color: colors.text }]}>{c.title}</Text>
+<<<<<<< HEAD
                                         <Text style={[styles.recentSub, { color: colors.textSecondary }]} numberOfLines={1}>{c.lastText}</Text>
                                     </View>
                                     <Text style={[styles.recentTime, { color: colors.textTertiary }]}>
                                         {c.updatedAt ? new Date(c.updatedAt.toDate()).toLocaleDateString() : ''}
                                     </Text>
+=======
+                                        <Text style={[styles.recentSub, { color: colors.textSecondary }]} numberOfLines={1}>{c.lastMessage}</Text>
+                                    </View>
+                                    <Text style={[styles.recentTime, { color: colors.textTertiary }]}>{c.timestamp}</Text>
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
                                 </TouchableOpacity>
                             ))}
                         </View>

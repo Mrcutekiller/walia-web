@@ -1,10 +1,15 @@
 'use client';
 
+<<<<<<< HEAD
 import { auth, db, googleProvider } from '@/lib/firebase';
+=======
+import { auth, googleProvider } from '@/lib/firebase';
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
 import {
     signInWithEmailAndPassword,
     signInWithPopup
 } from 'firebase/auth';
+<<<<<<< HEAD
 import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { AlertCircle, ArrowRight, Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import Image from 'next/image';
@@ -13,19 +18,33 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
 
 function LoginContent() {
+=======
+import { AlertCircle, ArrowRight, Lock, Mail } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+
+export default function LoginPage() {
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [googleLoading, setGoogleLoading] = useState(false);
+<<<<<<< HEAD
     const [showPassword, setShowPassword] = useState(false);
     const router = useRouter();
     const searchParams = useSearchParams();
+=======
+    const router = useRouter();
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(''); setLoading(true);
         try {
+<<<<<<< HEAD
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const redirect = searchParams.get('redirect');
 
@@ -38,6 +57,11 @@ function LoginContent() {
             }
         } catch (err: any) {
             console.error("Login error:", err);
+=======
+            await signInWithEmailAndPassword(auth, email, password);
+            router.replace('/chat');
+        } catch {
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
             setError('Invalid email or password. Please try again.');
         } finally { setLoading(false); }
     };
@@ -45,6 +69,7 @@ function LoginContent() {
     const handleGoogle = async () => {
         setError(''); setGoogleLoading(true);
         try {
+<<<<<<< HEAD
             const result = await signInWithPopup(auth, googleProvider);
             const user = result.user;
 
@@ -78,11 +103,20 @@ function LoginContent() {
                 setError(err.message?.includes('auth/operation-not-supported')
                     ? 'Google sign-in is not enabled. Please use email/password.'
                     : 'Google sign-in failed. Please verify your internet connection or try again.');
+=======
+            await signInWithPopup(auth, googleProvider);
+            await new Promise(r => setTimeout(r, 300));
+            router.replace('/chat');
+        } catch (err: any) {
+            if (err?.code !== 'auth/popup-closed-by-user') {
+                setError('Google sign-in failed. Please try again.');
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
             }
         } finally { setGoogleLoading(false); }
     };
 
     return (
+<<<<<<< HEAD
         <main className="h-screen w-screen overflow-hidden relative bg-[#F8FAFC] flex items-center justify-center p-6 selection:bg-indigo-100 selection:text-indigo-900">
             {/* Professional Background Gradient */}
             <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
@@ -104,6 +138,43 @@ function LoginContent() {
                     <div className="text-center mb-8">
                         <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">Welcome back</h2>
                         <p className="text-slate-500 font-medium text-sm">Please enter your details to sign in.</p>
+=======
+        <main className="h-screen w-screen overflow-hidden relative">
+
+            {/* ── FULLSCREEN VIDEO BACKGROUND ── */}
+            <video
+                autoPlay muted loop playsInline
+                className="absolute inset-0 w-full h-full object-cover"
+                src="/3d-logo.mp4"
+            />
+            <div className="absolute inset-0 bg-black/50" />
+
+            {/* Logo top-left */}
+            <Link href="/" className="absolute top-5 left-5 z-20 flex items-center gap-2">
+                <div className="w-9 h-9 rounded-full bg-white/90 flex items-center justify-center">
+                    <Image src="/walia-logo.png" alt="Walia" width={28} height={28} className="object-contain" />
+                </div>
+                <span className="text-white font-black text-lg tracking-tighter">Walia</span>
+            </Link>
+
+            {/* Brand text — bottom left on desktop, top area on mobile */}
+            <div className="absolute bottom-10 left-8 z-10 hidden md:block">
+                <p className="text-white/40 text-[10px] font-black uppercase tracking-[0.5em] mb-2">From the Mountains of Ethiopia</p>
+                <h1 className="text-5xl font-black text-white tracking-tight leading-tight">
+                    Climb Higher.<br />Think Smarter.
+                </h1>
+            </div>
+
+            {/* ── LOGIN CARD ── */}
+            {/* Desktop: right side, vertically centered */}
+            {/* Mobile: centered on screen, floating over video */}
+            <div className="absolute inset-0 z-10 flex items-end pb-8 justify-center md:items-center md:pb-0 md:justify-end md:pr-20">
+                <div className="w-[85%] max-w-sm bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl shadow-black/30 p-5 sm:p-6 md:p-8 overflow-y-auto max-h-[80vh]">
+
+                    <div className="mb-4 md:mb-6">
+                        <h2 className="text-xl md:text-2xl font-black text-black tracking-tight mb-0.5">Welcome back</h2>
+                        <p className="text-gray-400 font-medium text-xs">Log in to continue your journey.</p>
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
                     </div>
 
                     {error && (
@@ -117,10 +188,17 @@ function LoginContent() {
                     <button
                         onClick={handleGoogle}
                         disabled={googleLoading || loading}
+<<<<<<< HEAD
                         className="w-full flex items-center justify-center gap-3 py-3.5 rounded-2xl bg-white border border-slate-200 hover:border-indigo-500 hover:bg-slate-50 transition-all font-bold text-slate-700 text-sm disabled:opacity-50 shadow-sm"
                     >
                         {googleLoading ? (
                             <div className="w-5 h-5 border-2 border-slate-300 border-t-indigo-600 rounded-full animate-spin" />
+=======
+                        className="w-full flex items-center justify-center gap-2 py-3 md:py-3.5 rounded-xl bg-white border-2 border-gray-200 hover:border-black/30 hover:shadow-lg transition-all font-bold text-black text-sm disabled:opacity-50"
+                    >
+                        {googleLoading ? (
+                            <div className="w-5 h-5 border-2 border-gray-300 border-t-black rounded-full animate-spin" />
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
                         ) : (
                             <svg className="w-5 h-5" viewBox="0 0 24 24">
                                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -129,6 +207,7 @@ function LoginContent() {
                                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                             </svg>
                         )}
+<<<<<<< HEAD
                         <span className="tracking-tight">Sign in with Google</span>
                     </button>
 
@@ -169,20 +248,64 @@ function LoginContent() {
                                 >
                                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                 </button>
+=======
+                        Continue with Google
+                    </button>
+
+                    <div className="flex items-center gap-3 my-4">
+                        <div className="flex-1 h-px bg-gray-200" />
+                        <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">or</span>
+                        <div className="flex-1 h-px bg-gray-200" />
+                    </div>
+
+                    <form onSubmit={handleLogin} className="space-y-3">
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Email</label>
+                            <div className="relative group">
+                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 group-focus-within:text-black transition-colors" />
+                                <input
+                                    type="email" value={email} onChange={e => setEmail(e.target.value)}
+                                    placeholder="name@example.com" required
+                                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:border-black outline-none text-sm font-medium text-black placeholder:text-gray-300 transition-colors"
+                                />
+                            </div>
+                        </div>
+                        <div className="space-y-1">
+                            <div className="flex justify-between">
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Password</label>
+                                <button type="button" className="text-[10px] font-bold text-gray-400 hover:text-black transition-colors">Forgot?</button>
+                            </div>
+                            <div className="relative group">
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 group-focus-within:text-black transition-colors" />
+                                <input
+                                    type="password" value={password} onChange={e => setPassword(e.target.value)}
+                                    placeholder="••••••••" required
+                                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:border-black outline-none text-sm font-medium text-black placeholder:text-gray-300 transition-colors"
+                                />
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
                             </div>
                         </div>
                         <button
                             type="submit" disabled={loading || googleLoading}
+<<<<<<< HEAD
                             className="w-full mt-4 py-4 rounded-2xl bg-indigo-600 text-white font-extrabold flex items-center justify-center gap-2 hover:bg-indigo-700 active:scale-[0.98] transition-all shadow-lg shadow-indigo-600/20 disabled:opacity-50 text-sm"
+=======
+                            className="w-full py-3 rounded-xl bg-black text-white font-black flex items-center justify-center gap-2 hover:bg-zinc-800 transition-all shadow-lg disabled:opacity-50 text-sm"
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
                         >
                             {loading ? (
                                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                             ) : (
+<<<<<<< HEAD
                                 <>Sign in to Walia <ArrowRight className="w-4 h-4" /></>
+=======
+                                <>Log In <ArrowRight className="w-4 h-4" /></>
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
                             )}
                         </button>
                     </form>
 
+<<<<<<< HEAD
                     <p className="text-center text-sm text-slate-500 mt-8">
                         New to Walia?{' '}
                         <Link href="/signup" className="font-bold text-indigo-600 hover:text-indigo-700 transition-colors">Create account</Link>
@@ -194,11 +317,19 @@ function LoginContent() {
                     <div className="h-4 w-px bg-slate-200" />
                     <Link href="/legal/privacy" className="text-[10px] font-bold text-slate-400 hover:text-slate-600 uppercase tracking-widest transition-colors">Privacy Policy</Link>
                 </div>
+=======
+                    <p className="text-center text-xs text-gray-400 mt-4">
+                        Don't have an account?{' '}
+                        <Link href="/signup" className="font-bold text-black hover:underline">Create one free</Link>
+                    </p>
+                </div>
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
             </div>
         </main>
     );
 }
 
+<<<<<<< HEAD
 export default function LoginPage() {
     return (
         <Suspense fallback={
@@ -211,4 +342,6 @@ export default function LoginPage() {
     );
 }
 
+=======
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
 

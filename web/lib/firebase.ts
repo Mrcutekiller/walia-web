@@ -18,7 +18,11 @@ export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
 export const googleProvider = new GoogleAuthProvider();
+<<<<<<< HEAD
 googleProvider.setCustomParameters({
     prompt: 'select_account'
 });
+=======
+
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
 export default app;

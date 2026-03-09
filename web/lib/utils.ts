@@ -4,6 +4,7 @@ import { twMerge } from "tailwind-merge";
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
+<<<<<<< HEAD
 export function formatTimeAgo(date: Date | any): string {
     if (!date) return 'Just now';
 
@@ -24,3 +25,5 @@ export function formatTimeAgo(date: Date | any): string {
     const years = Math.floor(months / 12);
     return `${years} year${years === 1 ? '' : 's'} ago`;
 }
+=======
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)

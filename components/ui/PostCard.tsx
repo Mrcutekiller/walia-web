@@ -1,7 +1,11 @@
 import { BorderRadius, FontSize, FontWeight, Spacing } from '@/constants/theme';
+<<<<<<< HEAD
 import { useAuth } from '@/store/auth';
 import { getUserById } from '@/store/data';
 import { SocialPost } from '@/store/social';
+=======
+import { getUserById, Post } from '@/store/data';
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
 import { useTheme } from '@/store/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -10,7 +14,11 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Avatar } from './Avatar';
 
 interface PostCardProps {
+<<<<<<< HEAD
     post: SocialPost;
+=======
+    post: Post;
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
     onLike?: () => void;
     onComment?: () => void;
     onShare?: () => void;
@@ -21,12 +29,20 @@ interface PostCardProps {
 
 export function PostCard({ post, onLike, onComment, onShare, onPress, onQuizAnswer, quizAnswered }: PostCardProps) {
     const { colors } = useTheme();
+<<<<<<< HEAD
     const { user: currentUser } = useAuth();
     const router = useRouter();
     const user = getUserById(post.authorId);
     const typeColors: Record<string, string> = { quiz: '#6C63FF', note: '#FFA502', ai_share: '#4ECDC4', text: '#FF6B6B', general: '#FF6B6B' };
     const typeIcons: Record<string, string> = { quiz: '🧮', note: '📒', ai_share: '🤖', text: '💬', general: '💬' };
     const typeLabels: Record<string, string> = { quiz: 'Quiz', note: 'Note', ai_share: 'AI Share', text: 'Post', general: 'General' };
+=======
+    const router = useRouter();
+    const user = getUserById(post.userId);
+    const typeColors: Record<string, string> = { quiz: '#6C63FF', note: '#FFA502', ai_share: '#4ECDC4', text: '#FF6B6B' };
+    const typeIcons: Record<string, string> = { quiz: '🧮', note: '📒', ai_share: '🤖', text: '💬' };
+    const typeLabels: Record<string, string> = { quiz: 'Quiz', note: 'Note', ai_share: 'AI Share', text: 'Post' };
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
     const accent = typeColors[post.type] || colors.primary;
 
     const getOptionStyle = (i: number) => {
@@ -59,6 +75,7 @@ export function PostCard({ post, onLike, onComment, onShare, onPress, onQuizAnsw
             <View style={styles.header}>
                 <TouchableOpacity
                     style={styles.userInfo}
+<<<<<<< HEAD
                     onPress={() => router.push(`/profile/${post.authorId}` as any)}
                     activeOpacity={0.7}
                 >
@@ -68,6 +85,15 @@ export function PostCard({ post, onLike, onComment, onShare, onPress, onQuizAnsw
                         <Text style={[styles.time, { color: colors.textTertiary }]}>
                             {post.createdAt ? new Date(post.createdAt.toDate?.() || post.createdAt).toLocaleDateString() : 'Just now'}
                         </Text>
+=======
+                    onPress={() => router.push(`/profile/${post.userId}` as any)}
+                    activeOpacity={0.7}
+                >
+                    <Avatar emoji={user?.avatar || '👤'} size={40} />
+                    <View style={styles.headerText}>
+                        <Text style={[styles.name, { color: colors.text }]}>{user?.name || 'Unknown'}</Text>
+                        <Text style={[styles.time, { color: colors.textTertiary }]}>{post.timestamp}</Text>
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
                     </View>
                 </TouchableOpacity>
                 <View style={[styles.typeBadge, { backgroundColor: `${accent}18` }]}>
@@ -110,21 +136,38 @@ export function PostCard({ post, onLike, onComment, onShare, onPress, onQuizAnsw
             <View style={[styles.actions, { borderTopColor: colors.divider }]}>
                 <TouchableOpacity style={styles.action} onPress={onLike}>
                     <Ionicons
+<<<<<<< HEAD
                         name={post.likes?.includes(currentUser?.id || '') ? 'heart' : 'heart-outline'}
                         size={20}
                         color={post.likes?.includes(currentUser?.id || '') ? '#FF6B6B' : colors.textSecondary}
                     />
                     <Text style={[styles.actionText, { color: post.likes?.includes(currentUser?.id || '') ? '#FF6B6B' : colors.textSecondary }]}>
                         {post.likes?.length || 0}
+=======
+                        name={post.liked ? 'heart' : 'heart-outline'}
+                        size={20}
+                        color={post.liked ? '#FF6B6B' : colors.textSecondary}
+                    />
+                    <Text style={[styles.actionText, { color: post.liked ? '#FF6B6B' : colors.textSecondary }]}>
+                        {post.likes}
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
                     </Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.action} onPress={onComment}>
                     <Ionicons name="chatbubble-outline" size={18} color={colors.textSecondary} />
+<<<<<<< HEAD
                     <Text style={[styles.actionText, { color: colors.textSecondary }]}>{post.commentCount || 0}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.action} onPress={onShare}>
                     <Ionicons name="share-outline" size={18} color={colors.textSecondary} />
                     <Text style={[styles.actionText, { color: colors.textSecondary }]}>0</Text>
+=======
+                    <Text style={[styles.actionText, { color: colors.textSecondary }]}>{post.comments.length}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.action} onPress={onShare}>
+                    <Ionicons name="share-outline" size={18} color={colors.textSecondary} />
+                    <Text style={[styles.actionText, { color: colors.textSecondary }]}>{post.shares}</Text>
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
                 </TouchableOpacity>
             </View>
         </TouchableOpacity>

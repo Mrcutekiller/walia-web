@@ -45,6 +45,10 @@ export default function NewPostScreen() {
         }
 
         addPost({
+<<<<<<< HEAD
+=======
+            userId: '1',
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
             type,
             title: title.trim() || undefined,
             content: content.trim(),

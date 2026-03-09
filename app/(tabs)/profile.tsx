@@ -46,8 +46,13 @@ export default function ProfileScreen() {
     const social = useSocial();
 
     const { xp, level, xpProgress, isPro, followers, following, posts, totalViews, xpToNextLevel } = social;
+<<<<<<< HEAD
     const myPosts = posts.filter(p => p.authorId === user?.id);
     const totalLikes = myPosts.reduce((sum, p) => sum + p.likes.length, 0);
+=======
+    const myPosts = posts.filter(p => p.userId === user?.id);
+    const totalLikes = myPosts.reduce((sum, p) => sum + p.likes, 0);
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
 
     const [notifsEnabled, setNotifsEnabled] = useState(true);
 
@@ -164,7 +169,11 @@ export default function ProfileScreen() {
                     <View style={[styles.profileCard, { backgroundColor: colors.surface }]}>
                         <View style={styles.avatarRow}>
                             <TouchableOpacity style={styles.avatarRing} onPress={handleUpdateAvatar} disabled={updatingAvatar}>
+<<<<<<< HEAD
                                 <Avatar emoji={user?.photoURL || '🧑‍🎓'} size={74} />
+=======
+                                <Avatar emoji={user?.avatar || '🧑‍🎓'} size={74} />
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
                                 <View style={styles.editAvatarBadge}>
                                     <Ionicons name="camera" size={12} color="#fff" />
                                 </View>

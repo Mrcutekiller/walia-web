@@ -1,8 +1,12 @@
 import { Avatar } from '@/components/ui/Avatar';
 import { PostCard } from '@/components/ui/PostCard';
 import { BorderRadius, FontSize, FontWeight, Spacing } from '@/constants/theme';
+<<<<<<< HEAD
 import { getUserById } from '@/store/data';
 import { useSocial } from '@/store/social';
+=======
+import { POSTS, getUserById } from '@/store/data';
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
 import { useTheme } from '@/store/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -18,6 +22,7 @@ export default function PostDetailScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const router = useRouter();
     const { colors, isDark } = useTheme();
+<<<<<<< HEAD
     const { posts, likePost } = useSocial();
     const [comment, setComment] = useState('');
     const dbPost = posts.find(p => p.id === id);
@@ -25,6 +30,14 @@ export default function PostDetailScreen() {
     const [quizAnswered, setQuizAnswered] = useState<number | null>(null);
 
     if (!dbPost) return null;
+=======
+    const [post, setPost] = useState(POSTS.find(p => p.id === id));
+    const [comment, setComment] = useState('');
+    const [comments, setComments] = useState(post?.comments || []);
+    const [quizAnswered, setQuizAnswered] = useState<number | null>(null);
+
+    if (!post) return null;
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
 
     const addComment = () => {
         if (!comment.trim()) return;
@@ -33,19 +46,32 @@ export default function PostDetailScreen() {
     };
 
     const handleLike = () => {
+<<<<<<< HEAD
         likePost(dbPost.id);
+=======
+        setPost(p => p ? { ...p, liked: !p.liked, likes: p.liked ? p.likes - 1 : p.likes + 1 } : p);
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
     };
 
     const handleQuizAnswer = (idx: number) => {
         if (quizAnswered !== null) return; // Already answered
         setQuizAnswered(idx);
+<<<<<<< HEAD
         const correct = idx === dbPost.quizAnswer;
+=======
+        const correct = idx === post.quizAnswer;
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
         setTimeout(() => {
             Alert.alert(
                 correct ? '🎉 Correct!' : '❌ Wrong answer',
                 correct
+<<<<<<< HEAD
                     ? `That's right! "${dbPost.quizOptions?.[idx]}" is the correct answer.`
                     : `The correct answer was "${dbPost.quizOptions?.[dbPost.quizAnswer ?? 0]}". Keep studying! 💪`,
+=======
+                    ? `That's right! "${post.quizOptions?.[idx]}" is the correct answer.`
+                    : `The correct answer was "${post.quizOptions?.[post.quizAnswer ?? 0]}". Keep studying! 💪`,
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
             );
         }, 400);
     };
@@ -76,7 +102,11 @@ export default function PostDetailScreen() {
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: Spacing.xl, paddingBottom: 100 }}>
                 {/* Post card with live like/quiz */}
                 <PostCard
+<<<<<<< HEAD
                     post={dbPost}
+=======
+                    post={post}
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
                     onLike={handleLike}
                     onComment={() => { }}
                     onShare={() => Alert.alert('Shared!', 'Post link copied 📋')}
@@ -102,7 +132,11 @@ export default function PostDetailScreen() {
                     const user = getUserById(c.userId);
                     return (
                         <View key={c.id} style={styles.commentItem}>
+<<<<<<< HEAD
                             <Avatar emoji={user?.photoURL || '🧑‍🎓'} size={36} />
+=======
+                            <Avatar emoji={user?.avatar || '🧑‍🎓'} size={36} />
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
                             <View style={[styles.commentBubble, { backgroundColor: colors.surface }]}>
                                 <View style={styles.commentMeta}>
                                     <Text style={[styles.commentName, { color: colors.text }]}>

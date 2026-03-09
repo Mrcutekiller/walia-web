@@ -15,7 +15,10 @@ import {
     onSnapshot,
     orderBy,
     query,
+<<<<<<< HEAD
     serverTimestamp,
+=======
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
     updateDoc
 } from 'firebase/firestore';
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react';
@@ -36,6 +39,7 @@ export const XP_PER_LEVEL = 500;
 // ─── Types ────────────────────────────────────────────────────────────────────
 export interface SocialPost {
     id: string;
+<<<<<<< HEAD
     authorId: string;
     type: 'quiz' | 'note' | 'ai_share' | 'general' | 'text';
     title?: string;
@@ -44,6 +48,17 @@ export interface SocialPost {
     likes: string[]; // array of user IDs
     commentCount: number;
     comments: Comment[]; // kept for local usage
+=======
+    userId: string;
+    type: 'quiz' | 'note' | 'ai_share' | 'text';
+    title?: string;
+    content: string;
+    timestamp: string;
+    likes: number;
+    liked: boolean;
+    shares: number;
+    comments: Comment[];
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
     quizOptions?: string[];
     quizAnswer?: number;
 }
@@ -182,7 +197,11 @@ export function SocialProvider({ children }: { children: ReactNode }) {
     // ── Real-time Sync ──
     useEffect(() => {
         // 1. Sync Posts
+<<<<<<< HEAD
         const postsQuery = query(collection(db, 'posts'), orderBy('createdAt', 'desc'), firestoreLimit(50));
+=======
+        const postsQuery = query(collection(db, 'posts'), orderBy('timestamp', 'desc'), firestoreLimit(50));
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
         const unsubscribePosts = onSnapshot(postsQuery, (snap: any) => {
             const postsData = snap.docs.map((doc: any) => ({ id: doc.id, ...doc.data() })) as SocialPost[];
             // For authenticated users, we only show real posts. For guests, we show DEFAULT_POSTS if empty.
@@ -293,6 +312,7 @@ export function SocialProvider({ children }: { children: ReactNode }) {
     const isFollowing = useCallback((userId: string) => state.following.includes(userId), [state.following]);
 
     // ── Posts ──
+<<<<<<< HEAD
     const addPost = useCallback(async (post: Omit<SocialPost, 'id' | 'likes' | 'commentCount' | 'comments' | 'createdAt'>) => {
         if (!auth.currentUser) return;
         const newPostData = {
@@ -302,6 +322,18 @@ export function SocialProvider({ children }: { children: ReactNode }) {
             commentCount: 0,
             comments: [],
             createdAt: serverTimestamp(),
+=======
+    const addPost = useCallback(async (post: Omit<SocialPost, 'id' | 'likes' | 'liked' | 'shares' | 'comments' | 'timestamp'>) => {
+        if (!auth.currentUser) return;
+        const newPostData = {
+            ...post,
+            userId: auth.currentUser.uid,
+            likes: 0,
+            liked: false,
+            shares: 0,
+            comments: [],
+            timestamp: new Date().toISOString(),
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
         };
         await addDoc(collection(db, 'posts'), newPostData);
         addXP(XP_REWARDS.post_created, 'Post created 📝');
@@ -311,6 +343,7 @@ export function SocialProvider({ children }: { children: ReactNode }) {
         if (!auth.currentUser) return;
         const postRef = doc(db, 'posts', postId);
         const userRef = doc(db, 'users', auth.currentUser.uid);
+<<<<<<< HEAD
 
         // Find post to check if currently liked
         const post = state.posts.find(p => p.id === postId);
@@ -318,11 +351,21 @@ export function SocialProvider({ children }: { children: ReactNode }) {
 
         await updateDoc(postRef, {
             likes: alreadyLiked ? arrayRemove(auth.currentUser.uid) : arrayUnion(auth.currentUser.uid)
+=======
+        const alreadyLiked = state.likedPostIds.includes(postId);
+
+        await updateDoc(postRef, {
+            likes: increment(alreadyLiked ? -1 : 1)
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
         });
         await updateDoc(userRef, {
             likedPostIds: alreadyLiked ? arrayRemove(postId) : arrayUnion(postId)
         });
+<<<<<<< HEAD
     }, [state.posts]);
+=======
+    }, [state.likedPostIds]);
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
 
     const addComment = useCallback((postId: string, comment: Omit<Comment, 'id' | 'timestamp'>) => {
         const newComment: Comment = { ...comment, id: Date.now().toString(), timestamp: 'Just now' };

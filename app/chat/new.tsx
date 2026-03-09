@@ -64,7 +64,11 @@ export default function NewChatScreen() {
                 type: 'private',
                 participants: [auth.currentUser.uid, targetUserId],
                 name: targetUser?.name || 'User',
+<<<<<<< HEAD
                 photoURL: targetUser?.photoURL || '/avatars/avatar1.jpg',
+=======
+                avatar: targetUser?.avatar || '👤',
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
                 lastMessage: 'Started a conversation',
                 updatedAt: serverTimestamp(),
             });
@@ -83,7 +87,11 @@ export default function NewChatScreen() {
             const ref = await addDoc(collection(db, 'chats'), {
                 type: 'group',
                 name: groupName.trim(),
+<<<<<<< HEAD
                 photoURL: '/avatars/avatar1.jpg',
+=======
+                avatar: '👥',
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
                 participants: [auth.currentUser.uid, ...selected],
                 lastMessage: 'Group created',
                 updatedAt: serverTimestamp(),
@@ -145,7 +153,11 @@ export default function NewChatScreen() {
                         const user = USERS.find(u => u.id === id);
                         return (
                             <TouchableOpacity key={id} style={[styles.selectedChip, { backgroundColor: colors.surfaceAlt }]} onPress={() => toggleSelect(id)}>
+<<<<<<< HEAD
                                 <Text style={styles.selectedEmoji}>{user?.photoURL}</Text>
+=======
+                                <Text style={styles.selectedEmoji}>{user?.avatar}</Text>
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
                                 <Text style={[styles.selectedName, { color: colors.text }]}>{user?.name.split(' ')[0]}</Text>
                                 <Ionicons name="close-circle" size={16} color={colors.textTertiary} />
                             </TouchableOpacity>
@@ -160,7 +172,11 @@ export default function NewChatScreen() {
                         if (isGroup) toggleSelect(u.id);
                         else handleStartChat(u.id);
                     }}>
+<<<<<<< HEAD
                         <Avatar emoji={u.photoURL} size={48} online={u.online} />
+=======
+                        <Avatar emoji={u.avatar} size={48} online={u.online} />
+>>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
                         <View style={styles.userInfo}>
                             <Text style={[styles.userName, { color: colors.text }]}>{u.name}</Text>
                             <Text style={[styles.userUsername, { color: colors.textSecondary }]}>@{u.username}</Text>
