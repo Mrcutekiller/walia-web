@@ -69,9 +69,9 @@ export default function DashboardShell({ children }: { children: React.ReactNode
     const unreadNotifications = 2; // Mock
 
     return (
-        <div className="flex h-screen bg-white text-black font-sans overflow-hidden selection:bg-black selection:text-white">
+        <div className="flex h-screen bg-white dark:bg-[#0A0A18] text-black dark:text-white font-sans overflow-hidden selection:bg-black selection:text-white transition-colors duration-300">
             {/* Mobile Header */}
-            <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-200 z-50 flex items-center justify-between px-4">
+            <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-white dark:bg-[#0A0A18] border-b border-gray-200 dark:border-gray-800 z-50 flex items-center justify-between px-4 transition-colors">
                 <div className="flex items-center space-x-2">
                     <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
                         <Sparkles className="w-4 h-4 text-white" />
@@ -89,25 +89,25 @@ export default function DashboardShell({ children }: { children: React.ReactNode
             {/* Sidebar Structure */}
             <aside
                 className={cn(
-                    "fixed md:static inset-y-0 left-0 z-50 w-72 bg-gray-50 border-r border-gray-200 flex flex-col transition-transform duration-300 ease-in-out",
+                    "fixed md:static inset-y-0 left-0 z-50 w-72 bg-gray-50 dark:bg-[#0A0A18] border-r border-gray-200 dark:border-gray-800 flex flex-col transition-all duration-300 ease-in-out",
                     isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
                 )}
             >
                 {/* Close Button Mobile */}
                 <button
                     onClick={() => setIsMobileOpen(false)}
-                    className="md:hidden absolute top-4 right-4 p-2 rounded-lg hover:bg-gray-200"
+                    className="md:hidden absolute top-4 right-4 p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-white/5 transition-colors"
                 >
-                    <X className="w-5 h-5" />
+                    <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                 </button>
 
                 {/* Logo */}
                 <div className="h-24 flex items-center px-8 shrink-0">
                     <Link href="/dashboard" className="flex items-center space-x-3 group">
-                        <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
-                            <Sparkles className="w-5 h-5 text-white" />
+                        <div className="w-10 h-10 bg-black dark:bg-white rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
+                            <Sparkles className="w-5 h-5 text-white dark:text-black" />
                         </div>
-                        <span className="font-black text-2xl tracking-tighter">Walia</span>
+                        <span className="font-black text-2xl tracking-tighter text-black dark:text-white">Walia</span>
                     </Link>
                 </div>
 
@@ -122,16 +122,16 @@ export default function DashboardShell({ children }: { children: React.ReactNode
                                 className={cn(
                                     "flex items-center space-x-3 px-4 py-3.5 rounded-2xl transition-all duration-200 font-bold text-sm group",
                                     isActive
-                                        ? "bg-black text-white shadow-lg shadow-black/10"
-                                        : "text-gray-500 hover:bg-gray-100/80 hover:text-black"
+                                        ? "bg-black dark:bg-white text-white dark:text-black shadow-lg shadow-black/10"
+                                        : "text-gray-500 dark:text-gray-400 hover:bg-gray-100/80 dark:hover:bg-white/5 hover:text-black dark:hover:text-white"
                                 )}
                             >
-                                <item.icon className={cn("w-5 h-5", isActive ? "text-white" : "text-gray-400 group-hover:text-black")} />
+                                <item.icon className={cn("w-5 h-5", isActive ? "text-white dark:text-black" : "text-gray-400 group-hover:text-black dark:group-hover:text-white")} />
                                 <span>{item.label}</span>
                                 {item.label === 'Notifications' && unreadNotifications > 0 && (
                                     <span className={cn(
                                         "ml-auto text-[10px] font-black px-2 py-0.5 rounded-full",
-                                        isActive ? "bg-white text-black" : "bg-black text-white"
+                                        isActive ? "bg-white dark:bg-black text-black dark:text-white" : "bg-black dark:bg-white text-white dark:text-black"
                                     )}>
                                         {unreadNotifications}
                                     </span>
@@ -142,10 +142,10 @@ export default function DashboardShell({ children }: { children: React.ReactNode
                 </nav>
 
                 {/* Upgrade Button */}
-                <div className="p-6 shrink-0 border-t border-gray-200">
+                <div className="p-6 shrink-0 border-t border-gray-200 dark:border-gray-800">
                     <Link
                         href="/dashboard/upgrade"
-                        className="w-full flex items-center justify-center py-4 rounded-2xl bg-white border-2 border-black text-black font-black text-sm transition-all hover:-translate-y-1 hover:shadow-[0_8px_0_0_#000]"
+                        className="w-full flex items-center justify-center py-4 rounded-2xl bg-white dark:bg-transparent border-2 border-black dark:border-white text-black dark:text-white font-black text-sm transition-all hover:-translate-y-1 hover:shadow-[0_8px_0_0_#000] dark:hover:shadow-[0_8px_0_0_#fff]"
                     >
                         UPGRADE TO PRO
                     </Link>
@@ -161,7 +161,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
             )}
 
             {/* Main Content Area */}
-            <main className="flex-1 flex flex-col min-w-0 bg-white md:rounded-l-[40px] md:shadow-[-20px_0_40px_rgba(0,0,0,0.02)] md:-ml-6 z-10 relative overflow-hidden">
+            <main className="flex-1 flex flex-col min-w-0 bg-white dark:bg-[#111122] md:rounded-l-[40px] md:shadow-[-20px_0_40px_rgba(0,0,0,0.02)] md:-ml-6 z-10 relative overflow-hidden transition-colors duration-300">
                 {/* Content inner area */}
                 <div className="flex-1 overflow-y-auto mt-16 md:mt-0 relative">
                     {children}
@@ -183,16 +183,16 @@ export default function DashboardShell({ children }: { children: React.ReactNode
 
                         {/* Profile Context Menu */}
                         {showProfileMenu && (
-                            <div className="absolute bottom-full right-0 mb-4 w-56 rounded-3xl bg-white border border-gray-200 shadow-2xl p-2 animate-in slide-in-from-bottom-2 fade-in">
-                                <div className="px-4 py-3 border-b border-gray-100 mb-2">
-                                    <p className="text-sm font-black truncate">{user.displayName || 'Walia Voyager'}</p>
-                                    <p className="text-xs text-gray-500 font-medium truncate">{user.email}</p>
+                            <div className="absolute bottom-full right-0 mb-4 w-56 rounded-3xl bg-white dark:bg-[#0A0A18] border border-gray-200 dark:border-gray-800 shadow-2xl p-2 animate-in slide-in-from-bottom-2 fade-in">
+                                <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 mb-2">
+                                    <p className="text-sm font-black truncate text-black dark:text-white">{user.displayName || 'Walia Voyager'}</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 font-medium truncate">{user.email}</p>
                                 </div>
-                                <Link onClick={() => setShowProfileMenu(false)} href="/dashboard/profile" className="w-full flex items-center px-4 py-2.5 rounded-xl hover:bg-gray-50 transition-colors text-sm font-bold text-gray-700">
+                                <Link onClick={() => setShowProfileMenu(false)} href="/dashboard/profile" className="w-full flex items-center px-4 py-2.5 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 transition-colors text-sm font-bold text-gray-700 dark:text-gray-300">
                                     <UserCircle className="w-4 h-4 mr-3 text-gray-400" />
                                     My Profile
                                 </Link>
-                                <Link onClick={() => setShowProfileMenu(false)} href="/dashboard/settings" className="w-full flex items-center px-4 py-2.5 rounded-xl hover:bg-gray-50 transition-colors text-sm font-bold text-gray-700">
+                                <Link onClick={() => setShowProfileMenu(false)} href="/dashboard/settings" className="w-full flex items-center px-4 py-2.5 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 transition-colors text-sm font-bold text-gray-700 dark:text-gray-300">
                                     <Settings className="w-4 h-4 mr-3 text-gray-400" />
                                     Preferences
                                 </Link>
@@ -201,7 +201,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
                                         setShowProfileMenu(false);
                                         signOut(auth);
                                     }}
-                                    className="w-full flex items-center px-4 py-2.5 rounded-xl hover:bg-red-50 text-red-600 transition-colors text-sm font-bold mt-1"
+                                    className="w-full flex items-center px-4 py-2.5 rounded-xl hover:bg-red-50 dark:hover:bg-red-500/10 text-red-600 transition-colors text-sm font-bold mt-1"
                                 >
                                     <LogOut className="w-4 h-4 mr-3" />
                                     Sign Out

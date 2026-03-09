@@ -1,7 +1,6 @@
 'use client';
 
 import {
-    User,
     BrainCircuit,
     Check,
     Crown,
@@ -10,6 +9,7 @@ import {
     ShieldCheck,
     Sparkles,
     TrendingUp,
+    User,
     Zap
 } from 'lucide-react';
 
@@ -31,8 +31,9 @@ export default function UpgradePage() {
                 <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-walia-primary/10 border border-walia-primary/20 text-[10px] font-black uppercase text-walia-primary tracking-widest mb-4">
                     Next Generation Learning
                 </div>
-                <h1 className="text-5xl md:text-7xl font-black text-white tracking-tight">Unlock Your Potential</h1>
-                <p className="text-xl text-white/40 max-w-2xl mx-auto font-medium leading-relaxed">
+                <h1 className="text-5xl md:text-7xl font-black text-black dark:text-white tracking-tight">Unlock Your Potential</h1>
+
+                <p className="text-xl text-gray-500 dark:text-white/40 max-w-2xl mx-auto font-medium leading-relaxed">
                     Upgrade to Walia Pro and join thousands of students who have already
                     transformed their productivity with our advanced AI tools.
                 </p>
@@ -42,12 +43,12 @@ export default function UpgradePage() {
                 {/* Feature Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     {features.map((F, i) => (
-                        <div key={i} className="p-8 rounded-[40px] bg-white/5 border border-white/5 hover:border-white/10 transition-all flex flex-col group h-full">
+                        <div key={i} className="p-8 rounded-[40px] bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5 hover:border-gray-200 dark:hover:border-white/10 transition-all flex flex-col group h-full">
                             <div className="w-12 h-12 rounded-2xl bg-walia-primary/10 border border-walia-primary/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                                 <F.icon className="w-5 h-5 text-walia-primary" />
                             </div>
-                            <h3 className="text-lg font-bold text-white mb-2 group-hover:text-walia-primary transition-colors">{F.title}</h3>
-                            <p className="text-xs text-white/40 font-medium leading-relaxed">{F.desc}</p>
+                            <h3 className="text-lg font-bold text-black dark:text-white mb-2 group-hover:text-walia-primary transition-colors">{F.title}</h3>
+                            <p className="text-xs text-gray-500 dark:text-white/40 font-medium leading-relaxed">{F.desc}</p>
                         </div>
                     ))}
                 </div>
@@ -97,18 +98,18 @@ export default function UpgradePage() {
             </div>
 
             {/* Trust Banner */}
-            <div className="p-12 text-center rounded-[48px] bg-white/5 border border-white/10 space-y-10">
+            <div className="p-12 text-center rounded-[48px] bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 space-y-10">
                 <div className="flex items-center justify-center -space-x-4 mb-4">
                     {[1, 2, 3, 4, 5].map((it) => (
-                        <div key={it} className="w-14 h-14 rounded-2xl bg-black border-4 border-[#070712] flex items-center justify-center font-black text-white/20 text-xl overflow-hidden relative">
+                        <div key={it} className="w-14 h-14 rounded-2xl bg-white dark:bg-black border-4 border-gray-50 dark:border-[#070712] flex items-center justify-center font-black text-gray-200 dark:text-white/20 text-xl overflow-hidden relative shadow-sm">
                             <User className="w-6 h-6" />
                         </div>
                     ))}
-                    <div className="w-14 h-14 rounded-2xl bg-walia-primary border-4 border-[#070712] flex items-center justify-center font-black text-white text-xs">
+                    <div className="w-14 h-14 rounded-2xl bg-walia-primary border-4 border-gray-50 dark:border-[#070712] flex items-center justify-center font-black text-white text-xs">
                         +10k
                     </div>
                 </div>
-                <h2 className="text-2xl font-bold text-white max-w-xl mx-auto leading-relaxed">
+                <h2 className="text-2xl font-bold text-black dark:text-white max-w-xl mx-auto leading-relaxed">
                     "Walia Pro literally changed how I study for my finals. The AI Summarizer is a game changer."
                 </h2>
                 <p className="text-xs font-black text-walia-primary uppercase tracking-[0.2em]">Daniel W. - CS Student</p>

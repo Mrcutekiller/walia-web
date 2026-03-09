@@ -194,7 +194,7 @@ export default function AIHubPage() {
     };
 
     return (
-        <div className="h-full flex relative bg-white overflow-hidden text-black animate-in fade-in">
+        <div className="h-full flex relative bg-white dark:bg-[#0A0A18] overflow-hidden text-black dark:text-white animate-in fade-in transition-colors">
 
             {/* Main Chat Area */}
             <main className="flex-1 flex flex-col relative min-w-0">
@@ -203,14 +203,14 @@ export default function AIHubPage() {
                 <header className="absolute top-6 right-6 z-10 flex items-center gap-3">
                     <button
                         onClick={() => setShowHistory(!showHistory)}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors text-sm font-bold"
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white dark:bg-zinc-800 border border-gray-200 dark:border-gray-700 shadow-sm hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors text-sm font-bold text-black dark:text-white"
                     >
                         <Clock className="w-4 h-4" />
                         <span className="hidden sm:inline">History</span>
                     </button>
                     <button
                         onClick={createNewChat}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-black text-white shadow-md hover:bg-zinc-800 transition-colors text-sm font-bold"
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-black dark:bg-white text-white dark:text-black shadow-md hover:bg-zinc-800 dark:hover:bg-gray-200 transition-colors text-sm font-bold"
                     >
                         <MessageSquarePlus className="w-4 h-4" />
                         <span className="hidden sm:inline">New Chat</span>
@@ -219,14 +219,14 @@ export default function AIHubPage() {
 
                 {!activeSession ? (
                     <div className="flex-1 flex flex-col items-center justify-center p-6 text-center animate-in slide-in-from-bottom-4">
-                        <div className="w-20 h-20 rounded-3xl bg-black border-[6px] border-gray-100 flex items-center justify-center mb-8 shadow-2xl">
-                            <Bot className="w-8 h-8 text-white" />
+                        <div className="w-20 h-20 rounded-3xl bg-black dark:bg-white border-[6px] border-gray-100 dark:border-gray-800 flex items-center justify-center mb-8 shadow-2xl">
+                            <Bot className="w-8 h-8 text-white dark:text-black" />
                         </div>
-                        <h1 className="text-4xl md:text-5xl font-black mb-4 tracking-tight">
+                        <h1 className="text-4xl md:text-5xl font-black mb-4 tracking-tight text-black dark:text-white">
                             Good to see you,<br />
                             {user?.displayName?.split(' ')[0] || 'Voyager'}
                         </h1>
-                        <p className="text-gray-500 font-medium max-w-sm">
+                        <p className="text-gray-500 dark:text-gray-400 font-medium max-w-sm">
                             I am Walia AI, your personal study assistant. Ask me anything, generate notes, or summarize PDFs.
                         </p>
                     </div>
@@ -246,23 +246,23 @@ export default function AIHubPage() {
                                         msg.role === 'user' ? "flex-row-reverse" : "flex-row"
                                     )}>
                                         <div className={cn(
-                                            "w-8 h-8 rounded-full flex items-center justify-center shrink-0 shrink-0 shadow-sm",
-                                            msg.role === 'user' ? "bg-black" : "bg-white border border-gray-200"
+                                            "w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm",
+                                            msg.role === 'user' ? "bg-black dark:bg-white" : "bg-white dark:bg-white/10 border border-gray-200 dark:border-gray-800"
                                         )}>
                                             {msg.role === 'user' ? (
-                                                <User className="w-4 h-4 text-white" />
+                                                <User className="w-4 h-4 text-white dark:text-black" />
                                             ) : (
-                                                <Bot className="w-4 h-4 text-black" />
+                                                <Bot className="w-4 h-4 text-black dark:text-white" />
                                             )}
                                         </div>
                                         <div className={cn(
                                             "rounded-[28px] text-sm leading-relaxed px-6 py-4 border shadow-sm",
                                             msg.role === 'user'
-                                                ? "bg-black text-white border-black rounded-br-sm"
-                                                : "bg-white text-black border-gray-100 rounded-bl-sm"
+                                                ? "bg-black dark:bg-white text-white dark:text-black border-black dark:border-white rounded-br-sm"
+                                                : "bg-white dark:bg-white/5 text-black dark:text-white border-gray-100 dark:border-gray-800 rounded-bl-sm"
                                         )}>
                                             {msg.image && (
-                                                <div className="relative w-64 h-64 rounded-2xl overflow-hidden mb-3 border border-gray-100">
+                                                <div className="relative w-64 h-64 rounded-2xl overflow-hidden mb-3 border border-gray-100 dark:border-gray-800">
                                                     <Image src={msg.image} alt="Upload" fill className="object-cover" unoptimized />
                                                 </div>
                                             )}
@@ -276,14 +276,14 @@ export default function AIHubPage() {
                             {loading && (
                                 <div className="flex justify-start animate-in fade-in">
                                     <div className="flex max-w-[85%] items-end gap-3">
-                                        <div className="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center shrink-0 shadow-sm">
-                                            <Bot className="w-4 h-4 text-black" />
+                                        <div className="w-8 h-8 rounded-full bg-white dark:bg-white/10 border border-gray-200 dark:border-gray-800 flex items-center justify-center shrink-0 shadow-sm">
+                                            <Bot className="w-4 h-4 text-black dark:text-white" />
                                         </div>
-                                        <div className="px-6 py-5 rounded-[28px] rounded-bl-sm bg-white border border-gray-100 shadow-sm">
+                                        <div className="px-6 py-5 rounded-[28px] rounded-bl-sm bg-white dark:bg-white/5 border border-gray-100 dark:border-gray-800 shadow-sm">
                                             <div className="flex gap-1.5 items-center">
-                                                <div className="w-2 h-2 rounded-full bg-black animate-bounce" style={{ animationDelay: '0ms' }} />
-                                                <div className="w-2 h-2 rounded-full bg-black animate-bounce" style={{ animationDelay: '150ms' }} />
-                                                <div className="w-2 h-2 rounded-full bg-black animate-bounce" style={{ animationDelay: '300ms' }} />
+                                                <div className="w-2 h-2 rounded-full bg-black dark:bg-white animate-bounce" style={{ animationDelay: '0ms' }} />
+                                                <div className="w-2 h-2 rounded-full bg-black dark:bg-white animate-bounce" style={{ animationDelay: '150ms' }} />
+                                                <div className="w-2 h-2 rounded-full bg-black dark:bg-white animate-bounce" style={{ animationDelay: '300ms' }} />
                                             </div>
                                         </div>
                                     </div>
@@ -295,13 +295,13 @@ export default function AIHubPage() {
                 )}
 
                 {/* Bottom Input Area */}
-                <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white via-white to-transparent pointer-events-none">
+                <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white dark:from-[#0A0A18] via-white dark:via-[#0A0A18] to-transparent pointer-events-none">
                     <div className="max-w-3xl mx-auto relative pointer-events-auto">
-                        <div className="bg-white border-2 border-black rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.06)] flex items-end p-2 transition-all focus-within:ring-4 focus-within:ring-black/5">
+                        <div className="bg-white dark:bg-[#111122] border-2 border-black dark:border-white rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.06)] flex items-end p-2 transition-all focus-within:ring-4 focus-within:ring-black/5 dark:focus-within:ring-white/5">
                             <button
                                 onClick={() => fileInputRef.current?.click()}
                                 disabled={uploading}
-                                className="p-4 rounded-full hover:bg-gray-100 text-gray-500 hover:text-black transition-colors shrink-0 disabled:opacity-50"
+                                className="p-4 rounded-full hover:bg-gray-100 dark:hover:bg-white/5 text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors shrink-0 disabled:opacity-50"
                             >
                                 {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className="w-5 h-5" />}
                             </button>
@@ -323,14 +323,14 @@ export default function AIHubPage() {
                                     }
                                 }}
                                 placeholder="Ask anything..."
-                                className="flex-1 bg-transparent py-4 px-2 text-black font-medium placeholder:text-gray-400 outline-none resize-none max-h-32 min-h-[56px] custom-scrollbar"
+                                className="flex-1 bg-transparent py-4 px-2 text-black dark:text-white font-medium placeholder:text-gray-400 dark:placeholder:text-gray-600 outline-none resize-none max-h-32 min-h-[56px] custom-scrollbar"
                                 rows={1}
                             />
 
                             <button
                                 onClick={() => handleSend()}
                                 disabled={(!message.trim() && !uploading) || loading}
-                                className="m-1 p-3.5 rounded-full bg-black text-white hover:bg-zinc-800 transition-all flex items-center justify-center shrink-0 disabled:opacity-20 disabled:hover:bg-black"
+                                className="m-1 p-3.5 rounded-full bg-black dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-gray-200 transition-all flex items-center justify-center shrink-0 disabled:opacity-20 disabled:hover:bg-black"
                             >
                                 <ArrowRight className="w-5 h-5" />
                             </button>
@@ -345,11 +345,11 @@ export default function AIHubPage() {
 
             {/* Right Sidebar: History Panel */}
             {showHistory && (
-                <aside className="w-80 border-l border-gray-200 bg-gray-50 flex flex-col absolute right-0 inset-y-0 z-20 animate-in slide-in-from-right shadow-2xl md:relative md:shadow-none">
-                    <div className="p-6 border-b border-gray-200 flex items-center justify-between bg-white">
-                        <h3 className="font-black text-lg">History</h3>
-                        <button onClick={() => setShowHistory(false)} className="md:hidden p-2 hover:bg-gray-100 rounded-full">
-                            <ArrowRight className="w-4 h-4" />
+                <aside className="w-80 border-l border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-[#0A0A18] flex flex-col absolute right-0 inset-y-0 z-20 animate-in slide-in-from-right shadow-2xl md:relative md:shadow-none transition-colors">
+                    <div className="p-6 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between bg-white dark:bg-[#0A0A18]">
+                        <h3 className="font-black text-lg text-black dark:text-white">History</h3>
+                        <button onClick={() => setShowHistory(false)} className="md:hidden p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full">
+                            <ArrowRight className="w-4 h-4 text-black dark:text-white" />
                         </button>
                     </div>
                     <div className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar">
@@ -360,19 +360,19 @@ export default function AIHubPage() {
                                 className={cn(
                                     "p-4 rounded-2xl cursor-pointer group transition-all relative overflow-hidden border",
                                     activeSession === session.id
-                                        ? "bg-white border-black shadow-md"
-                                        : "bg-transparent border-transparent hover:bg-white hover:border-gray-200 hover:shadow-sm"
+                                        ? "bg-white dark:bg-white/10 border-black dark:border-white shadow-md"
+                                        : "bg-transparent border-transparent hover:bg-white dark:hover:bg-white/5 hover:border-gray-200 dark:hover:border-gray-800 hover:shadow-sm"
                                 )}
                             >
-                                <div className="flex items-start justify-between mb-1 pr-6">
-                                    <h4 className="text-sm font-bold text-black truncate max-w-[160px]">{session.title}</h4>
+                                <div className="flex items-start justify-between mb-1 pr-6 text-black dark:text-white">
+                                    <h4 className="text-sm font-bold truncate max-w-[160px]">{session.title}</h4>
                                 </div>
-                                <p className="text-xs text-gray-500 font-medium truncate mb-2">{session.lastText}</p>
-                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">{formatTimeAgo(session.updatedAt)}</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 font-medium truncate mb-2">{session.lastText}</p>
+                                <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider">{formatTimeAgo(session.updatedAt)}</p>
 
                                 <button
                                     onClick={(e) => { e.stopPropagation(); handleDeleteSession(session.id); }}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-xl bg-red-50 text-red-600 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-100"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-600 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-100 dark:hover:bg-red-500/20"
                                 >
                                     <Trash2 className="w-4 h-4" />
                                 </button>

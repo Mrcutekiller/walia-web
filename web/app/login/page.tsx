@@ -37,7 +37,7 @@ function LoginContent() {
                 router.replace('/dashboard');
             }
         } catch (err: any) {
-            console.error("Login error:", err);
+            console.warn("Login error:", err.message);
             setError('Invalid email or password. Please try again.');
         } finally { setLoading(false); }
     };
@@ -59,6 +59,7 @@ function LoginContent() {
                     email: user.email,
                     photoURL: user.photoURL || '/avatars/avatar1.jpg',
                     plan: 'free',
+                    theme: 'light',
                     createdAt: serverTimestamp(),
                 });
             }

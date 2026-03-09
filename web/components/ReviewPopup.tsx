@@ -4,11 +4,11 @@ import { useAuth } from '@/context/AuthContext';
 import { db } from '@/lib/firebase';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Star, X } from 'lucide-react';
+import { Loader2, Star, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 export default function ReviewPopup() {
-    const { user } = useAuth();
+    const { user, profile } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
     const [rating, setRating] = useState(0);
     const [hover, setHover] = useState(0);
@@ -54,8 +54,8 @@ export default function ReviewPopup() {
         try {
             const reviewData = {
                 userId: user.uid,
-                userName: user.displayName || user.email?.split('@')[0] || 'Anonymous',
-                userPhoto: user.photoURL || '',
+                userName: profile?.name || user.displayName || user.email?.split('@')[0] || 'Anonymous',
+                userPhotoURL: profile?.photoURL || user.photoURL || '',
                 rating,
                 comment: text.trim(),
                 status: 'approved',
@@ -91,26 +91,30 @@ export default function ReviewPopup() {
                     initial={{ opacity: 0, y: 100, scale: 0.9 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 100, scale: 0.9 }}
-                    className="fixed bottom-6 right-6 z-[9999] w-full max-w-[380px] p-6 rounded-[32px] bg-black border border-white/10 shadow-2xl shadow-black/50 overflow-hidden"
+                    className="fixed bottom-6 right-6 z-[9999] w-full max-w-[380px] p-6 rounded-[32px] bg-white dark:bg-black border border-gray-200 dark:border-white/10 shadow-2xl shadow-black/10 dark:shadow-black/50 overflow-hidden transition-all duration-500"
                 >
                     {/* Background Glow */}
-                    <div className="absolute -top-20 -right-20 w-40 h-40 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
+                    <div className="absolute -top-20 -right-20 w-40 h-40 bg-indigo-500/10 dark:bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
 
-                    <button onClick={handleClose} className="absolute top-4 right-4 p-2 text-white/20 hover:text-white transition-colors">
+                    <button
+                        onClick={() => setIsOpen(false)}
+                        className="absolute top-6 right-6 p-2 text-gray-400 dark:text-white/40 hover:text-black dark:hover:text-white transition-colors z-20"
+                    >
                         <X className="w-5 h-5" />
                     </button>
 
                     {!submitted ? (
-                        <div className="relative z-10 space-y-5">
+                        <div className="relative z-10 space-y-6 pt-2">
                             <div>
-                                <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-black uppercase text-white/40 tracking-widest mb-3">
-                                    ⭐ Feedback Requested
+                                <div className="inline-flex items-center px-3 py-1 rounded-full bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 text-[10px] font-black uppercase text-indigo-500 dark:text-indigo-400 tracking-widest mb-4">
+                                    <Star className="w-3 h-3 fill-current mr-1.5" />
+                                    Feedback Requested
                                 </div>
-                                <h3 className="text-xl font-black text-white mb-2">Enjoying Walia?</h3>
-                                <p className="text-white/40 text-sm font-medium">Your feedback helps thousands of students climb higher.</p>
+                                <h3 className="text-2xl font-black text-black dark:text-white mb-2">Enjoying Walia?</h3>
+                                <p className="text-gray-500 dark:text-white/40 text-sm font-medium leading-relaxed">Your feedback helps thousands of students climb higher.</p>
                             </div>
 
-                            <div className="flex items-center gap-2 py-2">
+                            <div className="flex items-center gap-3 py-2">
                                 {[1, 2, 3, 4, 5].map((star) => (
                                     <button
                                         key={star}
@@ -120,41 +124,52 @@ export default function ReviewPopup() {
                                         className="transition-transform active:scale-90"
                                     >
                                         <Star
-                                            className={`w-8 h-8 transition-colors ${star <= (hover || rating) ? 'fill-[#FFD700] text-[#FFD700]' : 'fill-white/5 text-white/10'
+                                            className={`w-9 h-9 transition-all duration-300 ${star <= (hover || rating)
+                                                ? 'fill-indigo-500 text-indigo-500 filter drop-shadow-[0_0_8px_rgba(99,102,241,0.5)]'
+                                                : 'fill-gray-100 dark:fill-white/5 text-gray-200 dark:text-white/10'
                                                 }`}
                                         />
                                     </button>
                                 ))}
                             </div>
 
-                            <textarea
-                                value={text}
-                                onChange={(e) => setText(e.target.value)}
-                                placeholder="What can we improve?..."
-                                className="w-full h-24 bg-white/5 border border-white/10 rounded-2xl p-4 text-sm text-white placeholder:text-white/20 outline-none focus:border-indigo-500/50 transition-all resize-none font-medium"
-                            />
+                            <div className="relative">
+                                <textarea
+                                    value={text}
+                                    onChange={(e) => setText(e.target.value)}
+                                    placeholder="What can we improve?..."
+                                    className="w-full h-32 bg-gray-50 dark:bg-white/5 border-2 border-gray-100 dark:border-white/10 rounded-[2rem] p-5 text-sm text-black dark:text-white placeholder:text-gray-300 dark:placeholder:text-white/20 outline-none focus:border-indigo-500/50 transition-all resize-none font-medium custom-scrollbar"
+                                />
+                                <div className="absolute bottom-4 right-4 text-[10px] font-black text-gray-300 dark:text-white/10 uppercase tracking-widest">
+                                    {text.length} / 500
+                                </div>
+                            </div>
 
                             {error && (
-                                <p className="text-[10px] font-bold text-red-400 text-center animate-pulse">{error}</p>
+                                <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-[10px] font-bold text-red-400 text-center">
+                                    {error}
+                                </div>
                             )}
 
-                            <div className="space-y-3">
+                            <div className="space-y-4 pt-2">
                                 <button
                                     onClick={handleSubmit}
                                     disabled={loading || rating === 0 || text.trim().length < 5}
-                                    className="w-full py-4 rounded-2xl bg-indigo-600 text-white font-black text-xs uppercase tracking-widest hover:bg-indigo-700 active:scale-95 transition-all shadow-lg shadow-indigo-600/20 disabled:opacity-20 flex items-center justify-center gap-2"
+                                    className="w-full py-5 rounded-[1.5rem] bg-indigo-600 text-white font-black text-xs uppercase tracking-widest hover:bg-indigo-700 active:scale-[0.98] transition-all shadow-xl shadow-indigo-600/20 disabled:opacity-20 flex items-center justify-center gap-2 group"
                                 >
                                     {loading ? (
+                                        <Loader2 className="w-5 h-5 animate-spin" />
+                                    ) : (
                                         <>
-                                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                            <span>Publishing...</span>
+                                            Publish Feedback
+                                            <Star className="w-4 h-4 group-hover:scale-110 transition-transform" />
                                         </>
-                                    ) : 'Publish Feedback'}
+                                    )}
                                 </button>
 
                                 <button
-                                    onClick={handleClose}
-                                    className="w-full text-center text-white/30 hover:text-white/60 text-[10px] font-black uppercase tracking-widest transition-colors py-1"
+                                    onClick={() => setIsOpen(false)}
+                                    className="w-full text-center text-gray-400 dark:text-white/30 hover:text-black dark:hover:text-white/60 text-[10px] font-black uppercase tracking-widest transition-colors py-1"
                                 >
                                     Remind me later
                                 </button>
@@ -165,12 +180,12 @@ export default function ReviewPopup() {
                             <motion.div
                                 initial={{ scale: 0 }}
                                 animate={{ scale: 1 }}
-                                className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4"
+                                className="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center mx-auto mb-4"
                             >
                                 <Star className="w-8 h-8 fill-green-500 text-green-500" />
                             </motion.div>
-                            <h3 className="text-xl font-black text-white">Thank You!</h3>
-                            <p className="text-white/40 text-sm font-medium">Your review is now live on the world map.</p>
+                            <h3 className="text-xl font-black text-black dark:text-white">Thank You!</h3>
+                            <p className="text-gray-500 dark:text-white/40 text-sm font-medium">Your review is now live on the world map.</p>
                         </div>
                     )}
                 </motion.div>

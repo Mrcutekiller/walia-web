@@ -157,26 +157,26 @@ export default function ProfilePage() {
     if (!user) return null;
 
     return (
-        <div className="min-h-full bg-[#FAFAFA] text-black animate-in fade-in pb-20 selection:bg-black selection:text-white">
+        <div className="min-h-full bg-white dark:bg-[#0A0A18] text-black dark:text-white animate-in fade-in pb-20 selection:bg-black selection:text-white">
 
             <main className="max-w-3xl mx-auto px-4 pt-8 md:pt-12 space-y-8">
 
                 {/* Profile Card */}
-                <div className="bg-white rounded-[3rem] p-2 border border-gray-200 shadow-xl shadow-black-[0.02] relative">
-                    <div className="relative h-48 md:h-56 rounded-[2.5rem] overflow-hidden bg-gray-100 border border-gray-100 mb-16">
+                <div className="bg-white dark:bg-white/5 rounded-[3rem] p-2 border border-gray-200 dark:border-gray-800 shadow-xl shadow-black/5 dark:shadow-white/5 relative transition-colors">
+                    <div className="relative h-48 md:h-56 rounded-[2.5rem] overflow-hidden bg-gray-100 dark:bg-white/5 border border-gray-100 dark:border-gray-800 mb-16 transition-colors">
                         {/* Soft background graphic for banner */}
                         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-multiply" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-gray-200 to-transparent opacity-50" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-gray-200 dark:from-gray-800 to-transparent opacity-50 transition-colors" />
 
                         {/* Profile Image - Centered and overflowing bottom */}
                         <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 group cursor-pointer" onClick={() => !isEditing && fileInputRef.current?.click()}>
-                            <div className="p-1 rounded-full bg-white relative">
-                                <div className="absolute inset-0 rounded-full ring-2 ring-gray-100 scale-[1.05] transition-transform group-hover:scale-110" />
-                                <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center relative">
-                                    {user.photoURL ? (
-                                        <img src={user.photoURL} alt="User Avatar" className="w-full h-full object-cover" />
+                            <div className="p-1 rounded-full bg-white dark:bg-[#0A0A18] relative">
+                                <div className="absolute inset-0 rounded-full ring-2 ring-gray-100 dark:ring-gray-800 scale-[1.05] transition-transform group-hover:scale-110" />
+                                <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-100 dark:bg-zinc-800 flex items-center justify-center relative">
+                                    {(profile?.photoURL || user.photoURL) ? (
+                                        <img src={profile?.photoURL || user.photoURL || ''} alt="User Avatar" className="w-full h-full object-cover" />
                                     ) : (
-                                        <span className="text-4xl font-black text-gray-300">{formData.displayName?.charAt(0) || '?'}</span>
+                                        <span className="text-4xl font-black text-gray-300 dark:text-gray-700">{formData.displayName?.charAt(0) || profile?.name?.charAt(0) || '?'}</span>
                                     )}
                                     {uploading && (
                                         <div className="absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center">
@@ -197,15 +197,15 @@ export default function ProfilePage() {
                         {/* Top Right Action: Settings/Edit */}
                         <div className="absolute top-4 right-4 flex gap-2">
                             {isEditing ? (
-                                <button onClick={() => setIsEditing(false)} className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-black font-bold text-xs shadow-md border border-gray-100 hover:bg-gray-50 transition-colors">
+                                <button onClick={() => setIsEditing(false)} className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white dark:bg-white/10 text-black dark:text-white font-bold text-xs shadow-md border border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/20 transition-colors">
                                     Cancel
                                 </button>
                             ) : (
                                 <>
-                                    <button onClick={() => setIsEditing(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white text-black font-bold text-xs shadow-md border border-gray-100 hover:bg-gray-50 hover:shadow-lg transition-all">
+                                    <button onClick={() => setIsEditing(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white dark:bg-white/10 text-black dark:text-white font-bold text-xs shadow-md border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-white/20 hover:shadow-lg transition-all">
                                         <Edit3 className="w-4 h-4" /> <span className="hidden sm:inline">Edit</span>
                                     </button>
-                                    <Link href="/dashboard/settings" className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white text-black font-bold text-xs shadow-md border border-gray-100 hover:bg-gray-50 hover:shadow-lg transition-all">
+                                    <Link href="/dashboard/settings" className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white dark:bg-white/10 text-black dark:text-white font-bold text-xs shadow-md border border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-white/20 hover:shadow-lg transition-all">
                                         <Settings className="w-4 h-4" />
                                     </Link>
                                 </>
@@ -218,60 +218,60 @@ export default function ProfilePage() {
                         {isEditing ? (
                             <div className="space-y-6 max-w-sm mx-auto animate-in fade-in slide-in-from-bottom-4">
                                 <div>
-                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1 mb-2 block">Display Name</label>
+                                    <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1 mb-2 block">Display Name</label>
                                     <input
-                                        className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-3.5 text-black outline-none focus:border-black focus:bg-white transition-all font-semibold text-center"
+                                        className="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-800 rounded-2xl px-5 py-3.5 text-black dark:text-white outline-none focus:border-black dark:focus:border-white focus:bg-white dark:focus:bg-white/10 transition-all font-semibold text-center placeholder:text-gray-400 dark:placeholder:text-gray-600"
                                         value={formData.displayName}
                                         onChange={e => setFormData({ ...formData, displayName: e.target.value })}
                                         placeholder="Your full name"
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1 mb-2 block">Bio</label>
+                                    <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1 mb-2 block">Bio</label>
                                     <textarea
-                                        className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-3.5 text-black outline-none focus:border-black focus:bg-white transition-all font-medium h-32 resize-none text-center custom-scrollbar"
+                                        className="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-gray-800 rounded-2xl px-5 py-3.5 text-black dark:text-white outline-none focus:border-black dark:focus:border-white focus:bg-white dark:focus:bg-white/10 transition-all font-medium h-32 resize-none text-center custom-scrollbar placeholder:text-gray-400 dark:placeholder:text-gray-600"
                                         value={formData.bio}
                                         placeholder="Tell the community about yourself..."
                                         onChange={e => setFormData({ ...formData, bio: e.target.value })}
                                     />
                                 </div>
-                                <button onClick={handleSave} disabled={loading} className="w-full py-4 rounded-full bg-black text-white font-bold text-xs uppercase tracking-widest shadow-lg hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 hover:bg-zinc-800">
+                                <button onClick={handleSave} disabled={loading} className="w-full py-4 rounded-full bg-black dark:bg-white text-white dark:text-black font-bold text-xs uppercase tracking-widest shadow-lg hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 hover:bg-zinc-800 dark:hover:bg-gray-200">
                                     {loading ? 'Saving...' : 'Save Profile'}
                                 </button>
 
-                                <div className="pt-6 mt-6 border-t border-gray-100 flex justify-center">
-                                    <button onClick={() => setShowDeleteConfirm(true)} className="text-xs font-bold text-red-500 hover:text-red-700 underline underline-offset-4 decoration-red-200 hover:decoration-red-600 transition-colors">
+                                <div className="pt-6 mt-6 border-t border-gray-100 dark:border-gray-800 flex justify-center">
+                                    <button onClick={() => setShowDeleteConfirm(true)} className="text-xs font-bold text-red-500 hover:text-red-700 underline underline-offset-4 decoration-red-200 dark:decoration-red-900/40 hover:decoration-red-600 transition-colors">
                                         Delete Account
                                     </button>
                                 </div>
                             </div>
                         ) : (
                             <div className="text-center animate-in fade-in">
-                                <h1 className="text-3xl font-black tracking-tight text-black mb-1">
-                                    {formData.displayName || 'Set your name'}
+                                <h1 className="text-3xl font-black tracking-tight text-black dark:text-white mb-1">
+                                    {profile?.name || formData.displayName || 'Set your name'}
                                 </h1>
-                                <p className="text-sm font-bold text-gray-400 mb-4 tracking-wide">
-                                    @{profile?.username || `user_${user.uid.slice(0, 5)}`}
+                                <p className="text-sm font-bold text-gray-400 dark:text-gray-500 mb-4 tracking-wide">
+                                    @{profile?.username || 'walia_user'}
                                 </p>
 
-                                <p className="max-w-md mx-auto text-[15px] font-medium text-gray-600 leading-relaxed mb-8">
+                                <p className="max-w-md mx-auto text-[15px] font-medium text-gray-600 dark:text-gray-400 leading-relaxed mb-8">
                                     {formData.bio || "You haven't added a bio yet. Click the edit button to tell everyone who you are."}
                                 </p>
 
                                 {/* Stats Row */}
-                                <div className="flex items-center justify-center gap-4 bg-gray-50 rounded-[2rem] p-4 max-w-sm mx-auto border border-gray-100">
+                                <div className="flex items-center justify-center gap-4 bg-gray-50 dark:bg-white/5 rounded-[2rem] p-4 max-w-sm mx-auto border border-gray-100 dark:border-gray-800">
                                     <div className="flex-1">
-                                        <p className="text-lg font-black text-black">{posts.length}</p>
+                                        <p className="text-lg font-black text-black dark:text-white">{posts.length}</p>
                                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Posts</p>
                                     </div>
-                                    <div className="w-px h-8 bg-gray-200" />
+                                    <div className="w-px h-8 bg-gray-200 dark:bg-gray-800" />
                                     <div className="flex-1">
-                                        <p className="text-lg font-black text-black">{profile?.followersCount || 0}</p>
+                                        <p className="text-lg font-black text-black dark:text-white">{profile?.followersCount || 0}</p>
                                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Followers</p>
                                     </div>
-                                    <div className="w-px h-8 bg-gray-200" />
+                                    <div className="w-px h-8 bg-gray-200 dark:bg-gray-800" />
                                     <div className="flex-1">
-                                        <p className="text-lg font-black text-black">{profile?.followingCount || 0}</p>
+                                        <p className="text-lg font-black text-black dark:text-white">{profile?.followingCount || 0}</p>
                                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Following</p>
                                     </div>
                                 </div>
@@ -282,8 +282,8 @@ export default function ProfilePage() {
 
                 {/* Posts Heading */}
                 {!isEditing && (
-                    <div className="px-4 py-2 border-b-2 border-black w-fit mt-10 mb-6 mx-auto md:mx-0">
-                        <h2 className="text-sm font-black text-black uppercase tracking-widest">Your Posts</h2>
+                    <div className="px-4 py-2 border-b-2 border-black dark:border-white w-fit mt-10 mb-6 mx-auto md:mx-0">
+                        <h2 className="text-sm font-black text-black dark:text-white uppercase tracking-widest">Your Posts</h2>
                     </div>
                 )}
 
@@ -291,9 +291,9 @@ export default function ProfilePage() {
                 {!isEditing && (
                     <div className="space-y-6">
                         {posts.length === 0 ? (
-                            <div className="text-center py-16 bg-white rounded-[3rem] border border-gray-200">
-                                <p className="text-gray-400 font-bold mb-4">You haven't posted anything yet.</p>
-                                <Link href="/dashboard/community" className="px-6 py-3 rounded-full bg-black text-white font-bold text-xs uppercase tracking-widest hover:scale-105 transition-transform inline-block">
+                            <div className="text-center py-16 bg-white dark:bg-white/5 rounded-[3rem] border border-gray-200 dark:border-gray-800">
+                                <p className="text-gray-400 dark:text-gray-500 font-bold mb-4">You haven't posted anything yet.</p>
+                                <Link href="/dashboard/community" className="px-6 py-3 rounded-full bg-black dark:bg-white text-white dark:text-black font-bold text-xs uppercase tracking-widest hover:scale-105 transition-transform inline-block">
                                     Go to Community
                                 </Link>
                             </div>
@@ -301,22 +301,22 @@ export default function ProfilePage() {
                             posts.map(post => {
                                 const isLiked = post.likes?.includes(user?.uid || '');
                                 return (
-                                    <div key={post.id} className="p-6 md:p-8 rounded-[3rem] bg-white border border-gray-200 shadow-sm hover:shadow-xl hover:shadow-black/5 transition-all group">
+                                    <div key={post.id} className="p-6 md:p-8 rounded-[3rem] bg-white dark:bg-white/5 border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-xl hover:shadow-black/5 transition-all group">
                                         <div className="flex items-center justify-between mb-6">
                                             <div className="flex items-center gap-3">
                                                 <div className="scale-110 origin-left">
                                                     <UserBadge uid={post.authorId} size="sm" />
                                                 </div>
                                                 <div className="flex flex-col">
-                                                    <span className="text-sm font-black text-black leading-tight">{formData.displayName}</span>
-                                                    <span className="text-xs font-bold text-gray-400">
+                                                    <span className="text-sm font-black text-black dark:text-white leading-tight">{formData.displayName}</span>
+                                                    <span className="text-xs font-bold text-gray-400 dark:text-gray-500">
                                                         {formatTimeAgo(post.createdAt)}
                                                     </span>
                                                 </div>
                                             </div>
                                             <button
                                                 onClick={() => handleDeletePost(post.id)}
-                                                className="w-8 h-8 flex items-center justify-center text-gray-300 hover:bg-red-50 hover:text-red-500 rounded-full transition-colors shrink-0"
+                                                className="w-8 h-8 flex items-center justify-center text-gray-300 dark:text-gray-600 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-500 rounded-full transition-colors shrink-0"
                                             >
                                                 <Trash2 className="w-4 h-4" />
                                             </button>
@@ -324,39 +324,39 @@ export default function ProfilePage() {
 
                                         <div className="mb-6">
                                             {post.type !== 'general' && (
-                                                <span className="inline-block px-3 py-1 bg-gray-50 border border-gray-200 rounded-full text-[10px] font-black uppercase text-gray-500 tracking-widest mb-3">
+                                                <span className="inline-block px-3 py-1 bg-gray-50 dark:bg-white/10 border border-gray-200 dark:border-gray-800 rounded-full text-[10px] font-black uppercase text-gray-500 dark:text-gray-400 tracking-widest mb-3">
                                                     {post.type.replace('_share', '')}
                                                 </span>
                                             )}
-                                            {post.title && <h3 className="text-xl font-black text-black mb-3 tracking-tight">{post.title}</h3>}
-                                            <p className="text-[15px] text-gray-700 leading-relaxed font-medium whitespace-pre-wrap">{post.content}</p>
+                                            {post.title && <h3 className="text-xl font-black text-black dark:text-white mb-3 tracking-tight">{post.title}</h3>}
+                                            <p className="text-[15px] text-gray-700 dark:text-gray-300 leading-relaxed font-medium whitespace-pre-wrap">{post.content}</p>
                                         </div>
 
-                                        <div className="flex items-center border-t border-gray-100 pt-5 mt-2">
+                                        <div className="flex items-center border-t border-gray-100 dark:border-gray-800 pt-5 mt-2">
                                             <div className="flex items-center space-x-6">
                                                 <button
                                                     onClick={() => handleLike(post)}
                                                     className={cn(
                                                         "flex items-center space-x-2 text-sm font-bold transition-all group/btn",
-                                                        isLiked ? "text-black" : "text-gray-400 hover:text-black"
+                                                        isLiked ? "text-black dark:text-white" : "text-gray-400 dark:text-gray-500 hover:text-black dark:hover:text-white"
                                                     )}
                                                 >
                                                     <div className={cn(
                                                         "w-10 h-10 rounded-full flex items-center justify-center transition-colors",
-                                                        isLiked ? "bg-gray-100" : "bg-transparent group-hover/btn:bg-gray-50"
+                                                        isLiked ? "bg-gray-100 dark:bg-white/10" : "bg-transparent group-hover/btn:bg-gray-50 dark:group-hover/btn:bg-white/5"
                                                     )}>
                                                         <Heart className={cn("w-5 h-5 transition-transform", isLiked && "fill-current group-hover/btn:scale-110")} />
                                                     </div>
                                                     <span>{post.likes?.length || 0}</span>
                                                 </button>
-                                                <button className="flex items-center space-x-2 text-sm font-bold text-gray-400 hover:text-black transition-all group/btn">
-                                                    <div className="w-10 h-10 rounded-full bg-transparent group-hover/btn:bg-gray-50 flex items-center justify-center transition-colors">
+                                                <button className="flex items-center space-x-2 text-sm font-bold text-gray-400 dark:text-gray-500 hover:text-black dark:hover:text-white transition-all group/btn">
+                                                    <div className="w-10 h-10 rounded-full bg-transparent group-hover/btn:bg-gray-50 dark:group-hover/btn:bg-white/5 flex items-center justify-center transition-colors">
                                                         <MessageCircle className="w-5 h-5" />
                                                     </div>
                                                     <span>{post.commentCount || 0}</span>
                                                 </button>
                                             </div>
-                                            <button className="w-10 h-10 ml-auto rounded-full bg-gray-50 flex items-center justify-center text-gray-400 hover:text-black hover:bg-gray-100 hover:scale-105 transition-all">
+                                            <button className="w-10 h-10 ml-auto rounded-full bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-400 dark:text-gray-500 hover:text-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 hover:scale-105 transition-all">
                                                 <Share2 className="w-4 h-4" />
                                             </button>
                                         </div>
@@ -373,21 +373,21 @@ export default function ProfilePage() {
                 {showDeleteConfirm && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowDeleteConfirm(false)} className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-                        <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative w-full max-w-sm p-8 rounded-[2rem] bg-white shadow-2xl text-center space-y-8">
-                            <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto text-red-600 border border-red-100 shadow-sm">
+                        <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative w-full max-w-sm p-8 rounded-[2rem] bg-white dark:bg-[#0A0A18] border border-gray-100 dark:border-gray-800 shadow-2xl text-center space-y-8">
+                            <div className="w-20 h-20 bg-red-50 dark:bg-red-500/10 rounded-full flex items-center justify-center mx-auto text-red-600 border border-red-100 dark:border-red-900 shadow-sm">
                                 <Trash2 className="w-8 h-8" />
                             </div>
                             <div>
-                                <h3 className="text-2xl font-black text-black mb-3">Delete Account?</h3>
-                                <p className="text-gray-500 text-sm font-medium leading-relaxed">
+                                <h3 className="text-2xl font-black text-black dark:text-white mb-3">Delete Account?</h3>
+                                <p className="text-gray-500 dark:text-gray-400 text-sm font-medium leading-relaxed">
                                     This action is final. You will lose all your study data and AI history forever.
                                 </p>
                             </div>
-                            <div className="space-y-3 pt-4 border-t border-gray-100">
+                            <div className="space-y-3 pt-4 border-t border-gray-100 dark:border-gray-800">
                                 <button onClick={handleDeleteAccount} disabled={loading} className="w-full py-4 rounded-full bg-red-600 text-white font-bold uppercase tracking-widest text-[10px] shadow-lg shadow-red-600/20 hover:bg-red-700 hover:-translate-y-0.5 transition-all">
                                     {loading ? 'Deleting...' : 'Delete Permanently'}
                                 </button>
-                                <button onClick={() => setShowDeleteConfirm(false)} className="w-full py-4 rounded-full bg-gray-100 text-black font-bold uppercase tracking-widest text-[10px] hover:bg-gray-200 transition-all">
+                                <button onClick={() => setShowDeleteConfirm(false)} className="w-full py-4 rounded-full bg-gray-100 dark:bg-white/10 text-black dark:text-white font-bold uppercase tracking-widest text-[10px] hover:bg-gray-200 dark:hover:bg-white/20 transition-all">
                                     Keep My Account
                                 </button>
                             </div>

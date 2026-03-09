@@ -38,7 +38,7 @@ export default function UserBadge({ uid, showUsername = true, className, size = 
     return (
         <div className={cn("flex items-center space-x-3", className)}>
             <div className={cn(
-                "bg-walia-primary/10 border border-walia-primary/20 flex items-center justify-center font-bold text-walia-primary overflow-hidden relative shrink-0",
+                "bg-gray-100 dark:bg-white/10 border border-gray-200 dark:border-white/20 flex items-center justify-center font-bold text-black dark:text-white overflow-hidden relative shrink-0 transition-colors",
                 currentSize.box
             )}>
                 {userData?.photoURL ? (
@@ -49,11 +49,11 @@ export default function UserBadge({ uid, showUsername = true, className, size = 
             </div>
             {(userData || !uid) && (
                 <div className="flex flex-col min-w-0">
-                    <h4 className={cn("font-black text-white truncate", currentSize.text)}>
+                    <h4 className={cn("font-black text-black dark:text-white truncate transition-colors", currentSize.text)}>
                         {userData?.name || userData?.displayName || 'Student'}
                     </h4>
                     {showUsername && (
-                        <p className={cn("text-white/30 font-black uppercase tracking-widest truncate", currentSize.subtext)}>
+                        <p className={cn("text-gray-400 dark:text-white/30 font-black uppercase tracking-widest truncate transition-colors", currentSize.subtext)}>
                             @{userData?.username || 'walia_user'}
                         </p>
                     )}

@@ -1,5 +1,6 @@
 'use client';
 
+import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
 import {
     Calendar as CalendarIcon,
@@ -27,6 +28,7 @@ const sidebarLinks = [
 
 export default function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
     const pathname = usePathname();
+    const { user, profile } = useAuth();
 
     return (
         <>
@@ -49,8 +51,8 @@ export default function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose:
                     {/* Header */}
                     <div className="p-8 flex items-center justify-between">
                         <Link href="/" className="flex items-center space-x-3 group">
-                            <div className="w-10 h-10 rounded-full bg-black border border-walia-primary/30 flex items-center justify-center overflow-hidden transition-all group-hover:scale-110">
-                                <Image src="/walia-logo.png" alt="Walia" width={32} height={32} unoptimized />
+                            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center overflow-hidden transition-all group-hover:scale-110 p-1.5 shadow-lg shadow-white/5">
+                                <Image src="/walia-logo.png" alt="Walia" width={28} height={28} unoptimized />
                             </div>
                             <span className="text-2xl font-black text-white tracking-tighter">Walia</span>
                         </Link>
@@ -116,12 +118,18 @@ export default function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose:
                     {/* User Section */}
                     <div className="p-4 pb-8 space-y-4">
                         <div className="flex items-center p-4 rounded-2xl bg-white/5 border border-white/5 border-transparent hover:border-white/10 transition-all">
-                            <div className="w-10 h-10 rounded-full bg-walia-primary/20 border border-walia-primary/30 flex items-center justify-center mr-4">
-                                <User className="w-5 h-5 text-walia-primary" />
+                            <div className="w-10 h-10 rounded-full bg-white/10 border border-white/10 flex items-center justify-center mr-4 overflow-hidden">
+                                {profile?.photoURL ? (
+                                    <img src={profile.photoURL} alt={profile.name} className="w-full h-full object-cover" />
+                                ) : (
+                                    <User className="w-5 h-5 text-white/40" />
+                                )}
                             </div>
                             <div className="flex-1 overflow-hidden">
-                                <p className="text-sm font-bold text-white truncate">User Name</p>
-                                <p className="text-[10px] text-white/30 truncate">Free Plan</p>
+                                <p className="text-sm font-bold text-white truncate">{profile?.name || user?.displayName || 'User'}</p>
+                                <p className="text-[10px] text-white/30 truncate font-black uppercase tracking-widest">
+                                    @{profile?.username || 'walia_user'}
+                                </p>
                             </div>
                             <Link href="/dashboard/settings">
                                 <Settings className="w-5 h-5 text-white/20 hover:text-white transition-colors" />

@@ -10,6 +10,7 @@ type Theme = 'light' | 'dark';
 interface ThemeContextType {
     theme: Theme;
     toggleTheme: () => void;
+    setTheme: (theme: Theme) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -34,7 +35,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         if (!user) return;
         const unsub = onSnapshot(doc(db, 'users', user.uid), (snap: any) => {
-            if (snap.exists()) {
+            // Only update if the change came from the server, 
+            // to avoid flickering while local state is updated optimistically.
+            if (snap.exists() && !snap.metadata.hasPendingWrites) {
                 const firestoreTheme = snap.data().theme as Theme;
                 if (firestoreTheme && firestoreTheme !== theme) {
                     setTheme(firestoreTheme);
@@ -67,9 +70,23 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     const toggleTheme = async () => {
         const newTheme = theme === 'light' ? 'dark' : 'light';
+        localStorage.setItem('walia-theme', newTheme);
         setTheme(newTheme);
         applyTheme(newTheme);
+
+        if (user) {
+            try {
+                await updateDoc(doc(db, 'users', user.uid), { theme: newTheme });
+            } catch (error) {
+                console.error('Failed to sync theme to Firestore:', error);
+            }
+        }
+    };
+
+    const changeTheme = async (newTheme: Theme) => {
         localStorage.setItem('walia-theme', newTheme);
+        setTheme(newTheme);
+        applyTheme(newTheme);
 
         if (user) {
             try {
@@ -81,7 +98,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     };
 
     return (
-        <ThemeContext.Provider value={{ theme, toggleTheme }}>
+        <ThemeContext.Provider value={{ theme, toggleTheme, setTheme: changeTheme }}>
             {children}
         </ThemeContext.Provider>
     );
