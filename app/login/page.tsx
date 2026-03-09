@@ -37,7 +37,7 @@ function LoginContent() {
                 router.replace('/dashboard');
             }
         } catch (err: any) {
-            console.error("Login error:", err);
+            console.warn("Login error:", err.message);
             setError('Invalid email or password. Please try again.');
         } finally { setLoading(false); }
     };
