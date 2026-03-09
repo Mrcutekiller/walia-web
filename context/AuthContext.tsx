@@ -1,7 +1,8 @@
 'use client';
 
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
+import { doc, onSnapshot } from 'firebase/firestore';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 interface AuthContextType {
@@ -21,8 +22,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             setUser(user);
             if (user) {
-                const { doc, onSnapshot } = require('firebase/firestore');
-                const { db } = require('@/lib/firebase');
                 const unsubProfile = onSnapshot(doc(db, 'users', user.uid), (snap: any) => {
                     if (snap.exists()) setProfile(snap.data());
                     else setProfile(null);
