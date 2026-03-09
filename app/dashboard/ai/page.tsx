@@ -17,14 +17,12 @@ import {
 } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import {
-    ArrowLeft,
+    ArrowRight,
     Bot,
     Clock,
-    Image as ImageIcon,
     Loader2,
+    MessageSquarePlus,
     Plus,
-    Send,
-    Sparkles,
     Trash2,
     User
 } from 'lucide-react';
@@ -54,10 +52,11 @@ export default function AIHubPage() {
     const [messages, setMessages] = useState<Message[]>([]);
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
+    const [showHistory, setShowHistory] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // 1. Fetch sessions
+    // Fetch sessions
     useEffect(() => {
         if (!user) return;
         const q = query(
@@ -70,7 +69,7 @@ export default function AIHubPage() {
         return () => unsub();
     }, [user]);
 
-    // 2. Fetch messages for active session
+    // Fetch messages for active session
     useEffect(() => {
         if (!activeSession || !user) {
             setMessages([]);
@@ -101,12 +100,12 @@ export default function AIHubPage() {
         });
         setActiveSession(sessionRef.id);
         setMessages([]);
+        setShowHistory(false);
     };
 
     const handleDeleteSession = async (sessionId: string) => {
         if (!user) return;
         try {
-            // Delete messages first
             const msgSnap = await getDocs(collection(db, 'users', user.uid, 'ai_sessions', sessionId, 'messages'));
             for (const d of msgSnap.docs) {
                 await deleteDoc(d.ref);
@@ -123,7 +122,6 @@ export default function AIHubPage() {
 
         let sessionId = activeSession;
         if (!sessionId) {
-            // Create a new session if none is active
             const sessionRef = await addDoc(collection(db, 'users', user.uid, 'ai_sessions'), {
                 title: message.slice(0, 30) || 'Image Analysis',
                 lastText: message || 'Image sent',
@@ -139,7 +137,6 @@ export default function AIHubPage() {
         setLoading(true);
 
         try {
-            // 1. Save user message
             await addDoc(collection(db, 'users', user.uid, 'ai_sessions', sessionId, 'messages'), {
                 role: 'user',
                 text: text,
@@ -147,14 +144,12 @@ export default function AIHubPage() {
                 createdAt: serverTimestamp()
             });
 
-            // 2. Update session
             await updateDoc(doc(db, 'users', user.uid, 'ai_sessions', sessionId), {
                 title: text.slice(0, 30) || 'Conversation',
                 lastText: text || 'Image shared',
                 updatedAt: serverTimestamp()
             });
 
-            // 3. Call AI API
             const res = await fetch('/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -167,7 +162,6 @@ export default function AIHubPage() {
 
             const data = await res.json();
 
-            // 4. Save AI response
             await addDoc(collection(db, 'users', user.uid, 'ai_sessions', sessionId, 'messages'), {
                 role: 'ai',
                 text: data.reply || "I'm sorry, I couldn't process that.",
@@ -178,6 +172,7 @@ export default function AIHubPage() {
             console.error('AI Error:', error);
         } finally {
             setLoading(false);
+            scrollToBottom();
         }
     };
 
@@ -199,213 +194,200 @@ export default function AIHubPage() {
     };
 
     return (
-        <div className="h-[calc(100vh-180px)] overflow-hidden flex flex-col md:flex-row bg-white/5 border border-white/10 rounded-[40px] animate-fade-in-up">
-
-            {/* Sidebar: Chat History */}
-            <aside className={cn(
-                "w-full md:w-80 border-r border-white/5 flex flex-col transition-all",
-                activeSession ? "hidden md:flex" : "flex"
-            )}>
-                <div className="p-6 border-b border-white/5">
-                    <button
-                        onClick={createNewChat}
-                        className="w-full py-4 rounded-2xl bg-walia-primary text-white font-bold flex items-center justify-center hover:bg-walia-secondary transition-all shadow-lg shadow-walia-primary/20"
-                    >
-                        <Plus className="w-5 h-5 mr-2" />
-                        New Chat
-                    </button>
-                </div>
-
-                <div className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar">
-                    <div className="flex items-center justify-between px-4 mb-4">
-                        <p className="text-[10px] font-black text-white/20 uppercase tracking-widest">History</p>
-                        <Clock className="w-3 h-3 text-white/10" />
-                    </div>
-                    {sessions.map((session) => (
-                        <div
-                            key={session.id}
-                            onClick={() => setActiveSession(session.id)}
-                            className={cn(
-                                "p-4 rounded-2xl cursor-pointer group transition-all relative overflow-hidden",
-                                activeSession === session.id ? "bg-white/10" : "hover:bg-white/5"
-                            )}
-                        >
-                            <div className="flex items-center justify-between mb-1 pr-6">
-                                <h4 className="text-sm font-bold text-white truncate max-w-[140px]">{session.title}</h4>
-                                <span className="text-[10px] text-white/30 font-medium">{formatTimeAgo(session.updatedAt)}</span>
-                            </div>
-                            <p className="text-xs text-white/40 truncate">{session.lastText}</p>
-
-                            <button
-                                onClick={(e) => { e.stopPropagation(); handleDeleteSession(session.id); }}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-xl bg-red-500/10 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                                <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                        </div>
-                    ))}
-                    {sessions.length === 0 && (
-                        <div className="text-center py-10">
-                            <Bot className="w-10 h-10 text-white/5 mx-auto mb-4" />
-                            <p className="text-[10px] font-black text-white/20 uppercase tracking-widest">No chats yet</p>
-                        </div>
-                    )}
-                </div>
-            </aside>
+        <div className="h-full flex relative bg-white overflow-hidden text-black animate-in fade-in">
 
             {/* Main Chat Area */}
-            <main className={cn(
-                "flex-1 flex flex-col transition-all relative",
-                !activeSession && "hidden md:flex justify-center items-center"
-            )}>
+            <main className="flex-1 flex flex-col relative min-w-0">
+
+                {/* Header (Top Right Tools) */}
+                <header className="absolute top-6 right-6 z-10 flex items-center gap-3">
+                    <button
+                        onClick={() => setShowHistory(!showHistory)}
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors text-sm font-bold"
+                    >
+                        <Clock className="w-4 h-4" />
+                        <span className="hidden sm:inline">History</span>
+                    </button>
+                    <button
+                        onClick={createNewChat}
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-black text-white shadow-md hover:bg-zinc-800 transition-colors text-sm font-bold"
+                    >
+                        <MessageSquarePlus className="w-4 h-4" />
+                        <span className="hidden sm:inline">New Chat</span>
+                    </button>
+                </header>
+
                 {!activeSession ? (
-                    <div className="text-center max-w-sm space-y-8 animate-fade-in">
-                        <div className="w-24 h-24 rounded-[40px] bg-walia-primary/10 border border-walia-primary/20 flex items-center justify-center mx-auto relative group">
-                            <Sparkles className="w-10 h-10 text-walia-primary group-hover:scale-110 transition-transform" />
-                            <div className="absolute inset-0 rounded-[40px] bg-walia-primary/20 blur-xl opacity-0 group-hover:opacity-50 transition-opacity" />
+                    <div className="flex-1 flex flex-col items-center justify-center p-6 text-center animate-in slide-in-from-bottom-4">
+                        <div className="w-20 h-20 rounded-3xl bg-black border-[6px] border-gray-100 flex items-center justify-center mb-8 shadow-2xl">
+                            <Bot className="w-8 h-8 text-white" />
                         </div>
-                        <div className="space-y-2">
-                            <h2 className="text-2xl font-black text-white">Walia AI Hub</h2>
-                            <p className="text-sm text-white/30 leading-relaxed font-medium px-8">
-                                Select a previous session or start a new academic interaction with Walia AI.
-                            </p>
-                        </div>
-                        <button
-                            onClick={createNewChat}
-                            className="px-10 py-4 rounded-3xl bg-white text-black font-black text-xs uppercase tracking-widest hover:scale-105 transition-all shadow-xl"
-                        >
-                            Start Chatting
-                        </button>
+                        <h1 className="text-4xl md:text-5xl font-black mb-4 tracking-tight">
+                            Good to see you,<br />
+                            {user?.displayName?.split(' ')[0] || 'Voyager'}
+                        </h1>
+                        <p className="text-gray-500 font-medium max-w-sm">
+                            I am Walia AI, your personal study assistant. Ask me anything, generate notes, or summarize PDFs.
+                        </p>
                     </div>
                 ) : (
-                    <>
-                        {/* Chat Header */}
-                        <header className="px-8 h-20 border-b border-white/5 flex items-center justify-between bg-black/20">
-                            <div className="flex items-center">
-                                <button className="md:hidden mr-4 text-white/40" onClick={() => setActiveSession(null)}>
-                                    <ArrowLeft className="w-6 h-6" />
-                                </button>
-                                <div className="w-10 h-10 rounded-full bg-walia-primary/20 flex items-center justify-center mr-4 border border-walia-primary/30">
-                                    <Bot className="w-5 h-5 text-walia-primary" />
-                                </div>
-                                <div>
-                                    <h3 className="text-sm font-bold text-white">Walia AI</h3>
-                                    <p className="text-[10px] text-green-500 font-bold uppercase tracking-widest">Active · Gemini 2.0</p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center space-x-2">
-                                <button
-                                    onClick={() => handleDeleteSession(activeSession)}
-                                    className="p-3 rounded-xl hover:bg-white/5 transition-all text-white/20 hover:text-red-500"
-                                >
-                                    <Trash2 className="w-5 h-5" />
-                                </button>
-                            </div>
-                        </header>
-
-                        {/* Message Container */}
-                        <div className="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar">
+                    <div className="flex-1 overflow-y-auto w-full pt-24 pb-32 px-4 custom-scrollbar">
+                        <div className="max-w-3xl mx-auto space-y-8">
                             {messages.map((msg, i) => (
                                 <div
                                     key={msg.id || i}
                                     className={cn(
-                                        "flex w-full mb-4 animate-fade-in-up",
+                                        "flex w-full animate-in slide-in-from-bottom-2",
                                         msg.role === 'user' ? "justify-end" : "justify-start"
                                     )}
                                 >
                                     <div className={cn(
-                                        "flex max-w-[85%] items-start space-x-4",
-                                        msg.role === 'user' ? "flex-row-reverse space-x-reverse" : "flex-row"
+                                        "flex max-w-[85%] items-end gap-3",
+                                        msg.role === 'user' ? "flex-row-reverse" : "flex-row"
                                     )}>
                                         <div className={cn(
-                                            "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border",
-                                            msg.role === 'user' ? "bg-white/5 border-white/10" : "bg-walia-primary/10 border-walia-primary/20"
+                                            "w-8 h-8 rounded-full flex items-center justify-center shrink-0 shrink-0 shadow-sm",
+                                            msg.role === 'user' ? "bg-black" : "bg-white border border-gray-200"
                                         )}>
-                                            {msg.role === 'user' ? <User className="w-5 h-5 text-white/40" /> : <Bot className="w-5 h-5 text-walia-primary" />}
+                                            {msg.role === 'user' ? (
+                                                <User className="w-4 h-4 text-white" />
+                                            ) : (
+                                                <Bot className="w-4 h-4 text-black" />
+                                            )}
                                         </div>
                                         <div className={cn(
-                                            "rounded-3xl text-sm leading-relaxed shadow-sm overflow-hidden",
+                                            "rounded-[28px] text-sm leading-relaxed px-6 py-4 border shadow-sm",
                                             msg.role === 'user'
-                                                ? "bg-walia-primary text-white rounded-tr-none"
-                                                : "bg-white/5 text-white/80 border border-white/10 rounded-tl-none",
-                                            msg.image ? "p-2" : "p-6"
+                                                ? "bg-black text-white border-black rounded-br-sm"
+                                                : "bg-white text-black border-gray-100 rounded-bl-sm"
                                         )}>
                                             {msg.image && (
-                                                <div className="relative w-72 h-72 rounded-2xl overflow-hidden mb-4 bg-black/50">
-                                                    <Image src={msg.image} alt="AI Attachment" fill className="object-cover" unoptimized />
+                                                <div className="relative w-64 h-64 rounded-2xl overflow-hidden mb-3 border border-gray-100">
+                                                    <Image src={msg.image} alt="Upload" fill className="object-cover" unoptimized />
                                                 </div>
                                             )}
                                             {msg.text && (
-                                                <div className={cn(msg.image ? "px-4 pb-4 pt-2" : "")}>
-                                                    {msg.text}
-                                                </div>
+                                                <div className="whitespace-pre-wrap">{msg.text}</div>
                                             )}
                                         </div>
                                     </div>
                                 </div>
                             ))}
                             {loading && (
-                                <div className="flex justify-start animate-fade-in">
-                                    <div className="flex max-w-[80%] items-start space-x-4">
-                                        <div className="w-10 h-10 rounded-xl bg-walia-primary/10 border border-walia-primary/20 flex items-center justify-center shrink-0">
-                                            <Bot className="w-5 h-5 text-walia-primary" />
+                                <div className="flex justify-start animate-in fade-in">
+                                    <div className="flex max-w-[85%] items-end gap-3">
+                                        <div className="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center shrink-0 shadow-sm">
+                                            <Bot className="w-4 h-4 text-black" />
                                         </div>
-                                        <div className="p-6 rounded-3xl bg-white/5 text-white/80 border border-white/10 rounded-tl-none">
+                                        <div className="px-6 py-5 rounded-[28px] rounded-bl-sm bg-white border border-gray-100 shadow-sm">
                                             <div className="flex gap-1.5 items-center">
-                                                <div className="w-2 h-2 rounded-full bg-walia-primary animate-bounce" style={{ animationDelay: '0ms' }} />
-                                                <div className="w-2 h-2 rounded-full bg-walia-primary animate-bounce" style={{ animationDelay: '200ms' }} />
-                                                <div className="w-2 h-2 rounded-full bg-walia-primary animate-bounce" style={{ animationDelay: '400ms' }} />
+                                                <div className="w-2 h-2 rounded-full bg-black animate-bounce" style={{ animationDelay: '0ms' }} />
+                                                <div className="w-2 h-2 rounded-full bg-black animate-bounce" style={{ animationDelay: '150ms' }} />
+                                                <div className="w-2 h-2 rounded-full bg-black animate-bounce" style={{ animationDelay: '300ms' }} />
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             )}
-                            <div ref={messagesEndRef} />
+                            <div ref={messagesEndRef} className="h-4" />
                         </div>
-
-                        {/* Input Bar */}
-                        <div className="p-6">
-                            <div className="relative group max-w-4xl mx-auto flex items-center space-x-4">
-                                <div className="flex-1 bg-white/5 border border-white/10 rounded-[32px] overflow-hidden flex items-center focus-within:border-walia-primary transition-all shadow-lg">
-                                    <button
-                                        onClick={() => fileInputRef.current?.click()}
-                                        disabled={uploading}
-                                        className="p-6 hover:bg-white/5 text-white/20 hover:text-walia-primary transition-colors disabled:opacity-50"
-                                    >
-                                        {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <ImageIcon className="w-5 h-5" />}
-                                    </button>
-                                    <input
-                                        type="file"
-                                        ref={fileInputRef}
-                                        className="hidden"
-                                        accept="image/*"
-                                        onChange={handleImageUpload}
-                                    />
-                                    <input
-                                        type="text"
-                                        value={message}
-                                        onChange={(e) => setMessage(e.target.value)}
-                                        onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                                        placeholder="Ask Walia AI about your studies..."
-                                        className="flex-1 bg-transparent py-6 text-white placeholder:text-white/20 outline-none"
-                                    />
-                                    <button
-                                        onClick={() => handleSend()}
-                                        disabled={(!message.trim() && !uploading) || loading}
-                                        className="m-2 p-4 rounded-2xl bg-walia-primary text-white hover:bg-walia-secondary transition-all flex items-center justify-center shadow-lg disabled:opacity-20"
-                                    >
-                                        <Send className="w-5 h-5" />
-                                    </button>
-                                </div>
-                            </div>
-                            <p className="text-center mt-4 text-[10px] text-white/20 font-medium">
-                                Walia AI can make mistakes. Persistent history enabled.
-                            </p>
-                        </div>
-                    </>
+                    </div>
                 )}
+
+                {/* Bottom Input Area */}
+                <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white via-white to-transparent pointer-events-none">
+                    <div className="max-w-3xl mx-auto relative pointer-events-auto">
+                        <div className="bg-white border-2 border-black rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.06)] flex items-end p-2 transition-all focus-within:ring-4 focus-within:ring-black/5">
+                            <button
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={uploading}
+                                className="p-4 rounded-full hover:bg-gray-100 text-gray-500 hover:text-black transition-colors shrink-0 disabled:opacity-50"
+                            >
+                                {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className="w-5 h-5" />}
+                            </button>
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                className="hidden"
+                                accept="image/*"
+                                onChange={handleImageUpload}
+                            />
+
+                            <textarea
+                                value={message}
+                                onChange={(e) => setMessage(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && !e.shiftKey) {
+                                        e.preventDefault();
+                                        handleSend();
+                                    }
+                                }}
+                                placeholder="Ask anything..."
+                                className="flex-1 bg-transparent py-4 px-2 text-black font-medium placeholder:text-gray-400 outline-none resize-none max-h-32 min-h-[56px] custom-scrollbar"
+                                rows={1}
+                            />
+
+                            <button
+                                onClick={() => handleSend()}
+                                disabled={(!message.trim() && !uploading) || loading}
+                                className="m-1 p-3.5 rounded-full bg-black text-white hover:bg-zinc-800 transition-all flex items-center justify-center shrink-0 disabled:opacity-20 disabled:hover:bg-black"
+                            >
+                                <ArrowRight className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <p className="text-center mt-3 text-xs text-gray-400 font-medium">
+                            AI can make mistakes. Always verify important information.
+                        </p>
+                    </div>
+                </div>
+
             </main>
+
+            {/* Right Sidebar: History Panel */}
+            {showHistory && (
+                <aside className="w-80 border-l border-gray-200 bg-gray-50 flex flex-col absolute right-0 inset-y-0 z-20 animate-in slide-in-from-right shadow-2xl md:relative md:shadow-none">
+                    <div className="p-6 border-b border-gray-200 flex items-center justify-between bg-white">
+                        <h3 className="font-black text-lg">History</h3>
+                        <button onClick={() => setShowHistory(false)} className="md:hidden p-2 hover:bg-gray-100 rounded-full">
+                            <ArrowRight className="w-4 h-4" />
+                        </button>
+                    </div>
+                    <div className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar">
+                        {sessions.map((session) => (
+                            <div
+                                key={session.id}
+                                onClick={() => { setActiveSession(session.id); setShowHistory(false); }}
+                                className={cn(
+                                    "p-4 rounded-2xl cursor-pointer group transition-all relative overflow-hidden border",
+                                    activeSession === session.id
+                                        ? "bg-white border-black shadow-md"
+                                        : "bg-transparent border-transparent hover:bg-white hover:border-gray-200 hover:shadow-sm"
+                                )}
+                            >
+                                <div className="flex items-start justify-between mb-1 pr-6">
+                                    <h4 className="text-sm font-bold text-black truncate max-w-[160px]">{session.title}</h4>
+                                </div>
+                                <p className="text-xs text-gray-500 font-medium truncate mb-2">{session.lastText}</p>
+                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">{formatTimeAgo(session.updatedAt)}</p>
+
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); handleDeleteSession(session.id); }}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-xl bg-red-50 text-red-600 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-100"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                </button>
+                            </div>
+                        ))}
+                        {sessions.length === 0 && (
+                            <div className="text-center py-10 opacity-50">
+                                <Bot className="w-8 h-8 text-black mx-auto mb-3" />
+                                <p className="text-sm font-bold">No sessions yet</p>
+                            </div>
+                        )}
+                    </div>
+                </aside>
+            )}
+
         </div>
     );
 }

@@ -1,33 +1,50 @@
 'use client';
 
+import UserBadge from '@/components/UserBadge';
 import { useAuth } from '@/context/AuthContext';
-import { auth, db, storage } from '@/lib/firebase';
+import { db, storage } from '@/lib/firebase';
 import { deleteAccount } from '@/lib/user';
+import { cn, formatTimeAgo } from '@/lib/utils';
 import { updateProfile } from 'firebase/auth';
-import { doc, updateDoc } from 'firebase/firestore';
+import {
+    arrayRemove,
+    arrayUnion,
+    collection,
+    deleteDoc,
+    doc,
+    limit,
+    onSnapshot,
+    orderBy,
+    query,
+    updateDoc,
+    where
+} from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-    Bell,
     Camera,
-    Check,
-    ChevronRight,
-    Crown,
     Edit3,
-    HelpCircle,
+    Heart,
     Loader2,
-    Lock,
-    LogOut,
-    MessageSquare,
-    Moon,
-    Shield,
-    Trash2,
-    User
+    MessageCircle,
+    Settings,
+    Share2,
+    Trash2
 } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
+
+interface Post {
+    id: string;
+    authorId: string;
+    title: string;
+    content: string;
+    type: 'ai_share' | 'quiz' | 'note' | 'general';
+    likes: string[];
+    commentCount: number;
+    createdAt: any;
+}
 
 export default function ProfilePage() {
     const { user, profile } = useAuth();
@@ -37,9 +54,9 @@ export default function ProfilePage() {
     // States
     const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [saveSuccess, setSaveSuccess] = useState(false);
-    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [uploading, setUploading] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [posts, setPosts] = useState<Post[]>([]);
 
     // Editable fields
     const [formData, setFormData] = useState({
@@ -56,10 +73,20 @@ export default function ProfilePage() {
         }
     }, [profile, user]);
 
-    const handleLogout = async () => {
-        await auth.signOut();
-        router.push('/');
-    };
+    // Fetch user's posts
+    useEffect(() => {
+        if (!user) return;
+        const q = query(
+            collection(db, 'posts'),
+            where('authorId', '==', user.uid),
+            orderBy('createdAt', 'desc'),
+            limit(20)
+        );
+        const unsub = onSnapshot(q, (snap) => {
+            setPosts(snap.docs.map(d => ({ id: d.id, ...d.data() } as Post)));
+        });
+        return () => unsub();
+    }, [user]);
 
     const handleSave = async () => {
         if (!user) return;
@@ -69,9 +96,7 @@ export default function ProfilePage() {
                 ...formData,
             });
             await updateProfile(user, { displayName: formData.displayName });
-            setSaveSuccess(true);
             setIsEditing(false);
-            setTimeout(() => setSaveSuccess(false), 3000);
         } catch (error) {
             console.error('Error saving profile:', error);
         } finally {
@@ -109,218 +134,267 @@ export default function ProfilePage() {
         }
     };
 
+    const handleLike = async (post: Post) => {
+        if (!user) return;
+        const postRef = doc(db, 'posts', post.id);
+        const isLiked = post.likes?.includes(user.uid);
+        try {
+            await updateDoc(postRef, { likes: isLiked ? arrayRemove(user.uid) : arrayUnion(user.uid) });
+        } catch (error) {
+            console.error('Like error:', error);
+        }
+    };
+
+    const handleDeletePost = async (postId: string) => {
+        if (!user) return;
+        try {
+            await deleteDoc(doc(db, 'posts', postId));
+        } catch (error) {
+            console.error('Delete error:', error);
+        }
+    };
+
+    if (!user) return null;
+
     return (
-        <div className="animate-fade-in flex flex-col pb-8 bg-[#f8f9fa] dark:bg-[#0a0a0a] min-h-full">
+        <div className="min-h-full bg-[#FAFAFA] text-black animate-in fade-in pb-20 selection:bg-black selection:text-white">
 
-            {/* Header Background */}
-            <div className="h-40 bg-gradient-to-br from-[#6C63FF] to-[#7C75FF] dark:from-[#1A1A2E] dark:to-[#0D0D1A] -mx-4 -mt-4 md:-mx-6 md:-mt-6 lg:-mx-10 lg:-mt-10 relative shrink-0">
-                <div className="absolute top-6 right-6 px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full border border-white/30 hidden">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-white">Free Plan</span>
-                </div>
-            </div>
+            <main className="max-w-3xl mx-auto px-4 pt-8 md:pt-12 space-y-8">
 
-            <div className="max-w-3xl mx-auto w-full">
+                {/* Profile Card */}
+                <div className="bg-white rounded-[3rem] p-2 border border-gray-200 shadow-xl shadow-black-[0.02] relative">
+                    <div className="relative h-48 md:h-56 rounded-[2.5rem] overflow-hidden bg-gray-100 border border-gray-100 mb-16">
+                        {/* Soft background graphic for banner */}
+                        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-multiply" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-gray-200 to-transparent opacity-50" />
 
-                {/* Profile Info Overlap */}
-                <div className="px-6 -mt-16 flex flex-col items-center mb-8 relative z-10">
-                    <div className="relative mb-4 group">
-                        <div className="w-32 h-32 rounded-full bg-white dark:bg-zinc-900 flex items-center justify-center font-black text-indigo-600 dark:text-white text-5xl border-4 border-[#f8f9fa] dark:border-[#0a0a0a] shadow-xl overflow-hidden relative">
-                            {profile?.photoURL ? (
-                                <Image src={profile.photoURL} alt="Avatar" fill className="object-cover" />
-                            ) : (
-                                <span>{formData.displayName.charAt(0)?.toUpperCase() || 'U'}</span>
-                            )}
-                            {uploading && (
-                                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                                    <Loader2 className="w-8 h-8 text-white animate-spin" />
+                        {/* Profile Image - Centered and overflowing bottom */}
+                        <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 group cursor-pointer" onClick={() => !isEditing && fileInputRef.current?.click()}>
+                            <div className="p-1 rounded-full bg-white relative">
+                                <div className="absolute inset-0 rounded-full ring-2 ring-gray-100 scale-[1.05] transition-transform group-hover:scale-110" />
+                                <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center relative">
+                                    {user.photoURL ? (
+                                        <img src={user.photoURL} alt="User Avatar" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <span className="text-4xl font-black text-gray-300">{formData.displayName?.charAt(0) || '?'}</span>
+                                    )}
+                                    {uploading && (
+                                        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center">
+                                            <Loader2 className="w-8 h-8 text-white animate-spin" />
+                                        </div>
+                                    )}
+                                    {!uploading && (
+                                        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center transition-opacity text-white">
+                                            <Camera className="w-6 h-6 mb-1" />
+                                            <span className="text-[10px] uppercase font-bold tracking-widest">Update</span>
+                                        </div>
+                                    )}
                                 </div>
+                            </div>
+                            <input type="file" ref={fileInputRef} onChange={handleAvatarUpload} className="hidden" accept="image/*" />
+                        </div>
+
+                        {/* Top Right Action: Settings/Edit */}
+                        <div className="absolute top-4 right-4 flex gap-2">
+                            {isEditing ? (
+                                <button onClick={() => setIsEditing(false)} className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-black font-bold text-xs shadow-md border border-gray-100 hover:bg-gray-50 transition-colors">
+                                    Cancel
+                                </button>
+                            ) : (
+                                <>
+                                    <button onClick={() => setIsEditing(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white text-black font-bold text-xs shadow-md border border-gray-100 hover:bg-gray-50 hover:shadow-lg transition-all">
+                                        <Edit3 className="w-4 h-4" /> <span className="hidden sm:inline">Edit</span>
+                                    </button>
+                                    <Link href="/dashboard/settings" className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white text-black font-bold text-xs shadow-md border border-gray-100 hover:bg-gray-50 hover:shadow-lg transition-all">
+                                        <Settings className="w-4 h-4" />
+                                    </Link>
+                                </>
                             )}
                         </div>
-                        <button
-                            onClick={() => fileInputRef.current?.click()}
-                            disabled={uploading}
-                            className="absolute bottom-1 right-1 p-2.5 rounded-full bg-indigo-600 text-white border-2 border-[#f8f9fa] dark:border-[#0a0a0a] shadow-lg hover:scale-110 transition-transform z-20"
-                        >
-                            <Camera className="w-4 h-4" />
-                        </button>
-                        <input type="file" ref={fileInputRef} onChange={handleAvatarUpload} className="hidden" accept="image/*" />
                     </div>
 
-                    {isEditing ? (
-                        <div className="w-full max-w-sm space-y-3 mt-2">
-                            <input
-                                className="w-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-xl px-4 py-2.5 text-lg font-black text-black dark:text-white outline-none focus:border-indigo-500 text-center"
-                                value={formData.displayName}
-                                onChange={e => setFormData({ ...formData, displayName: e.target.value })}
-                                placeholder="Your Name"
-                            />
-                            <textarea
-                                className="w-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm text-black/70 dark:text-white/70 outline-none focus:border-indigo-500 h-20 resize-none text-center"
-                                value={formData.bio}
-                                placeholder="Write a short bio..."
-                                onChange={e => setFormData({ ...formData, bio: e.target.value })}
-                            />
-                            <div className="flex justify-center gap-2 pt-2">
-                                <button onClick={() => setIsEditing(false)} className="px-5 py-2 rounded-full bg-black/10 dark:bg-white/10 text-xs font-bold text-black/60 dark:text-white/60">Cancel</button>
-                                <button onClick={handleSave} disabled={loading} className="px-6 py-2 rounded-full bg-indigo-600 text-white text-xs font-bold shadow-md disabled:opacity-50">{loading ? 'Saving...' : 'Save'}</button>
+                    {/* Bio and Info / Edit Mode */}
+                    <div className="px-6 pb-8">
+                        {isEditing ? (
+                            <div className="space-y-6 max-w-sm mx-auto animate-in fade-in slide-in-from-bottom-4">
+                                <div>
+                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1 mb-2 block">Display Name</label>
+                                    <input
+                                        className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-3.5 text-black outline-none focus:border-black focus:bg-white transition-all font-semibold text-center"
+                                        value={formData.displayName}
+                                        onChange={e => setFormData({ ...formData, displayName: e.target.value })}
+                                        placeholder="Your full name"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1 mb-2 block">Bio</label>
+                                    <textarea
+                                        className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-3.5 text-black outline-none focus:border-black focus:bg-white transition-all font-medium h-32 resize-none text-center custom-scrollbar"
+                                        value={formData.bio}
+                                        placeholder="Tell the community about yourself..."
+                                        onChange={e => setFormData({ ...formData, bio: e.target.value })}
+                                    />
+                                </div>
+                                <button onClick={handleSave} disabled={loading} className="w-full py-4 rounded-full bg-black text-white font-bold text-xs uppercase tracking-widest shadow-lg hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 hover:bg-zinc-800">
+                                    {loading ? 'Saving...' : 'Save Profile'}
+                                </button>
+
+                                <div className="pt-6 mt-6 border-t border-gray-100 flex justify-center">
+                                    <button onClick={() => setShowDeleteConfirm(true)} className="text-xs font-bold text-red-500 hover:text-red-700 underline underline-offset-4 decoration-red-200 hover:decoration-red-600 transition-colors">
+                                        Delete Account
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                    ) : (
-                        <div className="text-center">
-                            <div className="flex items-center justify-center gap-2 mb-1">
-                                <h2 className="text-2xl font-black text-black dark:text-white">{formData.displayName || 'Student User'}</h2>
-                                <button onClick={() => setIsEditing(true)} className="p-1.5 rounded-full text-black/30 dark:text-white/30 hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-                                    <Edit3 className="w-4 h-4" />
+                        ) : (
+                            <div className="text-center animate-in fade-in">
+                                <h1 className="text-3xl font-black tracking-tight text-black mb-1">
+                                    {formData.displayName || 'Set your name'}
+                                </h1>
+                                <p className="text-sm font-bold text-gray-400 mb-4 tracking-wide">
+                                    @{profile?.username || `user_${user.uid.slice(0, 5)}`}
+                                </p>
+
+                                <p className="max-w-md mx-auto text-[15px] font-medium text-gray-600 leading-relaxed mb-8">
+                                    {formData.bio || "You haven't added a bio yet. Click the edit button to tell everyone who you are."}
+                                </p>
+
+                                {/* Stats Row */}
+                                <div className="flex items-center justify-center gap-4 bg-gray-50 rounded-[2rem] p-4 max-w-sm mx-auto border border-gray-100">
+                                    <div className="flex-1">
+                                        <p className="text-lg font-black text-black">{posts.length}</p>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Posts</p>
+                                    </div>
+                                    <div className="w-px h-8 bg-gray-200" />
+                                    <div className="flex-1">
+                                        <p className="text-lg font-black text-black">{profile?.followersCount || 0}</p>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Followers</p>
+                                    </div>
+                                    <div className="w-px h-8 bg-gray-200" />
+                                    <div className="flex-1">
+                                        <p className="text-lg font-black text-black">{profile?.followingCount || 0}</p>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Following</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Posts Heading */}
+                {!isEditing && (
+                    <div className="px-4 py-2 border-b-2 border-black w-fit mt-10 mb-6 mx-auto md:mx-0">
+                        <h2 className="text-sm font-black text-black uppercase tracking-widest">Your Posts</h2>
+                    </div>
+                )}
+
+                {/* Posts List */}
+                {!isEditing && (
+                    <div className="space-y-6">
+                        {posts.length === 0 ? (
+                            <div className="text-center py-16 bg-white rounded-[3rem] border border-gray-200">
+                                <p className="text-gray-400 font-bold mb-4">You haven't posted anything yet.</p>
+                                <Link href="/dashboard/community" className="px-6 py-3 rounded-full bg-black text-white font-bold text-xs uppercase tracking-widest hover:scale-105 transition-transform inline-block">
+                                    Go to Community
+                                </Link>
+                            </div>
+                        ) : (
+                            posts.map(post => {
+                                const isLiked = post.likes?.includes(user?.uid || '');
+                                return (
+                                    <div key={post.id} className="p-6 md:p-8 rounded-[3rem] bg-white border border-gray-200 shadow-sm hover:shadow-xl hover:shadow-black/5 transition-all group">
+                                        <div className="flex items-center justify-between mb-6">
+                                            <div className="flex items-center gap-3">
+                                                <div className="scale-110 origin-left">
+                                                    <UserBadge uid={post.authorId} size="sm" />
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm font-black text-black leading-tight">{formData.displayName}</span>
+                                                    <span className="text-xs font-bold text-gray-400">
+                                                        {formatTimeAgo(post.createdAt)}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={() => handleDeletePost(post.id)}
+                                                className="w-8 h-8 flex items-center justify-center text-gray-300 hover:bg-red-50 hover:text-red-500 rounded-full transition-colors shrink-0"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
+
+                                        <div className="mb-6">
+                                            {post.type !== 'general' && (
+                                                <span className="inline-block px-3 py-1 bg-gray-50 border border-gray-200 rounded-full text-[10px] font-black uppercase text-gray-500 tracking-widest mb-3">
+                                                    {post.type.replace('_share', '')}
+                                                </span>
+                                            )}
+                                            {post.title && <h3 className="text-xl font-black text-black mb-3 tracking-tight">{post.title}</h3>}
+                                            <p className="text-[15px] text-gray-700 leading-relaxed font-medium whitespace-pre-wrap">{post.content}</p>
+                                        </div>
+
+                                        <div className="flex items-center border-t border-gray-100 pt-5 mt-2">
+                                            <div className="flex items-center space-x-6">
+                                                <button
+                                                    onClick={() => handleLike(post)}
+                                                    className={cn(
+                                                        "flex items-center space-x-2 text-sm font-bold transition-all group/btn",
+                                                        isLiked ? "text-black" : "text-gray-400 hover:text-black"
+                                                    )}
+                                                >
+                                                    <div className={cn(
+                                                        "w-10 h-10 rounded-full flex items-center justify-center transition-colors",
+                                                        isLiked ? "bg-gray-100" : "bg-transparent group-hover/btn:bg-gray-50"
+                                                    )}>
+                                                        <Heart className={cn("w-5 h-5 transition-transform", isLiked && "fill-current group-hover/btn:scale-110")} />
+                                                    </div>
+                                                    <span>{post.likes?.length || 0}</span>
+                                                </button>
+                                                <button className="flex items-center space-x-2 text-sm font-bold text-gray-400 hover:text-black transition-all group/btn">
+                                                    <div className="w-10 h-10 rounded-full bg-transparent group-hover/btn:bg-gray-50 flex items-center justify-center transition-colors">
+                                                        <MessageCircle className="w-5 h-5" />
+                                                    </div>
+                                                    <span>{post.commentCount || 0}</span>
+                                                </button>
+                                            </div>
+                                            <button className="w-10 h-10 ml-auto rounded-full bg-gray-50 flex items-center justify-center text-gray-400 hover:text-black hover:bg-gray-100 hover:scale-105 transition-all">
+                                                <Share2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                );
+                            })
+                        )}
+                    </div>
+                )}
+            </main>
+
+            {/* Delete Confirmation Modal */}
+            <AnimatePresence>
+                {showDeleteConfirm && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowDeleteConfirm(false)} className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+                        <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative w-full max-w-sm p-8 rounded-[2rem] bg-white shadow-2xl text-center space-y-8">
+                            <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto text-red-600 border border-red-100 shadow-sm">
+                                <Trash2 className="w-8 h-8" />
+                            </div>
+                            <div>
+                                <h3 className="text-2xl font-black text-black mb-3">Delete Account?</h3>
+                                <p className="text-gray-500 text-sm font-medium leading-relaxed">
+                                    This action is final. You will lose all your study data and AI history forever.
+                                </p>
+                            </div>
+                            <div className="space-y-3 pt-4 border-t border-gray-100">
+                                <button onClick={handleDeleteAccount} disabled={loading} className="w-full py-4 rounded-full bg-red-600 text-white font-bold uppercase tracking-widest text-[10px] shadow-lg shadow-red-600/20 hover:bg-red-700 hover:-translate-y-0.5 transition-all">
+                                    {loading ? 'Deleting...' : 'Delete Permanently'}
+                                </button>
+                                <button onClick={() => setShowDeleteConfirm(false)} className="w-full py-4 rounded-full bg-gray-100 text-black font-bold uppercase tracking-widest text-[10px] hover:bg-gray-200 transition-all">
+                                    Keep My Account
                                 </button>
                             </div>
-                            <p className="text-sm font-bold text-indigo-600 dark:text-indigo-400 mb-3">@{profile?.username || user?.email?.split('@')[0]}</p>
-
-                            {formData.bio && (
-                                <p className="text-black/50 dark:text-white/50 text-xs font-medium max-w-xs mx-auto mb-4">{formData.bio}</p>
-                            )}
-
-                            <AnimatePresence>
-                                {saveSuccess && (
-                                    <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="inline-flex items-center px-3 py-1 rounded-full bg-green-500/10 text-green-600 text-[10px] font-bold uppercase tracking-widest mt-2">
-                                        <Check className="w-3 h-3 mr-1" /> Profile Saved
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-                        </div>
-                    )}
-                </div>
-
-                <div className="px-4 space-y-6 max-w-lg mx-auto w-full">
-                    {/* Pro Banner */}
-                    {profile?.plan !== 'pro' && (
-                        <Link href="/dashboard/upgrade" className="block p-5 rounded-3xl bg-gradient-to-br from-indigo-600 to-purple-700 shadow-xl shadow-indigo-600/20 relative overflow-hidden group">
-                            <div className="absolute -right-4 -top-4 text-white/10 rotate-12 group-hover:scale-110 transition-transform">
-                                <Crown className="w-32 h-32" />
-                            </div>
-                            <div className="relative z-10 flex items-center justify-between">
-                                <div>
-                                    <h3 className="text-lg font-black text-white mb-1">Unlock Walia Pro</h3>
-                                    <p className="text-xs text-white/70 font-medium">Ultimate study tools & unlimited AI.</p>
-                                </div>
-                                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">
-                                    <ChevronRight className="w-5 h-5 text-white" />
-                                </div>
-                            </div>
-                        </Link>
-                    )}
-
-                    {/* Settings Sections */}
-
-                    {/* Account */}
-                    <div>
-                        <h4 className="text-[10px] font-black text-black/40 dark:text-white/40 uppercase tracking-widest mb-3 pl-2">Account Options</h4>
-                        <div className="bg-white dark:bg-[#1A1A2E] rounded-3xl border border-black/5 dark:border-white/5 overflow-hidden shadow-sm">
-                            <div className="flex items-center justify-between p-4 border-b border-black/5 dark:border-white/5 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors" onClick={() => setIsEditing(true)}>
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center"><User className="w-4 h-4 text-blue-500" /></div>
-                                    <span className="text-sm font-bold text-black dark:text-white">Edit Profile</span>
-                                </div>
-                                <ChevronRight className="w-4 h-4 text-black/20 dark:text-white/20" />
-                            </div>
-                            <div className="flex items-center justify-between p-4 border-b border-black/5 dark:border-white/5 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-purple-500/10 flex items-center justify-center"><Bell className="w-4 h-4 text-purple-500" /></div>
-                                    <span className="text-sm font-bold text-black dark:text-white">Notifications</span>
-                                </div>
-                                <ChevronRight className="w-4 h-4 text-black/20 dark:text-white/20" />
-                            </div>
-                            <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center"><Shield className="w-4 h-4 text-emerald-500" /></div>
-                                    <span className="text-sm font-bold text-black dark:text-white">Privacy & Security</span>
-                                </div>
-                                <ChevronRight className="w-4 h-4 text-black/20 dark:text-white/20" />
-                            </div>
-                        </div>
+                        </motion.div>
                     </div>
-
-                    {/* Preferences */}
-                    <div>
-                        <h4 className="text-[10px] font-black text-black/40 dark:text-white/40 uppercase tracking-widest mb-3 pl-2">Preferences</h4>
-                        <div className="bg-white dark:bg-[#1A1A2E] rounded-3xl border border-black/5 dark:border-white/5 overflow-hidden shadow-sm">
-                            <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-indigo-500/10 flex items-center justify-center"><Moon className="w-4 h-4 text-indigo-500" /></div>
-                                    <span className="text-sm font-bold text-black dark:text-white">Appearance</span>
-                                </div>
-                                <ChevronRight className="w-4 h-4 text-black/20 dark:text-white/20" />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Support */}
-                    <div>
-                        <h4 className="text-[10px] font-black text-black/40 dark:text-white/40 uppercase tracking-widest mb-3 pl-2">Support</h4>
-                        <div className="bg-white dark:bg-[#1A1A2E] rounded-3xl border border-black/5 dark:border-white/5 overflow-hidden shadow-sm">
-                            <div className="flex items-center justify-between p-4 border-b border-black/5 dark:border-white/5 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center"><HelpCircle className="w-4 h-4 text-amber-500" /></div>
-                                    <span className="text-sm font-bold text-black dark:text-white">Help Center</span>
-                                </div>
-                                <ChevronRight className="w-4 h-4 text-black/20 dark:text-white/20" />
-                            </div>
-                            <div className="flex items-center justify-between p-4 border-b border-black/5 dark:border-white/5 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors" onClick={() => window.dispatchEvent(new CustomEvent('trigger-review-popup'))}>
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-indigo-500/10 flex items-center justify-center"><MessageSquare className="w-4 h-4 text-indigo-500" /></div>
-                                    <span className="text-sm font-bold text-black dark:text-white">Give Feedback</span>
-                                </div>
-                                <ChevronRight className="w-4 h-4 text-black/20 dark:text-white/20" />
-                            </div>
-                            <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-gray-500/10 flex items-center justify-center"><Lock className="w-4 h-4 text-gray-500" /></div>
-                                    <span className="text-sm font-bold text-black dark:text-white">Legal & Policies</span>
-                                </div>
-                                <ChevronRight className="w-4 h-4 text-black/20 dark:text-white/20" />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Action Zone */}
-                    <div className="pt-2 pb-6">
-                        <button onClick={handleLogout} className="w-full p-4 rounded-full bg-white dark:bg-[#1A1A2E] border border-black/5 dark:border-white/5 text-black/60 dark:text-white/60 font-bold text-sm hover:bg-black/5 dark:hover:bg-white/5 transition-all flex items-center justify-center shadow-sm mb-4">
-                            <LogOut className="w-5 h-5 mr-2" /> Log Out
-                        </button>
-
-                        <button onClick={() => setShowDeleteConfirm(true)} className="w-full text-center text-xs font-bold text-red-500/70 hover:text-red-500 transition-colors uppercase tracking-widest p-2">
-                            Delete Account
-                        </button>
-                    </div>
-                </div>
-
-                {/* Delete Confirmation Modal */}
-                <AnimatePresence>
-                    {showDeleteConfirm && (
-                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
-                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowDeleteConfirm(false)} className="absolute inset-0 bg-black/80 backdrop-blur-md" />
-                            <motion.div initial={{ scale: 0.9, opacity: 0, y: 30 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 30 }} className="relative w-full max-w-sm p-8 rounded-[40px] bg-white dark:bg-zinc-900 border border-black/10 dark:border-white/10 shadow-2xl text-center space-y-6">
-                                <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto">
-                                    <Trash2 className="w-8 h-8 text-red-500" />
-                                </div>
-                                <div>
-                                    <h3 className="text-2xl font-black text-black dark:text-white mb-2">Delete Account?</h3>
-                                    <p className="text-black/50 dark:text-white/50 text-sm font-medium leading-relaxed">
-                                        All your data, AI chats, and study progress will be permanently erased.
-                                    </p>
-                                </div>
-                                <div className="space-y-2 pt-2">
-                                    <button onClick={handleDeleteAccount} disabled={loading} className="w-full py-4 rounded-full bg-red-500 text-white font-black uppercase tracking-widest text-xs shadow-lg shadow-red-500/20 disabled:opacity-50">
-                                        {loading ? 'Deleting...' : 'Delete Everything'}
-                                    </button>
-                                    <button onClick={() => setShowDeleteConfirm(false)} className="w-full py-4 rounded-full bg-black/5 dark:bg-white/5 text-black/60 dark:text-white/60 font-bold uppercase tracking-widest text-xs">
-                                        Cancel
-                                    </button>
-                                </div>
-                            </motion.div>
-                        </div>
-                    )}
-                </AnimatePresence>
-            </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
