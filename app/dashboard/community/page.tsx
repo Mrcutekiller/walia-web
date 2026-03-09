@@ -16,9 +16,12 @@ import {
     orderBy,
     query,
     serverTimestamp,
-    updateDoc
+    updateDoc,
+    where
 } from 'firebase/firestore';
 import {
+    Clock,
+    Eye,
     FileText,
     Heart,
     HelpCircle,
@@ -30,7 +33,17 @@ import {
     Users
 } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+
+interface Story {
+    id: string;
+    authorId: string;
+    imageUrl?: string;
+    content?: string;
+    views: string[];
+    likes: string[];
+    createdAt: any;
+}
 
 interface Post {
     id: string;
@@ -46,19 +59,60 @@ interface Post {
 export default function CommunityPage() {
     const { user } = useAuth();
     const [posts, setPosts] = useState<Post[]>([]);
+    const [stories, setStories] = useState<Story[]>([]);
     const [postInput, setPostInput] = useState('');
     const [postTitle, setPostTitle] = useState('');
     const [postType, setPostType] = useState<'ai_share' | 'quiz' | 'note' | 'general'>('general');
     const [isPosting, setIsPosting] = useState(false);
+    const [isSharingStory, setIsSharingStory] = useState(false);
     const [showNewPost, setShowNewPost] = useState(false);
+    const storyFileRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         const q = query(collection(db, 'posts'), orderBy('createdAt', 'desc'), limit(50));
         const unsub = onSnapshot(q, (snap) => {
             setPosts(snap.docs.map(d => ({ id: d.id, ...d.data() } as Post)));
         });
-        return () => unsub();
+
+        // Fetch stories from last 24 hours
+        const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        const sq = query(
+            collection(db, 'stories'),
+            where('createdAt', '>=', twentyFourHoursAgo),
+            orderBy('createdAt', 'desc')
+        );
+        const unsubStories = onSnapshot(sq, (snap) => {
+            setStories(snap.docs.map(d => ({ id: d.id, ...d.data() } as Story)));
+        });
+
+        return () => { unsub(); unsubStories(); };
     }, []);
+
+    const handleCreateStory = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file || !user) return;
+
+        setIsSharingStory(true);
+        try {
+            // In a real app we'd upload to Storage, for now using base64 for simplicity in demo
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = async () => {
+                const base64 = reader.result as string;
+                await addDoc(collection(db, 'stories'), {
+                    authorId: user.uid,
+                    imageUrl: base64,
+                    views: [],
+                    likes: [],
+                    createdAt: serverTimestamp()
+                });
+                setIsSharingStory(false);
+            };
+        } catch (error) {
+            console.error('Story error:', error);
+            setIsSharingStory(false);
+        }
+    };
 
     const handleCreatePost = async () => {
         if (!postInput.trim() || !user) return;
@@ -117,22 +171,62 @@ export default function CommunityPage() {
 
             <main className="max-w-2xl mx-auto px-4 pt-8 space-y-10">
 
-                {/* Horizontal "Story/Topic" Section - Adapted for Web */}
-                <div className="flex gap-4 overflow-x-auto pb-4 custom-scrollbar snap-x">
-                    <div className="shrink-0 snap-start w-28 h-40 rounded-[2rem] border-2 border-dashed border-gray-200 flex flex-col items-center justify-center p-4 hover:border-black hover:bg-gray-50 transition-colors cursor-pointer group">
-                        <div className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                            <Plus className="w-5 h-5" />
-                        </div>
-                        <span className="text-xs font-bold text-gray-500 group-hover:text-black transition-colors">Your Story</span>
+                {/* Horizontal Stories Section */}
+                <div className="flex gap-4 overflow-x-auto pb-6 custom-scrollbar snap-x scroll-smooth">
+                    <div
+                        onClick={() => storyFileRef.current?.click()}
+                        className="shrink-0 snap-start w-32 h-48 rounded-[2.5rem] border-2 border-dashed border-gray-200 flex flex-col items-center justify-center p-4 hover:border-black hover:bg-gray-50 transition-all cursor-pointer group relative overflow-hidden"
+                    >
+                        <input
+                            type="file"
+                            ref={storyFileRef}
+                            onChange={handleCreateStory}
+                            accept="image/*"
+                            className="hidden"
+                        />
+                        {isSharingStory ? (
+                            <div className="flex flex-col items-center gap-2">
+                                <div className="w-8 h-8 border-2 border-black/10 border-t-black rounded-full animate-spin" />
+                                <span className="text-[10px] font-black uppercase text-black/40">Sharing...</span>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="w-12 h-12 rounded-full bg-black text-white flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-lg shadow-black/20">
+                                    <Plus className="w-6 h-6" />
+                                </div>
+                                <span className="text-xs font-black text-gray-500 group-hover:text-black transition-colors">Your Story</span>
+                            </>
+                        )}
                     </div>
-                    {/* Placeholder structural items mimicking the reference */}
-                    {[1, 2, 3, 4].map(i => (
-                        <div key={i} className="shrink-0 snap-start w-28 h-40 rounded-[2rem] bg-gray-100 overflow-hidden relative cursor-pointer hover:shadow-lg transition-all hover:-translate-y-1 border border-gray-200 hover:border-black">
-                            {/* Gradient/Image Placeholder */}
-                            <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-100 opacity-50 mix-blend-multiply" />
-                            <div className="absolute bottom-3 left-0 w-full flex justify-center z-10">
-                                <div className="w-8 h-8 rounded-full border-2 border-white bg-white flex items-center justify-center shadow-md">
-                                    <Users className="w-4 h-4 text-gray-400" />
+
+                    {stories.map(story => (
+                        <div
+                            key={story.id}
+                            className="shrink-0 snap-start w-32 h-48 rounded-[2.5rem] bg-gray-100 overflow-hidden relative cursor-pointer hover:shadow-2xl transition-all hover:-translate-y-1 border border-gray-200 hover:border-black group"
+                        >
+                            {story.imageUrl ? (
+                                <img src={story.imageUrl} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="Story" />
+                            ) : (
+                                <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-100 opacity-50" />
+                            )}
+
+                            <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/60 to-transparent flex flex-col gap-1">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-6 h-6 rounded-full border border-white/50 overflow-hidden">
+                                        <UserBadge uid={story.authorId} size="sm" />
+                                    </div>
+                                    <div className="flex items-center gap-1.5 text-[8px] font-bold text-white uppercase tracking-widest">
+                                        <Eye className="w-2 h-2" />
+                                        {story.views?.length || 0}
+                                    </div>
+                                    <div className="flex items-center gap-1.5 text-[8px] font-bold text-white uppercase tracking-widest">
+                                        <Heart className="w-2 h-2 fill-current" />
+                                        {story.likes?.length || 0}
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-1 text-[7px] font-bold text-white/60 uppercase tracking-tighter">
+                                    <Clock className="w-2 h-2" />
+                                    {formatTimeAgo(story.createdAt)}
                                 </div>
                             </div>
                         </div>
