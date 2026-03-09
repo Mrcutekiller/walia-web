@@ -118,9 +118,9 @@ export default function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose:
                     {/* User Section */}
                     <div className="p-4 pb-8 space-y-4">
                         <div className="flex items-center p-4 rounded-2xl bg-white/5 border border-white/5 border-transparent hover:border-white/10 transition-all">
-                            <div className="w-10 h-10 rounded-full bg-white/10 border border-white/10 flex items-center justify-center mr-4 overflow-hidden">
+                            <div className="w-10 h-10 rounded-full bg-white/10 border border-white/10 flex items-center justify-center mr-4 overflow-hidden relative shrink-0">
                                 {profile?.photoURL ? (
-                                    <img src={profile.photoURL} alt={profile.name} className="w-full h-full object-cover" />
+                                    <Image src={profile.photoURL} alt={profile.name || 'User'} fill className="object-cover" />
                                 ) : (
                                     <User className="w-5 h-5 text-white/40" />
                                 )}

@@ -1,4 +1,5 @@
 'use client';
+import Image from 'next/image';
 
 import UserBadge from '@/components/UserBadge';
 import { useAuth } from '@/context/AuthContext';
@@ -174,7 +175,7 @@ export default function ProfilePage() {
                                 <div className="absolute inset-0 rounded-full ring-2 ring-gray-100 dark:ring-gray-800 scale-[1.05] transition-transform group-hover:scale-110" />
                                 <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-100 dark:bg-zinc-800 flex items-center justify-center relative">
                                     {(profile?.photoURL || user.photoURL) ? (
-                                        <img src={profile?.photoURL || user.photoURL || ''} alt="User Avatar" className="w-full h-full object-cover" />
+                                        <Image src={profile?.photoURL || user.photoURL || ''} alt="User Avatar" fill className="object-cover" />
                                     ) : (
                                         <span className="text-4xl font-black text-gray-300 dark:text-gray-700">{formData.displayName?.charAt(0) || profile?.name?.charAt(0) || '?'}</span>
                                     )}

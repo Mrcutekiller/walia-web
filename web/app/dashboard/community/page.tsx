@@ -1,4 +1,5 @@
 'use client';
+import Image from 'next/image';
 
 import UserBadge from '@/components/UserBadge';
 import { useAuth } from '@/context/AuthContext';
@@ -298,7 +299,7 @@ export default function CommunityPage() {
                             className="shrink-0 snap-start w-32 h-48 rounded-[2.5rem] bg-gray-100 dark:bg-white/5 overflow-hidden relative cursor-pointer hover:shadow-2xl transition-all hover:-translate-y-1 border border-gray-200 dark:border-gray-800 hover:border-black dark:hover:border-white group"
                         >
                             {story.imageUrl ? (
-                                <img src={story.imageUrl} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="Story" />
+                                <Image src={story.imageUrl} fill className="object-cover transition-transform duration-500 group-hover:scale-110" alt="Story" />
                             ) : (
                                 <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-100 opacity-50" />
                             )}
@@ -360,10 +361,10 @@ export default function CommunityPage() {
 
                             {selectedImage && (
                                 <div className="relative w-full aspect-video rounded-3xl overflow-hidden group">
-                                    <img src={selectedImage} alt="Post preview" className="w-full h-full object-cover" />
+                                    <Image src={selectedImage || ''} alt="Post preview" fill className="object-cover" unoptimized />
                                     <button
                                         onClick={() => setSelectedImage(null)}
-                                        className="absolute top-4 right-4 p-2 bg-black/50 text-white rounded-full hover:bg-black/70 transition-colors backdrop-blur-md"
+                                        className="absolute top-4 right-4 p-2 bg-black/50 text-white rounded-full hover:bg-black/70 transition-colors backdrop-blur-md z-10"
                                     >
                                         <X className="w-4 h-4" />
                                     </button>
@@ -559,8 +560,8 @@ export default function CommunityPage() {
                                         <p className="text-[15px] text-gray-700 dark:text-gray-300 leading-relaxed font-medium whitespace-pre-wrap mb-4">{post.content}</p>
 
                                         {post.imageUrl && (
-                                            <div className="mb-4 rounded-[2.5rem] overflow-hidden border border-gray-100 dark:border-gray-800 shadow-sm">
-                                                <img src={post.imageUrl} className="w-full object-cover max-h-[500px]" alt="Post" />
+                                            <div className="mb-4 rounded-[2.5rem] overflow-hidden border border-gray-100 dark:border-gray-800 shadow-sm relative w-full h-[300px] md:h-[400px]">
+                                                <Image src={post.imageUrl} fill className="object-cover" alt="Post" />
                                             </div>
                                         )}
 

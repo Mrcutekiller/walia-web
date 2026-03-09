@@ -1,0 +1,153 @@
+﻿
+> web@0.1.0 build
+> next build
+
+node.exe : ΓÜá 
+Warning: Next.js 
+inferred your 
+workspace root, but 
+it may not be 
+correct.
+At line:1 char:1
++ & "C:\Program File
+s\nodejs/node.exe" 
+"C:\Program Files\no
+dejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~
+    + CategoryInfo  
+            : NotS  
+  pecified: (ΓÜá    
+ Warning: Ne...n    
+ot be correct.:    
+String) [], Rem    
+oteException
+    + FullyQualifie 
+   dErrorId : Nati  
+  veCommandError
+ 
+ We detected 
+multiple lockfiles 
+and selected the 
+directory of C:\User
+s\biruk\OneDrive\Des
+ktop\app\package-loc
+k.json as the root 
+directory.
+ To silence this 
+warning, set 
+`turbopack.root` in 
+your Next.js 
+config, or consider 
+removing one of the 
+lockfiles if it's 
+not needed.
+   See https://nextj
+s.org/docs/app/api-r
+eference/config/next
+-config-js/turbopack
+#root-directory for 
+more information.
+ Detected 
+additional 
+lockfiles: 
+   * C:\Users\biruk\
+OneDrive\Desktop\app
+\web\package-lock.js
+on
+
+Γû▓ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local
+
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 17.6s
+  Running TypeScript ...
+Failed to compile.
+
+./app/dashboard/prof
+ile/page.tsx:177:41
+Type error: JSX 
+element class does 
+not support 
+attributes because 
+it does not have a 
+'props' property.
+
+[0m [90m 175 
+|[39m              
+                   
+[33m<[39m[33mdiv[
+39m className[33m=
+[39m[32m"w-32 h-32 
+rounded-full 
+overflow-hidden 
+bg-gray-100 
+dark:bg-zinc-800 
+flex items-center 
+justify-center relat
+ive"[39m[33m>[39m
+ [90m 176 |[39m   
+                    
+              {(prof
+ile[33m?[39m[33m.
+[39mphotoURL 
+[33m||[39m user[3
+3m.[39mphotoURL) 
+[33m?[39m (
+[31m[1m>[22m[39m
+[90m 177 |[39m    
+                    
+                 [3
+3m<[39m[33mImage[
+39m src[33m=[39m{p
+rofile[33m?[39m[3
+3m.[39mphotoURL 
+[33m||[39m user[3
+3m.[39mphotoURL 
+[33m||[39m 
+[32m''[39m} alt[3
+3m=[39m[32m"User 
+Avatar"[39m fill cl
+assName[33m=[39m[
+32m"object-cover"[3
+9m [33m/[39m[33m>
+[39m
+ [90m     |[39m   
+                    
+                  
+[31m[1m^[22m[39m
+ [90m 178 |[39m   
+                    
+              ) 
+[33m:[39m (
+ [90m 179 |[39m   
+                    
+                  [
+33m<[39m[33mspan[
+39m className[33m=
+[39m[32m"text-4xl 
+font-black 
+text-gray-300 dark:t
+ext-gray-700"[39m[
+33m>[39m{formData[
+33m.[39mdisplayName
+[33m?[39m[33m.[3
+9mcharAt([35m0[39m
+) [33m||[39m profi
+le[33m?[39m[33m.
+[39mname[33m?[39m
+[33m.[39mcharAt([3
+5m0[39m) 
+[33m||[39m [32m'?
+'[39m}[33m<[39m[
+33m/[39m[33mspan[
+39m[33m>[39m
+ [90m 180 |[39m   
+                    
+              )}[0m
+Next.js build 
+worker exited with 
+code: 1 and signal: 
+null

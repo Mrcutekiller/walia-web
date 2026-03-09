@@ -1,4 +1,5 @@
 'use client';
+import Image from 'next/image';
 
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
@@ -69,7 +70,9 @@ export default function SettingsPage() {
                                     <div className="flex items-center gap-6 mb-8">
                                         <div className="w-20 h-20 rounded-full bg-gray-200 dark:bg-white/10 flex items-center justify-center shrink-0">
                                             {user?.photoURL ? (
-                                                <img src={user.photoURL} alt="Profile" className="w-full h-full rounded-full object-cover" />
+                                                <div className="w-full h-full rounded-full overflow-hidden relative">
+                                                    <Image src={user.photoURL} alt="Profile" fill className="object-cover" />
+                                                </div>
                                             ) : (
                                                 <User className="w-8 h-8 text-gray-400" />
                                             )}

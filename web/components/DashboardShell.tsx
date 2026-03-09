@@ -1,4 +1,5 @@
 'use client';
+import Image from 'next/image';
 
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
@@ -175,7 +176,9 @@ export default function DashboardShell({ children }: { children: React.ReactNode
                             className="w-14 h-14 rounded-full bg-black border-4 border-white shadow-xl flex items-center justify-center overflow-hidden hover:scale-105 transition-transform active:scale-95"
                         >
                             {user?.photoURL ? (
-                                <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover" />
+                                <div className="w-full h-full relative">
+                                    <Image src={user.photoURL} alt="Profile" fill className="object-cover" />
+                                </div>
                             ) : (
                                 <UserCircle className="w-8 h-8 text-white" />
                             )}

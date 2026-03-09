@@ -1,4 +1,5 @@
 'use client';
+import Image from 'next/image';
 
 import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
@@ -164,7 +165,7 @@ export default function QuizPage() {
                                         <input type="file" ref={fileRef} onChange={handleImageUpload} accept="image/*" className="hidden" />
                                         {image ? (
                                             <>
-                                                <img src={image} className="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:scale-105 transition-transform" alt="Preview" />
+                                                <Image src={image} fill className="object-cover opacity-20 group-hover:scale-105 transition-transform" alt="Preview" unoptimized />
                                                 <div className="relative z-10 flex flex-col items-center gap-1">
                                                     <Check className="w-8 h-8 text-indigo-500" />
                                                     <span className="text-[10px] font-black uppercase text-indigo-500">Image Attached</span>

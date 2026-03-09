@@ -1,4 +1,5 @@
 'use client';
+import Image from 'next/image';
 
 import Footer from '@/components/Footer';
 import Navbar from '@/components/Navbar';
@@ -332,9 +333,9 @@ export default function Home() {
                     <p className="text-sm text-gray-600 leading-relaxed font-medium mb-6">"{review.comment}"</p>
                     {/* Author */}
                     <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
-                      <div className="w-9 h-9 rounded-full bg-black overflow-hidden flex items-center justify-center shrink-0">
+                      <div className="w-9 h-9 rounded-full bg-black overflow-hidden flex items-center justify-center shrink-0 relative">
                         {review.userPhotoURL ? (
-                          <img src={review.userPhotoURL} alt={review.userName} className="w-full h-full object-cover" />
+                          <Image src={review.userPhotoURL} alt={review.userName} fill className="object-cover" unoptimized />
                         ) : (
                           <span className="text-white text-sm font-black">{review.userName.charAt(0).toUpperCase()}</span>
                         )}
