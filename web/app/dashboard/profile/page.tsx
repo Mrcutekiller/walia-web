@@ -22,6 +22,7 @@ import {
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
+    AlertTriangle,
     Camera,
     Edit3,
     Heart,
@@ -368,29 +369,41 @@ export default function ProfilePage() {
                 )}
             </main>
 
-            {/* Delete Confirmation Modal */}
+            {/* Delete Confirmation Modal (Concept 3: Minimalist) */}
             <AnimatePresence>
                 {showDeleteConfirm && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowDeleteConfirm(false)} className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-                        <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative w-full max-w-sm p-8 rounded-[2rem] bg-white shadow-2xl text-center space-y-8">
-                            <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto text-red-600 border border-red-100 shadow-sm">
-                                <Trash2 className="w-8 h-8" />
+                        <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative w-full max-w-[360px] p-8 rounded-[2rem] bg-[#F8F9FA] shadow-2xl text-center flex flex-col items-center">
+
+                            {/* Warning Icon Container */}
+                            <div className="w-[72px] h-[72px] bg-white rounded-3xl flex items-center justify-center text-red-500 mb-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
+                                <AlertTriangle className="w-8 h-8 stroke-[2px]" />
                             </div>
-                            <div>
-                                <h3 className="text-2xl font-black text-black mb-3">Delete Account?</h3>
-                                <p className="text-gray-500 text-sm font-medium leading-relaxed">
-                                    This action is final. You will lose all your study data and AI history forever.
-                                </p>
-                            </div>
-                            <div className="space-y-3 pt-4 border-t border-gray-100">
-                                <button onClick={handleDeleteAccount} disabled={loading} className="w-full py-4 rounded-full bg-red-600 text-white font-bold uppercase tracking-widest text-[10px] shadow-lg shadow-red-600/20 hover:bg-red-700 hover:-translate-y-0.5 transition-all">
-                                    {loading ? 'Deleting...' : 'Delete Permanently'}
+
+                            {/* Titles */}
+                            <h3 className="text-[22px] font-black text-black mb-2 tracking-tight">Delete Account</h3>
+                            <p className="text-[#6B7280] text-[15px] font-medium leading-relaxed mb-8">
+                                You're going to delete your "Account"
+                            </p>
+
+                            {/* Action Buttons */}
+                            <div className="flex gap-4 w-full">
+                                <button
+                                    onClick={() => setShowDeleteConfirm(false)}
+                                    className="flex-1 py-4 rounded-2xl bg-[#E5E7EB] text-[#4B5563] font-bold text-[14px] hover:bg-gray-300 transition-colors shadow-sm"
+                                >
+                                    No, keep it.
                                 </button>
-                                <button onClick={() => setShowDeleteConfirm(false)} className="w-full py-4 rounded-full bg-gray-100 text-black font-bold uppercase tracking-widest text-[10px] hover:bg-gray-200 transition-all">
-                                    Keep My Account
+                                <button
+                                    onClick={handleDeleteAccount}
+                                    disabled={loading}
+                                    className="flex-1 py-4 rounded-2xl bg-[#FF3B30] text-white font-bold text-[14px] hover:bg-red-600 transition-colors shadow-lg shadow-red-500/20 disabled:opacity-50"
+                                >
+                                    {loading ? '...' : 'Yes, Delete!'}
                                 </button>
                             </div>
+
                         </motion.div>
                     </div>
                 )}
