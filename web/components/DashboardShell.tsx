@@ -2,16 +2,16 @@ import { useAuth } from '@/context/AuthContext';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
 import {
+    Bell,
     Bot,
     Calendar,
-    IdCard,
-    LayoutDashboard,
     LogOut,
     Menu,
+    MessageSquare,
     Settings,
-    StickyNote,
     User,
     Users,
+    Wrench,
     X,
     Zap
 } from 'lucide-react';
@@ -20,18 +20,15 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-const MAIN_NAV = [
-    { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard' },
-    { icon: User, label: 'Profile', href: '/dashboard/profile' },
-    { icon: Bot, label: 'Walia Chat (AI)', href: '/dashboard/ai' },
+const SIDEBAR_NAV = [
+    { icon: Bot, label: 'AI Chat', href: '/dashboard/ai' },
+    { icon: MessageSquare, label: 'Messages', href: '/dashboard/messages' },
     { icon: Users, label: 'Community', href: '/dashboard/community', badge: 15 },
-    { icon: IdCard, label: 'ID Center', href: '/dashboard/id-center' },
+    { icon: Wrench, label: 'Tools', href: '/dashboard/tools' },
+    { icon: Calendar, label: 'Events', href: '/dashboard/events' },
+    { icon: Bell, label: 'Notifications', href: '/dashboard/notifications' },
+    { icon: User, label: 'Profile', href: '/dashboard/profile' },
     { icon: Settings, label: 'Settings', href: '/dashboard/settings' },
-];
-
-const TOOLS_NAV = [
-    { icon: StickyNote, label: 'Notes', href: '/dashboard/tools' },
-    { icon: Calendar, label: 'Calendar', href: '/dashboard/events' },
 ];
 
 export default function DashboardShell({ children }: { children: React.ReactNode }) {
@@ -98,62 +95,30 @@ export default function DashboardShell({ children }: { children: React.ReactNode
                     </div>
 
                     {/* Nav links */}
-                    <nav className="flex-1 px-4 py-8 space-y-8 overflow-y-auto custom-scrollbar">
+                    <nav className="flex-1 px-4 py-8 space-y-1 overflow-y-auto custom-scrollbar">
 
-                        {/* Main Group */}
-                        <div className="space-y-1">
-                            <p className="px-3 py-2 text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] mb-2">General</p>
-                            {MAIN_NAV.map(({ icon: Icon, label, href, badge }) => {
-                                const active = pathname === href || pathname.startsWith(href) && href !== '/dashboard';
-                                return (
-                                    <Link
-                                        key={href}
-                                        href={href}
-                                        onClick={() => setSidebarOpen(false)}
-                                        className={`flex items-center gap-3 px-3 py-3 rounded-2xl transition-all group relative ${active
-                                            ? 'bg-white/5 text-white shadow-sm font-bold'
-                                            : 'text-gray-400 hover:text-white hover:bg-white/5'
-                                            }`}
-                                    >
-                                        {active && (
-                                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-[#4ade80] rounded-r-full shadow-[0_0_10px_rgba(74,222,128,0.5)]" />
-                                        )}
-                                        <Icon className={`w-5 h-5 shrink-0 transition-colors ${active ? 'text-[#4ade80]' : 'text-gray-500 group-hover:text-gray-300'}`} />
-                                        <span className={`text-[13px] ${active ? 'font-bold' : 'font-medium'}`}>{label}</span>
-                                        {badge && (
-                                            <div className="ml-auto w-5 h-5 rounded-full bg-red-500 text-[10px] font-black flex items-center justify-center text-white shadow-sm shadow-red-500/50">
-                                                {badge}
-                                            </div>
-                                        )}
-                                    </Link>
-                                );
-                            })}
-                        </div>
-
-                        {/* Tools Group */}
-                        <div className="space-y-1">
-                            <p className="px-3 py-2 text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] mb-2">Tools</p>
-                            {TOOLS_NAV.map(({ icon: Icon, label, href }) => {
-                                const active = pathname === href || pathname.startsWith(href) && href !== '/dashboard';
-                                return (
-                                    <Link
-                                        key={href}
-                                        href={href}
-                                        onClick={() => setSidebarOpen(false)}
-                                        className={`flex items-center gap-3 px-3 py-3 rounded-2xl transition-all group relative ${active
-                                            ? 'bg-white/5 text-white shadow-sm font-bold'
-                                            : 'text-gray-400 hover:text-white hover:bg-white/5'
-                                            }`}
-                                    >
-                                        {active && (
-                                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-[#4ade80] rounded-r-full shadow-[0_0_10px_rgba(74,222,128,0.5)]" />
-                                        )}
-                                        <Icon className={`w-5 h-5 shrink-0 transition-colors ${active ? 'text-[#4ade80]' : 'text-gray-500 group-hover:text-gray-300'}`} />
-                                        <span className={`text-[13px] ${active ? 'font-bold' : 'font-medium'}`}>{label}</span>
-                                    </Link>
-                                );
-                            })}
-                        </div>
+                        {SIDEBAR_NAV.map(({ icon: Icon, label, href, badge }) => {
+                            const active = pathname === href || pathname.startsWith(href) && href !== '/dashboard';
+                            return (
+                                <Link
+                                    key={href}
+                                    href={href}
+                                    onClick={() => setSidebarOpen(false)}
+                                    className={`flex items-center gap-4 px-4 py-3.5 rounded-[20px] transition-all group relative ${active
+                                            ? 'bg-black text-white dark:bg-white dark:text-black font-bold shadow-md'
+                                            : 'text-[#64748B] hover:text-black dark:text-gray-400 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5'
+                                        }`}
+                                >
+                                    <Icon className={`w-5 h-5 shrink-0 transition-colors ${active ? 'text-white dark:text-black' : 'text-[#94A3B8] group-hover:text-black dark:text-gray-500 dark:group-hover:text-gray-300'}`} />
+                                    <span className={`text-[15px] ${active ? 'font-bold' : 'font-semibold'}`}>{label}</span>
+                                    {badge && (
+                                        <div className="ml-auto min-w-[20px] h-5 px-1.5 rounded-full bg-[#EF4444] text-[11px] font-black flex items-center justify-center text-white shadow-sm">
+                                            {badge}
+                                        </div>
+                                    )}
+                                </Link>
+                            );
+                        })}
                     </nav>
 
                     {/* Theme Toggle (Mockup representation) */}
