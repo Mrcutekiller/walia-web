@@ -1,4 +1,5 @@
 import { useAuth } from '@/context/AuthContext';
+import { useTheme } from '@/context/ThemeContext';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
 import {
@@ -33,6 +34,7 @@ const SIDEBAR_NAV = [
 
 export default function DashboardShell({ children }: { children: React.ReactNode }) {
     const { user, loading } = useAuth();
+    const { theme, toggleTheme } = useTheme();
     const router = useRouter();
     const pathname = usePathname();
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -105,8 +107,8 @@ export default function DashboardShell({ children }: { children: React.ReactNode
                                     href={href}
                                     onClick={() => setSidebarOpen(false)}
                                     className={`flex items-center gap-4 px-4 py-3.5 rounded-[20px] transition-all group relative ${active
-                                            ? 'bg-black text-white dark:bg-white dark:text-black font-bold shadow-md'
-                                            : 'text-[#64748B] hover:text-black dark:text-gray-400 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5'
+                                        ? 'bg-black text-white dark:bg-white dark:text-black font-bold shadow-md'
+                                        : 'text-[#64748B] hover:text-black dark:text-gray-400 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5'
                                         }`}
                                 >
                                     <Icon className={`w-5 h-5 shrink-0 transition-colors ${active ? 'text-white dark:text-black' : 'text-[#94A3B8] group-hover:text-black dark:text-gray-500 dark:group-hover:text-gray-300'}`} />
@@ -121,13 +123,19 @@ export default function DashboardShell({ children }: { children: React.ReactNode
                         })}
                     </nav>
 
-                    {/* Theme Toggle (Mockup representation) */}
+                    {/* Theme Toggle */}
                     <div className="px-6 py-4">
                         <div className="w-full bg-[#182134] rounded-2xl p-1 flex">
-                            <button className="flex-1 py-2 rounded-xl bg-transparent text-gray-500 hover:text-white transition-colors text-xs font-bold shadow-none flex items-center justify-center gap-2">
+                            <button
+                                onClick={() => theme !== 'light' && toggleTheme()}
+                                className={`flex-1 py-2 rounded-xl transition-colors text-xs font-bold flex items-center justify-center gap-2 ${theme === 'light' ? 'bg-[#2E3C56] text-white shadow-sm' : 'bg-transparent text-gray-500 hover:text-white shadow-none'}`}
+                            >
                                 <span>Light</span>
                             </button>
-                            <button className="flex-1 py-2 rounded-xl bg-[#2E3C56] text-white transition-colors text-xs font-bold shadow-sm flex items-center justify-center gap-2">
+                            <button
+                                onClick={() => theme !== 'dark' && toggleTheme()}
+                                className={`flex-1 py-2 rounded-xl transition-colors text-xs font-bold flex items-center justify-center gap-2 ${theme === 'dark' ? 'bg-[#2E3C56] text-white shadow-sm' : 'bg-transparent text-gray-500 hover:text-white shadow-none'}`}
+                            >
                                 <span>Dark</span>
                             </button>
                         </div>
