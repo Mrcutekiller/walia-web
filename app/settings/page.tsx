@@ -39,10 +39,7 @@ export default function SettingsPage() {
 
     const toggleDark = (v: boolean) => {
         setDarkMode(v);
-        // In a real app we'd toggle a class on <html>, but our theme is fixed-dark for now
-        // This makes the toggle feel responsive
-        if (v) document.documentElement.classList.add('dark');
-        else document.documentElement.classList.remove('dark');
+        // Deprecated: Theme logic is now global, so we just let next-themes/System manage this
     };
 
     const logout = async () => { await signOut(auth); router.replace('/'); };
@@ -51,28 +48,49 @@ export default function SettingsPage() {
         <DashboardShell>
             <div className="p-6 max-w-xl mx-auto">
                 <div className="mb-8">
-                    <p className="text-[10px] font-black text-white/30 uppercase tracking-widest mb-1">Preferences</p>
-                    <h1 className="text-3xl font-black text-white tracking-tight">Settings</h1>
+                    <p className="text-[10px] font-black text-black/30 dark:text-white/30 uppercase tracking-widest mb-1">Preferences</p>
+                    <h1 className="text-3xl font-black text-black dark:text-white tracking-tight">Settings</h1>
                 </div>
 
                 <div className="space-y-3">
-                    {/* Appearance */}
-                    <div className="p-5 rounded-2xl bg-white/5 border border-white/8 space-y-4">
-                        <p className="text-[10px] font-black text-white/30 uppercase tracking-widest">Appearance</p>
-                        <Row icon={Moon} label="Dark Mode" sub="Easier on your eyes" right={<Toggle val={darkMode} set={toggleDark} />} />
-                        <Row icon={Palette} label="Theme" sub="Customize your color" right={<span className="text-xs text-white/30 font-semibold">Default (Dark)</span>} />
+                    {/* Language Settings */}
+                    <div className="p-5 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 space-y-4 relative">
+                        <p className="text-[10px] font-black text-black/30 dark:text-white/30 uppercase tracking-widest flex items-center gap-2">Language</p>
+                        <select 
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                            onChange={(e) => {
+                                document.cookie = `googtrans=/en/${e.target.value}; path=/; domain=${window.location.hostname}`;
+                                document.cookie = `googtrans=/en/${e.target.value}; path=/;`; 
+                                window.location.reload();
+                            }}
+                            defaultValue={
+                                typeof document !== 'undefined' 
+                                    ? document.cookie.split('; ').find(row => row.startsWith('googtrans='))?.split('/')[2] || 'en'
+                                    : 'en'
+                            }
+                        >
+                            <option value="en">English (US)</option>
+                            <option value="es">Español (Spanish)</option>
+                            <option value="fr">Français (French)</option>
+                            <option value="de">Deutsch (German)</option>
+                            <option value="zh-CN">中文 (Chinese Simplified)</option>
+                            <option value="ar">العربية (Arabic)</option>
+                            <option value="hi">हिन्दी (Hindi)</option>
+                            <option value="am">አማርኛ (Amharic)</option>
+                        </select>
+                        <Row icon={Globe} label="Global Language" sub="Translate the entire app" right={<span className="text-xs text-black/30 dark:text-white/30 font-semibold cursor-pointer">›</span>} />
                     </div>
 
                     {/* Notifications */}
-                    <div className="p-5 rounded-2xl bg-white/5 border border-white/8 space-y-4">
-                        <p className="text-[10px] font-black text-white/30 uppercase tracking-widest">Notifications</p>
+                    <div className="p-5 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 space-y-4">
+                        <p className="text-[10px] font-black text-black/30 dark:text-white/30 uppercase tracking-widest">Notifications</p>
                         <Row icon={Bell} label="Push Notifications" sub="Study reminders & updates" right={<Toggle val={notifs} set={setNotifs} />} />
                         <Row icon={Globe} label="Sound Effects" sub="UI audio feedback" right={<Toggle val={sounds} set={setSounds} />} />
                     </div>
 
                     {/* AI Model */}
-                    <div className="p-5 rounded-2xl bg-white/5 border border-white/8 space-y-4 relative">
-                        <p className="text-[10px] font-black text-white/30 uppercase tracking-widest flex items-center gap-2">
+                    <div className="p-5 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 space-y-4 relative">
+                        <p className="text-[10px] font-black text-black/30 dark:text-white/30 uppercase tracking-widest flex items-center gap-2">
                             AI Model
                             {plan === 'free' && <span className="bg-amber-500/20 text-amber-500 px-1.5 py-0.5 rounded text-[8px] flex items-center gap-1"><Lock className="w-2.5 h-2.5" /> Free</span>}
                         </p>
@@ -81,8 +99,8 @@ export default function SettingsPage() {
                                 const locked = plan === 'free' && m !== 'gemini';
                                 return (
                                     <button key={m} onClick={() => !locked && setAi(m)} disabled={locked}
-                                        className={`py-2.5 flex items-center justify-center gap-1 rounded-xl text-xs font-bold border transition-all ${locked ? 'bg-white/5 border-transparent text-white/20 cursor-not-allowed' :
-                                                ai === m ? 'bg-white text-black border-white' : 'bg-white/5 border-white/10 text-white/40 hover:text-white'
+                                        className={`py-2.5 flex items-center justify-center gap-1 rounded-xl text-xs font-bold border transition-all ${locked ? 'bg-black/5 dark:bg-white/5 border-transparent text-black/20 dark:text-white/20 cursor-not-allowed' :
+                                                ai === m ? 'bg-black dark:bg-white text-white dark:text-black border-black dark:border-white' : 'bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white'
                                             }`}>
                                         {locked && <Lock className="w-3 h-3" />}
                                         {m === 'gemini' ? 'Gemini 1.5' : m === 'gpt-4' ? 'GPT-4o' : 'Claude 3.5'}
@@ -94,10 +112,10 @@ export default function SettingsPage() {
                     </div>
 
                     {/* Account */}
-                    <div className="p-5 rounded-2xl bg-white/5 border border-white/8 space-y-4">
-                        <p className="text-[10px] font-black text-white/30 uppercase tracking-widest">Account</p>
-                        <Row icon={Lock} label="Change Password" sub="Update your password" right={<span className="text-xs text-indigo-400 font-bold cursor-pointer hover:underline">Change</span>} />
-                        <Row icon={Shield} label="Privacy" sub="Data and security settings" right={<span className="text-xs text-white/30 font-semibold cursor-pointer">›</span>} />
+                    <div className="p-5 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 space-y-4">
+                        <p className="text-[10px] font-black text-black/30 dark:text-white/30 uppercase tracking-widest">Account</p>
+                        <Row icon={Lock} label="Change Password" sub="Update your password" right={<span className="text-xs text-indigo-500 dark:text-indigo-400 font-bold cursor-pointer hover:underline">Change</span>} />
+                        <Row icon={Shield} label="Privacy" sub="Data and security settings" right={<span className="text-xs text-black/30 dark:text-white/30 font-semibold cursor-pointer">›</span>} />
                         <button onClick={logout} className="flex items-center gap-3 w-full text-left text-rose-400 hover:text-rose-300 transition-colors">
                             <LogOut className="w-5 h-5 shrink-0 text-rose-500" />
                             <div>
@@ -105,9 +123,9 @@ export default function SettingsPage() {
                                 <p className="text-[10px] text-rose-500/60">{user?.email}</p>
                             </div>
                         </button>
-                        <button className="flex items-center gap-3 w-full text-left text-white/20 hover:text-rose-400 transition-colors">
+                        <button className="flex items-center gap-3 w-full text-left text-black/20 dark:text-white/20 hover:text-rose-500 dark:hover:text-rose-400 transition-colors">
                             <Trash2 className="w-5 h-5 shrink-0" />
-                            <p className="text-sm font-semibold">Delete Account</p>
+                            <p className="text-sm font-semibold text-black dark:text-white">Delete Account</p>
                         </button>
                     </div>
                 </div>
@@ -119,12 +137,12 @@ export default function SettingsPage() {
 function Row({ icon: Icon, label, sub, right }: { icon: any; label: string; sub: string; right: React.ReactNode }) {
     return (
         <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center shrink-0">
-                <Icon className="w-4 h-4 text-white/40" />
+            <div className="w-8 h-8 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center shrink-0">
+                <Icon className="w-4 h-4 text-black/40 dark:text-white/40" />
             </div>
             <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-white">{label}</p>
-                <p className="text-[10px] text-white/25">{sub}</p>
+                <p className="text-sm font-semibold text-black dark:text-white">{label}</p>
+                <p className="text-[10px] text-black/40 dark:text-white/40">{sub}</p>
             </div>
             {right}
         </div>

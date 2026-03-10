@@ -109,53 +109,42 @@ export default function SettingsPage() {
                                     <p className="text-sm text-gray-500 font-medium">Customize your interface and experience.</p>
                                 </div>
                                 <div className="space-y-6">
-                                    <div className="p-8 rounded-[2rem] border border-gray-200 space-y-6">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-black">
-                                                <Palette className="w-5 h-5" />
-                                            </div>
-                                            <div>
-                                                <p className="text-sm font-bold">Theme</p>
-                                                <p className="text-xs text-gray-500 mt-1">Select your preferred color scheme</p>
-                                            </div>
-                                        </div>
-                                        <div className="grid grid-cols-3 gap-4">
-                                            {[
-                                                { id: 'light', icon: Sun, label: 'Light' },
-                                                { id: 'dark', icon: Moon, label: 'Dark' },
-                                                { id: 'system', icon: Laptop, label: 'System' },
-                                            ].map(t => (
-                                                <button
-                                                    key={t.id}
-                                                    onClick={() => setTheme(t.id)}
-                                                    className={cn(
-                                                        "flex flex-col items-center justify-center gap-3 p-4 rounded-2xl border-2 transition-all",
-                                                        theme === t.id
-                                                            ? "border-black bg-black text-white shadow-xl shadow-black/10"
-                                                            : "border-gray-200 text-gray-500 hover:border-black hover:text-black"
-                                                    )}
-                                                >
-                                                    <t.icon className="w-6 h-6" />
-                                                    <span className="text-xs font-bold">{t.label}</span>
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-
                                     <div className="p-8 rounded-[2rem] border border-gray-200">
                                         <div className="flex items-center gap-4 mb-6">
                                             <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-black">
                                                 <Globe className="w-5 h-5" />
                                             </div>
                                             <div>
-                                                <p className="text-sm font-bold">Language & Region</p>
-                                                <p className="text-xs text-gray-500 mt-1">Configure your local settings</p>
+                                                <p className="text-sm font-bold">Language</p>
+                                                <p className="text-xs text-gray-500 mt-1">Select your preferred language</p>
                                             </div>
                                         </div>
-                                        <div className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 border border-gray-200">
-                                            <p className="text-sm font-bold">Language</p>
-                                            <div className="flex items-center gap-2 text-sm font-bold text-gray-500 cursor-pointer hover:text-black">
-                                                English (US) <ChevronRight className="w-4 h-4" />
+                                        <div className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 border border-gray-200 relative">
+                                            <p className="text-sm font-bold">Global Language</p>
+                                            <select 
+                                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                onChange={(e) => {
+                                                    document.cookie = `googtrans=/en/${e.target.value}; path=/; domain=${window.location.hostname}`;
+                                                    document.cookie = `googtrans=/en/${e.target.value}; path=/;`; 
+                                                    window.location.reload();
+                                                }}
+                                                defaultValue={
+                                                    typeof document !== 'undefined' 
+                                                        ? document.cookie.split('; ').find(row => row.startsWith('googtrans='))?.split('/')[2] || 'en'
+                                                        : 'en'
+                                                }
+                                            >
+                                                <option value="en">English (US)</option>
+                                                <option value="es">Español (Spanish)</option>
+                                                <option value="fr">Français (French)</option>
+                                                <option value="de">Deutsch (German)</option>
+                                                <option value="zh-CN">中文 (Chinese Simplified)</option>
+                                                <option value="ar">العربية (Arabic)</option>
+                                                <option value="hi">हिन्दी (Hindi)</option>
+                                                <option value="am">አማርኛ (Amharic)</option>
+                                            </select>
+                                            <div className="flex items-center gap-2 text-sm font-bold text-gray-500 pointer-events-none">
+                                                Select Language <ChevronRight className="w-4 h-4" />
                                             </div>
                                         </div>
                                     </div>

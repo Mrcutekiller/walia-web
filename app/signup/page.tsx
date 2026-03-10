@@ -64,30 +64,21 @@ export default function SignupPage() {
 
     const saveProfileAndRedirect = async (uid: string, displayName: string, photoURL?: string) => {
         try {
-            // timeout promise: reject after 5s so we don't hang if user loses connection
-            const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000));
-
-            await Promise.race([
-                setDoc(doc(db, 'users', uid), {
-                    name: displayName,
-                    username: username || displayName.toLowerCase().replace(/\s+/g, ''),
-                    email: auth.currentUser?.email || email,
-                    photoURL: photoURL || avatar,
-                    gender, age, schoolLevel, school, useCases, whyWalia,
-                    plan: 'free',
-                    createdAt: serverTimestamp(),
-                }),
-                timeout
-            ]);
-
+            await setDoc(doc(db, 'users', uid), {
+                name: displayName,
+                username: username || displayName.toLowerCase().replace(/\s+/g, ''),
+                email: auth.currentUser?.email || email,
+                photoURL: photoURL || avatar,
+                gender, age, schoolLevel, school, useCases, whyWalia,
+                plan: 'free',
+                createdAt: serverTimestamp(),
+            });
             // Small delay to ensure Firestore sync before redirect
             await new Promise(r => setTimeout(r, 500));
             router.replace('/dashboard');
         } catch (err: any) {
-            if (err.message !== 'timeout') {
-                console.error("Firestore save error:", err);
-                setError("Account created, but failed to save profile. You can update it later in settings.");
-            }
+            console.error("Firestore save error:", err);
+            setError("Account created, but failed to save profile. You can update it later in settings.");
             // Still redirect so they aren't stuck
             router.replace('/dashboard');
         }
@@ -115,10 +106,8 @@ export default function SignupPage() {
                 user.photoURL || undefined
             );
         } catch (err: any) {
-            if (err?.code !== 'auth/popup-closed-by-user' && err?.code !== 'auth/cancelled-popup-request') {
-                if (err?.code !== 'unavailable') {
-                    console.error("Google sign-in error:", err);
-                }
+            console.error("Google sign-in error:", err);
+            if (err?.code !== 'auth/popup-closed-by-user') {
                 setError(err.message?.includes('auth/operation-not-supported')
                     ? 'Google sign-in is not enabled. Please use email/password.'
                     : 'Google sign-in failed. Please verify your internet connection or try again.');
@@ -133,26 +122,18 @@ export default function SignupPage() {
 
             // Try updating profile, but don't block everything if it fails
             try {
-                const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 4000));
-                await Promise.race([
-                    updateProfile(cred.user, {
-                        displayName: name,
-                        photoURL: avatar
-                    }),
-                    timeout
-                ]);
+                await updateProfile(cred.user, {
+                    displayName: name,
+                    photoURL: avatar
+                });
             } catch (pErr) {
-                console.warn("Profile update failed or timed out:", pErr);
+                console.warn("Profile update failed:", pErr);
             }
 
             await saveProfileAndRedirect(cred.user.uid, name, avatar);
         } catch (err: any) {
-            console.warn("Signup error:", err.message);
-            if (err?.code === 'auth/email-already-in-use') {
-                setError('This email is already registered. Please sign in instead.');
-            } else {
-                setError(err.message?.replace('Firebase: ', '') || 'Failed to create account.');
-            }
+            console.error("Signup error:", err);
+            setError(err.message?.replace('Firebase: ', '') || 'Failed to create account.');
             setLoading(false);
         }
     };
@@ -165,18 +146,9 @@ export default function SignupPage() {
                 const { checkUsernameUnique } = await import('@/lib/user');
                 setLoading(true);
                 try {
-                    const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000));
-                    const isUnique = await Promise.race([
-                        checkUsernameUnique(username),
-                        timeout
-                    ]);
-                    // @ts-ignore
+                    const isUnique = await checkUsernameUnique(username);
                     if (!isUnique) { setError('Username is already taken.'); return; }
-                } catch (err: any) {
-                    if (err.message === 'timeout') {
-                        setError('Network timeout while checking username. Please try again.');
-                        return;
-                    }
+                } catch (err) {
                     console.error("Username check error:", err);
                 } finally {
                     setLoading(true); // Keep loading state if we are moving to next step? No.

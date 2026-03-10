@@ -22,13 +22,16 @@ import {
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
+    AlertTriangle,
     Camera,
+    CheckCircle2,
     Edit3,
     Heart,
     Loader2,
     MessageCircle,
     Settings,
     Share2,
+    ShieldCheck,
     Trash2
 } from 'lucide-react';
 import Link from 'next/link';
@@ -58,17 +61,22 @@ export default function ProfilePage() {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [posts, setPosts] = useState<Post[]>([]);
 
+    // 360 Flip State for ID Card
+    const [isFlipped, setIsFlipped] = useState(false);
+
     // Editable fields
     const [formData, setFormData] = useState({
         displayName: '',
         bio: '',
+        username: ''
     });
 
     useEffect(() => {
         if (profile) {
             setFormData({
-                displayName: profile.displayName || user?.displayName || '',
+                displayName: profile.name || profile.displayName || user?.displayName || '',
                 bio: profile.bio || '',
+                username: profile.username || ''
             });
         }
     }, [profile, user]);
@@ -93,7 +101,10 @@ export default function ProfilePage() {
         setLoading(true);
         try {
             await updateDoc(doc(db, 'users', user.uid), {
-                ...formData,
+                name: formData.displayName,
+                displayName: formData.displayName,
+                bio: formData.bio,
+                username: formData.username
             });
             await updateProfile(user, { displayName: formData.displayName });
             setIsEditing(false);
@@ -156,123 +167,190 @@ export default function ProfilePage() {
 
     if (!user) return null;
 
+    const waliaId = `WAL-${user.uid.slice(0, 8).toUpperCase()}`;
+
     return (
-        <div className="min-h-full bg-[#FAFAFA] text-black animate-in fade-in pb-20 selection:bg-black selection:text-white">
+        <div className="min-h-full bg-[#FAFAFA] dark:bg-[#0A101D] text-black dark:text-white pb-20 selection:bg-black selection:text-white">
 
-            <main className="max-w-3xl mx-auto px-4 pt-8 md:pt-12 space-y-8">
+            <main className="max-w-3xl mx-auto px-4 pt-8 md:pt-12 space-y-12">
 
-                {/* Profile Card */}
-                <div className="bg-white rounded-[3rem] p-2 border border-gray-200 shadow-xl shadow-black-[0.02] relative">
-                    <div className="relative h-48 md:h-56 rounded-[2.5rem] overflow-hidden bg-gray-100 border border-gray-100 mb-16">
-                        {/* Soft background graphic for banner */}
-                        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-multiply" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-gray-200 to-transparent opacity-50" />
+                {/* --- 360 Degree Flip ID Card --- */}
+                <div className="flex flex-col items-center animate-in fade-in slide-in-from-top-4 duration-700">
+                    <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-4 flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" /> Your Digital Walia ID / Click to flip
+                    </p>
 
-                        {/* Profile Image - Centered and overflowing bottom */}
-                        <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 group cursor-pointer" onClick={() => !isEditing && fileInputRef.current?.click()}>
-                            <div className="p-1 rounded-full bg-white relative">
-                                <div className="absolute inset-0 rounded-full ring-2 ring-gray-100 scale-[1.05] transition-transform group-hover:scale-110" />
-                                <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center relative">
-                                    {user.photoURL ? (
-                                        <img src={user.photoURL} alt="User Avatar" className="w-full h-full object-cover" />
-                                    ) : (
-                                        <span className="text-4xl font-black text-gray-300">{formData.displayName?.charAt(0) || '?'}</span>
-                                    )}
-                                    {uploading && (
-                                        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center">
-                                            <Loader2 className="w-8 h-8 text-white animate-spin" />
+                    <div
+                        className="relative w-full max-w-sm h-64 [perspective:1000px] cursor-pointer group"
+                        onClick={() => setIsFlipped(!isFlipped)}
+                    >
+                        <div
+                            className={`w-full h-full relative transition-all duration-700 [transform-style:preserve-3d] ${isFlipped ? '[transform:rotateY(180deg)]' : ''}`}
+                        >
+                            {/* Front Face */}
+                            <div className="absolute inset-0 w-full h-full rounded-[2rem] bg-[#0f172a] shadow-2xl overflow-hidden [backface-visibility:hidden] border border-white/10 flex flex-col p-6">
+                                {/* Watermark */}
+                                <div className="absolute -right-8 -top-8 text-[200px] font-black leading-none text-white/5 tracking-tighter pointer-events-none select-none">W</div>
+
+                                <div className="flex justify-between items-start mb-auto relative z-10">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-8 h-8 bg-white text-black font-black text-lg flex items-center justify-center rounded-[8px]">W</div>
+                                        <span className="text-white font-bold tracking-widest uppercase text-sm">Walia</span>
+                                    </div>
+                                    <ShieldCheck className="w-6 h-6 text-green-400" />
+                                </div>
+
+                                <div className="relative z-10 flex items-center gap-5 mt-4">
+                                    {/* Avatar Upload Container */}
+                                    <div
+                                        className="relative w-20 h-20 rounded-full border-[3px] border-white/20 p-1 shrink-0 bg-black/50 overflow-hidden"
+                                        onClick={(e) => {
+                                            e.stopPropagation(); // don't flip card if clicking avatar
+                                            !isEditing && fileInputRef.current?.click();
+                                        }}
+                                    >
+                                        <div className="w-full h-full rounded-full overflow-hidden bg-gray-800 flex items-center justify-center relative group-hover:opacity-90 transition-opacity">
+                                            {user.photoURL ? (
+                                                <img src={user.photoURL} alt="User Avatar" className="w-full h-full object-cover" />
+                                            ) : (
+                                                <span className="text-2xl font-black text-gray-400">{formData.displayName?.charAt(0) || '?'}</span>
+                                            )}
                                         </div>
-                                    )}
-                                    {!uploading && (
-                                        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center transition-opacity text-white">
-                                            <Camera className="w-6 h-6 mb-1" />
-                                            <span className="text-[10px] uppercase font-bold tracking-widest">Update</span>
-                                        </div>
-                                    )}
+                                        {!isEditing && (
+                                            <div className="absolute inset-0 bg-black/60 opacity-0 hover:opacity-100 flex flex-col items-center justify-center transition-all">
+                                                <Camera className="w-5 h-5 text-white mb-0.5" />
+                                                <span className="text-[8px] font-bold text-white uppercase tracking-wider">Update</span>
+                                            </div>
+                                        )}
+                                        {uploading && (
+                                            <div className="absolute inset-0 bg-black/80 flex items-center justify-center">
+                                                <Loader2 className="w-5 h-5 text-white animate-spin" />
+                                            </div>
+                                        )}
+                                        <input type="file" ref={fileInputRef} onChange={handleAvatarUpload} className="hidden" accept="image/*" />
+                                    </div>
+
+                                    <div className="flex flex-col">
+                                        <h2 className="text-xl font-black text-white leading-tight">{formData.displayName || 'No Name Set'}</h2>
+                                        <p className="text-green-400 text-xs font-bold uppercase tracking-widest mt-1">Walia Member</p>
+                                        <p className="text-gray-400 text-[10px] font-mono mt-2">{waliaId}</p>
+                                    </div>
                                 </div>
                             </div>
-                            <input type="file" ref={fileInputRef} onChange={handleAvatarUpload} className="hidden" accept="image/*" />
-                        </div>
 
-                        {/* Top Right Action: Settings/Edit */}
-                        <div className="absolute top-4 right-4 flex gap-2">
-                            {isEditing ? (
-                                <button onClick={() => setIsEditing(false)} className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-black font-bold text-xs shadow-md border border-gray-100 hover:bg-gray-50 transition-colors">
-                                    Cancel
-                                </button>
-                            ) : (
-                                <>
-                                    <button onClick={() => setIsEditing(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white text-black font-bold text-xs shadow-md border border-gray-100 hover:bg-gray-50 hover:shadow-lg transition-all">
-                                        <Edit3 className="w-4 h-4" /> <span className="hidden sm:inline">Edit</span>
-                                    </button>
-                                    <Link href="/dashboard/settings" className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white text-black font-bold text-xs shadow-md border border-gray-100 hover:bg-gray-50 hover:shadow-lg transition-all">
-                                        <Settings className="w-4 h-4" />
-                                    </Link>
-                                </>
-                            )}
+                            {/* Back Face */}
+                            <div className="absolute inset-0 w-full h-full rounded-[2rem] bg-gradient-to-br from-indigo-500 to-purple-600 shadow-2xl overflow-hidden [backface-visibility:hidden] [transform:rotateY(180deg)] border border-white/20 flex flex-col items-center justify-center p-6 text-white text-center">
+                                {/* Barcode decoration */}
+                                <div className="w-full flex justify-center mb-6 opacity-90 h-16 pointer-events-none select-none items-stretch gap-1">
+                                    <div className="w-1 bg-white" /><div className="w-3 bg-white" /><div className="w-1 bg-white" /><div className="w-2 bg-white" />
+                                    <div className="w-4 bg-white" /><div className="w-1 bg-white" /><div className="w-1 bg-white" /><div className="w-3 bg-white" />
+                                    <div className="w-2 bg-white" /><div className="w-1 bg-white" /><div className="w-4 bg-white" /><div className="w-1 bg-white" />
+                                    <div className="w-2 bg-white" /><div className="w-3 bg-white" /><div className="w-1 bg-white" /><div className="w-2 bg-white" />
+                                    <div className="w-1 bg-white" /><div className="w-4 bg-white" /><div className="w-1 bg-white" /><div className="w-2 bg-white" />
+                                </div>
+                                <p className="font-mono text-xs tracking-[0.3em] font-bold opacity-80 mb-6">{waliaId}</p>
+
+                                <div className="inline-flex items-center gap-2 bg-black/20 px-4 py-2 rounded-full border border-white/10 backdrop-blur-sm">
+                                    <CheckCircle2 className="w-4 h-4 text-green-300" />
+                                    <span className="text-xs font-bold tracking-widest uppercase">Verified Account</span>
+                                </div>
+
+                                <p className="text-[10px] mt-8 text-white/50 max-w-[200px]">This card confirms the digital credentials of the user on the Walia platform.</p>
+                            </div>
                         </div>
+                    </div>
+                </div>
+
+                {/* Profile Controls Card */}
+                <div className="bg-white dark:bg-[#162032] rounded-[3rem] p-6 lg:p-10 border border-gray-200 dark:border-white/5 shadow-xl shadow-black-[0.02] relative">
+
+                    {/* Top Right Actions */}
+                    <div className="absolute top-6 right-6 flex gap-2">
+                        {isEditing ? (
+                            <button onClick={() => setIsEditing(false)} className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-gray-100 dark:bg-white/10 text-black dark:text-white font-bold text-xs shadow-md border border-gray-100 hover:bg-gray-200 transition-colors">
+                                Cancel
+                            </button>
+                        ) : (
+                            <>
+                                <button onClick={() => setIsEditing(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-black dark:bg-[#4ade80] dark:text-black text-white font-bold text-xs shadow-md border hover:scale-105 transition-all">
+                                    <Edit3 className="w-4 h-4" /> <span className="hidden sm:inline">Edit Bio</span>
+                                </button>
+                                <Link href="/dashboard/settings" className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-gray-50 dark:bg-white/5 text-black dark:text-white font-bold text-xs shadow-md border border-gray-100 dark:border-white/5 hover:scale-105 transition-all">
+                                    <Settings className="w-4 h-4" />
+                                </Link>
+                            </>
+                        )}
                     </div>
 
                     {/* Bio and Info / Edit Mode */}
-                    <div className="px-6 pb-8">
+                    <div className="pt-2">
                         {isEditing ? (
-                            <div className="space-y-6 max-w-sm mx-auto animate-in fade-in slide-in-from-bottom-4">
+                            <div className="space-y-6 max-w-sm mx-auto min-h-[300px] flex flex-col justify-center animate-in fade-in">
                                 <div>
-                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1 mb-2 block">Display Name</label>
+                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1 mb-2 block">Full Name</label>
                                     <input
-                                        className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-3.5 text-black outline-none focus:border-black focus:bg-white transition-all font-semibold text-center"
+                                        className="w-full bg-gray-50 dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-2xl px-5 py-3.5 text-black dark:text-white outline-none focus:border-black transition-all font-semibold text-center"
                                         value={formData.displayName}
                                         onChange={e => setFormData({ ...formData, displayName: e.target.value })}
                                         placeholder="Your full name"
                                     />
                                 </div>
                                 <div>
+                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1 mb-2 block">Username</label>
+                                    <input
+                                        className="w-full bg-gray-50 dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-2xl px-5 py-3.5 text-black dark:text-white outline-none focus:border-black transition-all font-semibold text-center"
+                                        value={formData.username}
+                                        onChange={e => setFormData({ ...formData, username: e.target.value })}
+                                        placeholder="Your username"
+                                    />
+                                </div>
+                                <div>
                                     <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1 mb-2 block">Bio</label>
                                     <textarea
-                                        className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-3.5 text-black outline-none focus:border-black focus:bg-white transition-all font-medium h-32 resize-none text-center custom-scrollbar"
+                                        className="w-full bg-gray-50 dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-2xl px-5 py-3.5 text-black dark:text-white outline-none focus:border-black transition-all font-medium h-32 resize-none text-center custom-scrollbar"
                                         value={formData.bio}
                                         placeholder="Tell the community about yourself..."
                                         onChange={e => setFormData({ ...formData, bio: e.target.value })}
                                     />
                                 </div>
-                                <button onClick={handleSave} disabled={loading} className="w-full py-4 rounded-full bg-black text-white font-bold text-xs uppercase tracking-widest shadow-lg hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 hover:bg-zinc-800">
-                                    {loading ? 'Saving...' : 'Save Profile'}
+                                <button onClick={handleSave} disabled={loading} className="w-full py-4 rounded-full bg-black dark:bg-white text-white dark:text-black font-bold text-xs uppercase tracking-widest shadow-lg hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 hover:bg-zinc-800">
+                                    {loading ? 'Saving...' : 'Save Details'}
                                 </button>
 
-                                <div className="pt-6 mt-6 border-t border-gray-100 flex justify-center">
-                                    <button onClick={() => setShowDeleteConfirm(true)} className="text-xs font-bold text-red-500 hover:text-red-700 underline underline-offset-4 decoration-red-200 hover:decoration-red-600 transition-colors">
+                                <div className="pt-6 mt-6 border-t border-gray-100 dark:border-white/5 flex justify-center">
+                                    <button onClick={() => setShowDeleteConfirm(true)} className="text-xs font-bold text-red-500 hover:text-red-700 underline underline-offset-4 decoration-red-200 dark:decoration-red-900/40 hover:decoration-red-600 transition-colors">
                                         Delete Account
                                     </button>
                                 </div>
                             </div>
                         ) : (
-                            <div className="text-center animate-in fade-in">
-                                <h1 className="text-3xl font-black tracking-tight text-black mb-1">
-                                    {formData.displayName || 'Set your name'}
+                            <div className="text-center animate-in fade-in min-h-[250px] flex flex-col justify-center">
+                                <h1 className="text-3xl font-black tracking-tight text-black dark:text-white mb-1">
+                                    {formData.displayName || profile?.name || 'Set your name'}
                                 </h1>
-                                <p className="text-sm font-bold text-gray-400 mb-4 tracking-wide">
-                                    @{profile?.username || `user_${user.uid.slice(0, 5)}`}
+                                <p className="text-sm font-bold text-gray-400 mb-6 tracking-wide">
+                                    @{formData.username || profile?.username || `user_${user.uid.slice(0, 5)}`}
                                 </p>
 
-                                <p className="max-w-md mx-auto text-[15px] font-medium text-gray-600 leading-relaxed mb-8">
-                                    {formData.bio || "You haven't added a bio yet. Click the edit button to tell everyone who you are."}
+                                <p className="max-w-md mx-auto text-[15px] font-medium text-gray-600 dark:text-gray-300 leading-relaxed mb-10">
+                                    {formData.bio || "You haven't added a bio yet. Click edit to tell everyone who you are."}
                                 </p>
 
                                 {/* Stats Row */}
-                                <div className="flex items-center justify-center gap-4 bg-gray-50 rounded-[2rem] p-4 max-w-sm mx-auto border border-gray-100">
+                                <div className="flex items-center justify-center gap-4 bg-gray-50 dark:bg-black/30 rounded-[2rem] p-4 max-w-sm mx-auto border border-gray-100 dark:border-white/5 shadow-sm">
                                     <div className="flex-1">
-                                        <p className="text-lg font-black text-black">{posts.length}</p>
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Posts</p>
+                                        <p className="text-xl font-black text-black dark:text-white">{posts.length}</p>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Posts</p>
                                     </div>
-                                    <div className="w-px h-8 bg-gray-200" />
+                                    <div className="w-px h-8 bg-gray-200 dark:bg-white/10" />
                                     <div className="flex-1">
-                                        <p className="text-lg font-black text-black">{profile?.followersCount || 0}</p>
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Followers</p>
+                                        <p className="text-xl font-black text-black dark:text-white">{profile?.followersCount || 0}</p>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Followers</p>
                                     </div>
-                                    <div className="w-px h-8 bg-gray-200" />
+                                    <div className="w-px h-8 bg-gray-200 dark:bg-white/10" />
                                     <div className="flex-1">
-                                        <p className="text-lg font-black text-black">{profile?.followingCount || 0}</p>
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Following</p>
+                                        <p className="text-xl font-black text-black dark:text-white">{profile?.followingCount || 0}</p>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Following</p>
                                     </div>
                                 </div>
                             </div>
@@ -282,8 +360,8 @@ export default function ProfilePage() {
 
                 {/* Posts Heading */}
                 {!isEditing && (
-                    <div className="px-4 py-2 border-b-2 border-black w-fit mt-10 mb-6 mx-auto md:mx-0">
-                        <h2 className="text-sm font-black text-black uppercase tracking-widest">Your Posts</h2>
+                    <div className="px-4 py-2 border-b-2 border-black dark:border-white w-fit mt-10 mb-6 mx-auto md:mx-0">
+                        <h2 className="text-sm font-black text-black dark:text-white uppercase tracking-widest">Your Authored Posts</h2>
                     </div>
                 )}
 
@@ -291,9 +369,9 @@ export default function ProfilePage() {
                 {!isEditing && (
                     <div className="space-y-6">
                         {posts.length === 0 ? (
-                            <div className="text-center py-16 bg-white rounded-[3rem] border border-gray-200">
+                            <div className="text-center py-16 bg-white dark:bg-[#162032] rounded-[3rem] border border-gray-200 dark:border-white/5 shadow-sm">
                                 <p className="text-gray-400 font-bold mb-4">You haven't posted anything yet.</p>
-                                <Link href="/dashboard/community" className="px-6 py-3 rounded-full bg-black text-white font-bold text-xs uppercase tracking-widest hover:scale-105 transition-transform inline-block">
+                                <Link href="/dashboard/community" className="px-6 py-3 rounded-full bg-black dark:bg-[#4ade80] dark:text-black text-white font-bold text-xs uppercase tracking-widest hover:scale-105 transition-transform inline-block">
                                     Go to Community
                                 </Link>
                             </div>
@@ -301,14 +379,14 @@ export default function ProfilePage() {
                             posts.map(post => {
                                 const isLiked = post.likes?.includes(user?.uid || '');
                                 return (
-                                    <div key={post.id} className="p-6 md:p-8 rounded-[3rem] bg-white border border-gray-200 shadow-sm hover:shadow-xl hover:shadow-black/5 transition-all group">
+                                    <div key={post.id} className="p-6 md:p-8 rounded-[3rem] bg-white dark:bg-[#162032] border border-gray-200 dark:border-white/5 shadow-sm hover:shadow-xl hover:shadow-black/5 dark:hover:shadow-white/5 transition-all group">
                                         <div className="flex items-center justify-between mb-6">
                                             <div className="flex items-center gap-3">
                                                 <div className="scale-110 origin-left">
                                                     <UserBadge uid={post.authorId} size="sm" />
                                                 </div>
                                                 <div className="flex flex-col">
-                                                    <span className="text-sm font-black text-black leading-tight">{formData.displayName}</span>
+                                                    <span className="text-sm font-black text-black dark:text-white leading-tight">{formData.displayName}</span>
                                                     <span className="text-xs font-bold text-gray-400">
                                                         {formatTimeAgo(post.createdAt)}
                                                     </span>
@@ -316,7 +394,7 @@ export default function ProfilePage() {
                                             </div>
                                             <button
                                                 onClick={() => handleDeletePost(post.id)}
-                                                className="w-8 h-8 flex items-center justify-center text-gray-300 hover:bg-red-50 hover:text-red-500 rounded-full transition-colors shrink-0"
+                                                className="w-8 h-8 flex items-center justify-center text-gray-300 dark:text-gray-600 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-500 rounded-full transition-colors shrink-0"
                                             >
                                                 <Trash2 className="w-4 h-4" />
                                             </button>
@@ -324,39 +402,39 @@ export default function ProfilePage() {
 
                                         <div className="mb-6">
                                             {post.type !== 'general' && (
-                                                <span className="inline-block px-3 py-1 bg-gray-50 border border-gray-200 rounded-full text-[10px] font-black uppercase text-gray-500 tracking-widest mb-3">
+                                                <span className="inline-block px-3 py-1 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-full text-[10px] font-black uppercase text-gray-500 dark:text-gray-400 tracking-widest mb-3">
                                                     {post.type.replace('_share', '')}
                                                 </span>
                                             )}
-                                            {post.title && <h3 className="text-xl font-black text-black mb-3 tracking-tight">{post.title}</h3>}
-                                            <p className="text-[15px] text-gray-700 leading-relaxed font-medium whitespace-pre-wrap">{post.content}</p>
+                                            {post.title && <h3 className="text-xl font-black text-black dark:text-white mb-3 tracking-tight">{post.title}</h3>}
+                                            <p className="text-[15px] text-gray-700 dark:text-gray-300 leading-relaxed font-medium whitespace-pre-wrap">{post.content}</p>
                                         </div>
 
-                                        <div className="flex items-center border-t border-gray-100 pt-5 mt-2">
+                                        <div className="flex items-center border-t border-gray-100 dark:border-white/5 pt-5 mt-2">
                                             <div className="flex items-center space-x-6">
                                                 <button
                                                     onClick={() => handleLike(post)}
                                                     className={cn(
                                                         "flex items-center space-x-2 text-sm font-bold transition-all group/btn",
-                                                        isLiked ? "text-black" : "text-gray-400 hover:text-black"
+                                                        isLiked ? "text-red-500" : "text-gray-400 hover:text-red-500"
                                                     )}
                                                 >
                                                     <div className={cn(
                                                         "w-10 h-10 rounded-full flex items-center justify-center transition-colors",
-                                                        isLiked ? "bg-gray-100" : "bg-transparent group-hover/btn:bg-gray-50"
+                                                        isLiked ? "bg-red-50 dark:bg-red-500/10" : "bg-transparent group-hover/btn:bg-red-50 dark:group-hover/btn:bg-red-500/10"
                                                     )}>
                                                         <Heart className={cn("w-5 h-5 transition-transform", isLiked && "fill-current group-hover/btn:scale-110")} />
                                                     </div>
                                                     <span>{post.likes?.length || 0}</span>
                                                 </button>
-                                                <button className="flex items-center space-x-2 text-sm font-bold text-gray-400 hover:text-black transition-all group/btn">
-                                                    <div className="w-10 h-10 rounded-full bg-transparent group-hover/btn:bg-gray-50 flex items-center justify-center transition-colors">
+                                                <button className="flex items-center space-x-2 text-sm font-bold text-gray-400 hover:text-black dark:hover:text-white transition-all group/btn">
+                                                    <div className="w-10 h-10 rounded-full bg-transparent group-hover/btn:bg-gray-50 dark:group-hover/btn:bg-white/5 flex items-center justify-center transition-colors">
                                                         <MessageCircle className="w-5 h-5" />
                                                     </div>
                                                     <span>{post.commentCount || 0}</span>
                                                 </button>
                                             </div>
-                                            <button className="w-10 h-10 ml-auto rounded-full bg-gray-50 flex items-center justify-center text-gray-400 hover:text-black hover:bg-gray-100 hover:scale-105 transition-all">
+                                            <button className="w-10 h-10 ml-auto rounded-full bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-400 hover:text-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 hover:scale-105 transition-all">
                                                 <Share2 className="w-4 h-4" />
                                             </button>
                                         </div>
@@ -368,29 +446,41 @@ export default function ProfilePage() {
                 )}
             </main>
 
-            {/* Delete Confirmation Modal */}
+            {/* Delete Confirmation Modal (Concept 3: Minimalist) */}
             <AnimatePresence>
                 {showDeleteConfirm && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowDeleteConfirm(false)} className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-                        <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative w-full max-w-sm p-8 rounded-[2rem] bg-white shadow-2xl text-center space-y-8">
-                            <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto text-red-600 border border-red-100 shadow-sm">
-                                <Trash2 className="w-8 h-8" />
+                        <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative w-full max-w-[360px] p-8 rounded-[2rem] bg-[#F8F9FA] dark:bg-[#1E293B] shadow-2xl text-center flex flex-col items-center">
+
+                            {/* Warning Icon Container */}
+                            <div className="w-[72px] h-[72px] bg-white dark:bg-black/20 rounded-3xl flex items-center justify-center text-red-500 mb-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 dark:border-white/5">
+                                <AlertTriangle className="w-8 h-8 stroke-[2px]" />
                             </div>
-                            <div>
-                                <h3 className="text-2xl font-black text-black mb-3">Delete Account?</h3>
-                                <p className="text-gray-500 text-sm font-medium leading-relaxed">
-                                    This action is final. You will lose all your study data and AI history forever.
-                                </p>
-                            </div>
-                            <div className="space-y-3 pt-4 border-t border-gray-100">
-                                <button onClick={handleDeleteAccount} disabled={loading} className="w-full py-4 rounded-full bg-red-600 text-white font-bold uppercase tracking-widest text-[10px] shadow-lg shadow-red-600/20 hover:bg-red-700 hover:-translate-y-0.5 transition-all">
-                                    {loading ? 'Deleting...' : 'Delete Permanently'}
+
+                            {/* Titles */}
+                            <h3 className="text-[22px] font-black text-black dark:text-white mb-2 tracking-tight">Delete Account</h3>
+                            <p className="text-[#6B7280] dark:text-gray-400 text-[15px] font-medium leading-relaxed mb-8">
+                                You're going to delete your "Account"
+                            </p>
+
+                            {/* Action Buttons */}
+                            <div className="flex gap-4 w-full">
+                                <button
+                                    onClick={() => setShowDeleteConfirm(false)}
+                                    className="flex-1 py-4 rounded-2xl bg-[#E5E7EB] dark:bg-white/10 text-[#4B5563] dark:text-gray-300 font-bold text-[14px] hover:bg-gray-300 dark:hover:bg-white/20 transition-colors shadow-sm"
+                                >
+                                    No, keep it.
                                 </button>
-                                <button onClick={() => setShowDeleteConfirm(false)} className="w-full py-4 rounded-full bg-gray-100 text-black font-bold uppercase tracking-widest text-[10px] hover:bg-gray-200 transition-all">
-                                    Keep My Account
+                                <button
+                                    onClick={handleDeleteAccount}
+                                    disabled={loading}
+                                    className="flex-1 py-4 rounded-2xl bg-[#FF3B30] text-white font-bold text-[14px] hover:bg-red-600 transition-colors shadow-lg shadow-red-500/20 disabled:opacity-50"
+                                >
+                                    {loading ? '...' : 'Yes, Delete!'}
                                 </button>
                             </div>
+
                         </motion.div>
                     </div>
                 )}

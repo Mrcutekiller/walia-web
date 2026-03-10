@@ -10,7 +10,9 @@ export const metadata: Metadata = {
   description: 'Download Walia, the ultimate AI companion app with advanced study tools, 1-on-1 AI chat, and a community of learners.',
 };
 
+import GoogleTranslate from '@/components/GoogleTranslate';
 import ReviewPopup from '@/components/ReviewPopup';
+import { NotificationProvider } from '@/context/NotificationContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 
 export default function RootLayout({
@@ -22,10 +24,13 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.className} bg-white dark:bg-[#0A0A18] text-black dark:text-white antialiased transition-colors duration-300`}>
         <AuthProvider>
-          <ThemeProvider>
-            {children}
-            <ReviewPopup />
-          </ThemeProvider>
+          <NotificationProvider>
+            <ThemeProvider>
+              {children}
+              <ReviewPopup />
+              <GoogleTranslate />
+            </ThemeProvider>
+          </NotificationProvider>
         </AuthProvider>
       </body>
     </html>

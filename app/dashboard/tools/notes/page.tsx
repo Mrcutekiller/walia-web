@@ -1,240 +1,160 @@
 'use client';
 
-import { useAuth } from '@/context/AuthContext';
-import { db } from '@/lib/firebase';
-import { cn } from '@/lib/utils';
-import {
-    addDoc,
-    collection,
-    deleteDoc,
-    doc,
-    onSnapshot,
-    orderBy,
-    query,
-    serverTimestamp,
-    updateDoc
-} from 'firebase/firestore';
-import {
-    ArrowLeft,
-    FileText,
-    Loader2,
-    Plus,
-    Search,
-    Sparkles,
-    Trash2
-} from 'lucide-react';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { AlignCenter, AlignJustify, AlignLeft, BookOpen, Cloud, Moon, Settings2, Sun } from 'lucide-react';
+import { useState } from 'react';
 
-interface Note {
-    id: string;
-    title: string;
-    content: string;
-    updatedAt: any;
-}
+type Theme = 'light' | 'dark' | 'cream';
+type FontFamily = 'sans' | 'serif' | 'mono';
+type Alignment = 'left' | 'center' | 'justify';
+type FontSize = 'sm' | 'base' | 'lg' | 'xl';
 
-export default function NotesPage() {
-    const { user } = useAuth();
-    const [notes, setNotes] = useState<Note[]>([]);
-    const [activeNote, setActiveNote] = useState<Note | null>(null);
-    const [title, setTitle] = useState('');
+export default function WaliaNotesPage() {
+    const [theme, setTheme] = useState<Theme>('light');
+    const [fontFamily, setFontFamily] = useState<FontFamily>('serif');
+    const [alignment, setAlignment] = useState<Alignment>('left');
+    const [fontSize, setFontSize] = useState<FontSize>('lg');
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [content, setContent] = useState('');
     const [isSaving, setIsSaving] = useState(false);
-    const [aiLoading, setAiLoading] = useState(false);
-    const [showSidebar, setShowSidebar] = useState(true);
 
-    // Fetch notes
-    useEffect(() => {
-        if (!user) return;
-        const q = query(collection(db, 'users', user.uid, 'notes'), orderBy('updatedAt', 'desc'));
-        const unsub = onSnapshot(q, (snap) => {
-            setNotes(snap.docs.map(d => ({ id: d.id, ...d.data() } as Note)));
-        });
-        return () => unsub();
-    }, [user]);
-
-    // Handle auto-save
-    useEffect(() => {
-        if (!activeNote || !user) return;
-        const timer = setTimeout(async () => {
-            if (title === activeNote.title && content === activeNote.content) return;
-            setIsSaving(true);
-            try {
-                await updateDoc(doc(db, 'users', user.uid, 'notes', activeNote.id), {
-                    title: title || 'Untitled Note',
-                    content,
-                    updatedAt: serverTimestamp()
-                });
-            } catch (err) {
-                console.error('Auto-save error:', err);
-            } finally {
-                setIsSaving(false);
-            }
-        }, 1500);
-        return () => clearTimeout(timer);
-    }, [title, content, activeNote, user]);
-
-    const createNote = async () => {
-        if (!user) return;
-        const newNote = {
-            title: 'New Study Note',
-            content: '',
-            createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp()
-        };
-        const docRef = await addDoc(collection(db, 'users', user.uid, 'notes'), newNote);
-        setActiveNote({ id: docRef.id, ...newNote });
-        setTitle('New Study Note');
-        setContent('');
+    // Theme mappings
+    const themeStyles = {
+        light: 'bg-white text-gray-900 placeholder:text-gray-300',
+        dark: 'bg-[#0f172a] text-gray-100 placeholder:text-gray-600',
+        cream: 'bg-[#FDFBF7] text-[#4A453E] placeholder:text-[#C5BEB1]'
     };
 
-    const deleteNote = async (id: string, e: React.MouseEvent) => {
-        e.stopPropagation();
-        if (!user || !confirm('Delete this note?')) return;
-        await deleteDoc(doc(db, 'users', user.uid, 'notes', id));
-        if (activeNote?.id === id) {
-            setActiveNote(null);
-            setTitle('');
-            setContent('');
-        }
+    const fontStyles = {
+        sans: 'font-sans',
+        serif: 'font-serif',
+        mono: 'font-mono'
     };
 
-    const handleGenerateOutline = async () => {
-        if (!content.trim() || aiLoading) return;
-        setAiLoading(true);
-        try {
-            const res = await fetch('/api/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    message: `Generate a structured study outline for the following content: \n\n${content}`,
-                    systemPrompt: "You are an academic secretary. Create structured, hierarchical outlines for study notes. Use markdown headers and bullets."
-                })
-            });
-            const data = await res.json();
-            setContent(prev => `${prev}\n\n--- AI Generated Outline ---\n\n${data.reply}`);
-        } catch (err) {
-            console.error('AI Outline error:', err);
-        } finally {
-            setAiLoading(false);
-        }
+    const alignStyles = {
+        left: 'text-left',
+        center: 'text-center',
+        justify: 'text-justify'
+    };
+
+    const sizeStyles = {
+        sm: 'text-sm leading-relaxed',
+        base: 'text-base leading-relaxed',
+        lg: 'text-lg leading-loose',
+        xl: 'text-xl leading-loose'
+    };
+
+    const handleSave = () => {
+        setIsSaving(true);
+        setTimeout(() => setIsSaving(false), 1500); // Simulate network
     };
 
     return (
-        <div className="h-full flex flex-col md:flex-row bg-white text-black animate-in fade-in overflow-hidden">
+        <div className={`min-h-[calc(100vh-80px)] md:min-h-screen w-full transition-colors duration-500 ease-in-out relative flex flex-col ${themeStyles[theme].split(' ')[0]}`}>
 
-            {/* Sidebar */}
-            <aside className={cn(
-                "w-full md:w-80 border-r border-gray-100 flex flex-col bg-gray-50/50 transition-all",
-                !showSidebar ? "hidden md:flex md:w-0 md:opacity-0" : "flex"
-            )}>
-                <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <Link href="/dashboard/tools" className="hover:opacity-50 transition-opacity">
-                            <ArrowLeft className="w-5 h-5" />
-                        </Link>
-                        <h2 className="font-black text-xl tracking-tight">Notes</h2>
+            {/* Header */}
+            <header className="w-full max-w-4xl mx-auto px-6 py-8 flex justify-between items-center z-10">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-black/5 flex items-center justify-center">
+                        <span className={`font-black text-xl ${theme === 'dark' ? 'text-white' : 'text-black'}`}>W</span>
                     </div>
+                    <div>
+                        <h1 className={`text-base font-black ${theme === 'dark' ? 'text-white' : 'text-black'} tracking-tight`}>My Walia Notes</h1>
+                        <p className="text-xs font-bold uppercase tracking-widest opacity-40">Auto-saved</p>
+                    </div>
+                </div>
+            </header>
+
+            {/* Editor Area */}
+            <main className="flex-1 w-full max-w-4xl mx-auto px-6 pb-32">
+                <textarea
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    placeholder="Start writing your brilliant ideas here..."
+                    className={`w-full h-full min-h-[60vh] bg-transparent resize-none outline-none border-none focus:ring-0 ${themeStyles[theme]} ${fontStyles[fontFamily]} ${alignStyles[alignment]} ${sizeStyles[fontSize]} transition-all duration-300`}
+                    spellCheck="false"
+                />
+            </main>
+
+            {/* Distraction-Free Settings Overlay */}
+            {isSettingsOpen && (
+                <div className="fixed inset-0 z-40" onClick={() => setIsSettingsOpen(false)}>
+                    {/* Dark/Light overlay backdrop could go here, but omitted for seamless feel */}
+                </div>
+            )}
+
+            {/* Bottom Toolbar Area */}
+            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-4 w-full max-w-md px-4">
+
+                {/* Expandable Settings Panel */}
+                <div className={`w-full max-w-sm bg-white/90 dark:bg-[#1e293b]/95 backdrop-blur-xl border border-gray-200 dark:border-white/10 rounded-3xl p-6 shadow-2xl transition-all duration-300 transform origin-bottom ${isSettingsOpen ? 'scale-100 opacity-100 translate-y-0' : 'scale-95 opacity-0 translate-y-8 pointer-events-none'}`}>
+
+                    <h3 className="text-xs font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-4 text-center">Reader Settings</h3>
+
+                    {/* Theme Row */}
+                    <div className="flex items-center justify-between bg-gray-50 dark:bg-black/20 p-2 rounded-2xl mb-4">
+                        {[
+                            { id: 'light', icon: Sun, color: 'text-amber-500' },
+                            { id: 'cream', icon: BookOpen, color: 'text-orange-900/40' },
+                            { id: 'dark', icon: Moon, color: 'text-indigo-400' }
+                        ].map(t => (
+                            <button
+                                key={t.id}
+                                onClick={(e) => { e.stopPropagation(); setTheme(t.id as Theme); }}
+                                className={`flex-1 py-3 flex justify-center rounded-xl transition-all ${theme === t.id ? 'bg-white dark:bg-white/10 shadow-sm' : 'hover:bg-black/5 dark:hover:bg-white/5'}`}
+                            >
+                                <t.icon className={`w-5 h-5 ${theme === t.id ? t.color : 'text-gray-400'}`} />
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Typography Row */}
+                    <div className="flex items-center justify-between gap-2 mb-4">
+                        <button onClick={(e) => { e.stopPropagation(); setFontFamily('sans'); }} className={`flex-1 py-2 text-sm rounded-xl border ${fontFamily === 'sans' ? 'border-black dark:border-white font-bold bg-black/5 dark:bg-white/10 text-black dark:text-white' : 'border-gray-200 dark:border-white/10 text-gray-400 hover:border-gray-300'} transition-all`}>Aa<br /><span className="text-[10px] font-normal uppercase tracking-widest">Sans</span></button>
+                        <button onClick={(e) => { e.stopPropagation(); setFontFamily('serif'); }} className={`flex-1 py-2 text-sm rounded-xl border font-serif ${fontFamily === 'serif' ? 'border-black dark:border-white font-bold bg-black/5 dark:bg-white/10 text-black dark:text-white' : 'border-gray-200 dark:border-white/10 text-gray-400 hover:border-gray-300'} transition-all`}>Aa<br /><span className="text-[10px] font-normal font-sans uppercase tracking-widest">Serif</span></button>
+                        <button onClick={(e) => { e.stopPropagation(); setFontFamily('mono'); }} className={`flex-1 py-2 text-sm rounded-xl border font-mono ${fontFamily === 'mono' ? 'border-black dark:border-white font-bold bg-black/5 dark:bg-white/10 text-black dark:text-white' : 'border-gray-200 dark:border-white/10 text-gray-400 hover:border-gray-300'} transition-all`}>Aa<br /><span className="text-[10px] font-normal font-sans uppercase tracking-widest">Mono</span></button>
+                    </div>
+
+                    {/* Size & Alignment Row */}
+                    <div className="flex items-center justify-between gap-2">
+                        <div className="flex bg-gray-50 dark:bg-black/20 rounded-xl p-1 flex-1">
+                            {['sm', 'base', 'lg', 'xl'].map(s => (
+                                <button key={s} onClick={(e) => { e.stopPropagation(); setFontSize(s as FontSize); }} className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all ${fontSize === s ? 'bg-white dark:bg-white/10 shadow-sm text-black dark:text-white' : 'text-gray-400'}`}>
+                                    {s.toUpperCase()}
+                                </button>
+                            ))}
+                        </div>
+                        <div className="flex bg-gray-50 dark:bg-black/20 rounded-xl p-1">
+                            <button onClick={(e) => { e.stopPropagation(); setAlignment('left'); }} className={`p-2 rounded-lg transition-all ${alignment === 'left' ? 'bg-white dark:bg-white/10 shadow-sm text-black dark:text-white' : 'text-gray-400'}`}><AlignLeft className="w-4 h-4" /></button>
+                            <button onClick={(e) => { e.stopPropagation(); setAlignment('center'); }} className={`p-2 rounded-lg transition-all ${alignment === 'center' ? 'bg-white dark:bg-white/10 shadow-sm text-black dark:text-white' : 'text-gray-400'}`}><AlignCenter className="w-4 h-4" /></button>
+                            <button onClick={(e) => { e.stopPropagation(); setAlignment('justify'); }} className={`p-2 rounded-lg transition-all ${alignment === 'justify' ? 'bg-white dark:bg-white/10 shadow-sm text-black dark:text-white' : 'text-gray-400'}`}><AlignJustify className="w-4 h-4" /></button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* The Floating Action Bar */}
+                <div className="flex items-center justify-center gap-3">
                     <button
-                        onClick={createNote}
-                        className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center hover:bg-zinc-800 transition-all shadow-lg shadow-black/10"
+                        onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+                        className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 shadow-xl border ${theme === 'dark' ? 'bg-[#1e293b] text-white border-white/10 hover:bg-[#334155]' : 'bg-white text-black border-gray-200 hover:bg-gray-50'}`}
                     >
-                        <Plus className="w-5 h-5" />
+                        <Settings2 className="w-6 h-6" />
+                    </button>
+
+                    <button
+                        onClick={handleSave}
+                        className={`px-8 h-14 rounded-full flex items-center justify-center gap-3 transition-all duration-300 shadow-[0_8px_30px_rgba(34,197,94,0.3)] border border-green-500/20 bg-green-500 hover:bg-green-600 hover:-translate-y-1 text-white font-bold tracking-wide`}
+                    >
+                        {isSaving ? (
+                            <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        ) : (
+                            <Cloud className="w-5 h-5" />
+                        )}
+                        {isSaving ? 'SAVING...' : 'SAVE TO CLOUD'}
                     </button>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar">
-                    {notes.map(note => (
-                        <div
-                            key={note.id}
-                            onClick={() => { setActiveNote(note); setTitle(note.title); setContent(note.content); }}
-                            className={cn(
-                                "p-4 rounded-[1.5rem] border transition-all cursor-pointer group relative",
-                                activeNote?.id === note.id
-                                    ? "bg-white border-black shadow-md"
-                                    : "bg-transparent border-transparent hover:bg-white hover:border-gray-200"
-                            )}
-                        >
-                            <h3 className="text-sm font-black truncate pr-6">{note.title || 'Untitled'}</h3>
-                            <p className="text-[10px] font-black text-gray-400 mt-1 uppercase tracking-widest">
-                                {note.updatedAt ? new Date(note.updatedAt.seconds * 1000).toLocaleDateString() : 'Saving...'}
-                            </p>
-                            <button
-                                onClick={(e) => deleteNote(note.id, e)}
-                                className="absolute top-4 right-4 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                                <Trash2 className="w-4 h-4" />
-                            </button>
-                        </div>
-                    ))}
-                    {notes.length === 0 && (
-                        <div className="text-center py-20 opacity-20 flex flex-col items-center">
-                            <FileText className="w-10 h-10 mb-4" />
-                            <p className="text-xs font-black uppercase tracking-widest">Nothing yet</p>
-                        </div>
-                    )}
-                </div>
-            </aside>
+            </div>
 
-            {/* Editor Area */}
-            <main className="flex-1 flex flex-col relative h-full">
-                {activeNote ? (
-                    <>
-                        <header className="p-6 border-b border-gray-100 flex items-center justify-between gap-4">
-                            <div className="flex-1 flex items-center gap-4">
-                                <button onClick={() => setShowSidebar(!showSidebar)} className="hidden md:block p-2 hover:bg-gray-100 rounded-xl transition-colors">
-                                    <Search className="w-5 h-5 text-gray-400" />
-                                </button>
-                                <input
-                                    value={title}
-                                    onChange={(e) => setTitle(e.target.value)}
-                                    placeholder="Note title..."
-                                    className="bg-transparent text-xl font-black text-black outline-none w-full"
-                                />
-                            </div>
-                            <div className="flex items-center gap-3">
-                                {isSaving ? (
-                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest italic animate-pulse">Saving...</span>
-                                ) : (
-                                    <span className="text-[10px] font-black text-green-500 uppercase tracking-widest">Saved</span>
-                                )}
-                                <div className="h-4 w-px bg-gray-100" />
-                                <button
-                                    onClick={handleGenerateOutline}
-                                    disabled={aiLoading || !content.trim()}
-                                    className="flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-50 border border-zinc-200 text-xs font-bold hover:bg-white transition-all disabled:opacity-20"
-                                >
-                                    {aiLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
-                                    <span className="hidden sm:inline">AI Outline</span>
-                                </button>
-                            </div>
-                        </header>
-
-                        <div className="flex-1 p-8 md:p-12 overflow-y-auto custom-scrollbar">
-                            <textarea
-                                value={content}
-                                onChange={(e) => setContent(e.target.value)}
-                                placeholder="Start typing your study notes here..."
-                                className="w-full h-full bg-transparent resize-none outline-none font-medium text-gray-700 leading-relaxed text-lg placeholder:text-gray-200"
-                            />
-                        </div>
-                    </>
-                ) : (
-                    <div className="flex-1 flex flex-col items-center justify-center p-12 text-center opacity-40">
-                        <div className="w-24 h-24 rounded-[3rem] bg-gray-100 flex items-center justify-center mb-8">
-                            <FileText className="w-10 h-10" />
-                        </div>
-                        <h2 className="text-2xl font-black mb-2">Select a note</h2>
-                        <p className="text-sm font-medium">Or create a new one to begin your study session.</p>
-                        <button
-                            onClick={createNote}
-                            className="mt-8 px-8 py-4 bg-black text-white rounded-[2rem] font-bold text-xs uppercase tracking-widest shadow-xl shadow-black/10 hover:scale-105 transition-all"
-                        >
-                            Create New Note
-                        </button>
-                    </div>
-                )}
-            </main>
         </div>
     );
 }

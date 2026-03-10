@@ -1,220 +1,210 @@
-'use client';
-
+import { useAuth } from '@/context/AuthContext';
+import { useNotifications } from '@/context/NotificationContext';
+import { useTheme } from '@/context/ThemeContext';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
-
-import { useAuth } from '@/context/AuthContext';
-import { cn } from '@/lib/utils';
 import {
     Bell,
+    Bot,
     Calendar,
-    Cpu,
     LogOut,
     Menu,
     MessageSquare,
     Settings,
-    Sparkles,
-    UserCircle,
+    User,
     Users,
     Wrench,
-    X
+    X,
+    Zap
 } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-const MENU_ITEMS = [
-    { label: 'AI Chat', icon: Cpu, href: '/dashboard/ai' },
-    { label: 'Messages', icon: MessageSquare, href: '/dashboard/messages' },
-    { label: 'Community', icon: Users, href: '/dashboard/community' },
-    { label: 'Tools', icon: Wrench, href: '/dashboard/tools' },
-    { label: 'Events', icon: Calendar, href: '/dashboard/events' },
-    { label: 'Notifications', icon: Bell, href: '/dashboard/notifications' },
-    { label: 'Profile', icon: UserCircle, href: '/dashboard/profile' },
-    { label: 'Settings', icon: Settings, href: '/dashboard/settings' },
+const SIDEBAR_NAV = [
+    { icon: Bot, label: 'AI Chat', href: '/dashboard/ai' },
+    { icon: MessageSquare, label: 'Messages', href: '/dashboard/messages' },
+    { icon: Users, label: 'Community', href: '/dashboard/community', badge: 15 },
+    { icon: Wrench, label: 'Tools', href: '/dashboard/tools' },
+    { icon: Calendar, label: 'Events', href: '/dashboard/events' },
+    { icon: User, label: 'Profile', href: '/dashboard/profile' },
+    { icon: Settings, label: 'Settings', href: '/dashboard/settings' },
 ];
 
 export default function DashboardShell({ children }: { children: React.ReactNode }) {
     const { user, loading } = useAuth();
+    const { theme, toggleTheme } = useTheme();
+    const { unreadCount } = useNotifications();
     const router = useRouter();
     const pathname = usePathname();
-    const [isMobileOpen, setIsMobileOpen] = useState(false);
-    const [scrolled, setScrolled] = useState(false);
-    const [showProfileMenu, setShowProfileMenu] = useState(false);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     useEffect(() => {
-        if (!loading && !user) {
-            router.push('/login');
-        }
+        if (!loading && !user) router.replace('/login');
     }, [user, loading, router]);
-
-    useEffect(() => {
-        setIsMobileOpen(false);
-    }, [pathname]);
-
-    useEffect(() => {
-        const handleScroll = () => setScrolled(window.scrollY > 20);
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
 
     if (loading || !user) {
         return (
-            <div className="min-h-screen bg-black flex items-center justify-center">
-                <Sparkles className="w-8 h-8 text-white animate-pulse" />
+            <div className="h-screen flex items-center justify-center bg-[#0a0a0a]">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-10 h-10 border-2 border-white/10 border-t-white rounded-full animate-spin" />
+                    <p className="text-white/30 text-sm font-medium">Loading Walia...</p>
+                </div>
             </div>
         );
     }
 
-    const unreadNotifications = 2; // Mock
+    const handleLogout = async () => {
+        await signOut(auth);
+        router.replace('/');
+    };
 
     return (
-        <div className="flex h-screen bg-white text-black font-sans overflow-hidden selection:bg-black selection:text-white">
-            {/* Mobile Header */}
-            <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-200 z-50 flex items-center justify-between px-4">
-                <div className="flex items-center space-x-2">
-                    <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
-                        <Sparkles className="w-4 h-4 text-white" />
-                    </div>
-                    <span className="font-black tracking-tight text-lg">Walia</span>
-                </div>
-                <button
-                    onClick={() => setIsMobileOpen(true)}
-                    className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                    <Menu className="w-6 h-6" />
-                </button>
-            </div>
+        <div className="flex h-screen bg-gray-50 dark:bg-[#0a0a0a] text-black dark:text-white overflow-hidden">
 
-            {/* Sidebar Structure */}
-            <aside
-                className={cn(
-                    "fixed md:static inset-y-0 left-0 z-50 w-72 bg-gray-50 border-r border-gray-200 flex flex-col transition-transform duration-300 ease-in-out",
-                    isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
-                )}
-            >
-                {/* Close Button Mobile */}
-                <button
-                    onClick={() => setIsMobileOpen(false)}
-                    className="md:hidden absolute top-4 right-4 p-2 rounded-lg hover:bg-gray-200"
-                >
-                    <X className="w-5 h-5" />
-                </button>
-
-                {/* Logo */}
-                <div className="h-24 flex items-center px-8 shrink-0">
-                    <Link href="/dashboard" className="flex items-center space-x-3 group">
-                        <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
-                            <Sparkles className="w-5 h-5 text-white" />
-                        </div>
-                        <span className="font-black text-2xl tracking-tighter">Walia</span>
-                    </Link>
-                </div>
-
-                {/* Navigation Links */}
-                <nav className="flex-1 overflow-y-auto py-4 px-4 space-y-1 custom-scrollbar">
-                    {MENU_ITEMS.map((item) => {
-                        const isActive = pathname.startsWith(item.href);
-                        return (
-                            <Link
-                                key={item.label}
-                                href={item.href}
-                                className={cn(
-                                    "flex items-center space-x-3 px-4 py-3.5 rounded-2xl transition-all duration-200 font-bold text-sm group",
-                                    isActive
-                                        ? "bg-black text-white shadow-lg shadow-black/10"
-                                        : "text-gray-500 hover:bg-gray-100/80 hover:text-black"
-                                )}
-                            >
-                                <item.icon className={cn("w-5 h-5", isActive ? "text-white" : "text-gray-400 group-hover:text-black")} />
-                                <span>{item.label}</span>
-                                {item.label === 'Notifications' && unreadNotifications > 0 && (
-                                    <span className={cn(
-                                        "ml-auto text-[10px] font-black px-2 py-0.5 rounded-full",
-                                        isActive ? "bg-white text-black" : "bg-black text-white"
-                                    )}>
-                                        {unreadNotifications}
-                                    </span>
-                                )}
-                            </Link>
-                        );
-                    })}
-                </nav>
-
-                {/* Upgrade Button */}
-                <div className="p-6 shrink-0 border-t border-gray-200">
-                    <Link
-                        href="/dashboard/upgrade"
-                        className="w-full flex items-center justify-center py-4 rounded-2xl bg-white border-2 border-black text-black font-black text-sm transition-all hover:-translate-y-1 hover:shadow-[0_8px_0_0_#000]"
-                    >
-                        UPGRADE TO PRO
-                    </Link>
-                </div>
-            </aside>
-
-            {/* Mobile Overlay */}
-            {isMobileOpen && (
+            {/* Mobile overlay */}
+            {sidebarOpen && (
                 <div
-                    className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 md:hidden animate-in fade-in"
-                    onClick={() => setIsMobileOpen(false)}
+                    className="fixed inset-0 bg-black/70 z-40 lg:hidden"
+                    onClick={() => setSidebarOpen(false)}
                 />
             )}
 
-            {/* Main Content Area */}
-            <main className="flex-1 flex flex-col min-w-0 bg-white md:rounded-l-[40px] md:shadow-[-20px_0_40px_rgba(0,0,0,0.02)] md:-ml-6 z-10 relative overflow-hidden">
-                {/* Content inner area */}
-                <div className="flex-1 overflow-y-auto mt-16 md:mt-0 relative">
-                    {children}
+            {/* ── SIDEBAR ── */}
+            <aside className={`
+                fixed top-0 left-0 bottom-0 z-50 w-64 bg-[#0A101D] border-r border-[#1E293B] flex flex-col
+                transition-transform duration-300
+                ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+                lg:translate-x-0 lg:static lg:z-auto relative overflow-hidden
+            `}>
+                {/* Large Background W Element */}
+                <div className="absolute -left-16 top-1/2 -translate-y-1/2 select-none pointer-events-none opacity-[0.03]">
+                    <span className="text-[400px] font-black leading-none text-white tracking-tighter">W</span>
                 </div>
 
-                {/* Profile Bubble - Bottom Right (Fixed) */}
-                <div className="fixed bottom-6 right-6 md:bottom-10 md:right-10 z-50">
-                    <div className="relative">
-                        <button
-                            onClick={() => setShowProfileMenu(!showProfileMenu)}
-                            className="w-14 h-14 rounded-full bg-black border-4 border-white shadow-xl flex items-center justify-center overflow-hidden hover:scale-105 transition-transform active:scale-95"
-                        >
-                            {user?.photoURL ? (
-                                <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover" />
-                            ) : (
-                                <UserCircle className="w-8 h-8 text-white" />
-                            )}
-                        </button>
-
-                        {/* Profile Context Menu */}
-                        {showProfileMenu && (
-                            <div className="absolute bottom-full right-0 mb-4 w-56 rounded-3xl bg-white border border-gray-200 shadow-2xl p-2 animate-in slide-in-from-bottom-2 fade-in">
-                                <div className="px-4 py-3 border-b border-gray-100 mb-2">
-                                    <p className="text-sm font-black truncate">{user.displayName || 'Walia Voyager'}</p>
-                                    <p className="text-xs text-gray-500 font-medium truncate">{user.email}</p>
-                                </div>
-                                <Link onClick={() => setShowProfileMenu(false)} href="/dashboard/profile" className="w-full flex items-center px-4 py-2.5 rounded-xl hover:bg-gray-50 transition-colors text-sm font-bold text-gray-700">
-                                    <UserCircle className="w-4 h-4 mr-3 text-gray-400" />
-                                    My Profile
-                                </Link>
-                                <Link onClick={() => setShowProfileMenu(false)} href="/dashboard/settings" className="w-full flex items-center px-4 py-2.5 rounded-xl hover:bg-gray-50 transition-colors text-sm font-bold text-gray-700">
-                                    <Settings className="w-4 h-4 mr-3 text-gray-400" />
-                                    Preferences
-                                </Link>
-                                <button
-                                    onClick={() => {
-                                        setShowProfileMenu(false);
-                                        signOut(auth);
-                                    }}
-                                    className="w-full flex items-center px-4 py-2.5 rounded-xl hover:bg-red-50 text-red-600 transition-colors text-sm font-bold mt-1"
-                                >
-                                    <LogOut className="w-4 h-4 mr-3" />
-                                    Sign Out
-                                </button>
+                <div className="relative z-10 flex flex-col h-full">
+                    {/* Logo */}
+                    <div className="flex items-center justify-between p-6 border-b border-white/5 shrink-0">
+                        <Link href="/dashboard" className="flex items-center gap-3 group">
+                            <div className="w-10 h-10 rounded-[10px] bg-white text-black flex items-center justify-center group-hover:scale-105 transition-transform overflow-hidden shadow-lg shadow-black/20 font-black text-xl leading-none">
+                                W
                             </div>
-                        )}
-                        {/* Click away listener for menu */}
-                        {showProfileMenu && (
-                            <div className="fixed inset-0 z-[-1]" onClick={() => setShowProfileMenu(false)} />
-                        )}
+                            <span className="text-xl font-black text-white tracking-widest uppercase">Walia</span>
+                        </Link>
+                        <button className="lg:hidden p-1 text-white/40 hover:text-white" onClick={() => setSidebarOpen(false)}>
+                            <X className="w-5 h-5" />
+                        </button>
+                    </div>
+
+                    {/* Nav links */}
+                    <nav className="flex-1 px-4 py-8 space-y-1 overflow-y-auto custom-scrollbar">
+
+                        {SIDEBAR_NAV.map(({ icon: Icon, label, href, badge }) => {
+                            const active = pathname === href || pathname.startsWith(href) && href !== '/dashboard';
+                            return (
+                                <Link
+                                    key={href}
+                                    href={href}
+                                    onClick={() => setSidebarOpen(false)}
+                                    className={`flex items-center gap-4 px-4 py-3.5 rounded-[20px] transition-all group relative ${active
+                                        ? 'bg-black text-white dark:bg-white dark:text-black font-bold shadow-md'
+                                        : 'text-[#64748B] hover:text-black dark:text-gray-400 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5'
+                                        }`}
+                                >
+                                    <Icon className={`w-5 h-5 shrink-0 transition-colors ${active ? 'text-white dark:text-black' : 'text-[#94A3B8] group-hover:text-black dark:text-gray-500 dark:group-hover:text-gray-300'}`} />
+                                    <span className={`text-[15px] ${active ? 'font-bold' : 'font-semibold'}`}>{label}</span>
+                                    {badge && (
+                                        <div className="ml-auto min-w-[20px] h-5 px-1.5 rounded-full bg-[#EF4444] text-[11px] font-black flex items-center justify-center text-white shadow-sm">
+                                            {badge}
+                                        </div>
+                                    )}
+                                </Link>
+                            );
+                        })}
+                    </nav>
+
+                    {/* Theme Toggle */}
+                    <div className="px-6 py-4">
+                        <div className="w-full bg-[#182134] rounded-2xl p-1 flex">
+                            <button
+                                onClick={() => theme !== 'light' && toggleTheme()}
+                                className={`flex-1 py-2 rounded-xl transition-colors text-xs font-bold flex items-center justify-center gap-2 ${theme === 'light' ? 'bg-[#2E3C56] text-white shadow-sm' : 'bg-transparent text-gray-500 hover:text-white shadow-none'}`}
+                            >
+                                <span>Light</span>
+                            </button>
+                            <button
+                                onClick={() => theme !== 'dark' && toggleTheme()}
+                                className={`flex-1 py-2 rounded-xl transition-colors text-xs font-bold flex items-center justify-center gap-2 ${theme === 'dark' ? 'bg-[#2E3C56] text-white shadow-sm' : 'bg-transparent text-gray-500 hover:text-white shadow-none'}`}
+                            >
+                                <span>Dark</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* User + logout Profile Summary */}
+                    <div className="p-4 border-t border-white/5 shrink-0">
+                        <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors cursor-pointer group">
+                            <div className="w-10 h-10 rounded-[12px] bg-[#182134] flex items-center justify-center shrink-0 overflow-hidden shadow-inner border border-white/10">
+                                {user.photoURL ? (
+                                    <img src={user.photoURL} alt="Avatar" className="w-full h-full object-cover" />
+                                ) : (
+                                    <User className="w-5 h-5 text-gray-400 group-hover:text-white transition-colors" />
+                                )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-[13px] font-bold text-white truncate group-hover:text-[#4ade80] transition-colors">{user.displayName || user.email?.split('@')[0] || 'User'}</p>
+                                <p className="text-[10px] font-medium text-gray-500 truncate mt-0.5">{user.email}</p>
+                            </div>
+                            <button onClick={handleLogout} title="Log out" className="w-8 h-8 rounded-full bg-white/5 hover:bg-red-500/10 text-gray-400 hover:text-red-500 flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 shrink-0">
+                                <LogOut className="w-3.5 h-3.5 ml-0.5" />
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </main>
+            </aside>
+
+            {/* ── MAIN CONTENT ── */}
+            <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+                {/* Mobile top bar */}
+                <header className="lg:hidden flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-white/5 bg-white dark:bg-black/50 shrink-0">
+                    <button onClick={() => setSidebarOpen(true)} className="text-gray-500 hover:text-black dark:text-white/60 dark:hover:text-white p-1">
+                        <Menu className="w-5 h-5" />
+                    </button>
+                    <div className="flex items-center gap-2">
+                        <Image src="/walia-logo.png" alt="Walia" width={22} height={22} className="object-contain" />
+                        <span className="text-black dark:text-white font-black tracking-tighter">Walia</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <Link href="/dashboard/notifications" className="relative p-1.5 text-gray-500 hover:text-black dark:text-white/60 dark:hover:text-white">
+                            <Bell className="w-5 h-5" />
+                            {unreadCount > 0 && (
+                                <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 border-2 border-white dark:border-[#0a0a0a] rounded-full"></span>
+                            )}
+                        </Link>
+                        <Link href="/dashboard/upgrade" className="flex items-center gap-1 px-3 py-1.5 rounded-[10px] bg-black dark:bg-[#4ade80] text-white dark:text-black text-[10px] font-black uppercase tracking-wider">
+                            <Zap className="w-3 h-3" /> Pro
+                        </Link>
+                    </div>
+                </header>
+                
+                {/* Desktop top bar (optional if we strictly want it top right above content) */}
+                <div className="hidden lg:flex absolute top-4 right-6 z-10 items-center gap-4">
+                    <Link href="/dashboard/notifications" className="relative p-2 rounded-full bg-white/80 dark:bg-black/50 backdrop-blur-md border border-gray-200 dark:border-white/10 text-gray-500 hover:text-black dark:text-white/60 dark:hover:text-white shadow-sm hover:shadow-md transition-all">
+                        <Bell className="w-5 h-5" />
+                        {unreadCount > 0 && (
+                            <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 border-2 border-white dark:border-[#0a0a0a] rounded-full"></span>
+                        )}
+                    </Link>
+                    <Link href="/dashboard/upgrade" className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-black dark:bg-[#4ade80] text-white dark:text-black text-xs font-black uppercase tracking-wider shadow-sm hover:scale-105 transition-transform">
+                        <Zap className="w-3.5 h-3.5 text-yellow-400 dark:text-black" /> Upgrade Pro
+                    </Link>
+                </div>
+
+                <main className="flex-1 overflow-y-auto pt-16 lg:pt-0">
+                    {children}
+                </main>
+            </div>
         </div>
     );
 }

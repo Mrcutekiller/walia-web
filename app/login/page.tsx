@@ -37,7 +37,7 @@ function LoginContent() {
                 router.replace('/dashboard');
             }
         } catch (err: any) {
-            console.warn("Login error:", err.message);
+            console.error("Login error:", err);
             setError('Invalid email or password. Please try again.');
         } finally { setLoading(false); }
     };
@@ -73,10 +73,8 @@ function LoginContent() {
                 router.replace('/dashboard');
             }
         } catch (err: any) {
-            if (err?.code !== 'auth/popup-closed-by-user' && err?.code !== 'auth/cancelled-popup-request') {
-                if (err?.code !== 'unavailable') {
-                    console.error("Google sign-in error:", err);
-                }
+            console.error("Google sign-in error:", err);
+            if (err?.code !== 'auth/popup-closed-by-user') {
                 setError(err.message?.includes('auth/operation-not-supported')
                     ? 'Google sign-in is not enabled. Please use email/password.'
                     : 'Google sign-in failed. Please verify your internet connection or try again.');
