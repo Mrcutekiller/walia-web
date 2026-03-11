@@ -61,9 +61,6 @@ export default function ProfilePage() {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [posts, setPosts] = useState<Post[]>([]);
 
-    // 360 Flip State for ID Card
-    const [isFlipped, setIsFlipped] = useState(false);
-
     // Editable fields
     const [formData, setFormData] = useState({
         displayName: '',
@@ -168,101 +165,17 @@ export default function ProfilePage() {
     if (!user) return null;
 
     const waliaId = `WAL-${user.uid.slice(0, 8).toUpperCase()}`;
+    const memberSinceYear = user.metadata?.creationTime
+        ? new Date(user.metadata.creationTime).getFullYear()
+        : new Date().getFullYear();
 
     return (
         <div className="min-h-full bg-[#FAFAFA] dark:bg-[#0A101D] text-black dark:text-white pb-20 selection:bg-black selection:text-white">
 
             <main className="max-w-3xl mx-auto px-4 pt-8 md:pt-12 space-y-12">
 
-                {/* --- 360 Degree Flip ID Card --- */}
-                <div className="flex flex-col items-center animate-in fade-in slide-in-from-top-4 duration-700">
-                    <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-4 flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" /> Your Digital Walia ID / Click to flip
-                    </p>
-
-                    <div
-                        className="relative w-full max-w-sm h-64 [perspective:1000px] cursor-pointer group"
-                        onClick={() => setIsFlipped(!isFlipped)}
-                    >
-                        <div
-                            className={`w-full h-full relative transition-all duration-700 [transform-style:preserve-3d] ${isFlipped ? '[transform:rotateY(180deg)]' : ''}`}
-                        >
-                            {/* Front Face */}
-                            <div className="absolute inset-0 w-full h-full rounded-[2rem] bg-[#0f172a] shadow-2xl overflow-hidden [backface-visibility:hidden] border border-white/10 flex flex-col p-6">
-                                {/* Watermark */}
-                                <div className="absolute -right-8 -top-8 text-[200px] font-black leading-none text-white/5 tracking-tighter pointer-events-none select-none">W</div>
-
-                                <div className="flex justify-between items-start mb-auto relative z-10">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-8 h-8 bg-white text-black font-black text-lg flex items-center justify-center rounded-[8px]">W</div>
-                                        <span className="text-white font-bold tracking-widest uppercase text-sm">Walia</span>
-                                    </div>
-                                    <ShieldCheck className="w-6 h-6 text-green-400" />
-                                </div>
-
-                                <div className="relative z-10 flex items-center gap-5 mt-4">
-                                    {/* Avatar Upload Container */}
-                                    <div
-                                        className="relative w-20 h-20 rounded-full border-[3px] border-white/20 p-1 shrink-0 bg-black/50 overflow-hidden"
-                                        onClick={(e) => {
-                                            e.stopPropagation(); // don't flip card if clicking avatar
-                                            !isEditing && fileInputRef.current?.click();
-                                        }}
-                                    >
-                                        <div className="w-full h-full rounded-full overflow-hidden bg-gray-800 flex items-center justify-center relative group-hover:opacity-90 transition-opacity">
-                                            {user.photoURL ? (
-                                                <img src={user.photoURL} alt="User Avatar" className="w-full h-full object-cover" />
-                                            ) : (
-                                                <span className="text-2xl font-black text-gray-400">{formData.displayName?.charAt(0) || '?'}</span>
-                                            )}
-                                        </div>
-                                        {!isEditing && (
-                                            <div className="absolute inset-0 bg-black/60 opacity-0 hover:opacity-100 flex flex-col items-center justify-center transition-all">
-                                                <Camera className="w-5 h-5 text-white mb-0.5" />
-                                                <span className="text-[8px] font-bold text-white uppercase tracking-wider">Update</span>
-                                            </div>
-                                        )}
-                                        {uploading && (
-                                            <div className="absolute inset-0 bg-black/80 flex items-center justify-center">
-                                                <Loader2 className="w-5 h-5 text-white animate-spin" />
-                                            </div>
-                                        )}
-                                        <input type="file" ref={fileInputRef} onChange={handleAvatarUpload} className="hidden" accept="image/*" />
-                                    </div>
-
-                                    <div className="flex flex-col">
-                                        <h2 className="text-xl font-black text-white leading-tight">{formData.displayName || 'No Name Set'}</h2>
-                                        <p className="text-green-400 text-xs font-bold uppercase tracking-widest mt-1">Walia Member</p>
-                                        <p className="text-gray-400 text-[10px] font-mono mt-2">{waliaId}</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Back Face */}
-                            <div className="absolute inset-0 w-full h-full rounded-[2rem] bg-gradient-to-br from-indigo-500 to-purple-600 shadow-2xl overflow-hidden [backface-visibility:hidden] [transform:rotateY(180deg)] border border-white/20 flex flex-col items-center justify-center p-6 text-white text-center">
-                                {/* Barcode decoration */}
-                                <div className="w-full flex justify-center mb-6 opacity-90 h-16 pointer-events-none select-none items-stretch gap-1">
-                                    <div className="w-1 bg-white" /><div className="w-3 bg-white" /><div className="w-1 bg-white" /><div className="w-2 bg-white" />
-                                    <div className="w-4 bg-white" /><div className="w-1 bg-white" /><div className="w-1 bg-white" /><div className="w-3 bg-white" />
-                                    <div className="w-2 bg-white" /><div className="w-1 bg-white" /><div className="w-4 bg-white" /><div className="w-1 bg-white" />
-                                    <div className="w-2 bg-white" /><div className="w-3 bg-white" /><div className="w-1 bg-white" /><div className="w-2 bg-white" />
-                                    <div className="w-1 bg-white" /><div className="w-4 bg-white" /><div className="w-1 bg-white" /><div className="w-2 bg-white" />
-                                </div>
-                                <p className="font-mono text-xs tracking-[0.3em] font-bold opacity-80 mb-6">{waliaId}</p>
-
-                                <div className="inline-flex items-center gap-2 bg-black/20 px-4 py-2 rounded-full border border-white/10 backdrop-blur-sm">
-                                    <CheckCircle2 className="w-4 h-4 text-green-300" />
-                                    <span className="text-xs font-bold tracking-widest uppercase">Verified Account</span>
-                                </div>
-
-                                <p className="text-[10px] mt-8 text-white/50 max-w-[200px]">This card confirms the digital credentials of the user on the Walia platform.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 {/* Profile Controls Card */}
-                <div className="bg-white dark:bg-[#162032] rounded-[3rem] p-6 lg:p-10 border border-gray-200 dark:border-white/5 shadow-xl shadow-black-[0.02] relative">
+                <div className="bg-white dark:bg-[#162032] rounded-[3rem] p-6 lg:p-10 border border-gray-200 dark:border-white/5 shadow-xl shadow-black-[0.02] relative animate-in fade-in slide-in-from-top-4 duration-700">
 
                     {/* Top Right Actions */}
                     <div className="absolute top-6 right-6 flex gap-2">
@@ -282,26 +195,60 @@ export default function ProfilePage() {
                         )}
                     </div>
 
+                    {/* Avatar Upload Container */}
+                    <div className="flex justify-center mb-6">
+                        <div
+                            className="relative w-24 h-24 rounded-full border-[3px] border-black/10 p-1 bg-white overflow-hidden shadow-sm cursor-pointer"
+                            onClick={() => {
+                                !isEditing && fileInputRef.current?.click();
+                            }}
+                        >
+                            <div className="w-full h-full rounded-full overflow-hidden bg-gray-100 flex items-center justify-center relative group">
+                                {user.photoURL ? (
+                                    <img src={user.photoURL} alt="User Avatar" className="w-full h-full object-cover" />
+                                ) : (
+                                    <span className="text-3xl font-black text-black/30">{formData.displayName?.charAt(0) || '?'}</span>
+                                )}
+                                {!isEditing && (
+                                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center transition-all">
+                                        <Camera className="w-5 h-5 text-white mb-0.5" />
+                                        <span className="text-[8px] font-bold text-white uppercase tracking-wider">Update</span>
+                                    </div>
+                                )}
+                                {uploading && (
+                                    <div className="absolute inset-0 bg-black/80 flex items-center justify-center">
+                                        <Loader2 className="w-5 h-5 text-white animate-spin" />
+                                    </div>
+                                )}
+                            </div>
+                            <input type="file" ref={fileInputRef} onChange={handleAvatarUpload} className="hidden" accept="image/*" />
+                        </div>
+                    </div>
+
                     {/* Bio and Info / Edit Mode */}
                     <div className="pt-2">
                         {isEditing ? (
                             <div className="space-y-6 max-w-sm mx-auto min-h-[300px] flex flex-col justify-center animate-in fade-in">
                                 <div>
-                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1 mb-2 block">Full Name</label>
+                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1 mb-1 block">Full Name</label>
+                                    <p className="text-[9px] text-rose-500 font-bold mb-2 ml-1">Editable only during registration.</p>
                                     <input
-                                        className="w-full bg-gray-50 dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-2xl px-5 py-3.5 text-black dark:text-white outline-none focus:border-black transition-all font-semibold text-center"
+                                        className="w-full bg-gray-50 dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-2xl px-5 py-3.5 text-black dark:text-white outline-none focus:border-black transition-all font-semibold text-center disabled:opacity-50 disabled:cursor-not-allowed"
                                         value={formData.displayName}
                                         onChange={e => setFormData({ ...formData, displayName: e.target.value })}
                                         placeholder="Your full name"
+                                        disabled={true}
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1 mb-2 block">Username</label>
+                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1 mb-1 block">Username</label>
+                                    <p className="text-[9px] text-rose-500 font-bold mb-2 ml-1">Editable only during registration.</p>
                                     <input
-                                        className="w-full bg-gray-50 dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-2xl px-5 py-3.5 text-black dark:text-white outline-none focus:border-black transition-all font-semibold text-center"
+                                        className="w-full bg-gray-50 dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-2xl px-5 py-3.5 text-black dark:text-white outline-none focus:border-black transition-all font-semibold text-center disabled:opacity-50 disabled:cursor-not-allowed"
                                         value={formData.username}
                                         onChange={e => setFormData({ ...formData, username: e.target.value })}
                                         placeholder="Your username"
+                                        disabled={true}
                                     />
                                 </div>
                                 <div>
@@ -324,7 +271,7 @@ export default function ProfilePage() {
                                 </div>
                             </div>
                         ) : (
-                            <div className="text-center animate-in fade-in min-h-[250px] flex flex-col justify-center">
+                            <div className="text-center animate-in fade-in min-h-[200px] flex flex-col justify-center">
                                 <h1 className="text-3xl font-black tracking-tight text-black dark:text-white mb-1">
                                     {formData.displayName || profile?.name || 'Set your name'}
                                 </h1>
@@ -444,27 +391,109 @@ export default function ProfilePage() {
                         )}
                     </div>
                 )}
+
+                {/* ===== DIGITAL ID CARD — Bottom of Profile ===== */}
+                {!isEditing && (
+                    <div className="flex flex-col items-center pt-6 pb-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                        <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-6 flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" /> Your Walia Digital ID
+                        </p>
+
+                        {/* Card Container — lanyard badge style */}
+                        <div className="relative w-full max-w-[300px]">
+                            {/* Lanyard string simulation */}
+                            <div className="flex justify-center mb-0 -mb-1 z-10 relative">
+                                <div className="w-0.5 h-10 bg-gradient-to-b from-gray-400 to-gray-300" />
+                            </div>
+                            {/* Clip / holder */}
+                            <div className="flex justify-center mb-0 z-10 relative">
+                                <div className="w-5 h-3 bg-gray-400 rounded-t-full" />
+                            </div>
+
+                            {/* The Badge Card */}
+                            <div className="relative bg-white rounded-[2rem] shadow-2xl border border-black/10 overflow-hidden p-7 pb-0 min-h-[320px] flex flex-col">
+
+                                {/* Abstract decorative shapes (black, top-right) */}
+                                <div className="absolute -top-6 -right-6 w-28 h-28 rounded-full border-[6px] border-black/8 pointer-events-none" />
+                                <div className="absolute top-10 -right-4 w-16 h-16 rounded-full border-[5px] border-black/5 pointer-events-none" />
+                                {/* Zigzag accent top-right */}
+                                <svg className="absolute top-4 right-4 opacity-10" width="60" height="60" viewBox="0 0 60 60" fill="none">
+                                    <polyline points="0,10 10,0 20,10 30,0 40,10 50,0 60,10" stroke="black" strokeWidth="3" fill="none" />
+                                    <polyline points="0,25 10,15 20,25 30,15 40,25 50,15 60,25" stroke="black" strokeWidth="3" fill="none" />
+                                </svg>
+
+                                {/* App logo + name (top-left) */}
+                                <div className="flex items-center gap-2.5 mb-6 relative z-10">
+                                    <div className="w-9 h-9 bg-black flex items-center justify-center rounded-[10px] overflow-hidden shadow-md">
+                                        <img src="/walia-logo.png" alt="Walia" className="w-full h-full object-cover" />
+                                    </div>
+                                    <div>
+                                        <span className="text-black font-black tracking-widest uppercase text-sm block leading-none">Walia</span>
+                                        <span className="text-black/40 text-[9px] font-bold uppercase tracking-wider">Platform</span>
+                                    </div>
+                                </div>
+
+                                {/* User full name — large hero text */}
+                                <div className="relative z-10 mb-1">
+                                    <h2 className="text-4xl font-black text-black tracking-tight leading-none break-words">
+                                        {formData.displayName || 'Your Name'}
+                                    </h2>
+                                </div>
+
+                                {/* Member since */}
+                                <p className="text-black/50 text-sm font-bold tracking-wider mt-2 relative z-10 mb-6">
+                                    Member since {memberSinceYear}
+                                </p>
+
+                                {/* Verified badge */}
+                                <div className="inline-flex items-center gap-1.5 relative z-10">
+                                    <ShieldCheck className="w-4 h-4 text-black/60" />
+                                    <span className="text-[11px] font-black text-black/50 uppercase tracking-widest">Verified Member</span>
+                                </div>
+
+                                {/* Bottom section — divider + avatar + website */}
+                                <div className="mt-auto relative">
+                                    {/* ID number row */}
+                                    <div className="border-t border-dashed border-black/10 mt-6 pt-4 pb-4 flex items-center justify-between">
+                                        <p className="text-black/30 text-[9px] font-mono font-bold tracking-widest uppercase">
+                                            ID: {waliaId}
+                                        </p>
+                                        <div className="bg-black/5 border border-black/10 rounded-full px-3 py-1">
+                                            <p className="text-black/50 text-[9px] font-bold tracking-widest">walia.app</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Avatar — positioned bottom-right, partially cropped */}
+                                    {user.photoURL && (
+                                        <div className="absolute bottom-0 right-4">
+                                            <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-white shadow-lg">
+                                                <img src={user.photoURL} alt="Avatar" className="w-full h-full object-cover" />
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </main>
 
-            {/* Delete Confirmation Modal (Concept 3: Minimalist) */}
+            {/* Delete Confirmation Modal */}
             <AnimatePresence>
                 {showDeleteConfirm && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowDeleteConfirm(false)} className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
                         <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative w-full max-w-[360px] p-8 rounded-[2rem] bg-[#F8F9FA] dark:bg-[#1E293B] shadow-2xl text-center flex flex-col items-center">
 
-                            {/* Warning Icon Container */}
                             <div className="w-[72px] h-[72px] bg-white dark:bg-black/20 rounded-3xl flex items-center justify-center text-red-500 mb-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 dark:border-white/5">
                                 <AlertTriangle className="w-8 h-8 stroke-[2px]" />
                             </div>
 
-                            {/* Titles */}
                             <h3 className="text-[22px] font-black text-black dark:text-white mb-2 tracking-tight">Delete Account</h3>
                             <p className="text-[#6B7280] dark:text-gray-400 text-[15px] font-medium leading-relaxed mb-8">
                                 You're going to delete your "Account"
                             </p>
 
-                            {/* Action Buttons */}
                             <div className="flex gap-4 w-full">
                                 <button
                                     onClick={() => setShowDeleteConfirm(false)}
