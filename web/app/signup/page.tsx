@@ -10,7 +10,7 @@ import {
 import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import {
     AlertCircle, ArrowLeft,
-    BookOpen, Brain, ChevronRight, Eye, EyeOff,
+    BookOpen, Brain, ChevronRight, ChevronDown, Eye, EyeOff,
     Lock, Mail, Sparkles, User
 } from 'lucide-react';
 import Image from 'next/image';
@@ -27,6 +27,24 @@ const STEPS = [
 
 const SCHOOL_LEVELS = [
     'High School', 'Undergraduate', 'Graduate / Masters', 'PhD', 'Self-taught', 'Professional', 'Other',
+];
+
+const COUNTRIES = [
+    "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Argentina", "Armenia", "Australia", "Austria", "Azerbaijan",
+    "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bhutan", "Bolivia", "Bosnia", "Botswana", "Brazil", "Brunei", "Bulgaria", "Burkina Faso", "Burundi",
+    "Cabo Verde", "Cambodia", "Cameroon", "Canada", "Central African Republic", "Chad", "Chile", "China", "Colombia", "Comoros", "Congo", "Costa Rica", "Croatia", "Cuba", "Cyprus", "Czechia",
+    "Denmark", "Djibouti", "Dominica", "Dominican Republic",
+    "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia", "Eswatini", "Ethiopia",
+    "Fiji", "Finland", "France", "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Greece", "Grenada", "Guatemala", "Guinea", "Guyana",
+    "Haiti", "Honduras", "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq", "Ireland", "Israel", "Italy", "Jamaica", "Japan", "Jordan",
+    "Kazakhstan", "Kenya", "Kiribati", "Kuwait", "Kyrgyzstan",
+    "Laos", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg",
+    "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Mauritania", "Mauritius", "Mexico", "Moldova", "Monaco", "Mongolia", "Montenegro", "Morocco", "Mozambique", "Myanmar",
+    "Namibia", "Nepal", "Netherlands", "New Zealand", "Nicaragua", "Niger", "Nigeria", "North Korea", "Norway", "Oman",
+    "Pakistan", "Palestine", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland", "Portugal", "Qatar",
+    "Romania", "Russia", "Rwanda", "Samoa", "San Marino", "Saudi Arabia", "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Slovakia", "Slovenia", "Somalia", "South Africa", "South Korea", "Spain", "Sri Lanka", "Sudan", "Sweden", "Switzerland", "Syria",
+    "Taiwan", "Tajikistan", "Tanzania", "Thailand", "Togo", "Tonga", "Tunisia", "Turkey", "Turkmenistan",
+    "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom", "United States", "Uruguay", "Uzbekistan", "Vanuatu", "Vatican City", "Venezuela", "Vietnam", "Yemen", "Zambia", "Zimbabwe"
 ];
 const USE_CASES = [
     { label: 'Study & Homework Help', emoji: '📚' },
@@ -289,14 +307,23 @@ export default function SignupPage() {
                             </div>
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">Age</label>
-                                <select value={age} onChange={e => setAge(e.target.value)} className={SELECT_BASE}>
-                                    <option value="" disabled>Select your age</option>
-                                    {Array.from({ length: 69 }, (_, i) => i + 12).map(num => <option key={num} value={num}>{num}</option>)}
-                                </select>
+                                <div className="relative">
+                                    <select value={age} onChange={e => setAge(e.target.value)} className={SELECT_BASE}>
+                                        <option value="" disabled>Select your age</option>
+                                        {Array.from({ length: 69 }, (_, i) => i + 12).map(num => <option key={num} value={num}>{num}</option>)}
+                                    </select>
+                                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                                </div>
                             </div>
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">Country</label>
-                                <input type="text" value={country} onChange={e => setCountry(e.target.value)} placeholder="e.g. Ethiopia" className="w-full px-5 py-3 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 focus:border-black dark:focus:border-white outline-none text-sm font-medium text-black dark:text-white placeholder:text-gray-400 dark:placeholder:text-white/20 transition-all" />
+                                <div className="relative">
+                                    <select value={country} onChange={e => setCountry(e.target.value)} className={SELECT_BASE}>
+                                        <option value="" disabled>Select your country</option>
+                                        {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
+                                    </select>
+                                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                                </div>
                             </div>
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">Phone Number</label>
