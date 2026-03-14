@@ -21,6 +21,7 @@ import {
 } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { AnimatePresence, motion } from 'framer-motion';
+import Image from 'next/image';
 import {
     AlertTriangle,
     Camera,
@@ -86,7 +87,9 @@ function WaliaIDCard({ user, profile, formData, waliaId, isFlipped, setIsFlipped
                             {/* Header row */}
                             <div className="flex items-center justify-between mb-4">
                                 <div className="flex items-center gap-2">
-                                    <div className="w-8 h-8 rounded-[8px] bg-black dark:bg-white flex items-center justify-center font-black text-white dark:text-black text-base shadow-sm">W</div>
+                                    <div className="w-8 h-8 rounded-[8px] bg-black dark:bg-white border border-gray-100 dark:border-white/10 flex items-center justify-center font-black text-white dark:text-black text-base shadow-sm overflow-hidden">
+                                        <Image src="/walia-logo.png" alt="Walia" width={20} height={20} unoptimized className="object-contain" />
+                                    </div>
                                     <div>
                                         <p className="text-black dark:text-white font-black text-xs tracking-widest uppercase">Walia</p>
                                         <p className="text-gray-400 dark:text-gray-500 text-[9px] font-bold uppercase tracking-wider">AI Platform</p>
@@ -152,8 +155,10 @@ function WaliaIDCard({ user, profile, formData, waliaId, isFlipped, setIsFlipped
                         <div className="absolute inset-0 bg-[#0f172a]" />
                         <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-500 via-amber-300 to-amber-500" />
 
-                        {/* Giant W watermark */}
-                        <div className="absolute -left-10 -bottom-12 text-[220px] font-black leading-none text-white/[0.04] tracking-tighter pointer-events-none">W</div>
+                        {/* Giant Image watermark */}
+                        <div className="absolute -left-10 -bottom-12 select-none pointer-events-none opacity-[0.04] grayscale">
+                            <Image src="/walia-logo.png" alt="" width={220} height={220} unoptimized className="object-contain" />
+                        </div>
 
                         <div className="absolute inset-0 p-6 flex flex-col items-center justify-center text-white">
                             {/* Barcode art */}
@@ -278,7 +283,9 @@ export default function ProfilePage() {
                         {/* Banner */}
                         <div className="h-24 bg-gradient-to-br from-gray-900 via-gray-800 to-black dark:from-[#0f172a] dark:to-[#1e293b] relative">
                             <div className="absolute inset-0 opacity-30">
-                                <div className="absolute top-2 right-6 text-[100px] font-black leading-none text-white/10 tracking-tighter">W</div>
+                                <div className="absolute top-2 right-6 select-none pointer-events-none opacity-[0.04] grayscale">
+                                    <Image src="/walia-logo.png" alt="" width={100} height={100} unoptimized className="object-contain" />
+                                </div>
                             </div>
                         </div>
 

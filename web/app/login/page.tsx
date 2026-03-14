@@ -81,12 +81,16 @@ function LoginContent() {
 
             {/* ── LEFT PANEL (desktop only) ── */}
             <div className="hidden lg:flex flex-col justify-between w-[45%] bg-[#0A101D] p-14 relative overflow-hidden">
-                {/* Background W */}
-                <div className="absolute -left-20 bottom-10 text-[500px] font-black leading-none text-white/[0.03] tracking-tighter pointer-events-none select-none">W</div>
+                {/* Background Logo */}
+                <div className="absolute -left-20 bottom-10 select-none pointer-events-none opacity-[0.03] grayscale">
+                    <Image src="/walia-logo.png" alt="" width={400} height={400} unoptimized className="object-contain" />
+                </div>
 
                 {/* Logo */}
                 <Link href="/" className="flex items-center gap-3 group relative z-10">
-                    <div className="w-10 h-10 rounded-[10px] bg-white flex items-center justify-center font-black text-xl shadow-lg">W</div>
+                    <div className="w-10 h-10 rounded-[10px] bg-white border border-white/10 flex items-center justify-center shadow-lg font-black text-xl leading-none overflow-hidden group-hover:scale-105 transition-transform">
+                        <Image src="/walia-logo.png" alt="Walia" width={28} height={28} unoptimized className="object-contain" />
+                    </div>
                     <span className="text-white font-black text-xl tracking-widest uppercase">Walia</span>
                 </Link>
 
@@ -122,7 +126,9 @@ function LoginContent() {
             <div className="flex-1 flex flex-col items-center justify-center p-6 lg:p-16 relative">
                 {/* Mobile logo */}
                 <Link href="/" className="lg:hidden absolute top-7 left-6 flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-[10px] bg-black dark:bg-white flex items-center justify-center font-black text-white dark:text-black text-base shadow-md">W</div>
+                    <div className="w-9 h-9 rounded-[10px] bg-white border border-gray-100 dark:border-white/10 flex items-center justify-center shadow-md font-black text-base overflow-hidden">
+                        <Image src="/walia-logo.png" alt="Walia" width={24} height={24} unoptimized className="object-contain" />
+                    </div>
                     <span className="text-black dark:text-white font-black text-lg tracking-widest uppercase">Walia</span>
                 </Link>
 

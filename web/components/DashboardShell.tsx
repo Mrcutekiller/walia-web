@@ -78,17 +78,17 @@ export default function DashboardShell({ children }: { children: React.ReactNode
                 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
                 lg:translate-x-0 lg:static lg:z-auto overflow-hidden
             `}>
-                {/* Large Background W Element */}
-                <div className="absolute -left-16 top-1/2 -translate-y-1/2 select-none pointer-events-none opacity-[0.03] dark:opacity-[0.05]">
-                    <span className="text-[400px] font-black leading-none text-black dark:text-white tracking-tighter">W</span>
+                {/* Large Background Logo */}
+                <div className="absolute -left-16 top-1/2 -translate-y-1/2 select-none pointer-events-none opacity-[0.03] dark:opacity-[0.05] grayscale">
+                    <Image src="/walia-logo.png" alt="" width={300} height={300} unoptimized className="object-contain" />
                 </div>
 
                 <div className="relative z-10 flex flex-col h-full">
                     {/* Logo */}
                     <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-white/5 shrink-0">
                         <Link href="/dashboard" className="flex items-center gap-3 group">
-                            <div className="w-10 h-10 rounded-[10px] bg-black dark:bg-white text-white dark:text-black flex items-center justify-center group-hover:scale-105 transition-transform overflow-hidden shadow-lg shadow-black/20 font-black text-xl leading-none">
-                                W
+                            <div className="w-10 h-10 rounded-[10px] bg-white border border-gray-100 dark:border-white/10 flex items-center justify-center group-hover:scale-105 transition-transform overflow-hidden shadow-lg shadow-black/5 font-black text-xl leading-none">
+                                <Image src="/walia-logo.png" alt="Walia" width={28} height={28} unoptimized className="object-contain" />
                             </div>
                             <span className="text-xl font-black text-black dark:text-white tracking-widest uppercase">Walia</span>
                         </Link>

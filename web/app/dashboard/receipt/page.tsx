@@ -29,9 +29,9 @@ export default function ReceiptPage() {
             {/* Receipt Card */}
             <div className="w-full max-w-md bg-white rounded-[2rem] shadow-2xl shadow-blue-900/5 border border-gray-100 overflow-hidden relative animate-in slide-in-from-bottom-8 duration-500">
 
-                {/* Background Watermark "W" */}
-                <div className="absolute inset-0 flex items-center justify-center opacity-[0.02] pointer-events-none select-none z-0">
-                    <span className="font-black text-[280px]">W</span>
+                {/* Background Watermark Logo */}
+                <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none select-none z-0 grayscale">
+                    <Image src="/walia-logo.png" alt="" width={250} height={250} unoptimized className="object-contain" />
                 </div>
 
                 <div className="p-8 md:p-10 relative z-10 flex flex-col items-center text-center">
