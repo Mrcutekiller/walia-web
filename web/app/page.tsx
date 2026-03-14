@@ -82,7 +82,7 @@ export default function Home() {
   return (
     <>
       <Navbar />
-      <main className="w-full overflow-hidden bg-white">
+      <main className="w-full overflow-hidden bg-white dark:bg-[#0A0A18] transition-colors duration-300">
 
         {/* ━━━━━━━━━━ HERO — FULL SCREEN VIDEO BACKGROUND ━━━━━━━━━━ */}
         <section className="relative w-full h-screen min-h-[600px] overflow-hidden">
@@ -184,18 +184,18 @@ export default function Home() {
 
 
         {/* ━━━━━━━━━━ FEATURES SECTION ━━━━━━━━━━ */}
-        <section className="py-32 bg-white">
+        <section className="py-32 bg-white dark:bg-[#0A0A18] transition-colors duration-300">
           <div className="container mx-auto px-6 md:px-12">
             <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-20 gap-6">
               <div className="space-y-4 reveal">
-                <div className="inline-flex items-center px-3 py-1.5 rounded-full bg-black/5 border border-black/10 text-[10px] font-black uppercase text-black tracking-widest">
+                <div className="inline-flex items-center px-3 py-1.5 rounded-full bg-black/5 dark:bg-white/10 border border-black/10 dark:border-white/10 text-[10px] font-black uppercase text-black dark:text-white tracking-widest transition-colors">
                   <Zap className="w-3 h-3 mr-2" /> Features
                 </div>
-                <h2 className="text-5xl md:text-6xl font-black text-black tracking-tight leading-tight">
+                <h2 className="text-5xl md:text-6xl font-black text-black dark:text-white tracking-tight leading-tight transition-colors">
                   Everything<br />you need.
                 </h2>
               </div>
-              <p className="text-base text-gray-500 max-w-sm font-medium leading-relaxed reveal-right">
+              <p className="text-base text-gray-500 dark:text-gray-400 max-w-sm font-medium leading-relaxed reveal-right transition-colors">
                 From AI chat to community tools, Walia gives you the unfair advantage in your academic journey.
               </p>
             </div>
@@ -204,14 +204,14 @@ export default function Home() {
                 <Link
                   key={i}
                   href={`/features/${F.slug}`}
-                  className="group reveal block p-8 rounded-3xl bg-gray-50 border border-gray-200 hover:border-black/25 transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.08)] overflow-hidden no-underline"
+                  className="group reveal block p-8 rounded-3xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:border-black/25 dark:hover:border-white/30 transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.08)] overflow-hidden no-underline"
                 >
-                  <div className="w-14 h-14 rounded-2xl bg-black flex items-center justify-center mb-6 transition-transform group-hover:scale-110">
-                    <F.icon className="w-7 h-7 text-white" />
+                  <div className="w-14 h-14 rounded-2xl bg-black dark:bg-white flex items-center justify-center mb-6 transition-transform group-hover:scale-110">
+                    <F.icon className="w-7 h-7 text-white dark:text-black" />
                   </div>
-                  <h3 className="text-xl font-bold text-black mb-3">{F.label}</h3>
-                  <p className="text-sm text-gray-500 leading-relaxed font-medium">{F.desc}</p>
-                  <div className="mt-6 flex items-center text-xs font-bold uppercase tracking-widest text-gray-400 group-hover:text-black transition-colors">
+                  <h3 className="text-xl font-bold text-black dark:text-white mb-3 transition-colors">{F.label}</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed font-medium transition-colors">{F.desc}</p>
+                  <div className="mt-6 flex items-center text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 group-hover:text-black dark:group-hover:text-white transition-colors">
                     Learn More <ChevronRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                   </div>
                 </Link>
@@ -291,16 +291,16 @@ export default function Home() {
 
 
         {/* ━━━━━━━━━━ LIVE REVIEWS SECTION ━━━━━━━━━━ */}
-        <section className="py-32 bg-white">
+        <section className="py-32 bg-white dark:bg-[#0A0A18] transition-colors duration-300">
           <div className="container mx-auto px-6 md:px-12">
             <div className="text-center mb-16 space-y-4 reveal">
-              <div className="inline-flex items-center px-3 py-1.5 rounded-full bg-black/5 border border-black/10 text-[10px] font-black uppercase text-black tracking-widest">
+              <div className="inline-flex items-center px-3 py-1.5 rounded-full bg-black/5 dark:bg-white/10 border border-black/10 dark:border-white/10 text-[10px] font-black uppercase text-black dark:text-white tracking-widest transition-colors">
                 ⭐ Student Reviews
               </div>
-              <h2 className="text-4xl md:text-5xl font-black text-black tracking-tight">
+              <h2 className="text-4xl md:text-5xl font-black text-black dark:text-white tracking-tight transition-colors">
                 Trusted worldwide.
               </h2>
-              <p className="text-base text-gray-500 max-w-md mx-auto font-medium">
+              <p className="text-base text-gray-500 dark:text-gray-400 max-w-md mx-auto font-medium transition-colors">
                 Real reviews from Walia users — login to add yours.
               </p>
             </div>
@@ -319,7 +319,7 @@ export default function Home() {
                 {reviews.map((review) => (
                   <div
                     key={review.id}
-                    className="reveal p-8 rounded-3xl bg-gray-50 border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-500"
+                    className="reveal p-8 rounded-3xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:shadow-xl hover:-translate-y-1 transition-all duration-500"
                   >
                     {/* Stars */}
                     <div className="flex items-center gap-1 mb-4">
@@ -329,10 +329,10 @@ export default function Home() {
                       <span className="text-xs text-gray-400 ml-2 font-medium">{review.rating}.0</span>
                     </div>
                     {/* Text */}
-                    <p className="text-sm text-gray-600 leading-relaxed font-medium mb-6">"{review.comment}"</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed font-medium mb-6 transition-colors">"{review.comment}"</p>
                     {/* Author */}
-                    <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
-                      <div className="w-9 h-9 rounded-full bg-black overflow-hidden flex items-center justify-center shrink-0">
+                    <div className="flex items-center gap-3 pt-4 border-t border-gray-100 dark:border-white/10 transition-colors">
+                      <div className="w-9 h-9 rounded-full bg-black dark:bg-white/10 overflow-hidden flex items-center justify-center shrink-0">
                         {review.userPhotoURL ? (
                           <img src={review.userPhotoURL} alt={review.userName} className="w-full h-full object-cover" />
                         ) : (
@@ -340,8 +340,8 @@ export default function Home() {
                         )}
                       </div>
                       <div>
-                        <p className="text-sm font-black text-black">{review.userName}</p>
-                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">{formatTimeAgo(review.createdAt)}</p>
+                        <p className="text-sm font-black text-black dark:text-white transition-colors">{review.userName}</p>
+                        <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider transition-colors">{formatTimeAgo(review.createdAt)}</p>
                       </div>
                     </div>
                   </div>
@@ -353,7 +353,7 @@ export default function Home() {
             <div className="text-center mt-12 reveal">
               <Link
                 href="/login?redirect=review"
-                className="inline-flex items-center px-8 py-4 rounded-2xl bg-black text-white font-bold hover:bg-zinc-800 transition-all hover:-translate-y-1 shadow-lg"
+                className="inline-flex items-center px-8 py-4 rounded-2xl bg-black dark:bg-white text-white dark:text-black font-bold hover:bg-zinc-800 dark:hover:bg-gray-200 transition-all hover:-translate-y-1 shadow-lg"
               >
                 <Star className="w-5 h-5 mr-3" />
                 Leave Your Review
@@ -364,7 +364,7 @@ export default function Home() {
 
 
         {/* ━━━━━━━━━━ CTA SECTION ━━━━━━━━━━ */}
-        <section className="py-32 bg-gray-50">
+        <section className="py-32 bg-gray-50 dark:bg-[#05050A] transition-colors duration-300">
           <div className="container mx-auto px-6 md:px-12">
             <div className="relative max-w-5xl mx-auto p-16 md:p-24 rounded-[48px] bg-black overflow-hidden text-center shadow-2xl shadow-black/15 reveal-scale">
               <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-white/5 blur-3xl" />
