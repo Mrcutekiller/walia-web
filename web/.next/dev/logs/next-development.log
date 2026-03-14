@@ -1,0 +1,618 @@
+[00:00:05.902] Server  LOG     ✓ Ready in 4.7s
+[00:00:14.383] Server  LOG     ○ Compiling /dashboard/profile ...
+[00:00:46.315] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:46.826] Browser ERROR   A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/login" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <SegmentViewNode type="layout" pagePath="/web/app/l...">
+                      <SegmentTrieNode>
+                      <link>
+                      <script>
+                      <script>
+                      <script>
+                      <script>
+                      <script>
+                      <script>
+                      <script>
+                      <script>
+                      <RootLayout>
+                        <html lang="en">
+                          <body
++                           className="inter_5972bc34-module__OU16Qa__className bg-white dark:bg-[#0A0A18] text-black ..."
+-                           className="inter_5972bc34-module__OU16Qa__className bg-white dark:bg-[#0A0A18] text-black ..."
+                          >
+                  ...
+
+[00:01:01.761] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:01:12.413] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:01:26.862] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:01:36.545] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:02:07.384] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:02:40.949] Browser WARN    Image with src "/walia-logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[00:03:57.155] Browser ERROR   Login error: {"code":"auth/invalid-credential","customData":{},"name":"FirebaseError"}
+[00:04:10.979] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:04:42.483] Browser WARN    Image with src "/walia-logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[00:04:43.241] Browser WARN    Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[00:05:39.498] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:06:08.078] Browser WARN    Image with src "/walia-logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[00:06:23.817] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:07:00.445] Browser WARN    Image with src "/walia-logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[00:07:50.413] Browser WARN    Image with src "/avatars/avatar6.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[00:07:50.413] Browser WARN    Image with src "/avatars/avatar3.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[00:07:50.413] Browser WARN    Image with src "/avatars/avatar2.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[00:07:50.413] Browser WARN    Image with src "/avatars/avatar5.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[00:07:50.413] Browser WARN    Image with src "/avatars/avatar7.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[00:07:50.413] Browser WARN    Image with src "/avatars/avatar1.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[00:07:50.413] Browser WARN    Image with src "/avatars/avatar8.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[00:07:50.413] Browser WARN    Image with src "/avatars/avatar9.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[00:07:50.413] Browser WARN    Image with src "/avatars/avatar4.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[00:10:00.778] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:10:33.452] Browser WARN    Image with src "/walia-logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[00:15:31.524] Browser WARN    Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[00:16:23.047] Server  LOG     ✓ Compiled in 995ms
+[00:16:25.340] Server  LOG     ✓ Compiled in 601ms
+[00:16:37.558] Server  LOG     ✓ Compiled in 12.4s
+[00:16:54.079] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:16:54.898] Browser ERROR   ./web/app/dashboard/profile/page.tsx:33:1
+Parsing ecmascript source code failed
+  31 |     Trash2,
+  32 |     User
+> 33 | =======
+     | ^^^^^^^
+  34 |     MessageCircle,
+  35 |     Settings,
+  36 |     Share2,
+
+Merge conflict marker encountered.
+
+Import traces:
+  Client Component Browser:
+    ./web/app/dashboard/profile/page.tsx [Client Component Browser]
+    ./web/app/dashboard/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./web/app/dashboard/profile/page.tsx [Client Component SSR]
+    ./web/app/dashboard/profile/page.tsx [Server Component]
+[00:16:54.898] Browser ERROR   ./web/components/DashboardShell.tsx:14:1
+Parsing ecmascript source code failed
+  12 |     User,
+  13 |     Wrench,
+> 14 | =======
+     | ^^^^^^^
+  15 | import { useAuth } from '@/context/AuthContext';
+  16 | import { useNotifications } from '@/context/NotificationContext';
+  17 | import { useTheme } from '@/context/ThemeContext';
+
+Merge conflict marker encountered.
+
+Import traces:
+  Client Component Browser:
+    ./web/components/DashboardShell.tsx [Client Component Browser]
+    ./web/app/dashboard/layout.tsx [Client Component Browser]
+    ./web/app/dashboard/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./web/components/DashboardShell.tsx [Client Component SSR]
+    ./web/app/dashboard/layout.tsx [Client Component SSR]
+    ./web/app/dashboard/layout.tsx [Server Component]
+[00:16:54.898] Browser ERROR   ./web/components/DashboardShell.tsx:14:1
+Parsing ecmascript source code failed
+  12 |     User,
+  13 |     Wrench,
+> 14 | =======
+     | ^^^^^^^
+  15 | import { useAuth } from '@/context/AuthContext';
+  16 | import { useNotifications } from '@/context/NotificationContext';
+  17 | import { useTheme } from '@/context/ThemeContext';
+
+Merge conflict marker encountered.
+
+Import traces:
+  Client Component Browser:
+    ./web/components/DashboardShell.tsx [Client Component Browser]
+    ./web/app/dashboard/layout.tsx [Client Component Browser]
+    ./web/app/dashboard/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./web/components/DashboardShell.tsx [Client Component SSR]
+    ./web/app/dashboard/layout.tsx [Client Component SSR]
+    ./web/app/dashboard/layout.tsx [Server Component]
+[00:16:54.898] Browser ERROR   ./web/app/dashboard/ai/page.tsx:32:1
+Parsing ecmascript source code failed
+  30 |     Trash2,
+  31 |     User
+> 32 | =======
+     | ^^^^^^^
+  33 |     MessageSquarePlus,
+  34 |     Mic,
+  35 |     Paperclip,
+
+Merge conflict marker encountered.
+
+Import traces:
+  Client Component Browser:
+    ./web/app/dashboard/ai/page.tsx [Client Component Browser]
+    ./web/app/dashboard/ai/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./web/app/dashboard/ai/page.tsx [Client Component SSR]
+    ./web/app/dashboard/ai/page.tsx [Server Component]
+[00:16:54.898] Browser ERROR   ./web/components/DashboardShell.tsx:14:1
+Parsing ecmascript source code failed
+  12 |     User,
+  13 |     Wrench,
+> 14 | =======
+     | ^^^^^^^
+  15 | import { useAuth } from '@/context/AuthContext';
+  16 | import { useNotifications } from '@/context/NotificationContext';
+  17 | import { useTheme } from '@/context/ThemeContext';
+
+Merge conflict marker encountered.
+
+Import traces:
+  Client Component Browser:
+    ./web/components/DashboardShell.tsx [Client Component Browser]
+    ./web/app/dashboard/layout.tsx [Client Component Browser]
+    ./web/app/dashboard/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./web/components/DashboardShell.tsx [Client Component SSR]
+    ./web/app/dashboard/layout.tsx [Client Component SSR]
+    ./web/app/dashboard/layout.tsx [Server Component]
+[00:16:54.898] Browser ERROR   ./web/components/DashboardShell.tsx:14:1
+Parsing ecmascript source code failed
+  12 |     User,
+  13 |     Wrench,
+> 14 | =======
+     | ^^^^^^^
+  15 | import { useAuth } from '@/context/AuthContext';
+  16 | import { useNotifications } from '@/context/NotificationContext';
+  17 | import { useTheme } from '@/context/ThemeContext';
+
+Merge conflict marker encountered.
+
+Import traces:
+  Client Component Browser:
+    ./web/components/DashboardShell.tsx [Client Component Browser]
+    ./web/app/dashboard/layout.tsx [Client Component Browser]
+    ./web/app/dashboard/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./web/components/DashboardShell.tsx [Client Component SSR]
+    ./web/app/dashboard/layout.tsx [Client Component SSR]
+    ./web/app/dashboard/layout.tsx [Server Component]
+[00:16:54.898] Browser ERROR   ./web/app/dashboard/profile/page.tsx:33:1
+Parsing ecmascript source code failed
+  31 |     Trash2,
+  32 |     User
+> 33 | =======
+     | ^^^^^^^
+  34 |     MessageCircle,
+  35 |     Settings,
+  36 |     Share2,
+
+Merge conflict marker encountered.
+
+Import traces:
+  Client Component Browser:
+    ./web/app/dashboard/profile/page.tsx [Client Component Browser]
+    ./web/app/dashboard/profile/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./web/app/dashboard/profile/page.tsx [Client Component SSR]
+    ./web/app/dashboard/profile/page.tsx [Server Component]
+[00:16:54.898] Browser ERROR   ./web/components/DashboardShell.tsx:14:1
+Parsing ecmascript source code failed
+  12 |     User,
+  13 |     Wrench,
+> 14 | =======
+     | ^^^^^^^
+  15 | import { useAuth } from '@/context/AuthContext';
+  16 | import { useNotifications } from '@/context/NotificationContext';
+  17 | import { useTheme } from '@/context/ThemeContext';
+
+Merge conflict marker encountered.
+
+Import traces:
+  Client Component Browser:
+    ./web/components/DashboardShell.tsx [Client Component Browser]
+    ./web/app/dashboard/layout.tsx [Client Component Browser]
+    ./web/app/dashboard/layout.tsx [Server Component]
+
+  Client Component SSR:
+    ./web/components/DashboardShell.tsx [Client Component SSR]
+    ./web/app/dashboard/layout.tsx [Client Component SSR]
+    ./web/app/dashboard/layout.tsx [Server Component]
+[00:16:54.898] Browser ERROR   ./web/app/dashboard/ai/page.tsx:32:1
+Parsing ecmascript source code failed
+  30 |     Trash2,
+  31 |     User
+> 32 | =======
+     | ^^^^^^^
+  33 |     MessageSquarePlus,
+  34 |     Mic,
+  35 |     Paperclip,
+
+Merge conflict marker encountered.
+
+Import traces:
+  Client Component Browser:
+    ./web/app/dashboard/ai/page.tsx [Client Component Browser]
+    ./web/app/dashboard/ai/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./web/app/dashboard/ai/page.tsx [Client Component SSR]
+    ./web/app/dashboard/ai/page.tsx [Server Component]
+[00:16:55.300] Browser ERROR   A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/dashboard..." notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <SegmentViewNode type="layout" pagePath="/web/app/l...">
+                      <SegmentTrieNode>
+                      <link>
+                      <script>
+                      <script>
+                      <script>
+                      <script>
+                      <script>
+                      <script>
+                      <script>
+                      <script>
+                      <script>
+                      <script>
+                      <script>
+                      <script>
+                      <script>
+                      <RootLayout>
+                        <html lang="en">
+                          <body
+                            className="inter_5972bc34-module__OU16Qa__className bg-white dark:bg-[#0A0A18] text-black ..."
+-                           style={{overflow-x:"hidden",overflow-y:"hidden"}}
+                          >
+                  ...
+
+[00:16:57.047] Browser ERROR   unhandledRejection: FirebaseError: Expected first argument to doc() to be a CollectionReference, a DocumentReference or FirebaseFirestore
+[00:17:07.769] Server  LOG     ✓ Finished filesystem cache database compaction in 10.3s
+[00:17:11.108] Server  LOG     ✓ Compiled in 10.5s
+[00:17:18.158] Server  WARN    ⚠ Fast Refresh had to perform a full reload when ./web/context/AuthContext.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[00:17:22.291] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:18:01.297] Browser WARN    Image with src "/walia-logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[00:25:46.039] Server  LOG     ✓ Compiled in 3.2s
+[00:47:41.347] Server  LOG     ✓ Compiled in 1189ms
+[00:56:40.295] Server  LOG     ✓ Compiled in 735ms
+[20:57:40.869] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[20:58:23.082] Browser WARN    Image with src "/walia-logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[21:11:09.096] Server  LOG     ✓ Compiled in 1046ms
+[21:30:01.276] Browser WARN    Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[21:35:40.332] Server  LOG     ✓ Compiled in 362ms
+[21:37:55.150] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[21:37:56.072] Browser ERROR   A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/dashboard/ai" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <SegmentViewNode type="layout" pagePath="/web/app/l...">
+                      <SegmentTrieNode>
+                      <link>
+                      <script>
+                      <script>
+                      <script>
+                      <script>
+                      <script>
+                      <script>
+                      <script>
+                      <script>
+                      <RootLayout>
+                        <html lang="en">
+                          <body
++                           className="inter_5972bc34-module__OU16Qa__className bg-white dark:bg-[#0A0A18] text-black ..."
+-                           className="inter_5972bc34-module__OU16Qa__className bg-white dark:bg-[#0A0A18] text-black ..."
+                          >
+                  ...
+
+[21:38:10.944] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[21:38:25.276] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[21:38:37.138] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[21:39:02.449] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[21:39:16.640] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[21:40:00.240] Browser WARN    Image with src "/walia-logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[21:40:20.885] Server  WARN    ⚠ Cross origin request detected from 127.0.0.1 to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
+Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+[21:40:20.955] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[21:40:21.914] Browser WARN    Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[21:40:22.019] Browser WARN    Image with src "/walia-logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[21:41:31.985] Browser WARN    Image with src "/avatars/avatar1.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[21:41:31.985] Browser WARN    Image with src "/avatars/avatar2.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[21:41:31.985] Browser WARN    Image with src "/avatars/avatar3.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[21:41:31.985] Browser WARN    Image with src "/avatars/avatar4.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[21:41:31.985] Browser WARN    Image with src "/avatars/avatar5.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[21:41:31.985] Browser WARN    Image with src "/avatars/avatar6.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[21:41:31.985] Browser WARN    Image with src "/avatars/avatar7.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[21:41:31.985] Browser WARN    Image with src "/avatars/avatar8.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[21:41:31.985] Browser WARN    Image with src "/avatars/avatar9.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[21:43:13.540] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[21:43:40.290] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[21:43:53.373] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[21:44:10.785] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[21:44:20.431] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[21:44:20.968] Browser ERROR   A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <HotReload globalError={[...]} webSocket={WebSocket} staticIndicatorState={{pathname:null, ...}}>
+      <AppDevOverlayErrorBoundary globalError={[...]}>
+        <ReplaySsrOnlyErrors>
+        <DevRootHTTPAccessFallbackBoundary>
+          <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+            <HTTPAccessFallbackErrorBoundary pathname="/dashboard/ai" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+              <RedirectBoundary>
+                <RedirectErrorBoundary router={{...}}>
+                  <Head>
+                  <__next_root_layout_boundary__>
+                    <SegmentViewNode type="layout" pagePath="/web/app/l...">
+                      <SegmentTrieNode>
+                      <link>
+                      <script>
+                      <script>
+                      <script>
+                      <script>
+                      <script>
+                      <script>
+                      <script>
+                      <script>
+                      <RootLayout>
+                        <html lang="en">
+                          <body
++                           className="inter_5972bc34-module__OU16Qa__className bg-white dark:bg-[#0A0A18] text-black ..."
+-                           className="inter_5972bc34-module__OU16Qa__className bg-white dark:bg-[#0A0A18] text-black ..."
+                          >
+                  ...
+
+[21:44:46.473] Browser WARN    Image with src "/walia-logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[21:45:06.751] Browser WARN    Image with src "/walia-logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[21:45:11.560] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[21:45:22.962] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[21:45:32.923] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[21:45:42.324] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[21:46:06.300] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[21:46:20.047] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[21:46:49.738] Browser WARN    Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[21:47:07.132] Server  LOG     ✓ Finished filesystem cache database compaction in 12.6s
+[21:47:17.581] Browser WARN    Image with src "/walia-logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[21:47:34.156] Browser WARN    Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[21:48:07.966] Server  LOG     ✓ Compiled in 1061ms
+[21:48:47.677] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[21:49:07.450] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[21:49:18.830] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[21:49:43.479] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[21:50:07.212] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[21:50:23.516] Browser WARN    Image with src "/walia-logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[21:50:36.854] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[21:50:44.394] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[21:51:04.529] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[21:51:39.219] Browser WARN    Image with src "/walia-logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[21:56:34.452] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[21:57:04.959] Browser ERROR   Google sign-in error: {"code":"auth/popup-closed-by-user","customData":{},"name":"FirebaseError"}
+[21:57:15.354] Browser WARN    Image with src "/walia-logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[21:59:22.971] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[21:59:57.891] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[22:00:39.737] Browser WARN    Image with src "/walia-logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[22:00:50.932] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[22:01:36.117] Browser WARN    Image with src "/walia-logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[22:02:38.145] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[22:03:23.996] Browser WARN    Image with src "/walia-logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[22:05:08.868] Server  LOG     ✓ Compiled in 2.8s
+[22:13:34.159] Server  LOG     ✓ Compiled in 2.6s
+[22:14:11.584] Server  LOG     ✓ Compiled in 4s
+[22:16:06.506] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[22:16:44.187] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[22:17:33.241] Browser WARN    Image with src "/walia-logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[22:19:33.682] Browser WARN    Image with src "/avatars/avatar2.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:19:33.683] Browser WARN    Image with src "/avatars/avatar1.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:19:33.683] Browser WARN    Image with src "/avatars/avatar3.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:19:33.683] Browser WARN    Image with src "/avatars/avatar5.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:19:33.683] Browser WARN    Image with src "/avatars/avatar4.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:19:33.683] Browser WARN    Image with src "/avatars/avatar6.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:19:33.683] Browser WARN    Image with src "/avatars/avatar7.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:19:33.683] Browser WARN    Image with src "/avatars/avatar9.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:19:33.832] Browser WARN    Image with src "/avatars/avatar8.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:24:18.136] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[22:24:45.552] Browser WARN    Image with src "/walia-logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[22:24:45.552] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[22:24:46.778] Browser WARN    Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[22:25:42.785] Browser WARN    Image with src "/walia-logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[22:27:51.539] Browser WARN    Image with src "/avatars/avatar1.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:27:51.541] Browser WARN    Image with src "/avatars/avatar2.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:27:51.542] Browser WARN    Image with src "/avatars/avatar3.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:27:51.542] Browser WARN    Image with src "/avatars/avatar4.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:27:51.542] Browser WARN    Image with src "/avatars/avatar5.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:27:51.542] Browser WARN    Image with src "/avatars/avatar6.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:27:51.542] Browser WARN    Image with src "/avatars/avatar7.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:27:51.542] Browser WARN    Image with src "/avatars/avatar8.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:27:51.542] Browser WARN    Image with src "/avatars/avatar9.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:33:33.353] Server  LOG     ✓ Compiled in 2.9s
+[22:34:40.949] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[22:35:03.705] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[22:35:20.104] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[22:35:41.028] Browser WARN    Image with src "/walia-logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[22:35:53.034] Browser WARN    Image with src "/walia-logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[22:38:03.688] Browser WARN    Image with src "/avatars/avatar1.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:38:03.688] Browser WARN    Image with src "/avatars/avatar2.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:38:03.688] Browser WARN    Image with src "/avatars/avatar3.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:38:03.688] Browser WARN    Image with src "/avatars/avatar4.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:38:03.689] Browser WARN    Image with src "/avatars/avatar5.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:38:03.689] Browser WARN    Image with src "/avatars/avatar6.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:38:03.689] Browser WARN    Image with src "/avatars/avatar7.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:38:03.689] Browser WARN    Image with src "/avatars/avatar8.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:38:03.689] Browser WARN    Image with src "/avatars/avatar9.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:44:18.397] Browser ERROR   Signup error: {"code":"auth/email-already-in-use","customData":{"_tokenResponse":{"error":{"code":400,"errors":["[Object]"],"message":"EMAIL_EXISTS"}},"appName":"[DEFAULT]"},"name":"FirebaseError"}
+[22:44:47.121] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[22:45:28.709] Browser WARN    Image with src "/walia-logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[22:47:27.280] Browser WARN    Image with src "/avatars/avatar1.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:47:27.280] Browser WARN    Image with src "/avatars/avatar2.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:47:27.281] Browser WARN    Image with src "/avatars/avatar3.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:47:27.281] Browser WARN    Image with src "/avatars/avatar4.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:47:27.905] Browser WARN    Image with src "/avatars/avatar6.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:47:27.905] Browser WARN    Image with src "/avatars/avatar5.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:47:27.905] Browser WARN    Image with src "/avatars/avatar7.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:47:27.905] Browser WARN    Image with src "/avatars/avatar8.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:47:27.905] Browser WARN    Image with src "/avatars/avatar9.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:51:07.279] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[22:51:51.912] Browser WARN    Image with src "/walia-logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[22:53:15.013] Browser WARN    Image with src "/avatars/avatar1.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:53:15.013] Browser WARN    Image with src "/avatars/avatar2.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:53:15.013] Browser WARN    Image with src "/avatars/avatar3.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:53:15.013] Browser WARN    Image with src "/avatars/avatar4.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:53:15.013] Browser WARN    Image with src "/avatars/avatar5.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:53:15.013] Browser WARN    Image with src "/avatars/avatar6.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:53:15.013] Browser WARN    Image with src "/avatars/avatar7.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:53:15.013] Browser WARN    Image with src "/avatars/avatar8.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:53:15.013] Browser WARN    Image with src "/avatars/avatar9.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[22:56:02.247] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[22:56:37.755] Browser WARN    Image with src "/walia-logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[22:56:50.088] Browser WARN    Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[23:00:23.501] Browser WARN    Image with src "/avatars/avatar1.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[23:00:23.501] Browser WARN    Image with src "/avatars/avatar2.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[23:00:23.501] Browser WARN    Image with src "/avatars/avatar3.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[23:00:24.395] Browser WARN    Image with src "/avatars/avatar4.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[23:00:24.396] Browser WARN    Image with src "/avatars/avatar5.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[23:00:24.396] Browser WARN    Image with src "/avatars/avatar6.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[23:00:24.396] Browser WARN    Image with src "/avatars/avatar7.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[23:00:24.396] Browser WARN    Image with src "/avatars/avatar8.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[23:00:24.396] Browser WARN    Image with src "/avatars/avatar9.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[23:03:17.194] Server  LOG     ✓ Finished filesystem cache database compaction in 14.3s
+[23:03:59.162] Browser ERROR   Signup error: {"code":"auth/invalid-email","customData":{},"name":"FirebaseError"}
+[23:04:19.877] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[23:05:05.617] Browser WARN    Image with src "/walia-logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[23:06:54.119] Browser WARN    Image with src "/avatars/avatar1.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[23:06:54.119] Browser WARN    Image with src "/avatars/avatar2.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[23:06:54.119] Browser WARN    Image with src "/avatars/avatar3.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[23:06:54.119] Browser WARN    Image with src "/avatars/avatar4.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[23:06:54.119] Browser WARN    Image with src "/avatars/avatar5.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[23:06:54.119] Browser WARN    Image with src "/avatars/avatar6.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[23:06:54.119] Browser WARN    Image with src "/avatars/avatar7.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[23:06:54.119] Browser WARN    Image with src "/avatars/avatar8.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[23:06:54.119] Browser WARN    Image with src "/avatars/avatar9.jpg" has "fill" but is missing "sizes" prop. Please add it to improve page performance. Read more: https://nextjs.org/docs/api-reference/next/image#sizes
+[23:11:38.476] Server  LOG     ✓ Compiled in 3.6s
+[23:11:43.953] Server  WARN    ⚠ Fast Refresh had to perform a full reload when ./web/context/ThemeContext.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[23:11:44.204] Server  WARN    ⚠ Fast Refresh had to perform a full reload when ./web/context/ThemeContext.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[23:11:44.264] Server  WARN    ⚠ Fast Refresh had to perform a full reload when ./web/context/ThemeContext.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[23:11:44.546] Server  WARN    ⚠ Fast Refresh had to perform a full reload when ./web/context/ThemeContext.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[23:11:44.547] Server  WARN    ⚠ Fast Refresh had to perform a full reload when ./web/context/ThemeContext.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[23:13:44.011] Server  LOG     ✓ Compiled in 8.7s
+[23:13:49.801] Server  WARN    ⚠ Fast Refresh had to perform a full reload when ./web/context/ThemeContext.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[23:13:49.822] Server  WARN    ⚠ Fast Refresh had to perform a full reload when ./web/context/ThemeContext.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[23:14:22.069] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[23:14:22.199] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[23:14:22.682] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[23:14:36.005] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[23:14:41.736] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[23:15:05.072] Browser WARN    Image with src "/walia-logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[23:15:18.217] Server  LOG     ✓ Compiled in 8s
+[23:15:36.950] Server  LOG     ✓ Compiled in 978ms
+[23:15:42.458] Browser WARN    Image with src "/walia-logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[23:15:55.004] Server  LOG     ✓ Compiled in 979ms
+[23:16:00.158] Browser WARN    Image with src "/walia-logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[23:16:04.927] Browser WARN    Image with src "/walia-logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[23:16:12.001] Browser WARN    Image with src "/walia-logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[23:16:41.089] Server  LOG     ✓ Compiled in 2.9s
+[23:16:42.822] Server  LOG     ✓ Compiled in 2.5s
+[23:17:05.613] Server  LOG     ✓ Compiled in 983ms
+[23:17:06.707] Browser ERROR   Error fetching 2FA status: {"code":"unavailable","name":"FirebaseError"}
+[23:18:17.574] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[23:19:40.914] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[23:20:29.207] Browser WARN    Image with src "/walia-logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[23:24:11.207] Browser WARN    Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[23:24:21.273] Browser ERROR   Error fetching 2FA status: {"code":"unavailable","name":"FirebaseError"}
+[23:25:59.177] Browser WARN    Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[23:31:23.388] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[23:31:54.730] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[23:32:39.377] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[23:33:13.010] Browser WARN    Image with src "/walia-logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[23:33:22.601] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[23:33:47.927] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[23:34:11.411] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[23:34:18.677] Browser WARN    Image with src "/walia-logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[23:34:49.255] Browser WARN    Image with src "/walia-logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[23:34:54.634] Browser WARN    Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[23:35:42.054] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[23:36:27.484] Browser WARN    Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[23:36:33.696] Browser WARN    Image with src "/walia-logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[23:36:40.817] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[23:37:29.065] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[23:38:06.905] Browser WARN    Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[23:38:14.306] Browser WARN    Image with src "/walia-logo.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[23:38:14.307] Browser ERROR   Error fetching 2FA status: {"code":"unavailable","name":"FirebaseError"}
+[23:38:14.308] Browser ERROR   Error fetching 2FA status: {"code":"unavailable","name":"FirebaseError"}
+[23:49:40.076] Browser LOG     Dark mode is disabled.
+[23:49:41.653] Browser LOG     Dark mode is disabled.
+[24:36:11.411] Server  ERROR   Error: EPIPE: broken pipe, write
+[24:36:11.442] Server  ERROR   ⨯ "uncaughtException:" Error: EPIPE: broken pipe, write
+[24:36:11.466] Server  ERROR   ⨯ "uncaughtException: " Error: EPIPE: broken pipe, write
+[24:36:12.208] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold

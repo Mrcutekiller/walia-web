@@ -1,0 +1,6 @@
+1:"$Sreact.fragment"
+2:I[51858,["/_next/static/chunks/f74a6859e1c4d5e3.js","/_next/static/chunks/b0895ef04d54147c.js"],"ViewportBoundary"]
+3:I[51858,["/_next/static/chunks/f74a6859e1c4d5e3.js","/_next/static/chunks/b0895ef04d54147c.js"],"MetadataBoundary"]
+4:"$Sreact.suspense"
+5:I[49310,["/_next/static/chunks/f74a6859e1c4d5e3.js","/_next/static/chunks/b0895ef04d54147c.js"],"IconMark"]
+0:{"buildId":"AMBfL2S9bmmuje9afrpqC","rsc":["$","$1","h",{"children":[null,["$","$L2",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]}],["$","div",null,{"hidden":true,"children":["$","$L3",null,{"children":["$","$4",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"Walia - Your AI Study Companion"}],["$","meta","1",{"name":"description","content":"Download Walia, the ultimate AI companion app with advanced study tools, 1-on-1 AI chat, and a community of learners."}],["$","link","2",{"rel":"icon","href":"/favicon.ico?favicon.0b3bf435.ico","sizes":"256x256","type":"image/x-icon"}],["$","$L5","3",{}]]}]}]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}],"loading":null,"isPartial":false}
