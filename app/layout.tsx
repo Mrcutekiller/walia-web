@@ -21,8 +21,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${inter.className} bg-white dark:bg-[#0A0A18] text-black dark:text-white antialiased transition-colors duration-300`}>
+    <html lang="en" suppressHydrationWarning>
+      <body suppressHydrationWarning className={`${inter.className} bg-white dark:bg-[#0A0A18] text-black dark:text-white antialiased transition-colors duration-300`}>
         <AuthProvider>
           <NotificationProvider>
             <ThemeProvider>

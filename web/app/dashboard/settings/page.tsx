@@ -15,22 +15,48 @@ import {
     Sun,
     User
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+
+const GOOGLE_LANGUAGES = [
+    { name: 'English', code: 'en' },
+    { name: 'Spanish', code: 'es' },
+    { name: 'French', code: 'fr' },
+    { name: 'German', code: 'de' },
+    { name: 'Chinese', code: 'zh-CN' },
+    { name: 'Arabic', code: 'ar' },
+    { name: 'Hindi', code: 'hi' },
+    { name: 'Amharic', code: 'am' },
+];
 
 export default function SettingsPage() {
     const { user } = useAuth();
     const [activeTab, setActiveTab] = useState('Account');
-    const [theme, setTheme] = useState('system');
+    const [currentLang, setCurrentLang] = useState('en');
+
+    useEffect(() => {
+        const cookie = document.cookie.split('; ').find(row => row.startsWith('googtrans='));
+        if (cookie) {
+            const lang = cookie.split('/')[2];
+            setCurrentLang(lang || 'en');
+        }
+    }, []);
+
+    const setLanguage = (code: string) => {
+        document.cookie = `googtrans=/en/${code}; path=/`;
+        document.cookie = `googtrans=/en/${code}; path=/; domain=${window.location.hostname}`;
+        setCurrentLang(code);
+        window.location.reload();
+    };
 
     const tabs = ['Account', 'Preferences', 'Notifications', 'Billing', 'Security'];
 
     return (
-        <div className="min-h-full bg-white text-black animate-in fade-in pb-20">
+        <div className="min-h-full bg-gray-50 dark:bg-[#0A101D] text-black dark:text-white animate-in fade-in pb-20">
             {/* Header */}
-            <header className="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-gray-200 px-6 md:px-12 py-8">
+            <header className="sticky top-0 z-20 bg-white/90 dark:bg-[#0A101D]/90 backdrop-blur-md border-b border-gray-200 dark:border-white/5 px-6 md:px-12 py-8">
                 <div className="max-w-4xl mx-auto">
-                    <h1 className="text-3xl md:text-4xl font-black tracking-tight mb-2">Settings</h1>
-                    <p className="text-gray-500 font-medium">Manage your account settings and preferences.</p>
+                    <h1 className="text-3xl md:text-4xl font-black tracking-tight mb-2 text-black dark:text-white">Settings</h1>
+                    <p className="text-gray-500 dark:text-gray-400 font-medium">Manage your account settings and preferences.</p>
                 </div>
             </header>
 
@@ -39,21 +65,21 @@ export default function SettingsPage() {
                     {/* Settings Navigation */}
                     <aside className="w-full md:w-64 shrink-0">
                         <nav className="flex md:flex-col gap-2 overflow-x-auto pb-4 md:pb-0 custom-scrollbar sticky top-32">
-                            {tabs.map((tab) => (
-                                <button
-                                    key={tab}
-                                    onClick={() => setActiveTab(tab)}
-                                    className={cn(
-                                        "flex items-center px-4 py-3 rounded-2xl font-bold text-sm transition-all whitespace-nowrap",
-                                        activeTab === tab
-                                            ? "bg-black text-white shadow-md shadow-black/10"
-                                            : "text-gray-500 hover:bg-gray-100 hover:text-black"
-                                    )}
-                                >
-                                    {tab}
-                                </button>
-                            ))}
-                        </nav>
+                                {tabs.map((tab) => (
+                                    <button
+                                        key={tab}
+                                        onClick={() => setActiveTab(tab)}
+                                        className={cn(
+                                            "flex items-center px-4 py-3 rounded-2xl font-bold text-sm transition-all whitespace-nowrap",
+                                            activeTab === tab
+                                                ? "bg-black dark:bg-white text-white dark:text-black shadow-md shadow-black/10"
+                                                : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-black dark:hover:text-white"
+                                        )}
+                                    >
+                                        {tab}
+                                    </button>
+                                ))}
+                            </nav>
                     </aside>
 
                     {/* Settings Content */}
@@ -61,12 +87,12 @@ export default function SettingsPage() {
                         {activeTab === 'Account' && (
                             <section className="space-y-8 animate-in slide-in-from-right-4 fade-in">
                                 <div>
-                                    <h2 className="text-xl font-black mb-1">Account Summary</h2>
-                                    <p className="text-sm text-gray-500 font-medium">Basic information regarding your account.</p>
+                                    <h2 className="text-xl font-black mb-1 text-black dark:text-white">Account Summary</h2>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Basic information regarding your account.</p>
                                 </div>
-                                <div className="p-8 rounded-[2rem] bg-gray-50 border border-gray-200">
+                                <div className="p-8 rounded-[2rem] bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10">
                                     <div className="flex items-center gap-6 mb-8">
-                                        <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
+                                        <div className="w-20 h-20 rounded-full bg-gray-200 dark:bg-white/10 flex items-center justify-center shrink-0">
                                             {user?.photoURL ? (
                                                 <img src={user.photoURL} alt="Profile" className="w-full h-full rounded-full object-cover" />
                                             ) : (
@@ -74,26 +100,26 @@ export default function SettingsPage() {
                                             )}
                                         </div>
                                         <div>
-                                            <p className="text-lg font-black">{user?.displayName || 'User'}</p>
-                                            <p className="text-sm text-gray-500 font-medium mt-1">{user?.email}</p>
+                                            <p className="text-lg font-black text-black dark:text-white">{user?.displayName || 'User'}</p>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium mt-1">{user?.email}</p>
                                         </div>
                                     </div>
                                     <div className="space-y-4">
-                                        <div className="flex items-center justify-between p-4 rounded-2xl bg-white border border-gray-200">
+                                        <div className="flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10">
                                             <div>
-                                                <p className="text-sm font-bold">Email Address</p>
-                                                <p className="text-xs text-gray-500 mt-1">{user?.email}</p>
+                                                <p className="text-sm font-bold text-black dark:text-white">Email Address</p>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{user?.email}</p>
                                             </div>
-                                            <button className="text-xs font-bold text-black border border-gray-200 px-4 py-2 rounded-full hover:bg-gray-100 transition-colors">
+                                            <button className="text-xs font-bold text-black dark:text-white border border-gray-200 dark:border-white/20 px-4 py-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
                                                 Change
                                             </button>
                                         </div>
-                                        <div className="flex items-center justify-between p-4 rounded-2xl bg-white border border-gray-200">
+                                        <div className="flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10">
                                             <div>
-                                                <p className="text-sm font-bold">Phone Number</p>
-                                                <p className="text-xs text-gray-500 mt-1">Not provided</p>
+                                                <p className="text-sm font-bold text-black dark:text-white">Phone Number</p>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Not provided</p>
                                             </div>
-                                            <button className="text-xs font-bold text-black border border-gray-200 px-4 py-2 rounded-full hover:bg-gray-100 transition-colors">
+                                            <button className="text-xs font-bold text-black dark:text-white border border-gray-200 dark:border-white/20 px-4 py-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
                                                 Add
                                             </button>
                                         </div>
@@ -109,39 +135,6 @@ export default function SettingsPage() {
                                     <p className="text-sm text-gray-500 font-medium">Customize your interface and experience.</p>
                                 </div>
                                 <div className="space-y-6">
-                                    <div className="p-8 rounded-[2rem] border border-gray-200 space-y-6">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-black">
-                                                <Palette className="w-5 h-5" />
-                                            </div>
-                                            <div>
-                                                <p className="text-sm font-bold">Theme</p>
-                                                <p className="text-xs text-gray-500 mt-1">Select your preferred color scheme</p>
-                                            </div>
-                                        </div>
-                                        <div className="grid grid-cols-3 gap-4">
-                                            {[
-                                                { id: 'light', icon: Sun, label: 'Light' },
-                                                { id: 'dark', icon: Moon, label: 'Dark' },
-                                                { id: 'system', icon: Laptop, label: 'System' },
-                                            ].map(t => (
-                                                <button
-                                                    key={t.id}
-                                                    onClick={() => setTheme(t.id)}
-                                                    className={cn(
-                                                        "flex flex-col items-center justify-center gap-3 p-4 rounded-2xl border-2 transition-all",
-                                                        theme === t.id
-                                                            ? "border-black bg-black text-white shadow-xl shadow-black/10"
-                                                            : "border-gray-200 text-gray-500 hover:border-black hover:text-black"
-                                                    )}
-                                                >
-                                                    <t.icon className="w-6 h-6" />
-                                                    <span className="text-xs font-bold">{t.label}</span>
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-
                                     <div className="p-8 rounded-[2rem] border border-gray-200">
                                         <div className="flex items-center gap-4 mb-6">
                                             <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-black">
@@ -149,14 +142,20 @@ export default function SettingsPage() {
                                             </div>
                                             <div>
                                                 <p className="text-sm font-bold">Language & Region</p>
-                                                <p className="text-xs text-gray-500 mt-1">Configure your local settings</p>
+                                                <p className="text-xs text-gray-500 mt-1">Translate the entire interface</p>
                                             </div>
                                         </div>
                                         <div className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 border border-gray-200">
-                                            <p className="text-sm font-bold">Language</p>
-                                            <div className="flex items-center gap-2 text-sm font-bold text-gray-500 cursor-pointer hover:text-black">
-                                                English (US) <ChevronRight className="w-4 h-4" />
-                                            </div>
+                                            <p className="text-sm font-bold">System Language</p>
+                                            <select
+                                                value={currentLang}
+                                                onChange={(e) => setLanguage(e.target.value)}
+                                                className="bg-white text-black text-sm font-bold py-2 px-4 rounded-full border border-gray-200 outline-none focus:border-black transition-all cursor-pointer shadow-sm"
+                                            >
+                                                {GOOGLE_LANGUAGES.map(l => (
+                                                    <option key={l.code} value={l.code}>{l.name}</option>
+                                                ))}
+                                            </select>
                                         </div>
                                     </div>
                                 </div>

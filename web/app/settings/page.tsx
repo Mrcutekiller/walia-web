@@ -16,33 +16,46 @@ const Toggle = ({ val, set }: { val: boolean; set: (v: boolean) => void }) => (
     </button>
 );
 
+const GOOGLE_LANGUAGES = [
+    { name: 'English', code: 'en' },
+    { name: 'Spanish', code: 'es' },
+    { name: 'French', code: 'fr' },
+    { name: 'German', code: 'de' },
+    { name: 'Chinese', code: 'zh-CN' },
+    { name: 'Arabic', code: 'ar' },
+    { name: 'Hindi', code: 'hi' },
+    { name: 'Amharic', code: 'am' },
+];
+
 export default function SettingsPage() {
     const { user } = useAuth();
     const router = useRouter();
     const [plan, setPlan] = useState<'free' | 'pro'>('free');
     const [notifs, setNotifs] = useState(true);
-    const [darkMode, setDarkMode] = useState(true);
     const [sounds, setSounds] = useState(false);
     const [ai, setAi] = useState('gemini');
+    const [currentLang, setCurrentLang] = useState('en');
 
     useEffect(() => {
+        const cookie = document.cookie.split('; ').find(row => row.startsWith('googtrans='));
+        if (cookie) {
+            const lang = cookie.split('/')[2];
+            setCurrentLang(lang || 'en');
+        }
+
         if (!user) return;
         getDoc(doc(db, 'users', user.uid)).then(d => {
             if (d.exists()) {
                 setPlan(d.data().plan || 'free');
             }
         });
-        // Dark mode is default forced to dark due to design, but let's toggle body class
-        const isDark = document.documentElement.classList.contains('dark') || true;
-        setDarkMode(isDark);
     }, [user]);
 
-    const toggleDark = (v: boolean) => {
-        setDarkMode(v);
-        // In a real app we'd toggle a class on <html>, but our theme is fixed-dark for now
-        // This makes the toggle feel responsive
-        if (v) document.documentElement.classList.add('dark');
-        else document.documentElement.classList.remove('dark');
+    const setLanguage = (code: string) => {
+        document.cookie = `googtrans=/en/${code}; path=/`;
+        document.cookie = `googtrans=/en/${code}; path=/; domain=${window.location.hostname}`;
+        setCurrentLang(code);
+        window.location.reload();
     };
 
     const logout = async () => { await signOut(auth); router.replace('/'); };
@@ -56,11 +69,25 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="space-y-3">
-                    {/* Appearance */}
+                    {/* Appearance & Language */}
                     <div className="p-5 rounded-2xl bg-white/5 border border-white/8 space-y-4">
-                        <p className="text-[10px] font-black text-white/30 uppercase tracking-widest">Appearance</p>
-                        <Row icon={Moon} label="Dark Mode" sub="Easier on your eyes" right={<Toggle val={darkMode} set={toggleDark} />} />
-                        <Row icon={Palette} label="Theme" sub="Customize your color" right={<span className="text-xs text-white/30 font-semibold">Default (Dark)</span>} />
+                        <p className="text-[10px] font-black text-white/30 uppercase tracking-widest">General</p>
+                        <Row
+                            icon={Globe}
+                            label="Language"
+                            sub="Translate the entire interface"
+                            right={
+                                <select
+                                    value={currentLang}
+                                    onChange={(e) => setLanguage(e.target.value)}
+                                    className="bg-zinc-800 text-white text-xs font-bold py-2 px-3 rounded-xl border border-white/10 outline-none focus:border-white/20 transition-all cursor-pointer"
+                                >
+                                    {GOOGLE_LANGUAGES.map(l => (
+                                        <option key={l.code} value={l.code}>{l.name}</option>
+                                    ))}
+                                </select>
+                            }
+                        />
                     </div>
 
                     {/* Notifications */}

@@ -16,15 +16,21 @@ export async function POST(req: NextRequest) {
         }
 
         const genAI = new GoogleGenerativeAI(apiKey);
-        const { message, history = [], attachments = [], systemPrompt } = await req.json();
+        const { message, history = [], attachments = [], systemPrompt, isAddingEvent } = await req.json();
 
         if (!message?.trim() && attachments.length === 0) {
             return NextResponse.json({ reply: 'Please send a message or an attachment.' }, { status: 400 });
         }
 
+        let currentSystemPrompt = systemPrompt || DEFAULT_SYSTEM_PROMPT;
+        
+        if (isAddingEvent) {
+            currentSystemPrompt += `\n\nCRITICAL INSTRUCTION: The user is trying to add an event based on this message. You must act as an event extractor. DO NOT reply with conversational text. You MUST reply ONLY with a valid JSON object matching this exact structure: {"eventDetails": {"title": "string", "time": "HH:MM", "date": "YYYY-MM-DD"}, "reply": "A short, friendly confirmation message saying the event was scheduled."}. If you cannot deduce a time or date, use a logical default (e.g., today's date, or 12:00 PM).`;
+        }
+
         const model = genAI.getGenerativeModel({
             model: 'gemini-1.5-flash',
-            systemInstruction: systemPrompt || DEFAULT_SYSTEM_PROMPT,
+            systemInstruction: currentSystemPrompt,
         });
 
         // Prepare parts for the prompt
@@ -54,9 +60,27 @@ export async function POST(req: NextRequest) {
         });
 
         const result = await chat.sendMessage(promptParts);
-        const reply = result.response.text();
+        const replyText = result.response.text();
 
-        return NextResponse.json({ reply });
+        // If in event mode, attempt to parse the JSON response
+        if (isAddingEvent) {
+            try {
+                // Strip out markdown code blocks if the model wrapped the JSON
+                const cleanJsonStr = replyText.replace(/```json/g, '').replace(/```/g, '').trim();
+                const jsonResponse = JSON.parse(cleanJsonStr);
+                
+                return NextResponse.json({ 
+                    reply: jsonResponse.reply || "Event scheduled successfully!",
+                    eventDetails: jsonResponse.eventDetails
+                });
+            } catch (e) {
+                console.error("Failed to parse event JSON from AI:", e);
+                // Fallback if parsing fails
+                return NextResponse.json({ reply: replyText });
+            }
+        }
+
+        return NextResponse.json({ reply: replyText });
     } catch (error: any) {
         console.error('Chat API error:', error);
 

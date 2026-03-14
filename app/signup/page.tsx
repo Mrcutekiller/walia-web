@@ -11,7 +11,7 @@ import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import {
     AlertCircle, ArrowLeft,
     BookOpen, Brain, ChevronRight, Loader2,
-    Lock, Mail, Sparkles, User
+    Lock, Mail, Sparkles, User, Eye, EyeOff
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -50,12 +50,16 @@ export default function SignupPage() {
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    
     const [gender, setGender] = useState('');
     const [age, setAge] = useState('');
+    const [phone, setPhone] = useState('');
+    const [country, setCountry] = useState('');
+    
     const [schoolLevel, setSchoolLevel] = useState('');
     const [school, setSchool] = useState('');
     const [useCases, setUseCases] = useState<string[]>([]);
-    const [whyWalia, setWhyWalia] = useState('');
     const [avatar, setAvatar] = useState('/avatars/avatar1.jpg');
 
     const toggleUseCase = (label: string) => {
@@ -69,18 +73,25 @@ export default function SignupPage() {
                 username: username || displayName.toLowerCase().replace(/\s+/g, ''),
                 email: auth.currentUser?.email || email,
                 photoURL: photoURL || avatar,
-                gender, age, schoolLevel, school, useCases, whyWalia,
+                gender, age, phone, country, schoolLevel, school, useCases,
                 plan: 'free',
                 createdAt: serverTimestamp(),
             });
-            // Small delay to ensure Firestore sync before redirect
-            await new Promise(r => setTimeout(r, 500));
-            router.replace('/dashboard');
+            
+            // Clear loading states
+            setLoading(false);
+            setGoogleLoading(false);
+            
+            // Hard redirect to avoid Next.js router transitions blocking the initial auth load
+            window.location.href = '/dashboard';
         } catch (err: any) {
             console.error("Firestore save error:", err);
             setError("Account created, but failed to save profile. You can update it later in settings.");
+            setLoading(false);
+            setGoogleLoading(false);
+            
             // Still redirect so they aren't stuck
-            router.replace('/dashboard');
+            window.location.href = '/dashboard';
         }
     };
 
@@ -134,7 +145,7 @@ export default function SignupPage() {
         } catch (err: any) {
             console.error("Signup error:", err);
             setError(err.message?.replace('Firebase: ', '') || 'Failed to create account.');
-            setLoading(false);
+            setLoading(false); // Ensure loader is stopped if auth fails
         }
     };
 
@@ -249,7 +260,7 @@ export default function SignupPage() {
                                 { label: 'Full Name', val: name, set: setName, type: 'text', ph: 'Professional Name', Icon: User },
                                 { label: 'Username', val: username, set: setUsername, type: 'text', ph: '@unique_handle', Icon: User },
                                 { label: 'Email', val: email, set: setEmail, type: 'email', ph: 'name@work.com', Icon: Mail },
-                                { label: 'Password', val: password, set: setPassword, type: 'password', ph: '••••••••', Icon: Lock },
+                                { label: 'Password', val: password, set: setPassword, type: showPassword ? 'text' : 'password', ph: '••••••••', Icon: Lock },
                             ].map(({ label, val, set, type, ph, Icon }) => (
                                 <div key={label} className="space-y-1.5">
                                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">{label}</label>
@@ -259,6 +270,15 @@ export default function SignupPage() {
                                             type={type} value={val} onChange={e => set(e.target.value)} placeholder={ph}
                                             className="w-full pl-11 pr-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/5 outline-none text-sm font-medium text-slate-900 placeholder:text-slate-400 transition-all"
                                         />
+                                        {label === 'Password' && (
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-600 transition-colors focus:outline-none p-1"
+                                            >
+                                                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             ))}
@@ -282,7 +302,27 @@ export default function SignupPage() {
                             </div>
                             <div className="space-y-2">
                                 <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Current Age</label>
-                                <input type="number" value={age} onChange={e => setAge(e.target.value)} placeholder="e.g. 24" min={10} max={80}
+                                <select 
+                                    value={age} 
+                                    onChange={e => setAge(e.target.value)}
+                                    className="w-full px-5 py-3 rounded-2xl bg-slate-50 border border-slate-200 focus:border-indigo-500 focus:bg-white outline-none text-sm font-medium text-slate-900 transition-all appearance-none cursor-pointer"
+                                >
+                                    <option value="" disabled>Select your age</option>
+                                    {Array.from({ length: 69 }, (_, i) => i + 12).map(num => (
+                                        <option key={num} value={num}>{num}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Country</label>
+                                <input type="text" value={country} onChange={e => setCountry(e.target.value)} placeholder="e.g. United States"
+                                    className="w-full px-5 py-3 rounded-2xl bg-slate-50 border border-slate-200 focus:border-indigo-500 focus:bg-white outline-none text-sm font-medium text-slate-900 transition-all" />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Phone Number</label>
+                                <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+1 (555) 000-0000"
                                     className="w-full px-5 py-3 rounded-2xl bg-slate-50 border border-slate-200 focus:border-indigo-500 focus:bg-white outline-none text-sm font-medium text-slate-900 transition-all" />
                             </div>
                         </div>
@@ -321,11 +361,6 @@ export default function SignupPage() {
                                         ><span>{emoji}</span> {label}</button>
                                     ))}
                                 </div>
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Why Walia?</label>
-                                <textarea value={whyWalia} onChange={e => setWhyWalia(e.target.value)} placeholder="Briefly describe your goals..." rows={2}
-                                    className="w-full px-5 py-3 rounded-2xl bg-slate-50 border border-slate-200 focus:border-indigo-500 focus:bg-white outline-none text-sm font-medium text-slate-900 resize-none transition-all" />
                             </div>
                         </div>
                     )}

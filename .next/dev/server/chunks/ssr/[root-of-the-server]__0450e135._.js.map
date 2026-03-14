@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 34, "column": 0}, "map": {"version":3,"sources":["file:///C:/Users/biruk/OneDrive/Desktop/app/web/app/dashboard/layout.tsx"],"sourcesContent":["'use client';\r\n\r\nimport DashboardShell from '@/components/DashboardShell';\r\n\r\nexport default function DashboardLayout({\r\n    children,\r\n}: {\r\n    children: React.ReactNode;\r\n}) {\r\n    // Authentication check is handled within DashboardShell\r\n    return (\r\n        <DashboardShell>\r\n            {children}\r\n        </DashboardShell>\r\n    );\r\n}\r\n"],"names":[],"mappings":";;;;;AAEA;AAFA;;;AAIe,SAAS,gBAAgB,EACpC,QAAQ,EAGX;IACG,wDAAwD;IACxD,qBACI,qPAAC,+IAAc;kBACV;;;;;;AAGb"}}]
+}

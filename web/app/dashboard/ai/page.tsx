@@ -54,6 +54,7 @@ export default function AIHubPage() {
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [showHistory, setShowHistory] = useState(false);
+    const [isAddingEvent, setIsAddingEvent] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -156,12 +157,30 @@ export default function AIHubPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     message: text,
-                    history: messages.slice(-10).map(m => ({ role: m.role === 'ai' ? 'assistant' : 'user', content: m.text })),
-                    attachments: imageURL ? [{ type: 'image/jpeg', base64: imageURL, name: 'image.jpg' }] : []
+                    history: messages.slice(-50).map(m => ({ role: m.role === 'ai' ? 'assistant' : 'user', content: m.text })),
+                    attachments: imageURL ? [{ type: 'image/jpeg', base64: imageURL, name: 'image.jpg' }] : [],
+                    isAddingEvent
                 })
             });
 
             const data = await res.json();
+
+            // Handle Event Extraction
+            if (isAddingEvent && data.eventDetails) {
+                try {
+                    await addDoc(collection(db, 'users', user.uid, 'events'), {
+                        title: data.eventDetails.title || 'AI Scheduled Event',
+                        time: data.eventDetails.time || '12:00',
+                        date: data.eventDetails.date || new Date().toISOString().split('T')[0],
+                        type: 'AI',
+                        color: 'bg-indigo-500',
+                        createdAt: serverTimestamp()
+                    });
+                    setIsAddingEvent(false); // Reset after successful parsing
+                } catch (e) {
+                    console.error("Failed to save AI event:", e);
+                }
+            }
 
             await addDoc(collection(db, 'users', user.uid, 'ai_sessions', sessionId, 'messages'), {
                 role: 'ai',
@@ -195,7 +214,7 @@ export default function AIHubPage() {
     };
 
     return (
-        <div className="h-full flex relative bg-[#0A101D] overflow-hidden text-white animate-in fade-in">
+        <div className="h-full flex relative bg-gray-50 dark:bg-[#0A101D] overflow-hidden text-black dark:text-white animate-in fade-in">
 
             {/* Main Chat Area */}
             <main className="flex-1 flex flex-col relative min-w-0">
@@ -204,7 +223,7 @@ export default function AIHubPage() {
                 <header className="absolute top-6 right-6 z-10 flex items-center gap-3">
                     <button
                         onClick={() => setShowHistory(!showHistory)}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-sm font-bold shadow-xl shadow-black/20"
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-gray-200 dark:hover:bg-white/10 transition-colors text-sm font-bold text-black dark:text-white shadow-xl shadow-black/5 dark:shadow-black/20"
                     >
                         <Clock className="w-4 h-4" />
                         <span className="hidden sm:inline">History</span>
@@ -255,8 +274,8 @@ export default function AIHubPage() {
                                         <div className={cn(
                                             "rounded-3xl text-sm leading-relaxed px-6 py-4 border shadow-sm",
                                             msg.role === 'user'
-                                                ? "bg-white text-black border-white rounded-br-sm font-medium"
-                                                : "bg-[#1E293B] text-white border-white/5 rounded-bl-sm font-medium"
+                                                ? "bg-black text-white border-black rounded-br-sm font-medium"
+                                                : "bg-white dark:bg-[#1E293B] text-black dark:text-white border-gray-200 dark:border-white/5 rounded-bl-sm font-medium"
                                         )}>
                                             {msg.image && (
                                                 <div className="relative w-64 h-64 rounded-2xl overflow-hidden mb-3 border border-white/10">
@@ -292,9 +311,9 @@ export default function AIHubPage() {
                 )}
 
                 {/* Bottom Input Area */}
-                <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-[#0A101D] via-[#0A101D] to-transparent pointer-events-none pb-8">
+                <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-gray-50 dark:from-[#0A101D] via-gray-50/90 dark:via-[#0A101D] to-transparent pointer-events-none pb-8">
                     <div className="max-w-4xl mx-auto relative pointer-events-auto">
-                        <div className="bg-[#182134] border-2 border-[#1E293B] rounded-3xl shadow-[0_8px_40px_rgba(0,0,0,0.5)] flex flex-col p-2 transition-all focus-within:ring-2 focus-within:ring-[#4ade80]/20 focus-within:border-white/20">
+                        <div className="bg-white dark:bg-[#182134] border-2 border-gray-200 dark:border-[#1E293B] rounded-3xl shadow-[0_8px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_8px_40px_rgba(0,0,0,0.5)] flex flex-col p-2 transition-all focus-within:ring-2 focus-within:ring-black/10 dark:focus-within:ring-[#4ade80]/20 focus-within:border-black dark:focus-within:border-white/20">
 
                             <textarea
                                 value={message}
@@ -306,7 +325,7 @@ export default function AIHubPage() {
                                     }
                                 }}
                                 placeholder="Message Walia AI..."
-                                className="w-full bg-transparent py-4 px-4 text-white font-medium placeholder:text-[#64748B] outline-none resize-none max-h-40 min-h-[72px] custom-scrollbar text-base"
+                                className="w-full bg-transparent py-4 px-4 text-black dark:text-white font-medium placeholder:text-gray-400 dark:placeholder:text-[#64748B] outline-none resize-none max-h-40 min-h-[72px] custom-scrollbar text-base"
                                 rows={1}
                             />
 
@@ -316,16 +335,23 @@ export default function AIHubPage() {
                                     <button
                                         onClick={() => fileInputRef.current?.click()}
                                         disabled={uploading}
-                                        className="p-2.5 rounded-xl hover:bg-white/5 text-[#64748B] hover:text-white transition-colors shrink-0 disabled:opacity-50 relative group"
+                                        className="p-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 text-gray-400 dark:text-[#64748B] hover:text-black dark:hover:text-white transition-colors shrink-0 disabled:opacity-50 relative group"
                                         title="Attach File"
                                     >
                                         {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Paperclip className="w-5 h-5" />}
                                     </button>
-                                    <button className="p-2.5 rounded-xl hover:bg-white/5 text-[#64748B] hover:text-white transition-colors shrink-0 tooltip-trigger" title="Voice Search">
-                                        <Mic className="w-5 h-5" />
-                                    </button>
-                                    <button className="p-2.5 rounded-xl hover:bg-white/5 text-[#64748B] hover:text-white transition-colors shrink-0 tooltip-trigger" title="Add Event">
+                                    <button 
+                                        onClick={() => setIsAddingEvent(!isAddingEvent)}
+                                        className={cn(
+                                            "p-2.5 rounded-xl transition-colors shrink-0 tooltip-trigger flex items-center gap-2",
+                                            isAddingEvent 
+                                                ? "bg-indigo-500/20 text-indigo-400" 
+                                                : "hover:bg-gray-100 dark:hover:bg-white/5 text-gray-400 dark:text-[#64748B] hover:text-black dark:hover:text-white"
+                                        )}
+                                        title={isAddingEvent ? "Event Mode Active" : "Add Event"}
+                                    >
                                         <CalendarDays className="w-5 h-5" />
+                                        {isAddingEvent && <span className="text-xs font-bold">Event Mode</span>}
                                     </button>
 
                                     <input
@@ -357,9 +383,9 @@ export default function AIHubPage() {
 
             {/* Right Sidebar: History Panel */}
             {showHistory && (
-                <aside className="w-80 border-l border-[#1E293B] bg-[#0A101D] flex flex-col absolute right-0 inset-y-0 z-20 animate-in slide-in-from-right shadow-2xl md:relative md:shadow-none">
-                    <div className="p-6 border-b border-[#1E293B] flex items-center justify-between bg-[#0F172A]">
-                        <h3 className="font-black text-lg text-white">Chat History</h3>
+                <aside className="w-80 border-l border-gray-200 dark:border-[#1E293B] bg-white dark:bg-[#0A101D] flex flex-col absolute right-0 inset-y-0 z-20 animate-in slide-in-from-right shadow-2xl md:relative md:shadow-none">
+                    <div className="p-6 border-b border-gray-100 dark:border-[#1E293B] flex items-center justify-between bg-gray-50 dark:bg-[#0F172A]">
+                        <h3 className="font-black text-lg text-black dark:text-white">Chat History</h3>
                         <button onClick={() => setShowHistory(false)} className="md:hidden p-2 hover:bg-white/10 rounded-full text-[#94A3B8]">
                             <ArrowRight className="w-4 h-4" />
                         </button>
@@ -368,7 +394,7 @@ export default function AIHubPage() {
                         {sessions.map((session) => (
                             <div
                                 key={session.id}
-                                onClick={() => { setActiveSession(session.id); setShowHistory(false); }}
+                                onClick={() => { setMessages([]); setActiveSession(session.id); setShowHistory(false); }}
                                 className={cn(
                                     "p-4 rounded-2xl cursor-pointer group transition-all relative overflow-hidden border",
                                     activeSession === session.id
@@ -379,8 +405,7 @@ export default function AIHubPage() {
                                 <div className="flex items-start justify-between mb-1 pr-6">
                                     <h4 className="text-sm font-bold text-white truncate max-w-[160px]">{session.title}</h4>
                                 </div>
-                                <p className="text-xs text-[#94A3B8] font-medium truncate mb-2">{session.lastText}</p>
-                                <p className="text-[10px] text-[#64748B] font-bold uppercase tracking-wider">{formatTimeAgo(session.updatedAt)}</p>
+                                <p className="text-[10px] text-[#64748B] font-bold uppercase tracking-wider mt-1">{formatTimeAgo(session.updatedAt)}</p>
 
                                 <button
                                     onClick={(e) => { e.stopPropagation(); handleDeleteSession(session.id); }}

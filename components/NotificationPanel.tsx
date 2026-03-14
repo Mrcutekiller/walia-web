@@ -3,7 +3,7 @@
 import { useAuth } from '@/context/AuthContext';
 import { db } from '@/lib/firebase';
 import { formatTimeAgo } from '@/lib/utils';
-import { collection, doc, onSnapshot, orderBy, query, updateDoc, where } from 'firebase/firestore';
+import { collection, deleteDoc, doc, onSnapshot, orderBy, query, updateDoc, where } from 'firebase/firestore';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Bell, Info, MessageSquare, ShieldAlert, Users, X } from 'lucide-react';
 import Link from 'next/link';
@@ -65,6 +65,15 @@ export default function NotificationPanel() {
             await updateDoc(doc(db, 'notifications', id), { read: true });
         } catch (error) {
             console.error('Error marking as read:', error);
+        }
+    };
+
+    const deleteNotification = async (id: string) => {
+        if (!id) return;
+        try {
+            await deleteDoc(doc(db, 'notifications', id));
+        } catch (error) {
+            console.error('Error deleting notification:', error);
         }
     };
 
@@ -140,9 +149,21 @@ export default function NotificationPanel() {
                                                     <p className={`text-sm ${!notif.read ? 'font-bold text-black dark:text-white' : 'font-medium text-black/70 dark:text-white/70'}`}>
                                                         {notif.title}
                                                     </p>
-                                                    <span className="text-[10px] text-black/40 dark:text-white/40 whitespace-nowrap mt-0.5 font-semibold">
-                                                        {formatTimeAgo(notif.createdAt)}
-                                                    </span>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-[10px] text-black/40 dark:text-white/40 whitespace-nowrap mt-0.5 font-semibold">
+                                                            {formatTimeAgo(notif.createdAt)}
+                                                        </span>
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                if (notif.id) deleteNotification(notif.id);
+                                                            }}
+                                                            className="p-1 rounded-full text-black/20 hover:text-rose-500 hover:bg-rose-50 transition-colors"
+                                                            title="Dismiss notification"
+                                                        >
+                                                            <X className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    </div>
                                                 </div>
                                                 <p className="text-xs text-black/60 dark:text-white/60 mt-1 line-clamp-2 leading-relaxed">
                                                     {notif.message}

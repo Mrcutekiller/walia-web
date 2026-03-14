@@ -49,48 +49,174 @@ interface Post {
     createdAt: any;
 }
 
+/* ── Premium White ID Card ── */
+function WaliaIDCard({ user, profile, formData, waliaId, isFlipped, setIsFlipped, fileInputRef, isEditing, uploading, handleAvatarUpload }: any) {
+    const memberSince = profile?.createdAt?.toDate
+        ? profile.createdAt.toDate().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+        : '2026';
+
+    return (
+        <div className="flex flex-col items-center">
+            <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-4 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" /> Digital Walia ID · Click to flip
+            </p>
+
+            <div
+                className="relative w-full max-w-sm h-52 [perspective:1200px] cursor-pointer select-none"
+                onClick={() => setIsFlipped(!isFlipped)}
+            >
+                <div className={`w-full h-full relative transition-all duration-700 [transform-style:preserve-3d] ${isFlipped ? '[transform:rotateY(180deg)]' : ''}`}>
+
+                    {/* ── FRONT: White premium card ── */}
+                    <div className="absolute inset-0 w-full h-full rounded-[2rem] [backface-visibility:hidden] overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.5)]">
+                        {/* Card body - white */}
+                        <div className="absolute inset-0 bg-white dark:bg-[#162032]" />
+
+                        {/* Gold/black accent stripe at top */}
+                        <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-black via-amber-400 to-black dark:from-amber-500 dark:via-amber-300 dark:to-amber-500" />
+
+                        {/* Subtle background pattern */}
+                        <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.06]">
+                            <div className="absolute -right-10 -top-10 w-48 h-48 rounded-full border-[40px] border-black dark:border-white" />
+                            <div className="absolute -right-4 top-6 w-28 h-28 rounded-full border-[20px] border-black dark:border-white" />
+                        </div>
+
+                        {/* Content */}
+                        <div className="absolute inset-0 p-5 flex flex-col">
+                            {/* Header row */}
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-8 h-8 rounded-[8px] bg-black dark:bg-white flex items-center justify-center font-black text-white dark:text-black text-base shadow-sm">W</div>
+                                    <div>
+                                        <p className="text-black dark:text-white font-black text-xs tracking-widest uppercase">Walia</p>
+                                        <p className="text-gray-400 dark:text-gray-500 text-[9px] font-bold uppercase tracking-wider">AI Platform</p>
+                                    </div>
+                                </div>
+                                <ShieldCheck className="w-5 h-5 text-emerald-500" />
+                            </div>
+
+                            {/* Avatar + Info row */}
+                            <div className="flex items-center gap-4 flex-1">
+                                {/* Avatar - click to upload */}
+                                <div
+                                    className="relative w-16 h-16 rounded-2xl overflow-hidden border-2 border-gray-100 dark:border-white/10 shrink-0 group/avatar cursor-pointer shadow-md"
+                                    onClick={(e) => { e.stopPropagation(); if (!isEditing) fileInputRef.current?.click(); }}
+                                >
+                                    {user.photoURL ? (
+                                        <img src={user.photoURL} alt="Avatar" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div className="w-full h-full bg-gray-100 dark:bg-white/10 flex items-center justify-center">
+                                            <span className="text-2xl font-black text-gray-400">{formData.name?.charAt(0) || '?'}</span>
+                                        </div>
+                                    )}
+                                    {!isEditing && (
+                                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/avatar:opacity-100 flex flex-col items-center justify-center transition-opacity">
+                                            <Camera className="w-4 h-4 text-white" />
+                                            <span className="text-[7px] text-white font-bold mt-0.5">Update</span>
+                                        </div>
+                                    )}
+                                    {uploading && (
+                                        <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
+                                            <Loader2 className="w-4 h-4 text-white animate-spin" />
+                                        </div>
+                                    )}
+                                    <input type="file" ref={fileInputRef} onChange={handleAvatarUpload} className="hidden" accept="image/*" />
+                                </div>
+
+                                {/* Name / info */}
+                                <div className="flex-1 min-w-0">
+                                    <h3 className="text-base font-black text-black dark:text-white truncate leading-tight">{formData.name || 'Set your name'}</h3>
+                                    <p className="text-gray-400 dark:text-gray-500 text-[10px] font-bold uppercase tracking-wider truncate mt-0.5">@{profile?.username || 'member'}</p>
+                                    <div className="flex items-center gap-1.5 mt-2">
+                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
+                                            <CheckCircle2 className="w-2.5 h-2.5" /> Verified
+                                        </span>
+                                        <span className="inline-flex px-2 py-0.5 rounded-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-[9px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                            {profile?.plan || 'Free'}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* ID number */}
+                            <div className="mt-3 pt-3 border-t border-gray-100 dark:border-white/5 flex items-center justify-between">
+                                <p className="font-mono text-[10px] text-gray-400 dark:text-gray-500 tracking-[0.2em]">{waliaId}</p>
+                                <p className="text-[9px] font-bold text-gray-300 dark:text-gray-600 uppercase tracking-widest">Since {memberSince}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* ── BACK FACE ── */}
+                    <div className="absolute inset-0 w-full h-full rounded-[2rem] [backface-visibility:hidden] [transform:rotateY(180deg)] overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.2)]">
+                        {/* Dark premium back */}
+                        <div className="absolute inset-0 bg-[#0f172a]" />
+                        <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-500 via-amber-300 to-amber-500" />
+
+                        {/* Giant W watermark */}
+                        <div className="absolute -left-10 -bottom-12 text-[220px] font-black leading-none text-white/[0.04] tracking-tighter pointer-events-none">W</div>
+
+                        <div className="absolute inset-0 p-6 flex flex-col items-center justify-center text-white">
+                            {/* Barcode art */}
+                            <div className="flex items-stretch gap-0.5 h-10 mb-6 w-48">
+                                {[1,3,1,2,4,1,1,3,2,1,4,1,2,3,1,2,1,4,1,2,1,3].map((w, i) => (
+                                    <div key={i} style={{ width: `${w * 4}px` }} className="bg-white rounded-sm flex-shrink-0" />
+                                ))}
+                            </div>
+                            <p className="font-mono text-xs tracking-[0.3em] font-bold opacity-70 mb-5">{waliaId}</p>
+
+                            <div className="inline-flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full border border-white/10 backdrop-blur-sm mb-6">
+                                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                                <span className="text-xs font-black tracking-widest uppercase">Verified Account</span>
+                            </div>
+
+                            <p className="text-[9px] text-white/30 text-center max-w-[200px] leading-relaxed">
+                                This card confirms the digital identity of <span className="text-white/50 font-bold">{formData.name}</span> on the Walia platform.
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    );
+}
+
+/* ── Main Profile Page ── */
 export default function ProfilePage() {
     const { user, profile } = useAuth();
     const router = useRouter();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // States
     const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [posts, setPosts] = useState<Post[]>([]);
-
-    // 360 Flip State for ID Card
     const [isFlipped, setIsFlipped] = useState(false);
-
-    // Editable fields
-    const [formData, setFormData] = useState({
-        displayName: '',
-        bio: '',
+    const [formData, setFormData] = useState<any>({
+        name: '', username: '', email: '', bio: '',
+        age: '', gender: '', school: '', schoolLevel: '',
     });
 
     useEffect(() => {
-        if (profile) {
+        if (profile && user) {
             setFormData({
-                displayName: profile.displayName || user?.displayName || '',
+                name: profile.name || profile.displayName || user.displayName || '',
+                username: profile.username || '',
+                email: user.email || '',
                 bio: profile.bio || '',
+                age: profile.age || '',
+                gender: profile.gender || '',
+                school: profile.school || '',
+                schoolLevel: profile.schoolLevel || '',
             });
         }
     }, [profile, user]);
 
-    // Fetch user's posts
     useEffect(() => {
         if (!user) return;
-        const q = query(
-            collection(db, 'posts'),
-            where('authorId', '==', user.uid),
-            orderBy('createdAt', 'desc'),
-            limit(20)
-        );
-        const unsub = onSnapshot(q, (snap) => {
-            setPosts(snap.docs.map(d => ({ id: d.id, ...d.data() } as Post)));
-        });
+        const q = query(collection(db, 'posts'), where('authorId', '==', user.uid), orderBy('createdAt', 'desc'), limit(20));
+        const unsub = onSnapshot(q, snap => setPosts(snap.docs.map(d => ({ id: d.id, ...d.data() } as Post))));
         return () => unsub();
     }, [user]);
 
@@ -98,29 +224,11 @@ export default function ProfilePage() {
         if (!user) return;
         setLoading(true);
         try {
-            await updateDoc(doc(db, 'users', user.uid), {
-                ...formData,
-            });
-            await updateProfile(user, { displayName: formData.displayName });
+            await updateDoc(doc(db, 'users', user.uid), { bio: formData.bio, name: formData.name });
+            await updateProfile(user, { displayName: formData.name });
             setIsEditing(false);
-        } catch (error) {
-            console.error('Error saving profile:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleDeleteAccount = async () => {
-        setLoading(true);
-        try {
-            await deleteAccount();
-            router.push('/');
-        } catch (error: any) {
-            alert(error.message);
-        } finally {
-            setLoading(false);
-            setShowDeleteConfirm(false);
-        }
+        } catch (error) { console.error(error); }
+        finally { setLoading(false); }
     };
 
     const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -133,340 +241,240 @@ export default function ProfilePage() {
             const url = await getDownloadURL(storageRef);
             await updateDoc(doc(db, 'users', user.uid), { photoURL: url });
             await updateProfile(user, { photoURL: url });
-        } catch (error) {
-            console.error('Error uploading avatar:', error);
-        } finally {
-            setUploading(false);
-        }
+        } catch (error) { console.error(error); }
+        finally { setUploading(false); }
     };
 
     const handleLike = async (post: Post) => {
         if (!user) return;
         const postRef = doc(db, 'posts', post.id);
         const isLiked = post.likes?.includes(user.uid);
-        try {
-            await updateDoc(postRef, { likes: isLiked ? arrayRemove(user.uid) : arrayUnion(user.uid) });
-        } catch (error) {
-            console.error('Like error:', error);
-        }
+        await updateDoc(postRef, { likes: isLiked ? arrayRemove(user.uid) : arrayUnion(user.uid) });
     };
 
     const handleDeletePost = async (postId: string) => {
         if (!user) return;
-        try {
-            await deleteDoc(doc(db, 'posts', postId));
-        } catch (error) {
-            console.error('Delete error:', error);
-        }
+        await deleteDoc(doc(db, 'posts', postId));
+    };
+
+    const handleDeleteAccount = async () => {
+        setLoading(true);
+        try { await deleteAccount(); router.push('/'); }
+        catch (error: any) { alert(error.message); }
+        finally { setLoading(false); setShowDeleteConfirm(false); }
     };
 
     if (!user) return null;
-
     const waliaId = `WAL-${user.uid.slice(0, 8).toUpperCase()}`;
 
     return (
-        <div className="min-h-full bg-[#FAFAFA] dark:bg-[#0A101D] text-black dark:text-white pb-20 selection:bg-black selection:text-white">
+        <div className="min-h-full bg-[#FAFAFA] dark:bg-[#0A101D] text-black dark:text-white pb-24">
+            <main className="max-w-2xl mx-auto px-4 pt-8 md:pt-12 space-y-8">
 
-            <main className="max-w-3xl mx-auto px-4 pt-8 md:pt-12 space-y-12">
+                {/* ══ 1. PROFILE SECTION (TOP) ══ */}
+                <div className="animate-in fade-in slide-in-from-top-4 duration-700">
+                    <div className="bg-white dark:bg-[#162032] rounded-[2.5rem] border border-gray-200 dark:border-white/5 shadow-sm overflow-hidden">
 
-                {/* --- 360 Degree Flip ID Card --- */}
-                <div className="flex flex-col items-center animate-in fade-in slide-in-from-top-4 duration-700">
-                    <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-4 flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" /> Your Digital Walia ID / Click to flip
-                    </p>
+                        {/* Banner */}
+                        <div className="h-24 bg-gradient-to-br from-gray-900 via-gray-800 to-black dark:from-[#0f172a] dark:to-[#1e293b] relative">
+                            <div className="absolute inset-0 opacity-30">
+                                <div className="absolute top-2 right-6 text-[100px] font-black leading-none text-white/10 tracking-tighter">W</div>
+                            </div>
+                        </div>
 
-                    <div
-                        className="relative w-full max-w-sm h-64 [perspective:1000px] cursor-pointer group"
-                        onClick={() => setIsFlipped(!isFlipped)}
-                    >
-                        <div
-                            className={`w-full h-full relative transition-all duration-700 [transform-style:preserve-3d] ${isFlipped ? '[transform:rotateY(180deg)]' : ''}`}
-                        >
-                            {/* Front Face */}
-                            <div className="absolute inset-0 w-full h-full rounded-[2rem] bg-[#0f172a] shadow-2xl overflow-hidden [backface-visibility:hidden] border border-white/10 flex flex-col p-6">
-                                {/* Watermark */}
-                                <div className="absolute -right-8 -top-8 text-[200px] font-black leading-none text-white/5 tracking-tighter pointer-events-none select-none">W</div>
-
-                                <div className="flex justify-between items-start mb-auto relative z-10">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-8 h-8 bg-white text-black font-black text-lg flex items-center justify-center rounded-[8px]">W</div>
-                                        <span className="text-white font-bold tracking-widest uppercase text-sm">Walia</span>
+                        <div className="px-6 pb-6">
+                            {/* Avatar row */}
+                            <div className="flex items-end justify-between -mt-10 mb-4">
+                                <div className="relative group cursor-pointer" onClick={() => !isEditing && fileInputRef.current?.click()}>
+                                    <div className="w-20 h-20 rounded-[1.25rem] border-4 border-white dark:border-[#162032] overflow-hidden bg-gray-100 dark:bg-white/10 shadow-lg">
+                                        {user.photoURL ? (
+                                            <img src={user.photoURL} alt="Avatar" className="w-full h-full object-cover" />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center">
+                                                <span className="text-3xl font-black text-gray-400">{formData.name?.charAt(0) || '?'}</span>
+                                            </div>
+                                        )}
                                     </div>
-                                    <ShieldCheck className="w-6 h-6 text-green-400" />
-                                </div>
-
-                                <div className="relative z-10 flex items-center gap-5 mt-4">
-                                    {/* Avatar Upload Container */}
-                                    <div
-                                        className="relative w-20 h-20 rounded-full border-[3px] border-white/20 p-1 shrink-0 bg-black/50 overflow-hidden"
-                                        onClick={(e) => {
-                                            e.stopPropagation(); // don't flip card if clicking avatar
-                                            !isEditing && fileInputRef.current?.click();
-                                        }}
-                                    >
-                                        <div className="w-full h-full rounded-full overflow-hidden bg-gray-800 flex items-center justify-center relative group-hover:opacity-90 transition-opacity">
-                                            {user.photoURL ? (
-                                                <img src={user.photoURL} alt="User Avatar" className="w-full h-full object-cover" />
-                                            ) : (
-                                                <span className="text-2xl font-black text-gray-400">{formData.displayName?.charAt(0) || '?'}</span>
-                                            )}
+                                    {!isEditing && (
+                                        <div className="absolute inset-0 bg-black/50 rounded-[1.25rem] opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                                            {uploading ? <Loader2 className="w-5 h-5 text-white animate-spin" /> : <Camera className="w-5 h-5 text-white" />}
                                         </div>
-                                        {!isEditing && (
-                                            <div className="absolute inset-0 bg-black/60 opacity-0 hover:opacity-100 flex flex-col items-center justify-center transition-all">
-                                                <Camera className="w-5 h-5 text-white mb-0.5" />
-                                                <span className="text-[8px] font-bold text-white uppercase tracking-wider">Update</span>
-                                            </div>
-                                        )}
-                                        {uploading && (
-                                            <div className="absolute inset-0 bg-black/80 flex items-center justify-center">
-                                                <Loader2 className="w-5 h-5 text-white animate-spin" />
-                                            </div>
-                                        )}
-                                        <input type="file" ref={fileInputRef} onChange={handleAvatarUpload} className="hidden" accept="image/*" />
-                                    </div>
+                                    )}
+                                    <input type="file" ref={fileInputRef} onChange={handleAvatarUpload} className="hidden" accept="image/*" />
+                                </div>
 
-                                    <div className="flex flex-col">
-                                        <h2 className="text-xl font-black text-white leading-tight">{formData.displayName || 'No Name Set'}</h2>
-                                        <p className="text-green-400 text-xs font-bold uppercase tracking-widest mt-1">Walia Member</p>
-                                        <p className="text-gray-400 text-[10px] font-mono mt-2">{waliaId}</p>
-                                    </div>
+                                {/* Action buttons */}
+                                <div className="flex gap-2 mb-1">
+                                    {isEditing ? (
+                                        <button onClick={() => setIsEditing(false)} className="px-4 py-2 rounded-full bg-gray-100 dark:bg-white/10 text-black dark:text-white font-bold text-xs border border-gray-200 dark:border-white/10 hover:bg-gray-200 dark:hover:bg-white/20 transition-colors">Cancel</button>
+                                    ) : (
+                                        <>
+                                            <button onClick={() => setIsEditing(true)} className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-black dark:bg-white text-white dark:text-black font-bold text-xs shadow hover:scale-105 transition-all">
+                                                <Edit3 className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Edit</span>
+                                            </button>
+                                            <Link href="/dashboard/settings" className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white hover:scale-105 transition-all">
+                                                <Settings className="w-4 h-4" />
+                                            </Link>
+                                        </>
+                                    )}
                                 </div>
                             </div>
 
-                            {/* Back Face */}
-                            <div className="absolute inset-0 w-full h-full rounded-[2rem] bg-gradient-to-br from-indigo-500 to-purple-600 shadow-2xl overflow-hidden [backface-visibility:hidden] [transform:rotateY(180deg)] border border-white/20 flex flex-col items-center justify-center p-6 text-white text-center">
-                                {/* Barcode decoration */}
-                                <div className="w-full flex justify-center mb-6 opacity-90 h-16 pointer-events-none select-none items-stretch gap-1">
-                                    <div className="w-1 bg-white" /><div className="w-3 bg-white" /><div className="w-1 bg-white" /><div className="w-2 bg-white" />
-                                    <div className="w-4 bg-white" /><div className="w-1 bg-white" /><div className="w-1 bg-white" /><div className="w-3 bg-white" />
-                                    <div className="w-2 bg-white" /><div className="w-1 bg-white" /><div className="w-4 bg-white" /><div className="w-1 bg-white" />
-                                    <div className="w-2 bg-white" /><div className="w-3 bg-white" /><div className="w-1 bg-white" /><div className="w-2 bg-white" />
-                                    <div className="w-1 bg-white" /><div className="w-4 bg-white" /><div className="w-1 bg-white" /><div className="w-2 bg-white" />
+                            {/* Name + bio */}
+                            {isEditing ? (
+                                <div className="space-y-4 animate-in fade-in">
+                                    <div>
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 block">Display Name</label>
+                                        <input className="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl px-4 py-3 text-black dark:text-white outline-none focus:border-black dark:focus:border-white transition-all font-semibold text-sm" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="Your name" />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 block">Bio</label>
+                                        <textarea className="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl px-4 py-3 text-black dark:text-white outline-none focus:border-black dark:focus:border-white transition-all font-medium h-24 resize-none text-sm" value={formData.bio} placeholder="Tell the community about yourself..." onChange={e => setFormData({ ...formData, bio: e.target.value })} />
+                                    </div>
+                                    <button onClick={handleSave} disabled={loading} className="w-full py-3.5 rounded-full bg-black dark:bg-white text-white dark:text-black font-black text-xs uppercase tracking-widest shadow-lg hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50">
+                                        {loading ? 'Saving...' : 'Save Changes'}
+                                    </button>
+                                    <div className="pt-2 flex justify-center">
+                                        <button onClick={() => setShowDeleteConfirm(true)} className="text-xs font-bold text-red-500 hover:text-red-700 underline underline-offset-4 transition-colors">Delete Account</button>
+                                    </div>
                                 </div>
-                                <p className="font-mono text-xs tracking-[0.3em] font-bold opacity-80 mb-6">{waliaId}</p>
+                            ) : (
+                                <div className="animate-in fade-in">
+                                    <h1 className="text-xl font-black text-black dark:text-white tracking-tight">{formData.name || 'Set your name'}</h1>
+                                    <p className="text-sm font-bold text-gray-400 dark:text-gray-500 mt-0.5">@{profile?.username || `user_${user.uid.slice(0, 5)}`}</p>
+                                    <p className="text-[14px] font-medium text-gray-600 dark:text-gray-300 leading-relaxed mt-3 mb-5">
+                                        {formData.bio || 'No bio yet. Click Edit to add one.'}
+                                    </p>
 
-                                <div className="inline-flex items-center gap-2 bg-black/20 px-4 py-2 rounded-full border border-white/10 backdrop-blur-sm">
-                                    <CheckCircle2 className="w-4 h-4 text-green-300" />
-                                    <span className="text-xs font-bold tracking-widest uppercase">Verified Account</span>
+                                    {/* Stats */}
+                                    <div className="flex gap-6">
+                                        <div className="text-center">
+                                            <p className="text-lg font-black text-black dark:text-white">{posts.length}</p>
+                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Posts</p>
+                                        </div>
+                                        <div className="w-px bg-gray-100 dark:bg-white/10" />
+                                        <div className="text-center">
+                                            <p className="text-lg font-black text-black dark:text-white">{profile?.followersCount || 0}</p>
+                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Followers</p>
+                                        </div>
+                                        <div className="w-px bg-gray-100 dark:bg-white/10" />
+                                        <div className="text-center">
+                                            <p className="text-lg font-black text-black dark:text-white">{profile?.followingCount || 0}</p>
+                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Following</p>
+                                        </div>
+                                    </div>
                                 </div>
-
-                                <p className="text-[10px] mt-8 text-white/50 max-w-[200px]">This card confirms the digital credentials of the user on the Walia platform.</p>
-                            </div>
+                            )}
                         </div>
                     </div>
                 </div>
 
-                {/* Profile Controls Card */}
-                <div className="bg-white dark:bg-[#162032] rounded-[3rem] p-6 lg:p-10 border border-gray-200 dark:border-white/5 shadow-xl shadow-black-[0.02] relative">
-
-                    {/* Top Right Actions */}
-                    <div className="absolute top-6 right-6 flex gap-2">
-                        {isEditing ? (
-                            <button onClick={() => setIsEditing(false)} className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-gray-100 dark:bg-white/10 text-black dark:text-white font-bold text-xs shadow-md border border-gray-100 hover:bg-gray-200 transition-colors">
-                                Cancel
-                            </button>
-                        ) : (
-                            <>
-                                <button onClick={() => setIsEditing(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-black dark:bg-[#4ade80] dark:text-black text-white font-bold text-xs shadow-md border hover:scale-105 transition-all">
-                                    <Edit3 className="w-4 h-4" /> <span className="hidden sm:inline">Edit Bio</span>
-                                </button>
-                                <Link href="/dashboard/settings" className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-gray-50 dark:bg-white/5 text-black dark:text-white font-bold text-xs shadow-md border border-gray-100 dark:border-white/5 hover:scale-105 transition-all">
-                                    <Settings className="w-4 h-4" />
-                                </Link>
-                            </>
-                        )}
-                    </div>
-
-                    {/* Bio and Info / Edit Mode */}
-                    <div className="pt-2">
-                        {isEditing ? (
-                            <div className="space-y-6 max-w-sm mx-auto min-h-[300px] flex flex-col justify-center animate-in fade-in">
-                                <div>
-                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1 mb-2 block">Display Name</label>
-                                    <input
-                                        className="w-full bg-gray-50 dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-2xl px-5 py-3.5 text-black dark:text-white outline-none focus:border-black transition-all font-semibold text-center"
-                                        value={formData.displayName}
-                                        onChange={e => setFormData({ ...formData, displayName: e.target.value })}
-                                        placeholder="Your full name"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1 mb-2 block">Bio</label>
-                                    <textarea
-                                        className="w-full bg-gray-50 dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-2xl px-5 py-3.5 text-black dark:text-white outline-none focus:border-black transition-all font-medium h-32 resize-none text-center custom-scrollbar"
-                                        value={formData.bio}
-                                        placeholder="Tell the community about yourself..."
-                                        onChange={e => setFormData({ ...formData, bio: e.target.value })}
-                                    />
-                                </div>
-                                <button onClick={handleSave} disabled={loading} className="w-full py-4 rounded-full bg-black dark:bg-white text-white dark:text-black font-bold text-xs uppercase tracking-widest shadow-lg hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 hover:bg-zinc-800">
-                                    {loading ? 'Saving...' : 'Save Details'}
-                                </button>
-
-                                <div className="pt-6 mt-6 border-t border-gray-100 dark:border-white/5 flex justify-center">
-                                    <button onClick={() => setShowDeleteConfirm(true)} className="text-xs font-bold text-red-500 hover:text-red-700 underline underline-offset-4 decoration-red-200 dark:decoration-red-900/40 hover:decoration-red-600 transition-colors">
-                                        Delete Account
-                                    </button>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="text-center animate-in fade-in min-h-[250px] flex flex-col justify-center">
-                                <h1 className="text-3xl font-black tracking-tight text-black dark:text-white mb-1">
-                                    {formData.displayName || 'Set your name'}
-                                </h1>
-                                <p className="text-sm font-bold text-gray-400 mb-6 tracking-wide">
-                                    @{profile?.username || `user_${user.uid.slice(0, 5)}`}
-                                </p>
-
-                                <p className="max-w-md mx-auto text-[15px] font-medium text-gray-600 dark:text-gray-300 leading-relaxed mb-10">
-                                    {formData.bio || "You haven't added a bio yet. Click edit to tell everyone who you are."}
-                                </p>
-
-                                {/* Stats Row */}
-                                <div className="flex items-center justify-center gap-4 bg-gray-50 dark:bg-black/30 rounded-[2rem] p-4 max-w-sm mx-auto border border-gray-100 dark:border-white/5 shadow-sm">
-                                    <div className="flex-1">
-                                        <p className="text-xl font-black text-black dark:text-white">{posts.length}</p>
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Posts</p>
-                                    </div>
-                                    <div className="w-px h-8 bg-gray-200 dark:bg-white/10" />
-                                    <div className="flex-1">
-                                        <p className="text-xl font-black text-black dark:text-white">{profile?.followersCount || 0}</p>
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Followers</p>
-                                    </div>
-                                    <div className="w-px h-8 bg-gray-200 dark:bg-white/10" />
-                                    <div className="flex-1">
-                                        <p className="text-xl font-black text-black dark:text-white">{profile?.followingCount || 0}</p>
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Following</p>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* Posts Heading */}
+                {/* ══ 2. WHITE ID CARD (BELOW) ══ */}
                 {!isEditing && (
-                    <div className="px-4 py-2 border-b-2 border-black dark:border-white w-fit mt-10 mb-6 mx-auto md:mx-0">
-                        <h2 className="text-sm font-black text-black dark:text-white uppercase tracking-widest">Your Authored Posts</h2>
+                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150">
+                        <WaliaIDCard
+                            user={user}
+                            profile={profile}
+                            formData={formData}
+                            waliaId={waliaId}
+                            isFlipped={isFlipped}
+                            setIsFlipped={setIsFlipped}
+                            fileInputRef={fileInputRef}
+                            isEditing={isEditing}
+                            uploading={uploading}
+                            handleAvatarUpload={handleAvatarUpload}
+                        />
                     </div>
                 )}
 
-                {/* Posts List */}
+                {/* ══ 3. POSTS ══ */}
                 {!isEditing && (
-                    <div className="space-y-6">
-                        {posts.length === 0 ? (
-                            <div className="text-center py-16 bg-white dark:bg-[#162032] rounded-[3rem] border border-gray-200 dark:border-white/5 shadow-sm">
-                                <p className="text-gray-400 font-bold mb-4">You haven't posted anything yet.</p>
-                                <Link href="/dashboard/community" className="px-6 py-3 rounded-full bg-black dark:bg-[#4ade80] dark:text-black text-white font-bold text-xs uppercase tracking-widest hover:scale-105 transition-transform inline-block">
-                                    Go to Community
-                                </Link>
-                            </div>
-                        ) : (
-                            posts.map(post => {
-                                const isLiked = post.likes?.includes(user?.uid || '');
-                                return (
-                                    <div key={post.id} className="p-6 md:p-8 rounded-[3rem] bg-white dark:bg-[#162032] border border-gray-200 dark:border-white/5 shadow-sm hover:shadow-xl hover:shadow-black/5 dark:hover:shadow-white/5 transition-all group">
-                                        <div className="flex items-center justify-between mb-6">
-                                            <div className="flex items-center gap-3">
-                                                <div className="scale-110 origin-left">
+                    <>
+                        <div className="px-2 pt-4 border-b-2 border-black dark:border-white w-fit">
+                            <h2 className="text-xs font-black text-black dark:text-white uppercase tracking-widest">Your Posts</h2>
+                        </div>
+
+                        <div className="space-y-5">
+                            {posts.length === 0 ? (
+                                <div className="text-center py-14 bg-white dark:bg-[#162032] rounded-[2.5rem] border border-gray-200 dark:border-white/5 shadow-sm">
+                                    <p className="text-gray-400 font-bold mb-4">You haven't posted anything yet.</p>
+                                    <Link href="/dashboard/community" className="px-6 py-3 rounded-full bg-black dark:bg-white text-white dark:text-black font-black text-xs uppercase tracking-widest hover:scale-105 transition-transform inline-block shadow-lg">
+                                        Go to Community
+                                    </Link>
+                                </div>
+                            ) : (
+                                posts.map(post => {
+                                    const isLiked = post.likes?.includes(user?.uid || '');
+                                    return (
+                                        <div key={post.id} className="p-6 rounded-[2.5rem] bg-white dark:bg-[#162032] border border-gray-200 dark:border-white/5 shadow-sm hover:shadow-xl hover:shadow-black/5 dark:hover:shadow-white/5 transition-all">
+                                            <div className="flex items-center justify-between mb-5">
+                                                <div className="flex items-center gap-3">
                                                     <UserBadge uid={post.authorId} size="sm" />
+                                                    <div>
+                                                        <span className="text-sm font-black text-black dark:text-white leading-tight">{formData.name}</span>
+                                                        <p className="text-xs font-bold text-gray-400">{formatTimeAgo(post.createdAt)}</p>
+                                                    </div>
                                                 </div>
-                                                <div className="flex flex-col">
-                                                    <span className="text-sm font-black text-black dark:text-white leading-tight">{formData.displayName}</span>
-                                                    <span className="text-xs font-bold text-gray-400">
-                                                        {formatTimeAgo(post.createdAt)}
+                                                <button onClick={() => handleDeletePost(post.id)} className="w-8 h-8 flex items-center justify-center text-gray-300 dark:text-gray-600 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-500 rounded-full transition-colors">
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
+
+                                            <div className="mb-5">
+                                                {post.type !== 'general' && (
+                                                    <span className="inline-block px-3 py-1 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-full text-[10px] font-black uppercase text-gray-500 tracking-widest mb-3">
+                                                        {post.type.replace('_share', '')}
                                                     </span>
+                                                )}
+                                                {post.title && <h3 className="text-lg font-black text-black dark:text-white mb-2">{post.title}</h3>}
+                                                <p className="text-[14px] text-gray-700 dark:text-gray-300 leading-relaxed font-medium whitespace-pre-wrap">{post.content}</p>
+                                            </div>
+
+                                            <div className="flex items-center border-t border-gray-100 dark:border-white/5 pt-4">
+                                                <div className="flex items-center space-x-5">
+                                                    <button onClick={() => handleLike(post)} className={cn('flex items-center gap-2 text-sm font-bold transition-all', isLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-500')}>
+                                                        <div className={cn('w-9 h-9 rounded-full flex items-center justify-center transition-colors', isLiked ? 'bg-red-50 dark:bg-red-500/10' : 'hover:bg-red-50 dark:hover:bg-red-500/10')}>
+                                                            <Heart className={cn('w-4 h-4', isLiked && 'fill-current')} />
+                                                        </div>
+                                                        {post.likes?.length || 0}
+                                                    </button>
+                                                    <button className="flex items-center gap-2 text-sm font-bold text-gray-400 hover:text-black dark:hover:text-white transition-all">
+                                                        <div className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                                                            <MessageCircle className="w-4 h-4" />
+                                                        </div>
+                                                        {post.commentCount || 0}
+                                                    </button>
                                                 </div>
-                                            </div>
-                                            <button
-                                                onClick={() => handleDeletePost(post.id)}
-                                                className="w-8 h-8 flex items-center justify-center text-gray-300 dark:text-gray-600 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-500 rounded-full transition-colors shrink-0"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
-                                        </div>
-
-                                        <div className="mb-6">
-                                            {post.type !== 'general' && (
-                                                <span className="inline-block px-3 py-1 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-full text-[10px] font-black uppercase text-gray-500 dark:text-gray-400 tracking-widest mb-3">
-                                                    {post.type.replace('_share', '')}
-                                                </span>
-                                            )}
-                                            {post.title && <h3 className="text-xl font-black text-black dark:text-white mb-3 tracking-tight">{post.title}</h3>}
-                                            <p className="text-[15px] text-gray-700 dark:text-gray-300 leading-relaxed font-medium whitespace-pre-wrap">{post.content}</p>
-                                        </div>
-
-                                        <div className="flex items-center border-t border-gray-100 dark:border-white/5 pt-5 mt-2">
-                                            <div className="flex items-center space-x-6">
-                                                <button
-                                                    onClick={() => handleLike(post)}
-                                                    className={cn(
-                                                        "flex items-center space-x-2 text-sm font-bold transition-all group/btn",
-                                                        isLiked ? "text-red-500" : "text-gray-400 hover:text-red-500"
-                                                    )}
-                                                >
-                                                    <div className={cn(
-                                                        "w-10 h-10 rounded-full flex items-center justify-center transition-colors",
-                                                        isLiked ? "bg-red-50 dark:bg-red-500/10" : "bg-transparent group-hover/btn:bg-red-50 dark:group-hover/btn:bg-red-500/10"
-                                                    )}>
-                                                        <Heart className={cn("w-5 h-5 transition-transform", isLiked && "fill-current group-hover/btn:scale-110")} />
-                                                    </div>
-                                                    <span>{post.likes?.length || 0}</span>
-                                                </button>
-                                                <button className="flex items-center space-x-2 text-sm font-bold text-gray-400 hover:text-black dark:hover:text-white transition-all group/btn">
-                                                    <div className="w-10 h-10 rounded-full bg-transparent group-hover/btn:bg-gray-50 dark:group-hover/btn:bg-white/5 flex items-center justify-center transition-colors">
-                                                        <MessageCircle className="w-5 h-5" />
-                                                    </div>
-                                                    <span>{post.commentCount || 0}</span>
+                                                <button className="w-9 h-9 ml-auto rounded-full bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-400 hover:text-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 hover:scale-105 transition-all">
+                                                    <Share2 className="w-4 h-4" />
                                                 </button>
                                             </div>
-                                            <button className="w-10 h-10 ml-auto rounded-full bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-400 hover:text-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 hover:scale-105 transition-all">
-                                                <Share2 className="w-4 h-4" />
-                                            </button>
                                         </div>
-                                    </div>
-                                );
-                            })
-                        )}
-                    </div>
+                                    );
+                                })
+                            )}
+                        </div>
+                    </>
                 )}
             </main>
 
-            {/* Delete Confirmation Modal (Concept 3: Minimalist) */}
+            {/* Delete Confirm Modal */}
             <AnimatePresence>
                 {showDeleteConfirm && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowDeleteConfirm(false)} className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-                        <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative w-full max-w-[360px] p-8 rounded-[2rem] bg-[#F8F9FA] dark:bg-[#1E293B] shadow-2xl text-center flex flex-col items-center">
-
-                            {/* Warning Icon Container */}
-                            <div className="w-[72px] h-[72px] bg-white dark:bg-black/20 rounded-3xl flex items-center justify-center text-red-500 mb-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 dark:border-white/5">
-                                <AlertTriangle className="w-8 h-8 stroke-[2px]" />
+                        <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative w-full max-w-[340px] p-8 rounded-[2rem] bg-white dark:bg-[#1E293B] shadow-2xl text-center flex flex-col items-center">
+                            <div className="w-16 h-16 bg-red-50 dark:bg-red-500/10 rounded-3xl flex items-center justify-center text-red-500 mb-5">
+                                <AlertTriangle className="w-7 h-7 stroke-[2px]" />
                             </div>
-
-                            {/* Titles */}
-                            <h3 className="text-[22px] font-black text-black dark:text-white mb-2 tracking-tight">Delete Account</h3>
-                            <p className="text-[#6B7280] dark:text-gray-400 text-[15px] font-medium leading-relaxed mb-8">
-                                You're going to delete your "Account"
-                            </p>
-
-                            {/* Action Buttons */}
-                            <div className="flex gap-4 w-full">
-                                <button
-                                    onClick={() => setShowDeleteConfirm(false)}
-                                    className="flex-1 py-4 rounded-2xl bg-[#E5E7EB] dark:bg-white/10 text-[#4B5563] dark:text-gray-300 font-bold text-[14px] hover:bg-gray-300 dark:hover:bg-white/20 transition-colors shadow-sm"
-                                >
-                                    No, keep it.
-                                </button>
-                                <button
-                                    onClick={handleDeleteAccount}
-                                    disabled={loading}
-                                    className="flex-1 py-4 rounded-2xl bg-[#FF3B30] text-white font-bold text-[14px] hover:bg-red-600 transition-colors shadow-lg shadow-red-500/20 disabled:opacity-50"
-                                >
-                                    {loading ? '...' : 'Yes, Delete!'}
+                            <h3 className="text-xl font-black text-black dark:text-white mb-2">Delete Account</h3>
+                            <p className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-7 leading-relaxed">This will permanently delete your account and all your data. This action cannot be undone.</p>
+                            <div className="flex gap-3 w-full">
+                                <button onClick={() => setShowDeleteConfirm(false)} className="flex-1 py-3.5 rounded-2xl bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 font-bold text-sm hover:bg-gray-200 dark:hover:bg-white/20 transition-colors">Keep it</button>
+                                <button onClick={handleDeleteAccount} disabled={loading} className="flex-1 py-3.5 rounded-2xl bg-red-500 text-white font-bold text-sm hover:bg-red-600 transition-colors shadow-lg shadow-red-500/20 disabled:opacity-50">
+                                    {loading ? '...' : 'Yes, Delete'}
                                 </button>
                             </div>
-
                         </motion.div>
                     </div>
                 )}

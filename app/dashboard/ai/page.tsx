@@ -54,6 +54,7 @@ export default function AIHubPage() {
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [showHistory, setShowHistory] = useState(false);
+    const [isAddingEvent, setIsAddingEvent] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -156,12 +157,30 @@ export default function AIHubPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     message: text,
-                    history: messages.slice(-10).map(m => ({ role: m.role === 'ai' ? 'assistant' : 'user', content: m.text })),
-                    attachments: imageURL ? [{ type: 'image/jpeg', base64: imageURL, name: 'image.jpg' }] : []
+                    history: messages.slice(-50).map(m => ({ role: m.role === 'ai' ? 'assistant' : 'user', content: m.text })),
+                    attachments: imageURL ? [{ type: 'image/jpeg', base64: imageURL, name: 'image.jpg' }] : [],
+                    isAddingEvent
                 })
             });
 
             const data = await res.json();
+
+            // Handle Event Extraction
+            if (isAddingEvent && data.eventDetails) {
+                try {
+                    await addDoc(collection(db, 'users', user.uid, 'events'), {
+                        title: data.eventDetails.title || 'AI Scheduled Event',
+                        time: data.eventDetails.time || '12:00',
+                        date: data.eventDetails.date || new Date().toISOString().split('T')[0],
+                        type: 'AI',
+                        color: 'bg-indigo-500',
+                        createdAt: serverTimestamp()
+                    });
+                    setIsAddingEvent(false); // Reset after successful parsing
+                } catch (e) {
+                    console.error("Failed to save AI event:", e);
+                }
+            }
 
             await addDoc(collection(db, 'users', user.uid, 'ai_sessions', sessionId, 'messages'), {
                 role: 'ai',
@@ -321,11 +340,18 @@ export default function AIHubPage() {
                                     >
                                         {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Paperclip className="w-5 h-5" />}
                                     </button>
-                                    <button className="p-2.5 rounded-xl hover:bg-white/5 text-[#64748B] hover:text-white transition-colors shrink-0 tooltip-trigger" title="Voice Search">
-                                        <Mic className="w-5 h-5" />
-                                    </button>
-                                    <button className="p-2.5 rounded-xl hover:bg-white/5 text-[#64748B] hover:text-white transition-colors shrink-0 tooltip-trigger" title="Add Event">
+                                    <button 
+                                        onClick={() => setIsAddingEvent(!isAddingEvent)}
+                                        className={cn(
+                                            "p-2.5 rounded-xl transition-colors shrink-0 tooltip-trigger flex items-center gap-2",
+                                            isAddingEvent 
+                                                ? "bg-indigo-500/20 text-indigo-400" 
+                                                : "hover:bg-white/5 text-[#64748B] hover:text-white"
+                                        )}
+                                        title={isAddingEvent ? "Event Mode Active" : "Add Event"}
+                                    >
                                         <CalendarDays className="w-5 h-5" />
+                                        {isAddingEvent && <span className="text-xs font-bold">Event Mode</span>}
                                     </button>
 
                                     <input
@@ -368,7 +394,7 @@ export default function AIHubPage() {
                         {sessions.map((session) => (
                             <div
                                 key={session.id}
-                                onClick={() => { setActiveSession(session.id); setShowHistory(false); }}
+                                onClick={() => { setMessages([]); setActiveSession(session.id); setShowHistory(false); }}
                                 className={cn(
                                     "p-4 rounded-2xl cursor-pointer group transition-all relative overflow-hidden border",
                                     activeSession === session.id
@@ -379,8 +405,7 @@ export default function AIHubPage() {
                                 <div className="flex items-start justify-between mb-1 pr-6">
                                     <h4 className="text-sm font-bold text-white truncate max-w-[160px]">{session.title}</h4>
                                 </div>
-                                <p className="text-xs text-[#94A3B8] font-medium truncate mb-2">{session.lastText}</p>
-                                <p className="text-[10px] text-[#64748B] font-bold uppercase tracking-wider">{formatTimeAgo(session.updatedAt)}</p>
+                                <p className="text-[10px] text-[#64748B] font-bold uppercase tracking-wider mt-1">{formatTimeAgo(session.updatedAt)}</p>
 
                                 <button
                                     onClick={(e) => { e.stopPropagation(); handleDeleteSession(session.id); }}

@@ -1,67 +1,17 @@
 'use client';
 
 import { useAuth } from '@/context/AuthContext';
+import { useNotifications } from '@/context/NotificationContext';
 import { cn } from '@/lib/utils';
 import { Bell, Check, Clock, MessageSquare, Star, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
-// Mock Notifications Data
-const MOCK_NOTIFICATIONS = [
-    {
-        id: '1',
-        title: 'New Community Reply',
-        message: 'Sarah liked your answer on "Advanced Calculus Problem 4".',
-        time: '2 mins ago',
-        type: 'social',
-        read: false,
-    },
-    {
-        id: '2',
-        title: 'System Update',
-        message: 'Walia AI has been upgraded with vision capabilities! Try it out now.',
-        time: '1 hour ago',
-        type: 'system',
-        read: false,
-    },
-    {
-        id: '3',
-        title: 'Study Reminder',
-        message: 'Your Physics Final Exam prep session starts in 15 minutes.',
-        time: '2 hours ago',
-        type: 'reminder',
-        read: true,
-    },
-    {
-        id: '4',
-        title: 'Achievement Unlocked',
-        message: 'You have completed 10 Quizzes this week. Keep up the great work!',
-        time: 'Yesterday',
-        type: 'achievement',
-        read: true,
-    },
-];
-
 export default function NotificationsPage() {
     const { user } = useAuth();
-    const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
+    const { notifications, markAllAsRead, deleteNotification, markAsRead } = useNotifications();
     const [filter, setFilter] = useState<'all' | 'unread'>('all');
 
     const unreadCount = notifications.filter(n => !n.read).length;
-
-    const markAllAsRead = () => {
-        setNotifications(notifications.map(n => ({ ...n, read: true })));
-    };
-
-    const deleteNotification = (id: string, e: React.MouseEvent) => {
-        e.stopPropagation();
-        setNotifications(notifications.filter(n => n.id !== id));
-    };
-
-    const toggleReadStatus = (id: string) => {
-        setNotifications(notifications.map(n =>
-            n.id === id ? { ...n, read: !n.read } : n
-        ));
-    };
 
     const filteredNotifications = notifications.filter(n =>
         filter === 'unread' ? !n.read : true
@@ -150,7 +100,7 @@ export default function NotificationsPage() {
                                 {filteredNotifications.map((notif) => (
                                     <div
                                         key={notif.id}
-                                        onClick={() => toggleReadStatus(notif.id)}
+                                        onClick={() => markAsRead(notif.id)}
                                         className={cn(
                                             "p-6 flex gap-5 cursor-pointer transition-colors group relative",
                                             notif.read ? "bg-white hover:bg-gray-50" : "bg-gray-50 hover:bg-gray-100"
@@ -185,12 +135,15 @@ export default function NotificationsPage() {
                                                 "text-sm font-medium line-clamp-2 leading-relaxed",
                                                 notif.read ? "text-gray-500" : "text-gray-700"
                                             )}>
-                                                {notif.message}
+                                                {notif.description}
                                             </p>
                                         </div>
 
                                         <button
-                                            onClick={(e) => deleteNotification(notif.id, e)}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                deleteNotification(notif.id);
+                                            }}
                                             className="w-10 h-10 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-red-50 hover:text-red-500 text-gray-400 transition-all self-center shrink-0"
                                             title="Delete notification"
                                         >
