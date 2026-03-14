@@ -25,7 +25,7 @@ import { useEffect, useState } from 'react';
 const SIDEBAR_NAV = [
     { icon: Bot, label: 'AI Chat', href: '/dashboard/ai' },
     { icon: MessageSquare, label: 'Messages', href: '/dashboard/messages' },
-    { icon: Users, label: 'Community', href: '/dashboard/community', badge: 15 },
+    { icon: Users, label: 'Community', href: '/dashboard/community' },
     { icon: Wrench, label: 'Tools', href: '/dashboard/tools' },
     { icon: Calendar, label: 'Calendar', href: '/dashboard/calendar' },
     { icon: User, label: 'Profile', href: '/dashboard/profile' },
@@ -100,7 +100,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
                     {/* Nav links */}
                     <nav className="flex-1 px-4 py-8 space-y-1 overflow-y-auto custom-scrollbar">
 
-                        {SIDEBAR_NAV.map(({ icon: Icon, label, href, badge }) => {
+                        {SIDEBAR_NAV.map(({ icon: Icon, label, href }) => {
                             const active = pathname === href || pathname.startsWith(href) && href !== '/dashboard';
                             return (
                                 <Link
@@ -114,11 +114,6 @@ export default function DashboardShell({ children }: { children: React.ReactNode
                                 >
                                     <Icon className={`w-5 h-5 shrink-0 transition-colors ${active ? 'text-white dark:text-black' : 'text-gray-400 dark:text-gray-500 group-hover:text-black dark:group-hover:text-gray-300'}`} />
                                     <span className={`text-[15px] ${active ? 'font-bold' : 'font-semibold'}`}>{label}</span>
-                                    {badge && (
-                                        <div className="ml-auto min-w-[20px] h-5 px-1.5 rounded-full bg-[#EF4444] text-[11px] font-black flex items-center justify-center text-white shadow-sm">
-                                            {badge}
-                                        </div>
-                                    )}
                                 </Link>
                             );
                         })}

@@ -243,7 +243,7 @@ export default function AIHubPage() {
                         <div className="w-20 h-20 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center mb-8 shadow-2xl relative z-10 backdrop-blur-sm">
                             <Bot className="w-8 h-8 text-[#4ade80]" />
                         </div>
-                        <h1 className="text-4xl md:text-5xl font-black mb-4 tracking-tight text-white relative z-10">
+                        <h1 className="text-4xl md:text-5xl font-black mb-4 tracking-tight text-black dark:text-white relative z-10">
                             Good to see you,<br />
                             <span className="text-[#4ade80]">{user?.displayName?.split(' ')[0] || 'Voyager'}</span>
                         </h1>
@@ -403,7 +403,7 @@ export default function AIHubPage() {
                                 )}
                             >
                                 <div className="flex items-start justify-between mb-1 pr-6">
-                                    <h4 className="text-sm font-bold text-white truncate max-w-[160px]">{session.title}</h4>
+                                    <h4 className="text-sm font-bold text-black dark:text-white truncate max-w-[160px]">{session.title}</h4>
                                 </div>
                                 <p className="text-[10px] text-[#64748B] font-bold uppercase tracking-wider mt-1">{formatTimeAgo(session.updatedAt)}</p>
 

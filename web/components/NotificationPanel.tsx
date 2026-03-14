@@ -3,9 +3,9 @@
 import { useAuth } from '@/context/AuthContext';
 import { db } from '@/lib/firebase';
 import { formatTimeAgo } from '@/lib/utils';
-import { collection, doc, onSnapshot, orderBy, query, updateDoc, where } from 'firebase/firestore';
+import { collection, doc, onSnapshot, orderBy, query, updateDoc, where, deleteDoc, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Bell, Info, MessageSquare, ShieldAlert, Users, X } from 'lucide-react';
+import { Bell, Info, MessageSquare, ShieldAlert, Users, X, Calendar as CalendarIcon, Check } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
@@ -46,6 +46,49 @@ export default function NotificationPanel() {
         return () => unsubscribe();
     }, [user]);
 
+    // Real-time task/event checker
+    useEffect(() => {
+        if (!user) return;
+        
+        let notifiedEvents = new Set<string>();
+        
+        const q = query(collection(db, 'users', user.uid, 'events'));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const events = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as any }));
+            
+            const checkEvents = setInterval(() => {
+                const now = new Date();
+                const currentDate = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+                const currentTime = now.toTimeString().substring(0, 5); // HH:MM
+                
+                events.forEach(async event => {
+                    const eventKey = `${event.id}-${currentDate}-${currentTime}`;
+                    if (event.date === currentDate && event.time === currentTime && !notifiedEvents.has(eventKey)) {
+                        notifiedEvents.add(eventKey);
+                        // Trigger real-time notification
+                        try {
+                            await addDoc(collection(db, 'notifications'), {
+                                userId: user.uid,
+                                title: 'Task Reminder',
+                                message: `It's time for: ${event.title}`,
+                                type: 'system',
+                                read: false,
+                                createdAt: serverTimestamp(),
+                                link: '/dashboard/calendar'
+                            });
+                        } catch (e) {
+                            console.error('Failed to create event notification:', e);
+                        }
+                    }
+                });
+            }, 60000); // Check every minute
+            
+            return () => clearInterval(checkEvents);
+        });
+
+        return () => unsubscribe();
+    }, [user]);
+
     // Close on outside click
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -65,6 +108,15 @@ export default function NotificationPanel() {
             await updateDoc(doc(db, 'notifications', id), { read: true });
         } catch (error) {
             console.error('Error marking as read:', error);
+        }
+    };
+
+    const deleteNotification = async (id: string | undefined) => {
+        if (!id) return;
+        try {
+            await deleteDoc(doc(db, 'notifications', id));
+        } catch (error) {
+            console.error('Error deleting notification:', error);
         }
     };
 
@@ -140,9 +192,18 @@ export default function NotificationPanel() {
                                                     <p className={`text-sm ${!notif.read ? 'font-bold text-black dark:text-white' : 'font-medium text-black/70 dark:text-white/70'}`}>
                                                         {notif.title}
                                                     </p>
-                                                    <span className="text-[10px] text-black/40 dark:text-white/40 whitespace-nowrap mt-0.5 font-semibold">
-                                                        {formatTimeAgo(notif.createdAt)}
-                                                    </span>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-[10px] text-black/40 dark:text-white/40 whitespace-nowrap mt-0.5 font-semibold">
+                                                            {formatTimeAgo(notif.createdAt)}
+                                                        </span>
+                                                        <button 
+                                                            onClick={(e) => { e.stopPropagation(); deleteNotification(notif.id); }}
+                                                            className="p-1 rounded-md text-red-500/50 hover:bg-red-500/10 hover:text-red-500 transition-colors"
+                                                            title="Delete Notification"
+                                                        >
+                                                            <X className="w-3 h-3" />
+                                                        </button>
+                                                    </div>
                                                 </div>
                                                 <p className="text-xs text-black/60 dark:text-white/60 mt-1 line-clamp-2 leading-relaxed">
                                                     {notif.message}
