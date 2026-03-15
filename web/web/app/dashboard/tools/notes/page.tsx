@@ -1,6 +1,7 @@
 'use client';
 
 import { AlignCenter, AlignJustify, AlignLeft, BookOpen, Cloud, Moon, Settings2, Sun } from 'lucide-react';
+import Image from 'next/image';
 import { useState } from 'react';
 
 type Theme = 'light' | 'dark' | 'cream';
@@ -54,8 +55,8 @@ export default function WaliaNotesPage() {
             {/* Header */}
             <header className="w-full max-w-4xl mx-auto px-6 py-8 flex justify-between items-center z-10">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-black/5 flex items-center justify-center">
-                        <span className={`font-black text-xl ${theme === 'dark' ? 'text-white' : 'text-black'}`}>W</span>
+                    <div className="w-10 h-10 rounded-[10px] bg-black/5 border border-black/10 dark:border-white/10 flex items-center justify-center overflow-hidden shrink-0">
+                        <Image src="/walia-logo.png" alt="Walia" width={24} height={24} unoptimized className={`object-contain ${theme === 'dark' ? 'invert' : ''}`} />
                     </div>
                     <div>
                         <h1 className={`text-base font-black ${theme === 'dark' ? 'text-white' : 'text-black'} tracking-tight`}>My Walia Notes</h1>

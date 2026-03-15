@@ -1,16 +1,8 @@
-'use client';
-
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { db } from '@/lib/firebase';
-import { cn } from '@/lib/utils';
 import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
-import {
-    CreditCard,
-    DollarSign,
-    Download,
-    Search,
-    TrendingUp
-} from 'lucide-react';
-import { useEffect, useState } from 'react';
 
 interface Transaction {
     id: string;
@@ -45,116 +37,202 @@ export default function AdminPayments() {
         tx.id?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    const renderItem = ({ item }: { item: Transaction }) => (
+        <View style={styles.card}>
+            <View style={styles.cardHeader}>
+                <Text style={styles.idText}>#{item.id.slice(-8)}</Text>
+                <View style={[styles.statusBadge, 
+                    item.status === 'Completed' || item.status === 'succeeded' ? styles.statusSuccess :
+                    item.status === 'Failed' ? styles.statusFailed : styles.statusPending
+                ]}>
+                    <Text style={[styles.statusText, 
+                        item.status === 'Completed' || item.status === 'succeeded' ? styles.textSuccess :
+                        item.status === 'Failed' ? styles.textFailed : styles.textPending
+                    ]}>{item.status}</Text>
+                </View>
+            </View>
+            
+            <View style={styles.cardBody}>
+                <View style={styles.infoRow}>
+                    <Ionicons name="person" size={14} color="rgba(255,255,255,0.4)" />
+                    <Text style={styles.userName}>{item.user}</Text>
+                </View>
+                <View style={styles.infoRow}>
+                    <Ionicons name="card" size={14} color="rgba(255,255,255,0.4)" />
+                    <Text style={styles.planName}>{item.plan} • {item.amount}</Text>
+                </View>
+                <View style={styles.infoRow}>
+                    <Ionicons name="time" size={14} color="rgba(255,255,255,0.4)" />
+                    <Text style={styles.dateText}>{item.date}</Text>
+                </View>
+            </View>
+
+            <View style={styles.cardFooter}>
+                <Text style={styles.methodText}>{item.method.toUpperCase()}</Text>
+            </View>
+        </View>
+    );
+
     return (
-        <div className="space-y-8 animate-fade-in-up">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <div className="space-y-1">
-                    <h1 className="text-3xl font-black text-white tracking-tight">Financial Records</h1>
-                    <p className="text-white/30 text-sm font-medium">Verify transaction logs and monitor subscription revenue.</p>
-                </div>
+        <View style={styles.container}>
+            <View style={styles.header}>
+                <Text style={styles.title}>Financial Records</Text>
+                <Text style={styles.subtitle}>Verify transaction logs and monitor subscription revenue.</Text>
+            </View>
 
-                <div className="flex items-center space-x-3">
-                    <button className="p-3 rounded-2xl bg-white/5 border border-white/10 text-white/40 hover:text-white transition-all">
-                        <Download className="w-5 h-5" />
-                    </button>
-                </div>
-            </div>
+            <View style={styles.searchContainer}>
+                <Ionicons name="search" size={18} color="rgba(255,255,255,0.2)" style={styles.searchIcon} />
+                <TextInput
+                    style={styles.searchInput}
+                    placeholder="Search by User or Transaction ID..."
+                    placeholderTextColor="rgba(255,255,255,0.2)"
+                    value={searchTerm}
+                    onChangeText={setSearchTerm}
+                />
+            </View>
 
-            {/* Quick Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                {[
-                    { label: 'Net Revenue', value: `$${transactions.filter(t => t.status === 'Completed').reduce((acc, t) => acc + (parseFloat(t.amount.replace('$', '')) || 0), 0).toLocaleString()}`, change: '+12%', icon: DollarSign, color: 'text-walia-success' },
-                    { label: 'Active Subs', value: transactions.filter(t => t.status === 'Completed').length, change: '+4%', icon: TrendingUp, color: 'text-blue-500' },
-                    { label: 'Avg Ticket', value: '$9.99', change: '-2%', icon: CreditCard, color: 'text-purple-500' },
-                    { label: 'Transactions', value: transactions.length, change: '+2', icon: CreditCard, color: 'text-orange-500' },
-                ].map((stat, i) => (
-                    <div key={stat.label} className="p-6 rounded-[28px] bg-[#141415] border border-white/5">
-                        <div className="flex items-center justify-between mb-4">
-                            <stat.icon className={cn("w-5 h-5", stat.color)} />
-                            <span className="text-[10px] font-black text-white/20">{stat.change}</span>
-                        </div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-white/30 truncate">{stat.label}</p>
-                        <h4 className="text-2xl font-black text-white mt-1">{stat.value}</h4>
-                    </div>
-                ))}
-            </div>
-
-            {/* Transaction Table */}
-            <div className="rounded-[32px] bg-[#141415] border border-white/5 overflow-hidden">
-                <div className="p-6">
-                    <div className="relative">
-                        <Search className="w-4 h-4 text-white/20 absolute left-4 top-1/2 -translate-y-1/2" />
-                        <input
-                            type="text"
-                            placeholder="Search by User or Transaction ID..."
-                            className="w-full bg-white/5 border border-white/5 rounded-2xl pl-12 pr-4 py-3 text-sm text-white placeholder:text-white/20 outline-none focus:border-walia-primary/30 transition-all"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
-                </div>
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="border-b border-white/5 bg-white/[0.01]">
-                                <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-white/30">ID / Hash</th>
-                                <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-white/30">User</th>
-                                <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-white/30">Tier</th>
-                                <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-white/30">Value</th>
-                                <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-white/30">Status</th>
-                                <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-white/30">Date</th>
-                                <th className="px-6 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-white/30 text-right">Method</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-white/[0.02]">
-                            {loading ? (
-                                <tr>
-                                    <td colSpan={7} className="px-6 py-10 text-center text-white/20 text-xs font-bold uppercase tracking-widest">Loading records...</td>
-                                </tr>
-                            ) : filteredTransactions.length === 0 ? (
-                                <tr>
-                                    <td colSpan={7} className="px-6 py-10 text-center text-white/20 text-xs font-bold uppercase tracking-widest">No transactions found</td>
-                                </tr>
-                            ) : (
-                                filteredTransactions.map((tx) => (
-                                    <tr key={tx.id} className="group hover:bg-white/[0.02] transition-colors">
-                                        <td className="px-6 py-5">
-                                            <span className="text-xs font-black text-white/60 group-hover:text-white transition-colors">#{tx.id.slice(-8)}</span>
-                                        </td>
-                                        <td className="px-6 py-5">
-                                            <span className="text-xs font-bold text-white group-hover:text-walia-primary transition-colors">{tx.user}</span>
-                                        </td>
-                                        <td className="px-6 py-5 text-xs text-white/40">{tx.plan}</td>
-                                        <td className="px-6 py-5">
-                                            <span className="text-sm font-black text-white">{tx.amount}</span>
-                                        </td>
-                                        <td className="px-6 py-5">
-                                            <div className={cn(
-                                                "inline-flex items-center space-x-2 px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest",
-                                                tx.status === 'Completed' || tx.status === 'succeeded' ? "bg-walia-success/10 text-walia-success" :
-                                                    tx.status === 'Failed' ? "bg-red-500/10 text-red-500" :
-                                                        "bg-orange-500/10 text-orange-500"
-                                            )}>
-                                                {tx.status}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-5 text-[10px] text-white/20 whitespace-nowrap">{tx.date}</td>
-                                        <td className="px-6 py-5 text-right">
-                                            <span className="text-[10px] font-bold text-white/30 group-hover:text-white/60 transition-colors uppercase tracking-tighter">{tx.method}</span>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div className="flex items-center justify-center pt-4">
-                <button className="px-8 py-3 rounded-2xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all text-white/60">
-                    Sync All Historical Subscriptions
-                </button>
-            </div>
-        </div>
+            {loading ? (
+                <View style={styles.centerBox}>
+                    <ActivityIndicator size="large" color="#4F46E5" />
+                </View>
+            ) : (
+                <FlatList
+                    data={filteredTransactions}
+                    renderItem={renderItem}
+                    keyExtractor={item => item.id}
+                    contentContainerStyle={styles.listContent}
+                    ListEmptyComponent={
+                        <View style={styles.centerBox}>
+                            <Text style={styles.emptyText}>No transactions found</Text>
+                        </View>
+                    }
+                />
+            )}
+        </View>
     );
 }
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#0A0A0B',
+        padding: 20,
+    },
+    header: {
+        marginBottom: 24,
+    },
+    title: {
+        fontSize: 28,
+        fontWeight: '900',
+        color: 'white',
+        letterSpacing: -0.5,
+    },
+    subtitle: {
+        fontSize: 14,
+        color: 'rgba(255, 255, 255, 0.3)',
+        marginTop: 4,
+    },
+    searchContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+        borderRadius: 16,
+        paddingHorizontal: 16,
+        marginBottom: 24,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.05)',
+    },
+    searchIcon: {
+        marginRight: 12,
+    },
+    searchInput: {
+        flex: 1,
+        height: 50,
+        color: 'white',
+        fontSize: 14,
+    },
+    listContent: {
+        paddingBottom: 20,
+    },
+    card: {
+        backgroundColor: '#141415',
+        borderRadius: 24,
+        padding: 20,
+        marginBottom: 16,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.05)',
+    },
+    cardHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 16,
+    },
+    idText: {
+        fontSize: 12,
+        fontWeight: '900',
+        color: 'rgba(255, 255, 255, 0.6)',
+        fontFamily: 'monospace',
+    },
+    statusBadge: {
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 8,
+    },
+    statusSuccess: { backgroundColor: 'rgba(34, 197, 94, 0.1)' },
+    statusFailed: { backgroundColor: 'rgba(239, 68, 68, 0.1)' },
+    statusPending: { backgroundColor: 'rgba(249, 115, 22, 0.1)' },
+    statusText: {
+        fontSize: 10,
+        fontWeight: '900',
+        textTransform: 'uppercase',
+        letterSpacing: 1,
+    },
+    textSuccess: { color: '#22C55E' },
+    textFailed: { color: '#EF4444' },
+    textPending: { color: '#F97316' },
+    cardBody: {
+        gap: 8,
+    },
+    infoRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    userName: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: 'white',
+    },
+    planName: {
+        fontSize: 12,
+        color: 'rgba(255, 255, 255, 0.4)',
+    },
+    dateText: {
+        fontSize: 11,
+        color: 'rgba(255, 255, 255, 0.2)',
+    },
+    cardFooter: {
+        marginTop: 16,
+        paddingTop: 16,
+        borderTopWidth: 1,
+        borderTopColor: 'rgba(255, 255, 255, 0.05)',
+    },
+    methodText: {
+        fontSize: 10,
+        fontWeight: '900',
+        color: 'rgba(255, 255, 255, 0.3)',
+        letterSpacing: 1,
+    },
+    centerBox: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 40,
+    },
+    emptyText: {
+        color: 'rgba(255, 255, 255, 0.2)',
+        fontSize: 14,
+        fontWeight: 'bold',
+    },
+});

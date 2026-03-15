@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useAuth } from '@/context/AuthContext';
 import { usePathname } from 'next/navigation';
 
 const sidebarLinks = [
@@ -26,6 +27,7 @@ const sidebarLinks = [
 ];
 
 export default function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
+    const { user } = useAuth();
     const pathname = usePathname();
 
     return (
@@ -52,7 +54,7 @@ export default function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose:
                             <div className="w-10 h-10 rounded-full bg-black border border-walia-primary/30 flex items-center justify-center overflow-hidden transition-all group-hover:scale-110">
                                 <Image src="/walia-logo.png" alt="Walia" width={32} height={32} unoptimized />
                             </div>
-                            <span className="text-2xl font-black text-white tracking-tighter">Walia</span>
+                            <span className="text-2xl font-black text-white tracking-tighter uppercase">Walia</span>
                         </Link>
                         <button className="lg:hidden p-2 text-white/40 hover:text-white" onClick={onClose}>
                             <X className="w-6 h-6" />
@@ -120,8 +122,8 @@ export default function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose:
                                 <User className="w-5 h-5 text-walia-primary" />
                             </div>
                             <div className="flex-1 overflow-hidden">
-                                <p className="text-sm font-bold text-white truncate">User Name</p>
-                                <p className="text-[10px] text-white/30 truncate">Free Plan</p>
+                                <p className="text-sm font-bold text-white truncate">{user?.displayName || 'User'}</p>
+                                <p className="text-[10px] text-white/30 truncate">@{user?.email?.split('@')[0] || 'member'}</p>
                             </div>
                             <Link href="/dashboard/settings">
                                 <Settings className="w-5 h-5 text-white/20 hover:text-white transition-colors" />

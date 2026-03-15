@@ -49,11 +49,11 @@ export default function UserBadge({ uid, showUsername = true, className, size = 
             </div>
             {(userData || !uid) && (
                 <div className="flex flex-col min-w-0">
-                    <h4 className={cn("font-black text-white truncate", currentSize.text)}>
+                    <h4 className={cn("font-black text-black dark:text-white truncate", currentSize.text)}>
                         {userData?.name || userData?.displayName || 'Student'}
                     </h4>
                     {showUsername && (
-                        <p className={cn("text-white/30 font-black uppercase tracking-widest truncate", currentSize.subtext)}>
+                        <p className={cn("text-gray-500 dark:text-white/30 font-black uppercase tracking-widest truncate", currentSize.subtext)}>
                             @{userData?.username || 'walia_user'}
                         </p>
                     )}

@@ -154,18 +154,18 @@ export default function MessagesPage() {
     };
 
     return (
-        <div className="h-full flex bg-white text-black animate-in fade-in">
+        <div className="h-full flex bg-white dark:bg-[#0A101D] text-black dark:text-white animate-in fade-in">
             {/* Sidebar: Chat List */}
             <aside className={cn(
-                "w-full md:w-80 border-r border-gray-200 flex flex-col transition-all bg-gray-50",
+                "w-full md:w-80 border-r border-gray-200 dark:border-white/5 flex flex-col transition-all bg-gray-50 dark:bg-[#0A101D]",
                 activeChat ? "hidden md:flex" : "flex"
             )}>
-                <div className="p-6 border-b border-gray-200 bg-white">
+                <div className="p-6 border-b border-gray-200 dark:border-white/5 bg-white dark:bg-[#0A101D]">
                     <div className="flex items-center justify-between mb-4">
                         <h1 className="text-xl font-black tracking-tight">Messages</h1>
                         <button
                             onClick={() => setShowSearch(!showSearch)}
-                            className="w-8 h-8 rounded-full bg-black flex items-center justify-center text-white hover:bg-zinc-800 transition-colors shadow-sm"
+                            className="w-8 h-8 rounded-full bg-black dark:bg-white flex items-center justify-center text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-gray-200 transition-colors shadow-sm"
                         >
                             {showSearch ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                         </button>
@@ -186,20 +186,20 @@ export default function MessagesPage() {
                                         placeholder="Search friends..."
                                         value={searchQuery}
                                         onChange={(e) => handleSearch(e.target.value)}
-                                        className="w-full bg-white border border-gray-200 focus:border-black rounded-full pl-11 pr-4 py-3 text-sm outline-none text-black transition-all font-medium shadow-sm focus:ring-4 focus:ring-black/5"
+                                        className="w-full bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 focus:border-black dark:focus:border-white rounded-full pl-11 pr-4 py-3 text-sm outline-none text-black dark:text-white transition-all font-medium shadow-sm focus:ring-4 focus:ring-black/5 dark:focus:ring-white/5 placeholder:text-gray-400 dark:placeholder:text-gray-500"
                                     />
                                 </div>
                                 <div className="mt-3 space-y-2">
                                     {searchResults.map(u => (
-                                        <div key={u.id} onClick={() => startChat(u)} className="p-3 rounded-2xl cursor-pointer flex items-center bg-white border border-gray-100 hover:border-black hover:shadow-md transition-all group">
-                                            <div className="w-10 h-10 rounded-full overflow-hidden border border-gray-100 relative mr-3 shrink-0">
-                                                {u.photoURL ? <Image src={u.photoURL} alt="" fill className="object-cover" /> : <User className="w-5 h-5 text-gray-400 absolute top-2.5 left-2.5" />}
+                                        <div key={u.id} onClick={() => startChat(u)} className="p-3 rounded-2xl cursor-pointer flex items-center bg-white dark:bg-[#182134] border border-gray-100 dark:border-white/10 hover:border-black dark:hover:border-white hover:shadow-md transition-all group">
+                                            <div className="w-10 h-10 rounded-full overflow-hidden border border-gray-100 dark:border-white/10 relative mr-3 shrink-0 bg-gray-100 dark:bg-white/5">
+                                                {u.photoURL ? <Image src={u.photoURL} alt="" fill className="object-cover" /> : <User className="w-5 h-5 text-gray-400 dark:text-gray-500 absolute top-2.5 left-2.5" />}
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <p className="text-sm font-bold text-black truncate">{u.displayName || u.name}</p>
-                                                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest truncate">@{u.username || 'student'}</p>
+                                                <p className="text-sm font-bold text-black dark:text-white truncate">{u.displayName || u.name}</p>
+                                                <p className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest truncate">@{u.username || 'student'}</p>
                                             </div>
-                                            <MessageSquare className="w-4 h-4 text-gray-300 group-hover:text-black transition-colors shrink-0" />
+                                            <MessageSquare className="w-4 h-4 text-gray-300 dark:text-gray-600 group-hover:text-black dark:group-hover:text-white transition-colors shrink-0" />
                                         </div>
                                     ))}
                                 </div>
@@ -211,9 +211,9 @@ export default function MessagesPage() {
                 <div className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar">
                     {chats.length === 0 && !showSearch ? (
                         <div className="text-center py-10 opacity-50 flex flex-col items-center">
-                            <MessageSquare className="w-8 h-8 text-black mb-3" />
-                            <p className="text-sm font-bold">No messages</p>
-                            <p className="text-xs">Start a conversation using the + button.</p>
+                            <MessageSquare className="w-8 h-8 text-black dark:text-white mb-3" />
+                            <p className="text-sm font-bold text-black dark:text-white">No messages</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">Start a conversation using the + button.</p>
                         </div>
                     ) : (
                         chats.map((chat) => (
@@ -223,16 +223,16 @@ export default function MessagesPage() {
                                 className={cn(
                                     "p-4 rounded-2xl cursor-pointer flex items-center transition-all group border",
                                     activeChat === chat.id
-                                        ? "bg-white border-black shadow-md"
-                                        : "bg-transparent border-transparent hover:bg-white hover:border-gray-200 hover:shadow-sm"
+                                        ? "bg-white dark:bg-white/10 border-black dark:border-white/20 shadow-md"
+                                        : "bg-transparent border-transparent hover:bg-white dark:hover:bg-white/5 hover:border-gray-200 dark:hover:border-white/10 hover:shadow-sm"
                                 )}
                             >
-                                <div className="w-12 h-12 rounded-full overflow-hidden relative bg-gray-100 mr-4 shrink-0 shadow-inner">
+                                <div className="w-12 h-12 rounded-full overflow-hidden relative bg-gray-100 dark:bg-white/5 mr-4 shrink-0 shadow-inner border border-gray-200 dark:border-white/10">
                                     {chat.photoURL ? <Image src={chat.photoURL} alt="" fill className="object-cover" /> : <User className="w-6 h-6 text-gray-400 absolute top-3 left-3" />}
                                 </div>
                                 <div className="flex-1 min-w-0 overflow-hidden">
                                     <div className="flex justify-between items-center mb-1">
-                                        <h4 className="text-sm font-bold text-black truncate pr-2">{chat.type === 'dm' ? (chat.otherName || 'Direct Message') : chat.name}</h4>
+                                        <h4 className="text-sm font-bold text-black dark:text-white truncate pr-2">{chat.type === 'dm' ? (chat.otherName || 'Direct Message') : chat.name}</h4>
                                         <span className="text-[10px] text-gray-500 font-bold">{formatTimeAgo(chat.lastMessageAt)}</span>
                                     </div>
                                     <p className="text-xs text-gray-500 truncate font-medium">{chat.lastMessage || 'Start a conversation...'}</p>
@@ -246,16 +246,16 @@ export default function MessagesPage() {
             {/* Main Chat Area */}
             <main className={cn(
                 "flex-1 flex flex-col relative min-w-0",
-                !activeChat && "hidden md:flex justify-center items-center bg-white"
+                !activeChat && "hidden md:flex justify-center items-center bg-white dark:bg-[#0A101D]"
             )}>
                 {!activeChat ? (
                     <div className="text-center max-w-sm space-y-6 animate-in fade-in slide-in-from-bottom-4">
-                        <div className="w-24 h-24 rounded-full bg-gray-50 border whitespace-pre border-gray-100 flex items-center justify-center mx-auto relative group">
-                            <MessageSquare className="w-10 h-10 text-black group-hover:scale-110 transition-transform" />
+                        <div className="w-24 h-24 rounded-full bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 flex items-center justify-center mx-auto relative group">
+                            <MessageSquare className="w-10 h-10 text-black dark:text-white group-hover:scale-110 transition-transform" />
                         </div>
                         <div className="space-y-2">
-                            <h2 className="text-2xl font-black text-black tracking-tight">Your Messages</h2>
-                            <p className="text-sm text-gray-500 font-medium px-8">
+                            <h2 className="text-2xl font-black text-black dark:text-white tracking-tight">Your Messages</h2>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium px-8">
                                 Select a conversation or start a new one to connect with peers.
                             </p>
                         </div>
@@ -263,12 +263,12 @@ export default function MessagesPage() {
                 ) : (
                     <>
                         {/* Chat Header */}
-                        <header className="h-20 px-6 border-b border-gray-200 flex items-center justify-between bg-white z-10 shrink-0 shadow-sm">
+                        <header className="h-20 px-6 border-b border-gray-200 dark:border-white/5 flex items-center justify-between bg-white dark:bg-[#0A101D] z-10 shrink-0 shadow-sm">
                             <div className="flex items-center cursor-pointer group" onClick={() => setShowProfile(true)}>
-                                <button onClick={(e) => { e.stopPropagation(); setActiveChat(null); }} className="md:hidden p-2 mr-2 text-gray-400 hover:text-black hover:bg-gray-50 rounded-full transition-colors">
+                                <button onClick={(e) => { e.stopPropagation(); setActiveChat(null); }} className="md:hidden p-2 mr-2 text-gray-400 hover:text-black dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/10 rounded-full transition-colors">
                                     <ArrowLeft className="w-5 h-5" />
                                 </button>
-                                <div className="w-12 h-12 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center font-bold text-black mr-4 overflow-hidden relative group-hover:scale-105 transition-transform shadow-inner">
+                                <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 flex items-center justify-center font-bold text-black dark:text-white mr-4 overflow-hidden relative group-hover:scale-105 transition-transform shadow-inner">
                                     {selectedParticipant?.photoURL ? (
                                         <Image src={selectedParticipant.photoURL} alt="Profile" fill className="object-cover" />
                                     ) : (
@@ -276,28 +276,28 @@ export default function MessagesPage() {
                                     )}
                                 </div>
                                 <div>
-                                    <h3 className="text-base font-bold text-black group-hover:underline">
+                                    <h3 className="text-base font-bold text-black dark:text-white group-hover:underline">
                                         {selectedParticipant?.name || (chats.find(c => c.id === activeChat)?.type === 'dm' ? 'Direct Message' : chats.find(c => c.id === activeChat)?.name)}
                                     </h3>
-                                    <p className="text-[10px] text-green-600 font-bold uppercase tracking-widest mt-0.5">Active Now</p>
+                                    <p className="text-[10px] text-green-600 dark:text-[#4ade80] font-bold uppercase tracking-widest mt-0.5">Active Now</p>
                                 </div>
                             </div>
                             <div className="flex items-center space-x-1">
-                                <button className="p-3 rounded-full hover:bg-gray-100 transition-colors text-gray-400 hover:text-black" onClick={() => setShowProfile(true)}>
+                                <button className="p-3 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors text-gray-400 hover:text-black dark:hover:text-white" onClick={() => setShowProfile(true)}>
                                     <Info className="w-5 h-5" />
                                 </button>
                             </div>
                         </header>
 
                         {/* Message Thread */}
-                        <div className="flex-1 overflow-y-auto p-6 flex flex-col space-y-6 bg-white custom-scrollbar">
+                        <div className="flex-1 overflow-y-auto p-6 flex flex-col space-y-6 bg-white dark:bg-[#0A101D] custom-scrollbar">
                             {messages.map((msg, i) => {
                                 const isMe = msg.senderId === user?.uid;
                                 return (
                                     <div key={msg.id || i} className={cn("flex w-full animate-in slide-in-from-bottom-2", isMe ? "justify-end" : "justify-start")}>
                                         <div className={cn(
                                             "rounded-3xl text-sm max-w-[75%] leading-relaxed shadow-sm overflow-hidden border",
-                                            isMe ? "bg-black text-white border-black rounded-tr-sm" : "bg-white border-gray-200 text-black rounded-tl-sm",
+                                            isMe ? "bg-black text-white border-black rounded-tr-sm" : "bg-gray-50 dark:bg-[#182134] border-gray-200 dark:border-white/10 text-black dark:text-white rounded-tl-sm",
                                             msg.image ? "p-2" : "px-6 py-4"
                                         )}>
                                             {msg.image ? (
@@ -318,11 +318,11 @@ export default function MessagesPage() {
                         </div>
 
                         {/* Action Bar */}
-                        <div className="p-6 bg-gradient-to-t from-white via-white to-transparent">
+                        <div className="p-6 bg-gradient-to-t from-white dark:from-[#0A101D] via-white dark:via-[#0A101D] to-transparent">
                             <div className="max-w-4xl mx-auto">
-                                <div className="bg-white border-2 border-black rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.06)] flex items-end p-2 transition-all focus-within:ring-4 focus-within:ring-black/5">
+                                <div className="bg-white dark:bg-[#182134] border-2 border-black dark:border-white/20 rounded-[2rem] shadow-[0_8px_30px_rgba(0,0,0,0.06)] dark:shadow-[0_8px_40px_rgba(0,0,0,0.5)] flex items-end p-2 transition-all focus-within:ring-4 focus-within:ring-black/5 dark:focus-within:ring-[#4ade80]/10">
                                     <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
-                                    <button onClick={() => fileInputRef.current?.click()} disabled={uploading} className="p-4 rounded-full hover:bg-gray-100 text-gray-500 hover:text-black transition-colors shrink-0 disabled:opacity-50">
+                                    <button onClick={() => fileInputRef.current?.click()} disabled={uploading} className="p-4 rounded-full hover:bg-gray-100 dark:hover:bg-white/5 text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white transition-colors shrink-0 disabled:opacity-50">
                                         {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <ImageIcon className="w-5 h-5" />}
                                     </button>
 
@@ -336,11 +336,11 @@ export default function MessagesPage() {
                                             }
                                         }}
                                         placeholder="Type a message..."
-                                        className="flex-1 bg-transparent py-4 px-2 text-black font-medium placeholder:text-gray-400 outline-none resize-none max-h-32 min-h-[56px] custom-scrollbar"
+                                        className="flex-1 bg-transparent py-4 px-2 text-black dark:text-white font-medium placeholder:text-gray-400 dark:placeholder:text-gray-500 outline-none resize-none max-h-32 min-h-[56px] custom-scrollbar"
                                         rows={1}
                                     />
 
-                                    <button onClick={sendMessage} disabled={!messageInput.trim()} className="m-1 p-3.5 rounded-full bg-black text-white hover:bg-zinc-800 transition-all flex items-center justify-center shrink-0 disabled:opacity-20 disabled:hover:bg-black">
+                                    <button onClick={sendMessage} disabled={!messageInput.trim()} className="m-1 p-3.5 rounded-full bg-black dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-gray-200 transition-all flex items-center justify-center shrink-0 disabled:opacity-20 disabled:hover:bg-black dark:disabled:hover:bg-white">
                                         <Send className="w-5 h-5" />
                                     </button>
                                 </div>
@@ -351,29 +351,29 @@ export default function MessagesPage() {
                         <AnimatePresence>
                             {showProfile && selectedParticipant && (
                                 <div className="absolute inset-0 z-50 flex items-end justify-center">
-                                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowProfile(false)} className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
-                                    <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', damping: 25, stiffness: 200 }} className="w-full bg-white rounded-t-[40px] overflow-hidden relative z-10 shadow-2xl p-8 pb-12 max-w-lg mx-auto md:mb-8 md:rounded-[40px] md:top-1/2 md:-translate-y-1/2 md:absolute md:inset-x-auto">
-                                        <div className="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-8 md:hidden" />
+                                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowProfile(false)} className="absolute inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-sm" />
+                                    <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', damping: 25, stiffness: 200 }} className="w-full bg-white dark:bg-[#0A101D] rounded-t-[40px] overflow-hidden relative z-10 shadow-2xl p-8 pb-12 max-w-lg mx-auto md:mb-8 md:rounded-[40px] md:top-1/2 md:-translate-y-1/2 md:absolute md:inset-x-auto border border-transparent dark:border-white/10">
+                                        <div className="w-12 h-1.5 bg-gray-200 dark:bg-white/10 rounded-full mx-auto mb-8 md:hidden" />
                                         <div className="flex flex-col items-center">
-                                            <div className="w-28 h-28 rounded-full bg-gray-100 border-4 border-white overflow-hidden relative mb-6 shadow-xl">
-                                                {selectedParticipant.photoURL ? <Image src={selectedParticipant.photoURL} alt={selectedParticipant.name} fill className="object-cover" /> : <User className="w-12 h-12 text-gray-300 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />}
+                                            <div className="w-28 h-28 rounded-full bg-gray-100 dark:bg-white/5 border-4 border-white dark:border-[#0A101D] overflow-hidden relative mb-6 shadow-xl">
+                                                {selectedParticipant.photoURL ? <Image src={selectedParticipant.photoURL} alt={selectedParticipant.name} fill className="object-cover" /> : <User className="w-12 h-12 text-gray-300 dark:text-gray-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />}
                                             </div>
-                                            <h2 className="text-2xl font-black text-black tracking-tight mb-1">{selectedParticipant.name}</h2>
+                                            <h2 className="text-2xl font-black text-black dark:text-white tracking-tight mb-1">{selectedParticipant.name}</h2>
                                             <p className="text-gray-500 font-bold text-sm mb-8">@{selectedParticipant.username || 'student'}</p>
 
                                             <div className="grid grid-cols-2 gap-4 w-full mb-8">
-                                                <div className="p-4 rounded-3xl bg-gray-50 border border-gray-100 flex flex-col items-center">
-                                                    <MapPin className="w-5 h-5 text-gray-400 mb-2" />
-                                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Location</span>
-                                                    <span className="text-sm font-bold text-black mt-1">{selectedParticipant.location || 'Ethiopia'}</span>
+                                                <div className="p-4 rounded-3xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col items-center">
+                                                    <MapPin className="w-5 h-5 text-gray-400 dark:text-gray-500 mb-2" />
+                                                    <span className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">Location</span>
+                                                    <span className="text-sm font-bold text-black dark:text-white mt-1">{selectedParticipant.location || 'Ethiopia'}</span>
                                                 </div>
-                                                <div className="p-4 rounded-3xl bg-gray-50 border border-gray-100 flex flex-col items-center">
-                                                    <Briefcase className="w-5 h-5 text-gray-400 mb-2" />
-                                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Level</span>
-                                                    <span className="text-sm font-bold text-black mt-1">{selectedParticipant.schoolLevel || 'Student'}</span>
+                                                <div className="p-4 rounded-3xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col items-center">
+                                                    <Briefcase className="w-5 h-5 text-gray-400 dark:text-gray-500 mb-2" />
+                                                    <span className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">Level</span>
+                                                    <span className="text-sm font-bold text-black dark:text-white mt-1">{selectedParticipant.schoolLevel || 'Student'}</span>
                                                 </div>
                                             </div>
-                                            <button onClick={() => setShowProfile(false)} className="w-full py-4 rounded-full bg-black text-white font-black text-xs uppercase tracking-widest hover:bg-zinc-800 transition-all shadow-lg hover:shadow-black/20">
+                                            <button onClick={() => setShowProfile(false)} className="w-full py-4 rounded-full bg-black dark:bg-white text-white dark:text-black font-black text-xs uppercase tracking-widest hover:bg-zinc-800 dark:hover:bg-gray-200 transition-all shadow-lg hover:shadow-black/20">
                                                 Close Profile
                                             </button>
                                         </div>

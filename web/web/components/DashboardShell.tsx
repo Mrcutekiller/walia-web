@@ -25,7 +25,7 @@ import { useEffect, useState } from 'react';
 const SIDEBAR_NAV = [
     { icon: Bot, label: 'AI Chat', href: '/dashboard/ai' },
     { icon: MessageSquare, label: 'Messages', href: '/dashboard/messages' },
-    { icon: Users, label: 'Community', href: '/dashboard/community', badge: 15 },
+    { icon: Users, label: 'Community', href: '/dashboard/community' },
     { icon: Wrench, label: 'Tools', href: '/dashboard/tools' },
     { icon: Calendar, label: 'Calendar', href: '/dashboard/calendar' },
     { icon: User, label: 'Profile', href: '/dashboard/profile' },
@@ -73,26 +73,26 @@ export default function DashboardShell({ children }: { children: React.ReactNode
 
             {/* ── SIDEBAR ── */}
             <aside className={`
-                fixed top-0 left-0 bottom-0 z-50 w-64 bg-[#0A101D] border-r border-[#1E293B] flex flex-col
+                fixed top-0 left-0 bottom-0 z-50 w-64 bg-white dark:bg-[#0A101D] border-r border-gray-200 dark:border-[#1E293B] flex flex-col
                 transition-transform duration-300
                 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
                 lg:translate-x-0 lg:static lg:z-auto overflow-hidden
             `}>
-                {/* Large Background W Element */}
-                <div className="absolute -left-16 top-1/2 -translate-y-1/2 select-none pointer-events-none opacity-[0.03]">
-                    <span className="text-[400px] font-black leading-none text-white tracking-tighter">W</span>
+                {/* Large Background Logo */}
+                <div className="absolute -left-16 top-1/2 -translate-y-1/2 select-none pointer-events-none opacity-[0.03] dark:opacity-[0.05] grayscale">
+                    <Image src="/walia-logo.png" alt="" width={300} height={300} unoptimized className="object-contain" />
                 </div>
 
                 <div className="relative z-10 flex flex-col h-full">
                     {/* Logo */}
-                    <div className="flex items-center justify-between p-6 border-b border-white/5 shrink-0">
+                    <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-white/5 shrink-0">
                         <Link href="/dashboard" className="flex items-center gap-3 group">
-                            <div className="w-10 h-10 rounded-[10px] bg-white text-black flex items-center justify-center group-hover:scale-105 transition-transform overflow-hidden shadow-lg shadow-black/20 font-black text-xl leading-none">
-                                W
+                            <div className="w-10 h-10 rounded-[10px] bg-white border border-gray-100 dark:border-white/10 flex items-center justify-center group-hover:scale-105 transition-transform overflow-hidden shadow-lg shadow-black/5 font-black text-xl leading-none">
+                                <Image src="/walia-logo.png" alt="Walia" width={28} height={28} unoptimized className="object-contain" />
                             </div>
-                            <span className="text-xl font-black text-white tracking-widest uppercase">Walia</span>
+                            <span className="text-xl font-black text-black dark:text-white tracking-widest uppercase">Walia</span>
                         </Link>
-                        <button className="lg:hidden p-1 text-white/40 hover:text-white" onClick={() => setSidebarOpen(false)}>
+                        <button className="lg:hidden p-1 text-gray-400 hover:text-black dark:text-white/40 dark:hover:text-white" onClick={() => setSidebarOpen(false)}>
                             <X className="w-5 h-5" />
                         </button>
                     </div>
@@ -100,7 +100,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
                     {/* Nav links */}
                     <nav className="flex-1 px-4 py-8 space-y-1 overflow-y-auto custom-scrollbar">
 
-                        {SIDEBAR_NAV.map(({ icon: Icon, label, href, badge }) => {
+                        {SIDEBAR_NAV.map(({ icon: Icon, label, href }) => {
                             const active = pathname === href || pathname.startsWith(href) && href !== '/dashboard';
                             return (
                                 <Link
@@ -108,17 +108,12 @@ export default function DashboardShell({ children }: { children: React.ReactNode
                                     href={href}
                                     onClick={() => setSidebarOpen(false)}
                                     className={`flex items-center gap-4 px-4 py-3.5 rounded-[20px] transition-all group relative ${active
-                                        ? 'bg-black text-white dark:bg-white dark:text-black font-bold shadow-md'
-                                        : 'text-[#64748B] hover:text-black dark:text-gray-400 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5'
+                                        ? 'bg-black dark:bg-white text-white dark:text-black font-bold shadow-md'
+                                        : 'text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5'
                                         }`}
                                 >
-                                    <Icon className={`w-5 h-5 shrink-0 transition-colors ${active ? 'text-white dark:text-black' : 'text-[#94A3B8] group-hover:text-black dark:text-gray-500 dark:group-hover:text-gray-300'}`} />
+                                    <Icon className={`w-5 h-5 shrink-0 transition-colors ${active ? 'text-white dark:text-black' : 'text-gray-400 dark:text-gray-500 group-hover:text-black dark:group-hover:text-gray-300'}`} />
                                     <span className={`text-[15px] ${active ? 'font-bold' : 'font-semibold'}`}>{label}</span>
-                                    {badge && (
-                                        <div className="ml-auto min-w-[20px] h-5 px-1.5 rounded-full bg-[#EF4444] text-[11px] font-black flex items-center justify-center text-white shadow-sm">
-                                            {badge}
-                                        </div>
-                                    )}
                                 </Link>
                             );
                         })}
@@ -126,37 +121,37 @@ export default function DashboardShell({ children }: { children: React.ReactNode
 
                     {/* Theme Toggle */}
                     <div className="px-6 py-4">
-                        <div className="w-full bg-[#182134] rounded-2xl p-1 flex">
+                        <div className="w-full bg-gray-100 dark:bg-[#182134] rounded-2xl p-1 flex">
                             <button
                                 onClick={() => theme !== 'light' && toggleTheme()}
-                                className={`flex-1 py-2 rounded-xl transition-colors text-xs font-bold flex items-center justify-center gap-2 ${theme === 'light' ? 'bg-[#2E3C56] text-white shadow-sm' : 'bg-transparent text-gray-500 hover:text-white shadow-none'}`}
+                                className={`flex-1 py-2 rounded-xl transition-all text-xs font-bold flex items-center justify-center gap-2 ${theme === 'light' ? 'bg-white dark:bg-[#2E3C56] text-black dark:text-white shadow-sm' : 'bg-transparent text-gray-400 dark:text-gray-500 hover:text-black dark:hover:text-white'}`}
                             >
-                                <span>Light</span>
+                                <span>☀️ Light</span>
                             </button>
                             <button
                                 onClick={() => theme !== 'dark' && toggleTheme()}
-                                className={`flex-1 py-2 rounded-xl transition-colors text-xs font-bold flex items-center justify-center gap-2 ${theme === 'dark' ? 'bg-[#2E3C56] text-white shadow-sm' : 'bg-transparent text-gray-500 hover:text-white shadow-none'}`}
+                                className={`flex-1 py-2 rounded-xl transition-all text-xs font-bold flex items-center justify-center gap-2 ${theme === 'dark' ? 'bg-white dark:bg-[#2E3C56] text-black dark:text-white shadow-sm' : 'bg-transparent text-gray-400 dark:text-gray-500 hover:text-black dark:hover:text-white'}`}
                             >
-                                <span>Dark</span>
+                                <span>🌙 Dark</span>
                             </button>
                         </div>
                     </div>
 
                     {/* User + logout Profile Summary */}
-                    <div className="p-4 border-t border-white/5 shrink-0">
-                        <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors cursor-pointer group">
-                            <div className="w-10 h-10 rounded-[12px] bg-[#182134] flex items-center justify-center shrink-0 overflow-hidden shadow-inner border border-white/10">
+                    <div className="p-4 border-t border-gray-100 dark:border-white/5 shrink-0">
+                        <div className="flex items-center gap-3 p-3 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors cursor-pointer group">
+                            <div className="w-10 h-10 rounded-[12px] bg-gray-200 dark:bg-[#182134] flex items-center justify-center shrink-0 overflow-hidden shadow-inner border border-gray-200 dark:border-white/10">
                                 {user.photoURL ? (
                                     <img src={user.photoURL} alt="Avatar" className="w-full h-full object-cover" />
                                 ) : (
-                                    <User className="w-5 h-5 text-gray-400 group-hover:text-white transition-colors" />
+                                    <User className="w-5 h-5 text-gray-400 dark:group-hover:text-white transition-colors" />
                                 )}
                             </div>
                             <div className="flex-1 min-w-0">
-                                <p className="text-[13px] font-bold text-white truncate group-hover:text-[#4ade80] transition-colors">{user.displayName || user.email?.split('@')[0] || 'User'}</p>
-                                <p className="text-[10px] font-medium text-gray-500 truncate mt-0.5">{user.email}</p>
+                                <p className="text-[13px] font-bold text-black dark:text-white truncate group-hover:text-gray-600 dark:group-hover:text-[#4ade80] transition-colors">{user.displayName || user.email?.split('@')[0] || 'User'}</p>
+                                <p className="text-[10px] font-medium text-gray-400 dark:text-gray-500 truncate mt-0.5">{user.email}</p>
                             </div>
-                            <button onClick={handleLogout} title="Log out" className="w-8 h-8 rounded-full bg-white/5 hover:bg-red-500/10 text-gray-400 hover:text-red-500 flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 shrink-0">
+                            <button onClick={handleLogout} title="Log out" className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/5 hover:bg-red-50 dark:hover:bg-red-500/10 text-gray-400 hover:text-red-500 flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 shrink-0">
                                 <LogOut className="w-3.5 h-3.5 ml-0.5" />
                             </button>
                         </div>
