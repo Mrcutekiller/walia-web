@@ -7,7 +7,7 @@ import { formatTimeAgo } from '@/lib/utils';
 import { collection, onSnapshot, orderBy, query, Timestamp } from 'firebase/firestore';
 import { ArrowRight, Brain, Calendar, ChevronRight, Download, MessageSquare, Sparkles, Star, Users, Wrench, Zap } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 // ─── Types ───
 interface Review {
@@ -51,12 +51,54 @@ function useScrollReveal() {
 }
 
 const features = [
-  { icon: Sparkles, label: 'Walia AI', slug: 'ai', desc: 'Chat with GPT-4, Gemini 2.0 & DeepSeek for instant help.' },
-  { icon: MessageSquare, label: 'Smart Messages', slug: 'messages', desc: 'Connect with groups, share files, voice notes & media.' },
-  { icon: Wrench, label: '12+ Tools', slug: 'tools', desc: 'Summarize, quiz, flashcards, transcription & code assist.' },
-  { icon: Calendar, label: 'Calendar', slug: 'calendar', desc: 'AI-powered study schedules with smart reminders.' },
-  { icon: Users, label: 'Community', slug: 'community', desc: 'Share AI sessions & notes with the global network.' },
-  { icon: Brain, label: 'Smart Notes', slug: 'tools', desc: 'AI-powered note taking, summaries & flashcard generation.' },
+  { 
+    icon: Sparkles, 
+    label: 'Walia AI', 
+    slug: 'ai', 
+    desc: 'Chat with GPT-4, Gemini 2.0 & DeepSeek for instant help.',
+    details: 'Experience the power of multiple state-of-the-art AI models in one place. Whether you need a second opinion on a research paper or help debugging complex code, Walia AI has you covered.',
+    highlights: ['Switch between GPT-4, Gemini, and DeepSeek', 'Context-aware study assistance', 'Image & file analysis capabilities']
+  },
+  { 
+    icon: MessageSquare, 
+    label: 'Smart Messages', 
+    slug: 'messages', 
+    desc: 'Connect with groups, share files, voice notes & media.',
+    details: 'Walia Messages is more than just a chat. It is a full collaboration suite designed for students. Share resources, record voice notes for later, and keep your study groups organized.',
+    highlights: ['End-to-end encrypted chats', 'Integrated file sharing', 'Voice messages & media sharing']
+  },
+  { 
+    icon: Wrench, 
+    label: '12+ Tools', 
+    slug: 'tools', 
+    desc: 'Summarize, quiz, flashcards, transcription & code assist.',
+    details: 'Our toolset is designed to save you hours of work. Automatically generate study materials from your textbooks or record lectures and get an instant transcript and summary.',
+    highlights: ['AI Text Summarizer', 'Quiz & Flashcard Generator', 'Lecture Transcription Tool']
+  },
+  { 
+    icon: Calendar, 
+    label: 'Calendar', 
+    slug: 'calendar', 
+    desc: 'AI-powered study schedules with smart reminders.',
+    details: 'Let AI manage your time. Upload your syllabus and exam dates, and Walia will create a custom study schedule that adapts to your progress.',
+    highlights: ['AI-generated study plans', 'Smart exam reminders', 'Google Calendar integration']
+  },
+  { 
+    icon: Users, 
+    label: 'Community', 
+    slug: 'community', 
+    desc: 'Share AI sessions & notes with the global network.',
+    details: 'Join a global network of ambitious students. Share your best AI prompts, study notes, and collaborate on projects in real-time.',
+    highlights: ['Global study network', 'Public note sharing', 'AI Prompt library']
+  },
+  { 
+    icon: Brain, 
+    label: 'Smart Notes', 
+    slug: 'tools', 
+    desc: 'AI-powered note taking, summaries & flashcard generation.',
+    details: 'Reinvent how you take notes. Our smart editor suggests links, provides definitions, and helps you structure your thoughts automatically.',
+    highlights: ['Contextual AI suggestions', 'Automatic structuring', 'Flashcard sync']
+  },
 ];
 
 const tickerItems = [
@@ -69,6 +111,7 @@ const tickerItems = [
 export default function Home() {
   useScrollReveal();
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [selectedFeature, setSelectedFeature] = useState<typeof features[0] | null>(null);
 
   // ─── Live Firestore reviews ───
   useEffect(() => {
@@ -201,10 +244,10 @@ export default function Home() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 stagger">
               {features.map((F, i) => (
-                <Link
+                <div
                   key={i}
-                  href={`/features/${F.slug}`}
-                  className="group reveal block p-8 rounded-3xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:border-black/25 dark:hover:border-white/30 transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.08)] overflow-hidden no-underline"
+                  onClick={() => setSelectedFeature(F)}
+                  className="group reveal block p-8 rounded-3xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:border-black/25 dark:hover:border-white/30 transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.08)] overflow-hidden cursor-pointer"
                 >
                   <div className="w-14 h-14 rounded-2xl bg-black dark:bg-white flex items-center justify-center mb-6 transition-transform group-hover:scale-110">
                     <F.icon className="w-7 h-7 text-white dark:text-black" />
@@ -212,10 +255,55 @@ export default function Home() {
                   <h3 className="text-xl font-bold text-black dark:text-white mb-3 transition-colors">{F.label}</h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed font-medium transition-colors">{F.desc}</p>
                   <div className="mt-6 flex items-center text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 group-hover:text-black dark:group-hover:text-white transition-colors">
-                    Learn More <ChevronRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                    Preview Details <ChevronRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                   </div>
-                </Link>
+                </div>
               ))}
+            </div>
+
+            {/* Feature Modal */}
+            <div className={`fixed inset-0 z-[100] flex items-center justify-center p-6 transition-all duration-500 ${selectedFeature ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+              <div 
+                className="absolute inset-0 bg-black/80 backdrop-blur-xl"
+                onClick={() => setSelectedFeature(null)}
+              />
+              <div className={`relative w-full max-w-xl bg-white dark:bg-[#111] rounded-[40px] shadow-2xl transition-all duration-500 overflow-hidden ${selectedFeature ? 'scale-100 translate-y-0' : 'scale-95 translate-y-8'}`}>
+                {selectedFeature && (
+                  <div className="p-10">
+                    <button 
+                      onClick={() => setSelectedFeature(null)}
+                      className="absolute top-6 right-6 p-2 rounded-full bg-black/5 dark:bg-white/5 text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white transition-all"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                    <div className="w-16 h-16 rounded-[24px] bg-black dark:bg-white flex items-center justify-center mb-8">
+                      <selectedFeature.icon className="w-8 h-8 text-white dark:text-black" />
+                    </div>
+                    <h2 className="text-3xl font-black text-black dark:text-white mb-4 tracking-tight">
+                      {selectedFeature.label}
+                    </h2>
+                    <p className="text-base text-gray-500 dark:text-gray-400 font-medium leading-relaxed mb-8">
+                      {selectedFeature.details}
+                    </p>
+                    <div className="space-y-4 mb-10">
+                      {selectedFeature.highlights.map((h, i) => (
+                        <div key={i} className="flex items-center gap-3">
+                          <div className="w-5 h-5 rounded-full bg-green-500/10 flex items-center justify-center">
+                            <Zap className="w-2.5 h-2.5 text-green-500" />
+                          </div>
+                          <span className="text-sm font-bold text-black dark:text-white/70">{h}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <Link 
+                      href="/signup"
+                      className="w-full py-5 rounded-[24px] bg-black dark:bg-white text-white dark:text-black font-black text-center flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform active:scale-95"
+                    >
+                      Get Started with {selectedFeature.label} <ArrowRight className="w-5 h-5" />
+                    </Link>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </section>
