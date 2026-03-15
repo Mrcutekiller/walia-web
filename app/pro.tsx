@@ -29,7 +29,7 @@ export default function ProScreen() {
     const canAfford = xp >= PRO_PLAN_XP_COST;
 
     const handleBuyWithMoney = () => {
-        Alert.alert('💳 Buy Pro Plan', `1,000 ETB / month\n\nPayment integration coming soon!\n\nFor now, keep earning XP to unlock Pro for free.`);
+        Alert.alert('💳 Buy Pro Plan', `1,500 ETB / month\n\nPayment integration coming soon!\n\nFor now, keep earning XP to unlock Pro for free.`);
     };
 
     return (
@@ -58,12 +58,12 @@ export default function ProScreen() {
                         <Text style={styles.heroSub}>
                             {isPro
                                 ? 'Enjoy all premium features with no limits'
-                                : '10,000 XP or 1,000 ETB · Unlock everything'}
+                                : '10,000 XP or 1,500 ETB · Unlock everything'}
                         </Text>
                         <View style={styles.pricePill}>
                             <Text style={styles.priceXp}>10,000 XP</Text>
                             <Text style={styles.priceSep}> or </Text>
-                            <Text style={styles.priceEtb}>1,000 ETB</Text>
+                            <Text style={styles.priceEtb}>1,500 ETB</Text>
                         </View>
                     </View>
                 </LinearGradient>
@@ -150,7 +150,7 @@ export default function ProScreen() {
                         </LinearGradient>
                     </TouchableOpacity>
                     <TouchableOpacity style={[styles.moneyBtn, { borderColor: colors.border }]} onPress={handleBuyWithMoney}>
-                        <Text style={[styles.moneyBtnText, { color: colors.text }]}>Buy with 1,000 ETB</Text>
+                        <Text style={[styles.moneyBtnText, { color: colors.text }]}>Buy with 1,500 ETB</Text>
                     </TouchableOpacity>
                 </View>
             )}
