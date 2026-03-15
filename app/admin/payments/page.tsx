@@ -133,7 +133,7 @@ export default function AdminPayments() {
                         onPress={() => Linking.openURL(item.proofURL)}
                     >
                         <Text style={styles.viewProofText}>View Proof</Text>
-                        <Ionicons name="external-link" size={12} color="#4F46E5" />
+                        <Ionicons name="open-outline" size={12} color="#4F46E5" />
                     </TouchableOpacity>
                 )}
             </View>
