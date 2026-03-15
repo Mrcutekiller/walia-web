@@ -150,32 +150,32 @@ function WaliaIDCard({ user, profile, formData, waliaId, isFlipped, setIsFlipped
                     </div>
 
                     {/* ── BACK FACE ── */}
-                    <div className="absolute inset-0 w-full h-full rounded-[2rem] [backface-visibility:hidden] [transform:rotateY(180deg)] overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.2)]">
-                        {/* Dark premium back */}
-                        <div className="absolute inset-0 bg-[#0f172a]" />
-                        <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-500 via-amber-300 to-amber-500" />
+                    <div className="absolute inset-0 w-full h-full rounded-[2rem] [backface-visibility:hidden] [transform:rotateY(180deg)] overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.5)]">
+                        {/* Premium white back */}
+                        <div className="absolute inset-0 bg-white dark:bg-[#162032]" />
+                        <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-black via-amber-400 to-black dark:from-amber-500 dark:via-amber-300 dark:to-amber-500" />
 
-                        {/* Giant Image watermark */}
-                        <div className="absolute -left-10 -bottom-12 select-none pointer-events-none opacity-[0.04] grayscale">
+                        {/* Giant Walia watermark */}
+                        <div className="absolute -left-10 -bottom-12 select-none pointer-events-none opacity-[0.03] dark:opacity-[0.05] grayscale">
                             <Image src="/walia-logo.png" alt="" width={220} height={220} unoptimized className="object-contain" />
                         </div>
 
-                        <div className="absolute inset-0 p-6 flex flex-col items-center justify-center text-white">
+                        <div className="absolute inset-0 p-6 flex flex-col items-center justify-center text-black dark:text-white">
                             {/* Barcode art */}
                             <div className="flex items-stretch gap-0.5 h-10 mb-6 w-48">
-                                {[1,3,1,2,4,1,1,3,2,1,4,1,2,3,1,2,1,4,1,2,1,3].map((w, i) => (
-                                    <div key={i} style={{ width: `${w * 4}px` }} className="bg-white rounded-sm flex-shrink-0" />
+                                {[1, 3, 1, 2, 4, 1, 1, 3, 2, 1, 4, 1, 2, 3, 1, 2, 1, 4, 1, 2, 1, 3].map((w, i) => (
+                                    <div key={i} style={{ width: `${w * 4}px` }} className="bg-black dark:bg-white rounded-sm flex-shrink-0" />
                                 ))}
                             </div>
-                            <p className="font-mono text-xs tracking-[0.3em] font-bold opacity-70 mb-5">{waliaId}</p>
+                            <p className="font-mono text-xs tracking-[0.3em] font-black text-black dark:text-white/70 mb-5">{waliaId}</p>
 
-                            <div className="inline-flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full border border-white/10 backdrop-blur-sm mb-6">
-                                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                                <span className="text-xs font-black tracking-widest uppercase">Verified Account</span>
+                            <div className="inline-flex items-center gap-2 bg-gray-50 dark:bg-white/5 px-4 py-2 rounded-full border border-gray-100 dark:border-white/10 mb-6">
+                                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                                <span className="text-[10px] font-black tracking-widest uppercase">Verified Walia Citizen</span>
                             </div>
 
-                            <p className="text-[9px] text-white/30 text-center max-w-[200px] leading-relaxed">
-                                This card confirms the digital identity of <span className="text-white/50 font-bold">{formData.name}</span> on the Walia platform.
+                            <p className="text-[9px] text-gray-400 dark:text-gray-500 text-center max-w-[200px] leading-relaxed font-bold">
+                                This card confirms the digital identity of <span className="text-black dark:text-white">{formData.name}</span> on the Walia AI platform.
                             </p>
                         </div>
                     </div>

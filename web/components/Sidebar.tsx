@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useAuth } from '@/context/AuthContext';
 import { usePathname } from 'next/navigation';
 
 const sidebarLinks = [
@@ -26,6 +27,7 @@ const sidebarLinks = [
 ];
 
 export default function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
+    const { user } = useAuth();
     const pathname = usePathname();
 
     return (
@@ -120,8 +122,8 @@ export default function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose:
                                 <User className="w-5 h-5 text-walia-primary" />
                             </div>
                             <div className="flex-1 overflow-hidden">
-                                <p className="text-sm font-bold text-white truncate">User Name</p>
-                                <p className="text-[10px] text-white/30 truncate">Free Plan</p>
+                                <p className="text-sm font-bold text-white truncate">{user?.displayName || 'User'}</p>
+                                <p className="text-[10px] text-white/30 truncate">@{user?.email?.split('@')[0] || 'member'}</p>
                             </div>
                             <Link href="/dashboard/settings">
                                 <Settings className="w-5 h-5 text-white/20 hover:text-white transition-colors" />
