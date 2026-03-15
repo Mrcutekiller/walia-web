@@ -2,404 +2,483 @@
 
 import { useAuth } from '@/context/AuthContext';
 import { db } from '@/lib/firebase';
-import { cn } from '@/lib/utils';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
     addDoc,
     collection,
     deleteDoc,
     doc,
     onSnapshot,
-    orderBy,
     query,
     serverTimestamp,
-    updateDoc
+    updateDoc,
+    where,
 } from 'firebase/firestore';
-import { AnimatePresence, motion } from 'framer-motion';
 import {
-    Bell,
-    BookOpen,
     CalendarDays,
-    Calendar as CalendarIcon,
+    Check,
     ChevronLeft,
     ChevronRight,
+    Circle,
     Clock,
     Plus,
-    Trash2
+    Trash2,
+    X,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
-interface Event {
-    id: string;
-    title: string;
-    time: string;
-    date: string; // YYYY-MM-DD
-    type: string;
-    color: string;
-    description?: string;
-}
-
-const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const monthNames = [
+/* ─────────────── helpers ─────────────── */
+const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const MONTHS = [
     'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
+    'July', 'August', 'September', 'October', 'November', 'December',
 ];
 
+function dateKey(year: number, month: number, day: number) {
+    return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
+type PlanStatus = 'done' | 'ongoing' | 'not-done';
+
+interface Plan {
+    id: string;
+    title: string;
+    description?: string;
+    status: PlanStatus;
+    dateKey: string;
+    createdAt: any;
+}
+
+/* ─────────────── status config ─────────────── */
+const STATUS_CONFIG: Record<PlanStatus, { label: string; color: string; bg: string; border: string; icon: JSX.Element }> = {
+    done: {
+        label: 'Done',
+        color: 'text-emerald-700',
+        bg: 'bg-emerald-50',
+        border: 'border-emerald-200',
+        icon: <Check className="w-4 h-4 text-emerald-600" />,
+    },
+    ongoing: {
+        label: 'Ongoing',
+        color: 'text-amber-700',
+        bg: 'bg-amber-50',
+        border: 'border-amber-200',
+        icon: <Clock className="w-4 h-4 text-amber-500" />,
+    },
+    'not-done': {
+        label: 'Not Done',
+        color: 'text-red-700',
+        bg: 'bg-red-50',
+        border: 'border-red-200',
+        icon: <Circle className="w-4 h-4 text-red-500" />,
+    },
+};
+
+/* ─────────────── component ─────────────── */
 export default function CalendarPage() {
     const { user } = useAuth();
-    const [events, setEvents] = useState<Event[]>([]);
-    const [currentDate, setCurrentDate] = useState(new Date());
-    const [showAddModal, setShowAddModal] = useState(false);
-    const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+    const today = new Date();
 
-    // Form State
-    const [title, setTitle] = useState('');
-    const [time, setTime] = useState('');
-    const [date, setDate] = useState('');
-    const [type, setType] = useState('Study');
-    const [color, setColor] = useState('bg-walia-primary');
+    const [viewYear, setViewYear] = useState(today.getFullYear());
+    const [viewMonth, setViewMonth] = useState(today.getMonth());
+    const [selectedDate, setSelectedDate] = useState<string>(
+        dateKey(today.getFullYear(), today.getMonth(), today.getDate())
+    );
+    const [plans, setPlans] = useState<Plan[]>([]);
+    const [showModal, setShowModal] = useState(false);
+    const [form, setForm] = useState({ title: '', description: '', status: 'not-done' as PlanStatus });
+    const [saving, setSaving] = useState(false);
 
-    // 1. Fetch Events
+    /* calendar grid */
+    const { firstDayOfWeek, daysInMonth } = useMemo(() => {
+        const first = new Date(viewYear, viewMonth, 1);
+        const days = new Date(viewYear, viewMonth + 1, 0).getDate();
+        return { firstDayOfWeek: first.getDay(), daysInMonth: days };
+    }, [viewYear, viewMonth]);
+
+    const cells = useMemo(() => {
+        const blanks = Array(firstDayOfWeek).fill(null);
+        const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+        return [...blanks, ...days];
+    }, [firstDayOfWeek, daysInMonth]);
+
+    /* firebase listener */
     useEffect(() => {
         if (!user) return;
         const q = query(
-            collection(db, 'users', user.uid, 'events'),
-            orderBy('date', 'asc')
+            collection(db, 'users', user.uid, 'plans'),
+            where('dateKey', '==', selectedDate)
         );
         const unsub = onSnapshot(q, (snap) => {
-            setEvents(snap.docs.map(d => ({ id: d.id, ...d.data() } as Event)));
+            setPlans(snap.docs.map(d => ({ id: d.id, ...d.data() } as Plan)));
         });
         return () => unsub();
-    }, [user]);
+    }, [user, selectedDate]);
 
-    const handleAddEvent = async () => {
-        if (!title || !date || !user) return;
-
-        try {
-            if (editingEvent) {
-                await updateDoc(doc(db, 'users', user.uid, 'events', editingEvent.id), {
-                    title, time, date, type, color,
-                    updatedAt: serverTimestamp()
-                });
-            } else {
-                await addDoc(collection(db, 'users', user.uid, 'events'), {
-                    title, time, date, type, color,
-                    createdAt: serverTimestamp()
-                });
-            }
-            closeModal();
-        } catch (error) {
-            console.error('Event save error:', error);
-        }
-    };
-
-    const handleDeleteEvent = async (id: string) => {
+    /* all plans to show marker dots on calendar */
+    const [allDatesWithPlans, setAllDatesWithPlans] = useState<Set<string>>(new Set());
+    useEffect(() => {
         if (!user) return;
-        try {
-            await deleteDoc(doc(db, 'users', user.uid, 'events', id));
-        } catch (error) {
-            console.error('Delete error:', error);
-        }
-    };
+        const startKey = dateKey(viewYear, viewMonth, 1);
+        const endKey = dateKey(viewYear, viewMonth, daysInMonth);
+        const q = query(
+            collection(db, 'users', user.uid, 'plans'),
+            where('dateKey', '>=', startKey),
+            where('dateKey', '<=', endKey)
+        );
+        const unsub = onSnapshot(q, (snap) => {
+            const keys = new Set<string>(snap.docs.map(d => (d.data() as Plan).dateKey));
+            setAllDatesWithPlans(keys);
+        });
+        return () => unsub();
+    }, [user, viewYear, viewMonth, daysInMonth]);
 
-    const openModal = (event?: Event) => {
-        if (event) {
-            setEditingEvent(event);
-            setTitle(event.title);
-            setTime(event.time);
-            setDate(event.date);
-            setType(event.type);
-            setColor(event.color);
-        } else {
-            setEditingEvent(null);
-            setTitle('');
-            setTime('');
-            setDate('');
-            setType('Study');
-            setColor('bg-walia-primary');
-        }
-        setShowAddModal(true);
-    };
-
-    const closeModal = () => {
-        setShowAddModal(false);
-        setEditingEvent(null);
-    };
-
-    const nextMonth = () => {
-        setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() + 1)));
-    };
-
+    /* handlers */
     const prevMonth = () => {
-        setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() - 1)));
+        if (viewMonth === 0) { setViewYear(y => y - 1); setViewMonth(11); }
+        else setViewMonth(m => m - 1);
+    };
+    const nextMonth = () => {
+        if (viewMonth === 11) { setViewYear(y => y + 1); setViewMonth(0); }
+        else setViewMonth(m => m + 1);
     };
 
-    // Calendar Generation
-    const daysInMonth = (month: number, year: number) => new Date(year, month + 1, 0).getDate();
-    const firstDayOfMonth = (month: number, year: number) => new Date(year, month, 1).getDay();
+    const handleAddPlan = async () => {
+        if (!user || !form.title.trim()) return;
+        setSaving(true);
+        try {
+            await addDoc(collection(db, 'users', user.uid, 'plans'), {
+                title: form.title.trim(),
+                description: form.description.trim(),
+                status: form.status,
+                dateKey: selectedDate,
+                createdAt: serverTimestamp(),
+            });
+            setForm({ title: '', description: '', status: 'not-done' });
+            setShowModal(false);
+        } finally {
+            setSaving(false);
+        }
+    };
 
-    const currentMonthNum = currentDate.getMonth();
-    const currentYearNum = currentDate.getFullYear();
-    const totalDays = daysInMonth(currentMonthNum, currentYearNum);
-    const startOffset = firstDayOfMonth(currentMonthNum, currentYearNum);
+    const handleDelete = async (planId: string) => {
+        if (!user) return;
+        await deleteDoc(doc(db, 'users', user.uid, 'plans', planId));
+    };
+
+    const handleStatusChange = async (planId: string, status: PlanStatus) => {
+        if (!user) return;
+        await updateDoc(doc(db, 'users', user.uid, 'plans', planId), { status });
+    };
+
+    const plansByStatus = (status: PlanStatus) => plans.filter(p => p.status === status);
+
+    const displayDate = (() => {
+        const [y, m, d] = selectedDate.split('-').map(Number);
+        return new Date(y, m - 1, d);
+    })();
+
+    const displayDateStr = displayDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+    const isToday = (day: number) => dateKey(viewYear, viewMonth, day) === dateKey(today.getFullYear(), today.getMonth(), today.getDate());
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-10 animate-fade-in-up">
+        <div className="h-full flex flex-col lg:flex-row bg-gray-50 overflow-hidden animate-in fade-in">
 
-            {/* Calendar Column */}
-            <div className="lg:col-span-3 space-y-10">
-                <header className="flex flex-col md:flex-row items-center justify-between p-8 rounded-[40px] bg-white/5 border border-white/10 gap-6">
-                    <div className="flex items-center space-x-8">
-                        <div className="flex flex-col">
-                            <h2 className="text-3xl font-black text-white">{monthNames[currentMonthNum]}</h2>
-                            <p className="text-xs font-bold text-white/20 tracking-[0.3em] uppercase">{currentYearNum}</p>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                            <button onClick={prevMonth} className="p-3 rounded-2xl bg-white/5 border border-white/10 text-white/40 hover:text-white transition-all">
-                                <ChevronLeft className="w-5 h-5" />
-                            </button>
-                            <button onClick={nextMonth} className="p-3 rounded-2xl bg-white/5 border border-white/10 text-white/40 hover:text-white transition-all">
-                                <ChevronRight className="w-5 h-5" />
-                            </button>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center space-x-4">
-                        <button
-                            onClick={() => setCurrentDate(new Date())}
-                            className="hidden md:flex items-center px-6 py-3 rounded-2xl bg-white/5 text-xs font-bold text-white/50 hover:text-white transition-all"
-                        >
-                            <CalendarIcon className="w-4 h-4 mr-3" /> Today
-                        </button>
-                        <button
-                            onClick={() => openModal()}
-                            className="px-8 py-3 rounded-2xl bg-walia-primary text-white text-sm font-black hover:bg-walia-secondary transition-all shadow-lg shadow-walia-primary/20 flex items-center"
-                        >
-                            <Plus className="w-4 h-4 mr-3" /> Add Event
-                        </button>
-                    </div>
-                </header>
-
-                <div className="overflow-x-auto">
-                    <div className="min-w-[800px]">
-                        {/* Days Header */}
-                        <div className="grid grid-cols-7 gap-4 mb-6">
-                            {days.map((day) => (
-                                <div key={day} className="text-center py-4 text-[10px] font-black text-white/20 uppercase tracking-[0.2em]">{day}</div>
-                            ))}
-                        </div>
-
-                        {/* Calendar Grid */}
-                        <div className="grid grid-cols-7 gap-4">
-                            {Array.from({ length: 42 }).map((_, i) => {
-                                const dayNum = i - startOffset + 1;
-                                const isValidDay = dayNum > 0 && dayNum <= totalDays;
-                                const dateString = `${currentYearNum}-${String(currentMonthNum + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
-                                const dayEvents = events.filter(e => e.date === dateString);
-                                const isToday = new Date().toISOString().split('T')[0] === dateString;
-
-                                return (
-                                    <div
-                                        key={i}
-                                        className={cn(
-                                            "min-h-[140px] p-6 rounded-[32px] border transition-all group cursor-pointer",
-                                            isValidDay ? "bg-white/5 border-white/5 hover:border-white/10" : "opacity-0 pointer-events-none",
-                                            isToday && "border-walia-primary/50 bg-walia-primary/5 shadow-lg shadow-walia-primary/5"
-                                        )}
-                                        onClick={() => isValidDay && openModal({ id: '', title: '', time: '', date: dateString, type: 'Study', color: 'bg-walia-primary' })}
-                                    >
-                                        <p className={cn(
-                                            "text-sm font-black mb-4",
-                                            isToday ? "text-walia-primary" : "text-white/20 group-hover:text-white/40"
-                                        )}>
-                                            {isValidDay ? dayNum : ''}
-                                        </p>
-
-                                        {isValidDay && (
-                                            <div className="space-y-2">
-                                                {dayEvents.map(e => (
-                                                    <div
-                                                        key={e.id}
-                                                        onClick={(ev) => { ev.stopPropagation(); openModal(e); }}
-                                                        className={cn(
-                                                            "px-3 py-1.5 rounded-xl border text-[9px] font-black uppercase text-white tracking-widest truncate hover:scale-105 transition-transform",
-                                                            e.color || 'bg-walia-primary',
-                                                            "border-white/10"
-                                                        )}
-                                                    >
-                                                        {e.title}
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Sidebar: Upcoming */}
-            <div className="space-y-10">
-                <div className="space-y-8">
-                    <h2 className="text-xl font-bold text-white flex items-center">
-                        <Clock className="w-5 h-5 mr-3 text-walia-primary" /> Upcoming Events
+            {/* ── Left: Calendar ── */}
+            <div className="w-full lg:w-[380px] shrink-0 bg-white border-r border-gray-200 flex flex-col overflow-y-auto">
+                {/* Month navigation */}
+                <div className="px-6 pt-8 pb-4 flex items-center justify-between">
+                    <button onClick={prevMonth} className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors text-gray-600">
+                        <ChevronLeft className="w-5 h-5" />
+                    </button>
+                    <h2 className="text-lg font-black text-black tracking-tight">
+                        {MONTHS[viewMonth]} {viewYear}
                     </h2>
-                    <div className="space-y-4">
-                        {events.length === 0 ? (
-                            <div className="p-8 text-center bg-white/5 border border-dashed border-white/10 rounded-[32px]">
-                                <CalendarDays className="w-8 h-8 text-white/10 mx-auto mb-4" />
-                                <p className="text-[10px] font-black text-white/20 uppercase tracking-widest">No upcoming events</p>
-                            </div>
-                        ) : (
-                            events.slice(0, 5).map((event) => (
-                                <div
-                                    key={event.id}
-                                    onClick={() => openModal(event)}
-                                    className="p-6 rounded-3xl bg-white/5 border border-white/5 hover:border-white/10 transition-all group cursor-pointer relative overflow-hidden"
-                                >
-                                    <div className={cn("absolute left-0 top-0 bottom-0 w-1.5", event.color)} />
-                                    <div className="flex items-center justify-between mb-4">
-                                        <span className="text-[10px] font-black text-white/30 uppercase tracking-widest">
-                                            {event.date} {event.time && `• ${event.time}`}
-                                        </span>
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); handleDeleteEvent(event.id); }}
-                                            className="text-white/10 hover:text-red-500 transition-colors"
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
-                                    </div>
-                                    <h3 className="text-sm font-bold text-white mb-4 group-hover:text-walia-primary transition-colors">{event.title}</h3>
-                                    <div className="flex items-center text-[10px] font-black uppercase tracking-widest text-white/20">
-                                        <BookOpen className="w-4 h-4 mr-2" /> {event.type} Session
-                                    </div>
-                                </div>
-                            ))
-                        )}
-                    </div>
+                    <button onClick={nextMonth} className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors text-gray-600">
+                        <ChevronRight className="w-5 h-5" />
+                    </button>
                 </div>
 
-                <div className="p-10 rounded-[40px] bg-gradient-to-br from-walia-primary/10 to-transparent border border-walia-primary/20 space-y-6">
-                    <div className="w-14 h-14 rounded-2xl bg-walia-primary/10 border border-walia-primary/20 flex items-center justify-center">
-                        <Bell className="w-6 h-6 text-walia-primary animate-bounce-sm" />
-                    </div>
-                    <h3 className="text-lg font-bold text-white leading-tight">Sync your calendar.</h3>
-                    <p className="text-white/40 text-xs leading-relaxed">
-                        Stay organized with persistent study sessions and real-time community events.
-                    </p>
+                {/* Day headers */}
+                <div className="px-4 grid grid-cols-7 mb-2">
+                    {DAYS.map(d => (
+                        <div key={d} className="text-center text-[10px] font-black text-gray-400 uppercase tracking-widest py-2">
+                            {d}
+                        </div>
+                    ))}
+                </div>
+
+                {/* Calendar grid */}
+                <div className="px-4 pb-6 grid grid-cols-7 gap-1">
+                    {cells.map((day, i) => {
+                        if (!day) return <div key={`blank-${i}`} />;
+                        const key = dateKey(viewYear, viewMonth, day);
+                        const isSelected = key === selectedDate;
+                        const isTodayDay = isToday(day);
+                        const hasPlan = allDatesWithPlans.has(key);
+
+                        return (
+                            <button
+                                key={key}
+                                onClick={() => setSelectedDate(key)}
+                                className={[
+                                    'relative flex flex-col items-center justify-center rounded-2xl aspect-square text-sm font-bold transition-all',
+                                    isSelected
+                                        ? 'bg-black text-white shadow-lg scale-105'
+                                        : isTodayDay
+                                            ? 'bg-walia-primary/10 text-walia-primary ring-2 ring-walia-primary/30'
+                                            : 'text-gray-700 hover:bg-gray-100',
+                                ].join(' ')}
+                            >
+                                {day}
+                                {hasPlan && (
+                                    <span className={[
+                                        'absolute bottom-1 w-1.5 h-1.5 rounded-full',
+                                        isSelected ? 'bg-white/60' : 'bg-walia-primary',
+                                    ].join(' ')} />
+                                )}
+                            </button>
+                        );
+                    })}
+                </div>
+
+                {/* Jump to today */}
+                <div className="px-6 pb-8">
+                    <button
+                        onClick={() => {
+                            setViewYear(today.getFullYear());
+                            setViewMonth(today.getMonth());
+                            setSelectedDate(dateKey(today.getFullYear(), today.getMonth(), today.getDate()));
+                        }}
+                        className="w-full py-3 rounded-2xl border-2 border-black text-black font-black text-xs uppercase tracking-widest hover:bg-black hover:text-white transition-all"
+                    >
+                        Jump to Today
+                    </button>
                 </div>
             </div>
 
-            {/* Modal */}
+            {/* ── Right: Plans ── */}
+            <div className="flex-1 flex flex-col overflow-hidden">
+                {/* Header */}
+                <div className="px-8 py-6 bg-white border-b border-gray-200 flex items-center justify-between shrink-0 shadow-sm">
+                    <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 rounded-2xl bg-black flex items-center justify-center shadow">
+                            <CalendarDays className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                            <h1 className="text-base font-black text-black tracking-tight">{displayDateStr}</h1>
+                            <p className="text-[11px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">
+                                {plans.length} plan{plans.length !== 1 ? 's' : ''}
+                            </p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={() => setShowModal(true)}
+                        className="flex items-center space-x-2 px-5 py-3 rounded-2xl bg-black text-white text-sm font-black hover:bg-zinc-800 transition-all shadow-lg hover:shadow-black/20 active:scale-95"
+                    >
+                        <Plus className="w-4 h-4" />
+                        <span>Add Plan</span>
+                    </button>
+                </div>
+
+                {/* Plan sections */}
+                <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+                    {(['done', 'ongoing', 'not-done'] as PlanStatus[]).map(status => {
+                        const cfg = STATUS_CONFIG[status];
+                        const items = plansByStatus(status);
+                        return (
+                            <div key={status} className={`rounded-3xl border ${cfg.border} ${cfg.bg} p-5 transition-all`}>
+                                {/* Section header */}
+                                <div className="flex items-center space-x-2 mb-4">
+                                    <div className={`w-7 h-7 rounded-xl flex items-center justify-center bg-white border ${cfg.border} shadow-sm`}>
+                                        {cfg.icon}
+                                    </div>
+                                    <h3 className={`text-sm font-black ${cfg.color} uppercase tracking-widest`}>
+                                        {cfg.label}
+                                    </h3>
+                                    <span className={`ml-auto text-xs font-black ${cfg.color} opacity-60`}>
+                                        {items.length}
+                                    </span>
+                                </div>
+
+                                {/* Items */}
+                                <div className="space-y-2">
+                                    <AnimatePresence>
+                                        {items.map(plan => (
+                                            <motion.div
+                                                key={plan.id}
+                                                initial={{ opacity: 0, y: 6 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, x: -20 }}
+                                                className="group bg-white rounded-2xl p-4 border border-white shadow-sm flex items-start space-x-3 hover:shadow-md transition-all"
+                                            >
+                                                {/* Status cycle button */}
+                                                <button
+                                                    onClick={() => {
+                                                        const cycle: PlanStatus[] = ['not-done', 'ongoing', 'done'];
+                                                        const next = cycle[(cycle.indexOf(plan.status) + 1) % 3];
+                                                        handleStatusChange(plan.id, next);
+                                                    }}
+                                                    title="Cycle status"
+                                                    className={`mt-0.5 w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all hover:scale-110 ${
+                                                        plan.status === 'done'
+                                                            ? 'bg-emerald-500 border-emerald-500'
+                                                            : plan.status === 'ongoing'
+                                                                ? 'bg-amber-400 border-amber-400'
+                                                                : 'bg-white border-gray-300'
+                                                    }`}
+                                                >
+                                                    {plan.status === 'done' && <Check className="w-3 h-3 text-white" />}
+                                                    {plan.status === 'ongoing' && <Clock className="w-3 h-3 text-white" />}
+                                                </button>
+
+                                                <div className="flex-1 min-w-0">
+                                                    <p className={`text-sm font-bold text-black ${plan.status === 'done' ? 'line-through opacity-50' : ''}`}>
+                                                        {plan.title}
+                                                    </p>
+                                                    {plan.description && (
+                                                        <p className="text-xs text-gray-500 mt-1 leading-relaxed">{plan.description}</p>
+                                                    )}
+                                                </div>
+
+                                                {/* Delete */}
+                                                <button
+                                                    onClick={() => handleDelete(plan.id)}
+                                                    className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-red-50 text-gray-300 hover:text-red-500 transition-all shrink-0"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </motion.div>
+                                        ))}
+                                    </AnimatePresence>
+
+                                    {items.length === 0 && (
+                                        <div className="text-center py-4 opacity-40">
+                                            <p className={`text-xs font-bold ${cfg.color}`}>No {cfg.label.toLowerCase()} plans</p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Add to Calendar button */}
+                                <button
+                                    onClick={() => { setForm(f => ({ ...f, status })); setShowModal(true); }}
+                                    className={`mt-4 w-full py-2.5 rounded-2xl border-2 ${cfg.border} ${cfg.color} text-xs font-black uppercase tracking-widest hover:bg-white transition-all flex items-center justify-center space-x-2`}
+                                >
+                                    <Plus className="w-3.5 h-3.5" />
+                                    <span>Add to {cfg.label}</span>
+                                </button>
+                            </div>
+                        );
+                    })}
+
+                    {/* Empty state */}
+                    {plans.length === 0 && (
+                        <div className="text-center py-16 opacity-40 animate-in fade-in">
+                            <CalendarDays className="w-12 h-12 mx-auto text-gray-300 mb-4" />
+                            <p className="text-base font-black text-gray-400">No plans for this day</p>
+                            <p className="text-xs text-gray-400 mt-1">Click &ldquo;Add Plan&rdquo; to get started</p>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* ── Add Plan Modal ── */}
             <AnimatePresence>
-                {showAddModal && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                {showModal && (
+                    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            onClick={closeModal}
-                            className="absolute inset-0 bg-black/80 backdrop-blur-md"
+                            onClick={() => setShowModal(false)}
+                            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
                         />
                         <motion.div
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.9, opacity: 0 }}
-                            className="w-full max-w-lg bg-zinc-900 border border-white/10 rounded-[40px] p-10 relative z-10 shadow-2xl"
+                            initial={{ y: 60, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            exit={{ y: 60, opacity: 0 }}
+                            transition={{ type: 'spring', damping: 26, stiffness: 220 }}
+                            className="relative w-full max-w-md bg-white rounded-t-[32px] sm:rounded-[32px] p-8 shadow-2xl z-10"
                         >
-                            <h2 className="text-2xl font-black text-white mb-8">
-                                {editingEvent ? 'Edit Event' : 'Add New Event'}
-                            </h2>
+                            {/* Drag handle */}
+                            <div className="w-10 h-1.5 bg-gray-200 rounded-full mx-auto mb-6 sm:hidden" />
 
-                            <div className="space-y-6">
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-white/30 uppercase tracking-widest px-4">Event Title</label>
+                            <div className="flex items-center justify-between mb-6">
+                                <h2 className="text-xl font-black text-black tracking-tight">New Plan</h2>
+                                <button onClick={() => setShowModal(false)} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors">
+                                    <X className="w-4 h-4 text-gray-600" />
+                                </button>
+                            </div>
+
+                            <div className="space-y-4">
+                                {/* Title */}
+                                <div>
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 block">Title *</label>
                                     <input
                                         type="text"
-                                        value={title}
-                                        onChange={(e) => setTitle(e.target.value)}
-                                        placeholder="e.g. Physics Final Exam"
-                                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white outline-none focus:border-walia-primary transition-all"
+                                        value={form.title}
+                                        onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+                                        placeholder="What do you plan to do?"
+                                        className="w-full border-2 border-gray-200 focus:border-black rounded-2xl px-4 py-3 text-sm font-medium text-black outline-none transition-all placeholder:text-gray-300"
                                     />
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-white/30 uppercase tracking-widest px-4">Date</label>
-                                        <input
-                                            type="date"
-                                            value={date}
-                                            onChange={(e) => setDate(e.target.value)}
-                                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white outline-none focus:border-walia-primary transition-all"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-white/30 uppercase tracking-widest px-4">Time</label>
-                                        <input
-                                            type="time"
-                                            value={time}
-                                            onChange={(e) => setTime(e.target.value)}
-                                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white outline-none focus:border-walia-primary transition-all"
-                                        />
+                                {/* Description */}
+                                <div>
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 block">Description</label>
+                                    <textarea
+                                        value={form.description}
+                                        onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+                                        placeholder="Optional details..."
+                                        rows={3}
+                                        className="w-full border-2 border-gray-200 focus:border-black rounded-2xl px-4 py-3 text-sm font-medium text-black outline-none transition-all resize-none placeholder:text-gray-300"
+                                    />
+                                </div>
+
+                                {/* Status */}
+                                <div>
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block">Status</label>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {(['not-done', 'ongoing', 'done'] as PlanStatus[]).map(s => {
+                                            const cfg = STATUS_CONFIG[s];
+                                            return (
+                                                <button
+                                                    key={s}
+                                                    onClick={() => setForm(f => ({ ...f, status: s }))}
+                                                    className={[
+                                                        'flex flex-col items-center py-3 rounded-2xl border-2 text-xs font-black transition-all',
+                                                        form.status === s
+                                                            ? `${cfg.border} ${cfg.bg} ${cfg.color} scale-[1.03] shadow-sm`
+                                                            : 'border-gray-200 text-gray-400 hover:border-gray-300',
+                                                    ].join(' ')}
+                                                >
+                                                    <span className="mb-1">{cfg.icon}</span>
+                                                    {cfg.label}
+                                                </button>
+                                            );
+                                        })}
                                     </div>
                                 </div>
 
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-white/30 uppercase tracking-widest px-4">Category</label>
-                                    <div className="flex flex-wrap gap-2">
-                                        {['Study', 'Exam', 'Social', 'AI', 'Personal'].map(t => (
-                                            <button
-                                                key={t}
-                                                onClick={() => setType(t)}
-                                                className={cn(
-                                                    "px-6 py-3 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all",
-                                                    type === t ? "bg-white text-black border-white" : "bg-white/5 border-white/10 text-white/40 hover:text-white"
-                                                )}
-                                            >
-                                                {t}
-                                            </button>
-                                        ))}
-                                    </div>
+                                {/* Date display */}
+                                <div className="flex items-center space-x-2 p-3 rounded-2xl bg-gray-50 border border-gray-100">
+                                    <CalendarDays className="w-4 h-4 text-gray-400 shrink-0" />
+                                    <span className="text-sm font-bold text-gray-600">{displayDateStr}</span>
                                 </div>
 
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-white/30 uppercase tracking-widest px-4">Color Theme</label>
-                                    <div className="flex gap-4 px-2">
-                                        {['bg-walia-primary', 'bg-walia-accent', 'bg-emerald-500', 'bg-rose-500', 'bg-amber-500'].map(c => (
-                                            <button
-                                                key={c}
-                                                onClick={() => setColor(c)}
-                                                className={cn(
-                                                    "w-8 h-8 rounded-full transition-transform",
-                                                    c,
-                                                    color === c ? "scale-125 border-2 border-white ring-4 ring-walia-primary/20" : "hover:scale-110"
-                                                )}
-                                            />
-                                        ))}
-                                    </div>
-                                </div>
-
-                                <div className="pt-8 flex gap-4">
-                                    <button
-                                        onClick={handleAddEvent}
-                                        className="flex-1 py-4 rounded-3xl bg-walia-primary text-white font-black text-xs uppercase tracking-widest hover:bg-walia-secondary transition-all shadow-xl shadow-walia-primary/20"
-                                    >
-                                        {editingEvent ? 'Update Event' : 'Create Event'}
-                                    </button>
-                                    <button
-                                        onClick={closeModal}
-                                        className="px-8 py-4 rounded-3xl bg-white/5 text-white/40 font-black text-xs uppercase tracking-widest hover:bg-white/10 transition-all"
-                                    >
-                                        Cancel
-                                    </button>
-                                </div>
+                                {/* Submit */}
+                                <button
+                                    onClick={handleAddPlan}
+                                    disabled={!form.title.trim() || saving}
+                                    className="w-full py-4 rounded-2xl bg-black text-white text-sm font-black uppercase tracking-widest hover:bg-zinc-800 transition-all shadow-lg hover:shadow-black/20 active:scale-95 disabled:opacity-30 disabled:hover:bg-black disabled:active:scale-100"
+                                >
+                                    {saving ? 'Saving...' : 'Add Plan'}
+                                </button>
                             </div>
                         </motion.div>
                     </div>
                 )}
             </AnimatePresence>
-
         </div>
     );
 }

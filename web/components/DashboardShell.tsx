@@ -1,6 +1,5 @@
 import { useAuth } from '@/context/AuthContext';
 import { useNotifications } from '@/context/NotificationContext';
-import { useTheme } from '@/context/ThemeContext';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
 import {
@@ -27,14 +26,13 @@ const SIDEBAR_NAV = [
     { icon: MessageSquare, label: 'Messages', href: '/dashboard/messages' },
     { icon: Users, label: 'Community', href: '/dashboard/community' },
     { icon: Wrench, label: 'Tools', href: '/dashboard/tools' },
-    { icon: Calendar, label: 'Events', href: '/dashboard/events' },
+    { icon: Calendar, label: 'Calendar', href: '/dashboard/calendar' },
     { icon: User, label: 'Profile', href: '/dashboard/profile' },
     { icon: Settings, label: 'Settings', href: '/dashboard/settings' },
 ];
 
 export default function DashboardShell({ children }: { children: React.ReactNode }) {
     const { user, loading } = useAuth();
-    const { theme, toggleTheme } = useTheme();
     const { unreadCount } = useNotifications();
     const router = useRouter();
     const pathname = usePathname();
@@ -61,7 +59,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
     };
 
     return (
-        <div className="flex h-screen bg-gray-50 text-black overflow-hidden">
+        <div className="flex h-screen bg-gray-50 text-black overflow-hidden font-sans">
 
             {/* Mobile overlay */}
             {sidebarOpen && (
@@ -73,74 +71,80 @@ export default function DashboardShell({ children }: { children: React.ReactNode
 
             {/* ── SIDEBAR ── */}
             <aside className={`
-                fixed top-0 left-0 bottom-0 z-50 w-64 bg-[#0A101D] border-r border-[#1E293B] flex flex-col
+                fixed top-0 left-0 bottom-0 z-50 w-64 bg-white border-r border-gray-100 flex flex-col
                 transition-transform duration-300
                 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
                 lg:translate-x-0 lg:static lg:z-auto overflow-hidden
             `}>
-                {/* Large Background W Element */}
-                <div className="absolute -left-16 top-1/2 -translate-y-1/2 select-none pointer-events-none opacity-[0.03] dark:opacity-[0.05] grayscale">
+                {/* Background Decoration */}
+                <div className="absolute -left-16 top-1/2 -translate-y-1/2 select-none pointer-events-none opacity-[0.03] grayscale">
                     <Image src="/walia-logo.png" alt="" width={300} height={300} unoptimized className="object-contain" />
                 </div>
 
                 <div className="relative z-10 flex flex-col h-full">
-                    {/* Logo */}
-                    <div className="flex items-center justify-between p-6 border-b border-white/5 shrink-0">
+                    {/* Logo Header */}
+                    <div className="flex items-center justify-between p-6 border-b border-gray-100 shrink-0">
                         <Link href="/dashboard" className="flex items-center gap-3 group">
-                            <div className="w-10 h-10 rounded-[10px] bg-white border border-gray-100 dark:border-white/10 flex items-center justify-center group-hover:scale-105 transition-transform overflow-hidden shadow-lg shadow-black/5 font-black text-xl leading-none">
+                            <div className="w-10 h-10 rounded-[10px] bg-white border border-gray-100 flex items-center justify-center group-hover:scale-105 transition-transform overflow-hidden shadow-lg shadow-black/5 font-black text-xl leading-none">
                                 <Image src="/walia-logo.png" alt="Walia" width={28} height={28} unoptimized className="object-contain" />
                             </div>
-                            <span className="text-xl font-black text-white tracking-widest uppercase">Walia</span>
+                            <span className="text-xl font-black text-black tracking-widest uppercase">Walia</span>
                         </Link>
-                        <button className="lg:hidden p-1 text-white/40 hover:text-white" onClick={() => setSidebarOpen(false)}>
+                        <button className="lg:hidden p-1 text-gray-400 hover:text-black" onClick={() => setSidebarOpen(false)}>
                             <X className="w-5 h-5" />
                         </button>
                     </div>
 
-                    {/* Nav links */}
+                    {/* Navigation */}
                     <nav className="flex-1 px-4 py-8 space-y-1 overflow-y-auto custom-scrollbar">
-
-                        {SIDEBAR_NAV.map(({ icon: Icon, label, href, badge }) => {
-                            const active = pathname === href || pathname.startsWith(href) && href !== '/dashboard';
+                        {SIDEBAR_NAV.map(({ icon: Icon, label, href }) => {
+                            const active = pathname === href || (pathname.startsWith(href) && href !== '/dashboard');
                             return (
                                 <Link
                                     key={href}
                                     href={href}
                                     onClick={() => setSidebarOpen(false)}
                                     className={`flex items-center gap-4 px-4 py-3.5 rounded-[20px] transition-all group relative ${active
-                                        ? 'bg-black text-white dark:bg-white dark:text-black font-bold shadow-md'
-                                        : 'text-[#64748B] hover:text-black dark:text-gray-400 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5'
+                                        ? 'bg-black text-white font-bold shadow-md'
+                                        : 'text-gray-500 hover:text-black hover:bg-gray-100'
                                         }`}
                                 >
-                                    <Icon className={`w-5 h-5 shrink-0 transition-colors ${active ? 'text-white dark:text-black' : 'text-[#94A3B8] group-hover:text-black dark:text-gray-500 dark:group-hover:text-gray-300'}`} />
+                                    <Icon className={`w-5 h-5 shrink-0 transition-colors ${active ? 'text-white' : 'text-gray-400 group-hover:text-black'}`} />
                                     <span className={`text-[15px] ${active ? 'font-bold' : 'font-semibold'}`}>{label}</span>
-                                    {badge && (
-                                        <div className="ml-auto min-w-[20px] h-5 px-1.5 rounded-full bg-[#EF4444] text-[11px] font-black flex items-center justify-center text-white shadow-sm">
-                                            {badge}
-                                        </div>
-                                    )}
                                 </Link>
                             );
                         })}
                     </nav>
 
-                    {/* Light mode only — no theme toggle */}
+                    {/* Pro Upgrade Preview */}
+                    <div className="px-4 py-6">
+                        <Link href="/dashboard/upgrade" className="block relative p-6 rounded-[28px] bg-gradient-to-br from-indigo-600 to-purple-600 overflow-hidden group shadow-xl shadow-indigo-500/20 hover:scale-[1.02] transition-transform">
+                            <div className="relative z-10">
+                                <Zap className="w-8 h-8 text-white mb-3" />
+                                <p className="text-white font-black text-xs uppercase tracking-widest mb-1">Go Pro</p>
+                                <p className="text-white/60 text-[10px] font-bold uppercase tracking-wider">Unlock all tools</p>
+                            </div>
+                            <div className="absolute -right-4 -bottom-4 opacity-10 blur-sm group-hover:scale-110 transition-transform">
+                                <Zap className="w-24 h-24 text-white" />
+                            </div>
+                        </Link>
+                    </div>
 
-                    {/* User + logout Profile Summary */}
-                    <div className="p-4 border-t border-white/5 shrink-0">
-                        <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors cursor-pointer group">
-                            <div className="w-10 h-10 rounded-[12px] bg-[#182134] flex items-center justify-center shrink-0 overflow-hidden shadow-inner border border-white/10">
+                    {/* User Profile Summary */}
+                    <div className="p-4 border-t border-gray-100 shrink-0">
+                        <div className="flex items-center gap-3 p-3 rounded-2xl bg-gray-50 border border-gray-50 hover:bg-gray-100 transition-colors cursor-pointer group">
+                            <div className="w-10 h-10 rounded-[12px] bg-gray-200 flex items-center justify-center shrink-0 overflow-hidden shadow-inner border border-gray-100">
                                 {user.photoURL ? (
                                     <img src={user.photoURL} alt="Avatar" className="w-full h-full object-cover" />
                                 ) : (
-                                    <User className="w-5 h-5 text-gray-400 group-hover:text-white transition-colors" />
+                                    <User className="w-5 h-5 text-gray-400" />
                                 )}
                             </div>
                             <div className="flex-1 min-w-0">
-                                <p className="text-[13px] font-bold text-white truncate group-hover:text-[#4ade80] transition-colors">{user.displayName || user.email?.split('@')[0] || 'User'}</p>
-                                <p className="text-[10px] font-medium text-gray-500 truncate mt-0.5">{user.email}</p>
+                                <p className="text-[13px] font-bold text-black truncate">{user.displayName || user.email?.split('@')[0] || 'User'}</p>
+                                <p className="text-[10px] font-medium text-gray-400 truncate mt-0.5">{user.email}</p>
                             </div>
-                            <button onClick={handleLogout} title="Log out" className="w-8 h-8 rounded-full bg-white/5 hover:bg-red-500/10 text-gray-400 hover:text-red-500 flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 shrink-0">
+                            <button onClick={handleLogout} title="Log out" className="w-8 h-8 rounded-full bg-gray-100 hover:bg-red-50 text-gray-400 hover:text-red-500 flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 shrink-0">
                                 <LogOut className="w-3.5 h-3.5 ml-0.5" />
                             </button>
                         </div>
@@ -150,43 +154,42 @@ export default function DashboardShell({ children }: { children: React.ReactNode
 
             {/* ── MAIN CONTENT ── */}
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
-                {/* Mobile top bar */}
-                <header className="lg:hidden flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-white shrink-0">
-                    <button onClick={() => setSidebarOpen(true)} className="text-gray-500 hover:text-black p-1">
-                        <Menu className="w-5 h-5" />
-                    </button>
-                    <div className="flex items-center gap-2">
-                        <Image src="/walia-logo.png" alt="Walia" width={22} height={22} className="object-contain" />
-                        <span className="text-black font-black tracking-tighter">Walia</span>
+                {/* Top bar */}
+                <header className="flex items-center justify-between px-6 py-4 bg-white border-b border-gray-100 shrink-0 z-20">
+                    <div className="flex items-center gap-4">
+                        <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-gray-500 hover:text-black p-1 transition-colors">
+                            <Menu className="w-5 h-5" />
+                        </button>
+                        <div className="hidden lg:block">
+                            <h2 className="text-sm font-black text-gray-300 uppercase tracking-[0.2em]">{pathname.split('/').pop()?.replace('-', ' ') || 'Dashboard'}</h2>
+                        </div>
+                        <div className="lg:hidden flex items-center gap-2">
+                            <Image src="/walia-logo.png" alt="Walia" width={22} height={22} className="object-contain" />
+                            <span className="text-black font-black tracking-tighter">Walia</span>
+                        </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                        <Link href="/dashboard/notifications" className="relative p-1.5 text-gray-500 hover:text-black">
+
+                    <div className="flex items-center gap-4">
+                        <Link
+                            href="/dashboard/notifications"
+                            className="relative w-10 h-10 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-400 hover:text-black transition-all hover:scale-105 active:scale-95"
+                        >
                             <Bell className="w-5 h-5" />
                             {unreadCount > 0 && (
-                                <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full"></span>
+                                <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full" />
                             )}
                         </Link>
-                        <Link href="/dashboard/upgrade" className="flex items-center gap-1 px-3 py-1.5 rounded-[10px] bg-black text-white text-[10px] font-black uppercase tracking-wider">
-                            <Zap className="w-3 h-3" /> Pro
+
+                        <Link href="/dashboard/upgrade" className="flex items-center gap-2 px-4 py-2 rounded-full bg-black text-white text-xs font-black uppercase tracking-widest hover:scale-105 transition-all shadow-lg shadow-black/10">
+                            <Zap className="w-3 h-3 text-yellow-400" /> <span className="hidden sm:inline italic">Go Pro</span>
                         </Link>
                     </div>
                 </header>
                 
-                {/* Desktop top bar (optional if we strictly want it top right above content) */}
-                <div className="hidden lg:flex absolute top-4 right-6 z-10 items-center gap-4">
-                    <Link href="/dashboard/notifications" className="relative p-2 rounded-full bg-white/80 backdrop-blur-md border border-gray-200 text-gray-500 hover:text-black shadow-sm hover:shadow-md transition-all">
-                        <Bell className="w-5 h-5" />
-                        {unreadCount > 0 && (
-                            <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full"></span>
-                        )}
-                    </Link>
-                    <Link href="/dashboard/upgrade" className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-black text-white text-xs font-black uppercase tracking-wider shadow-sm hover:scale-105 transition-transform">
-                        <Zap className="w-3.5 h-3.5 text-yellow-400" /> Upgrade Pro
-                    </Link>
-                </div>
-
-                <main className="flex-1 overflow-y-auto pt-16 lg:pt-0">
-                    {children}
+                <main className="flex-1 overflow-y-auto bg-white">
+                    <div className="max-w-[1600px] mx-auto min-h-full">
+                        {children}
+                    </div>
                 </main>
             </div>
         </div>

@@ -1,11 +1,8 @@
 'use client';
 
-import { useAuth } from '@/context/AuthContext';
-import { db } from '@/lib/firebase';
-import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-type Theme = 'light' | 'dark';
+type Theme = 'light'; // Forced light mode
 
 interface ThemeContextType {
     theme: Theme;
@@ -15,69 +12,17 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-    const { user } = useAuth();
-    const [theme, setTheme] = useState<Theme>('light');
+    const [theme] = useState<Theme>('light');
 
-    // 1. Initial load from localStorage
     useEffect(() => {
-        const savedTheme = localStorage.getItem('walia-theme') as Theme;
-        if (savedTheme) {
-            setTheme(savedTheme);
-            applyTheme(savedTheme);
-        } else {
-            // Default to light
-            applyTheme('light');
-        }
+        // Enforce light mode on mount
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('walia-theme', 'light');
     }, []);
 
-    // 2. Load from User Settings if logged in
-    useEffect(() => {
-        if (!user) return;
-        const unsub = onSnapshot(doc(db, 'users', user.uid), (snap: any) => {
-            if (snap.exists()) {
-                const firestoreTheme = snap.data().theme as Theme;
-                if (firestoreTheme && firestoreTheme !== theme) {
-                    setTheme(firestoreTheme);
-                    applyTheme(firestoreTheme);
-                }
-            }
-        });
-        return () => unsub();
-    }, [user, theme]);
-
-    // 3. Load Global Appearance Settings
-    useEffect(() => {
-        const unsub = onSnapshot(doc(db, 'settings', 'appearance'), (snap) => {
-            if (snap.exists()) {
-                const data = snap.data();
-                if (data.primary) document.documentElement.style.setProperty('--color-walia-primary', data.primary);
-                if (data.accent) document.documentElement.style.setProperty('--color-walia-accent', data.accent);
-            }
-        });
-        return () => unsub();
-    }, []);
-
-    const applyTheme = (t: Theme) => {
-        if (t === 'dark') {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
-    };
-
-    const toggleTheme = async () => {
-        const newTheme = theme === 'light' ? 'dark' : 'light';
-        setTheme(newTheme);
-        applyTheme(newTheme);
-        localStorage.setItem('walia-theme', newTheme);
-
-        if (user) {
-            try {
-                await updateDoc(doc(db, 'users', user.uid), { theme: newTheme });
-            } catch (error) {
-                console.error('Failed to sync theme to Firestore:', error);
-            }
-        }
+    const toggleTheme = () => {
+        // No-op to prevent crashing any leftover toggle buttons
+        console.log('Dark mode is disabled.');
     };
 
     return (

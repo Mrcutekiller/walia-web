@@ -3,9 +3,9 @@
 import { useAuth } from '@/context/AuthContext';
 import { db } from '@/lib/firebase';
 import { formatTimeAgo } from '@/lib/utils';
-import { collection, deleteDoc, doc, onSnapshot, orderBy, query, updateDoc, where } from 'firebase/firestore';
+import { collection, doc, onSnapshot, orderBy, query, updateDoc, where, deleteDoc, addDoc, serverTimestamp } from 'firebase/firestore';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Bell, Info, MessageSquare, ShieldAlert, Users, X } from 'lucide-react';
+import { Bell, Info, MessageSquare, ShieldAlert, Users, X, Calendar as CalendarIcon, Check } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
@@ -46,6 +46,49 @@ export default function NotificationPanel() {
         return () => unsubscribe();
     }, [user]);
 
+    // Real-time task/event checker
+    useEffect(() => {
+        if (!user) return;
+        
+        let notifiedEvents = new Set<string>();
+        
+        const q = query(collection(db, 'users', user.uid, 'events'));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const events = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as any }));
+            
+            const checkEvents = setInterval(() => {
+                const now = new Date();
+                const currentDate = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+                const currentTime = now.toTimeString().substring(0, 5); // HH:MM
+                
+                events.forEach(async event => {
+                    const eventKey = `${event.id}-${currentDate}-${currentTime}`;
+                    if (event.date === currentDate && event.time === currentTime && !notifiedEvents.has(eventKey)) {
+                        notifiedEvents.add(eventKey);
+                        // Trigger real-time notification
+                        try {
+                            await addDoc(collection(db, 'notifications'), {
+                                userId: user.uid,
+                                title: 'Task Reminder',
+                                message: `It's time for: ${event.title}`,
+                                type: 'system',
+                                read: false,
+                                createdAt: serverTimestamp(),
+                                link: '/dashboard/calendar'
+                            });
+                        } catch (e) {
+                            console.error('Failed to create event notification:', e);
+                        }
+                    }
+                });
+            }, 60000); // Check every minute
+            
+            return () => clearInterval(checkEvents);
+        });
+
+        return () => unsubscribe();
+    }, [user]);
+
     // Close on outside click
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -68,7 +111,7 @@ export default function NotificationPanel() {
         }
     };
 
-    const deleteNotification = async (id: string) => {
+    const deleteNotification = async (id: string | undefined) => {
         if (!id) return;
         try {
             await deleteDoc(doc(db, 'notifications', id));
@@ -104,14 +147,14 @@ export default function NotificationPanel() {
     };
 
     return (
-        <div className="relative z-50" ref={panelRef}>
+        <div className="relative z-50 font-sans" ref={panelRef}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="relative p-2 rounded-full text-black/50 dark:text-white/50 hover:bg-black/5 dark:hover:bg-white/10 hover:text-black dark:hover:text-white transition-all flex items-center justify-center"
+                className="relative p-2 rounded-full text-black/50 hover:bg-black/5 hover:text-black transition-all flex items-center justify-center transform active:scale-95"
             >
                 <Bell className="w-5 h-5" />
                 {unreadCount > 0 && (
-                    <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-rose-500 border-2 border-white dark:border-black rounded-full" />
+                    <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-rose-500 border-2 border-white rounded-full animate-pulse" />
                 )}
             </button>
 
@@ -121,68 +164,64 @@ export default function NotificationPanel() {
                         initial={{ opacity: 0, y: 10, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                        transition={{ duration: 0.15 }}
-                        className="absolute bottom-[calc(100%+10px)] left-0 lg:left-auto lg:right-0 w-[320px] max-h-[400px] flex flex-col bg-white dark:bg-[#111] border border-black/10 dark:border-white/10 rounded-2xl shadow-2xl overflow-hidden"
+                        transition={{ duration: 0.15, ease: "easeOut" }}
+                        className="absolute bottom-[calc(100%+12px)] left-0 lg:left-auto lg:right-0 w-[340px] max-h-[480px] flex flex-col bg-white border border-gray-100 rounded-[28px] shadow-[0_20px_60px_rgba(0,0,0,0.12)] overflow-hidden"
                     >
-                        <div className="flex items-center justify-between p-4 border-b border-black/5 dark:border-white/5 bg-black/5 dark:bg-white/5 shrink-0">
-                            <h3 className="font-black text-xs text-black dark:text-white uppercase tracking-[0.2em]">Notifications</h3>
+                        <div className="flex items-center justify-between p-5 border-b border-gray-50 bg-gray-50/30 shrink-0">
+                            <h3 className="font-black text-[10px] text-black uppercase tracking-[0.2em] opacity-40">Live Notifications</h3>
                             <button
                                 onClick={() => setIsOpen(false)}
-                                className="p-2 rounded-full text-black/40 dark:text-white/40 hover:bg-black/10 dark:hover:bg-white/20 hover:text-black dark:hover:text-white transition-all text-black dark:text-white"
+                                className="p-2 rounded-full text-black/20 hover:bg-black/5 hover:text-black transition-all"
                             >
-                                <X className="w-5 h-5" />
+                                <X className="w-4 h-4" />
                             </button>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto w-full">
+                        <div className="flex-1 overflow-y-auto w-full custom-scrollbar">
                             {notifications.length === 0 ? (
-                                <div className="p-6 text-center text-black/40 dark:text-white/40">
-                                    <Bell className="w-8 h-8 mx-auto mb-2 opacity-20" />
-                                    <p className="text-xs font-bold">You're all caught up!</p>
+                                <div className="p-10 text-center text-gray-300">
+                                    <Bell className="w-10 h-10 mx-auto mb-3 opacity-10" />
+                                    <p className="text-xs font-black uppercase tracking-widest">Inbox Empty</p>
                                 </div>
                             ) : (
-                                <div className="divide-y divide-black/5 dark:divide-white/5">
+                                <div className="divide-y divide-gray-50">
                                     {notifications.map((notif) => (
                                         <div
                                             key={notif.id}
                                             onClick={() => {
                                                 if (!notif.read && notif.id) markAsRead(notif.id);
                                             }}
-                                            className={`flex gap-3 p-4 transition-colors cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 ${!notif.read ? 'bg-indigo-50 dark:bg-indigo-950/20' : ''}`}
+                                            className={`flex gap-4 p-5 transition-all cursor-pointer hover:bg-gray-50 group ${!notif.read ? 'bg-indigo-50/30' : ''}`}
                                         >
-                                            <div className="mt-1 shrink-0 bg-white dark:bg-black p-2 rounded-full border border-black/5 dark:border-white/5 shadow-sm h-min">
+                                            <div className="mt-1 shrink-0 bg-white p-2.5 rounded-2xl border border-gray-100 shadow-sm h-min group-hover:scale-110 transition-transform">
                                                 {getTypeIcon(notif.type)}
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-start justify-between gap-2">
-                                                    <p className={`text-sm ${!notif.read ? 'font-bold text-black dark:text-white' : 'font-medium text-black/70 dark:text-white/70'}`}>
+                                                    <p className={`text-[13px] leading-tight ${!notif.read ? 'font-black text-black' : 'font-bold text-gray-500'}`}>
                                                         {notif.title}
                                                     </p>
                                                     <div className="flex items-center gap-2">
-                                                        <span className="text-[10px] text-black/40 dark:text-white/40 whitespace-nowrap mt-0.5 font-semibold">
+                                                        <span className="text-[9px] text-gray-300 whitespace-nowrap font-black uppercase tracking-tighter">
                                                             {formatTimeAgo(notif.createdAt)}
                                                         </span>
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                if (notif.id) deleteNotification(notif.id);
-                                                            }}
-                                                            className="p-2 rounded-full bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white transition-all shadow-sm"
-                                                            title="Dismiss notification"
+                                                        <button 
+                                                            onClick={(e) => { e.stopPropagation(); deleteNotification(notif.id); }}
+                                                            className="p-1.5 rounded-full bg-rose-500/10 text-rose-500 opacity-0 group-hover:opacity-100 hover:bg-rose-500 hover:text-white transition-all"
                                                         >
-                                                            <X className="w-4 h-4" />
+                                                            <X className="w-3 h-3" />
                                                         </button>
                                                     </div>
                                                 </div>
-                                                <p className="text-xs text-black/60 dark:text-white/60 mt-1 line-clamp-2 leading-relaxed">
+                                                <p className="text-xs text-gray-400 mt-1 line-clamp-2 leading-relaxed font-medium">
                                                     {notif.message}
                                                 </p>
                                                 {notif.link && (
                                                     <Link
                                                         href={notif.link}
-                                                        className="inline-block mt-2 text-[10px] uppercase font-black tracking-wider text-indigo-600 dark:text-indigo-400 hover:underline"
+                                                        className="inline-flex items-center gap-1.5 mt-3 text-[9px] font-black uppercase tracking-[0.15em] text-indigo-500 hover:text-indigo-600 transition-colors"
                                                     >
-                                                        View Details →
+                                                        Review Now <Check className="w-3 h-3" />
                                                     </Link>
                                                 )}
                                             </div>
@@ -193,18 +232,18 @@ export default function NotificationPanel() {
                         </div>
 
                         {notifications.length > 0 && (
-                            <div className="p-3 border-t border-black/5 dark:border-white/5 bg-black/5 dark:bg-white/5 flex gap-2 shrink-0">
+                            <div className="p-4 border-t border-gray-100 bg-white flex gap-3 shrink-0">
                                 <button
                                     onClick={markAllAsRead}
-                                    className="flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-black/50 dark:text-white/50 hover:bg-black/10 dark:hover:bg-white/20 hover:text-black dark:hover:text-white transition-all"
+                                    className="flex-1 py-3 rounded-2xl text-[9px] font-black uppercase tracking-widest text-gray-400 hover:bg-gray-50 hover:text-black transition-all border border-gray-50"
                                 >
-                                    Mark all as Read
+                                    Mark as Read
                                 </button>
                                 <button
                                     onClick={clearAll}
-                                    className="px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-rose-500/60 hover:text-rose-500 hover:bg-rose-500/10 transition-all border border-rose-500/20"
+                                    className="px-6 py-3 rounded-2xl text-[9px] font-black uppercase tracking-widest text-rose-500 hover:bg-rose-50 transition-all border border-rose-100"
                                 >
-                                    Clear All
+                                    Clear
                                 </button>
                             </div>
                         )}

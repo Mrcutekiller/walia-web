@@ -5,10 +5,10 @@ import { ArrowRight, ChevronRight, FileText, HelpCircle, Layers, PenTool, Sparkl
 import Link from 'next/link';
 
 const TOOLS = [
-    { title: 'Summarize', desc: 'Condense any text to key points', icon: FileText, gradient: 'from-[#6C63FF] to-[#5A52E0]', shadow: 'shadow-[#6C63FF]/30', route: '/dashboard/tools/summarize', emoji: '📄', id: 'summarize', color: '#6C63FF' },
-    { title: 'Quiz', desc: 'Generate & take practice tests', icon: HelpCircle, gradient: 'from-[#FF6B6B] to-[#E53935]', shadow: 'shadow-[#FF6B6B]/30', route: '/dashboard/tools/quiz', emoji: '🧠', id: 'quiz', color: '#FF6B6B' },
-    { title: 'Flashcards', desc: 'Flip-card studying system', icon: Layers, gradient: 'from-[#4ECDC4] to-[#00897B]', shadow: 'shadow-[#4ECDC4]/30', route: '/dashboard/tools/flashcard', emoji: '🃏', id: 'flashcard', color: '#4ECDC4' },
-    { title: 'Notes', desc: 'Write & organize your ideas', icon: PenTool, gradient: 'from-[#FFA502] to-[#E65100]', shadow: 'shadow-[#FFA502]/30', route: '/dashboard/tools/notes', emoji: '📝', id: 'notes', color: '#FFA502' },
+    { title: 'Summarize', desc: 'Condense any text to key points', icon: FileText, route: '/dashboard/tools/summarize', emoji: '📄', id: 'summarize' },
+    { title: 'Quiz', desc: 'Generate & take practice tests', icon: HelpCircle, route: '/dashboard/tools/quiz', emoji: '🧠', id: 'quiz' },
+    { title: 'Flashcards', desc: 'Flip-card studying system', icon: Layers, route: '/dashboard/tools/flashcard', emoji: '🃏', id: 'flashcard' },
+    { title: 'Notes', desc: 'Write & organize your ideas', icon: PenTool, route: '/dashboard/tools/notes', emoji: '📝', id: 'notes' },
 ];
 
 export default function ToolsPage() {
@@ -24,87 +24,111 @@ export default function ToolsPage() {
 
     const getToolIcon = (toolId: string) => {
         const found = TOOLS.find(t => t.id === toolId);
-        return found ? { Icon: found.icon, color: found.color } : { Icon: PenTool, color: '#FFA502' };
+        return found ? { Icon: found.icon } : { Icon: PenTool };
     };
 
     return (
-        <div className="animate-fade-in flex flex-col h-full bg-[#f8f9fa] dark:bg-[#0a0a0a]">
+        <div className="animate-fade-in flex flex-col h-full bg-white pb-20 md:pb-10">
             {/* Header Area */}
-            <div className="p-6 pb-8 bg-gradient-to-br from-[#6C63FF] to-[#7C75FF] dark:from-[#1A1A2E] dark:to-[#0D0D1A] -mx-4 -mt-4 md:-mx-6 md:-mt-6 lg:-mx-10 lg:-mt-10 mb-6 relative overflow-hidden">
-                <div className="relative z-10 flex items-start justify-between">
+            <div className="p-8 md:p-12 bg-gray-50 border-b border-gray-200 -mx-4 -mt-4 md:-mx-6 md:-mt-6 lg:-mx-10 lg:-mt-10 mb-8 relative overflow-hidden">
+                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20" />
+                <div className="absolute inset-0 bg-gradient-to-t from-white to-transparent opacity-80" />
+
+                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div>
-                        <h1 className="text-3xl font-black text-white tracking-tight mb-1">Study Tools 🛠️</h1>
-                        <p className="text-white/70 text-sm font-medium">4 tools to supercharge your learning</p>
+                        <h1 className="text-3xl md:text-4xl font-black text-black tracking-tight mb-2">Study Tools</h1>
+                        <p className="text-gray-500 text-sm font-medium">Four powerful AI tools to supercharge your learning journey</p>
                     </div>
-                    <Link href="/dashboard/ai" className="flex items-center gap-2 bg-white/20 border border-white/30 px-3 py-1.5 rounded-full backdrop-blur-sm hover:bg-white/30 transition-colors">
-                        <Sparkles className="w-4 h-4 text-white" />
-                        <span className="text-xs font-bold text-white">Ask AI</span>
+                    <Link href="/dashboard/ai" className="inline-flex items-center justify-center gap-2 bg-black hover:bg-zinc-800 text-white px-6 py-3 rounded-full transition-all group w-fit shadow-lg shadow-black/10">
+                        <Sparkles className="w-5 h-5 animate-pulse" />
+                        <span className="text-sm font-bold">Ask Walia AI</span>
                     </Link>
                 </div>
             </div>
 
-            <div className="px-1 pb-10">
-                {/* Grid (Staggered on mobile, 4-col on lg) */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8 lg:px-4">
-                    {TOOLS.map((tool, i) => (
+            <div className="px-4 md:px-0">
+                {/* Tools Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                    {TOOLS.map((tool) => (
                         <Link
                             href={tool.route}
                             key={tool.id}
                             className={cn(
-                                "group relative overflow-hidden flex flex-col justify-between p-5 rounded-3xl bg-gradient-to-br shadow-xl transition-all hover:scale-[1.02] active:scale-95 h-[170px] lg:h-[200px]",
-                                tool.gradient,
-                                tool.shadow,
-                                i % 2 === 1 && "mt-6 lg:mt-0 lg:-translate-y-4" // Staggered effect (different axis for desktop)
+                                "group relative overflow-hidden flex flex-col justify-between p-7 rounded-[2rem] bg-white border border-gray-200 shadow-sm transition-all hover:shadow-xl hover:shadow-black/5 hover:-translate-y-1 active:scale-95 h-[220px]",
                             )}
                         >
-                            <div>
-                                <div className="text-3xl mb-2">{tool.emoji}</div>
-                                <h3 className="text-base font-bold text-white leading-tight mb-1">{tool.title}</h3>
-                                <p className="text-[10px] text-white/80 leading-relaxed max-w-[90%] font-medium">{tool.desc}</p>
+                            <div className="relative z-10">
+                                <div className="w-14 h-14 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center text-3xl mb-5 group-hover:scale-110 group-hover:bg-white transition-all duration-300">
+                                    {tool.emoji}
+                                </div>
+                                <h3 className="text-lg font-black text-black leading-tight mb-2">{tool.title}</h3>
+                                <p className="text-xs text-gray-500 leading-relaxed font-medium line-clamp-2">{tool.desc}</p>
                             </div>
-                            <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center self-end backdrop-blur-sm">
-                                <ArrowRight className="w-3.5 h-3.5 text-white" />
+
+                            <div className="relative z-10 flex items-center justify-between mt-4">
+                                <span className="text-[10px] font-bold text-black uppercase tracking-widest bg-gray-100 px-3 py-1 rounded-full border border-gray-200 group-hover:bg-black group-hover:text-white group-hover:border-black transition-colors">
+                                    Launch
+                                </span>
+                                <div className="w-10 h-10 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center group-hover:bg-black group-hover:text-white group-hover:border-black transition-all">
+                                    <ArrowRight className="w-4 h-4" />
+                                </div>
                             </div>
                         </Link>
                     ))}
                 </div>
 
-                {/* Stats Row */}
-                <div className="flex items-center justify-around bg-white dark:bg-[#1A1A2E] p-5 rounded-2xl shadow-sm border border-black/5 dark:border-white/5 mb-8">
-                    {[
-                        { val: counts.quiz, label: 'Quizzes' },
-                        { val: counts.notes, label: 'Notes' },
-                        { val: counts.flashcard, label: 'Cards' },
-                        { val: counts.summarize, label: 'Summaries' }
-                    ].map(stat => (
-                        <div key={stat.label} className="flex flex-col items-center">
-                            <span className="text-xl font-black text-indigo-600 dark:text-indigo-400">{stat.val}</span>
-                            <span className="text-[10px] font-bold text-black/40 dark:text-white/40 uppercase tracking-wider mt-1">{stat.label}</span>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Recent Activity */}
+                    <div className="lg:col-span-2 space-y-4">
+                        <div className="flex items-center justify-between px-2">
+                            <h2 className="text-sm font-bold text-gray-400 uppercase tracking-widest">Recent Activity</h2>
+                            <button className="text-xs font-bold text-black hover:underline underline-offset-4">View All</button>
                         </div>
-                    ))}
-                </div>
+                        <div className="bg-white border border-gray-200 rounded-[2rem] shadow-sm overflow-hidden p-3">
+                            <div className="space-y-1">
+                                {recentActivity.map((item, i) => {
+                                    const { Icon } = getToolIcon(item.tool);
+                                    return (
+                                        <div key={i} className="group flex items-center p-4 rounded-2xl hover:bg-gray-50 border border-transparent hover:border-gray-200 transition-all cursor-pointer">
+                                            <div className="w-12 h-12 rounded-xl flex items-center justify-center mr-4 bg-gray-100 text-gray-400 group-hover:bg-white group-hover:text-black group-hover:border group-hover:border-gray-200 transition-all">
+                                                <Icon className="w-5 h-5" />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <h4 className="text-sm font-bold text-black truncate">{item.title}</h4>
+                                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">{item.tool} • {item.date}</p>
+                                            </div>
+                                            <ChevronRight className="w-5 h-5 text-gray-300 group-hover:translate-x-1 group-hover:text-black transition-all" />
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </div>
 
-                {/* Recent Activity */}
-                <div>
-                    <h2 className="text-lg font-black text-black dark:text-white mb-4">Recent Activity</h2>
-                    <div className="bg-white dark:bg-[#1A1A2E] rounded-2xl shadow-sm border border-black/5 dark:border-white/5 overflow-hidden">
-                        {recentActivity.map((item, i) => {
-                            const { Icon, color } = getToolIcon(item.tool);
-                            return (
-                                <div key={i} className="group flex items-center p-4 border-b border-black/5 dark:border-white/5 last:border-0 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
-                                    <div className="w-11 h-11 rounded-xl flex items-center justify-center mr-4" style={{ backgroundColor: `${color}20` }}>
-                                        <Icon className="w-5 h-5" style={{ color }} />
+                    {/* Stats & Quick Actions */}
+                    <div className="space-y-4">
+                        <h2 className="text-sm font-bold text-gray-400 uppercase tracking-widest px-2">Your Impact</h2>
+                        <div className="bg-white border border-gray-200 rounded-[2rem] p-8 shadow-sm text-center">
+                            <div className="grid grid-cols-2 gap-4">
+                                {[
+                                    { val: counts.quiz, label: 'Quizzes' },
+                                    { val: counts.notes, label: 'Notes' },
+                                    { val: counts.flashcard, label: 'Cards' },
+                                    { val: counts.summarize, label: 'Summaries' }
+                                ].map(stat => (
+                                    <div key={stat.label} className="bg-gray-50 rounded-2xl p-4 border border-gray-100">
+                                        <p className="text-2xl font-black text-black mb-1">{stat.val}</p>
+                                        <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{stat.label}</p>
                                     </div>
-                                    <div className="flex-1 min-w-0">
-                                        <h4 className="text-sm font-bold text-black dark:text-white truncate">{item.title}</h4>
-                                        <p className="text-[10px] font-bold text-black/40 dark:text-white/40 uppercase tracking-widest mt-0.5">{item.tool} · {item.date}</p>
-                                    </div>
-                                    <div className="w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" style={{ backgroundColor: `${color}10` }}>
-                                        <ChevronRight className="w-4 h-4" style={{ color }} />
-                                    </div>
-                                </div>
-                            );
-                        })}
+                                ))}
+                            </div>
+                            <div className="mt-8 pt-8 border-t border-gray-100">
+                                <p className="text-xs font-medium text-gray-500 mb-6">You're in the top <span className="text-black font-black bg-gray-100 px-2 py-0.5 rounded-full">5%</span> of learners this week!</p>
+                                <button className="w-full py-4 rounded-full bg-black text-white font-bold text-xs uppercase tracking-widest shadow-lg shadow-black/10 hover:scale-[1.02] hover:bg-zinc-800 active:scale-95 transition-all">
+                                    View Detailed Stats
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

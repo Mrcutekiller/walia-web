@@ -1,53 +1,102 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity, ActivityIndicator, Alert, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { db } from '@/lib/firebase';
-import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
+import { collection, doc, onSnapshot, orderBy, query, updateDoc, addDoc, serverTimestamp, deleteDoc } from 'firebase/firestore';
 
-interface Transaction {
+interface PaymentRequest {
     id: string;
-    user: string;
+    userId: string;
+    userEmail: string;
+    userName: string;
     plan: string;
-    amount: string;
-    status: string;
-    date: string;
+    amount: number;
+    currency: string;
     method: string;
+    proofURL: string;
+    status: 'processing' | 'approved' | 'rejected';
+    createdAt: any;
 }
 
 export default function AdminPayments() {
-    const [transactions, setTransactions] = useState<Transaction[]>([]);
+    const [requests, setRequests] = useState<PaymentRequest[]>([]);
     const [loading, setLoading] = useState(true);
-    const [searchTerm, setSearchTerm] = useState('');
+    const [filter, setFilter] = useState<'all' | 'processing' | 'approved' | 'rejected'>('processing');
 
     useEffect(() => {
-        const q = query(collection(db, 'payments'), orderBy('date', 'desc'));
+        const q = query(collection(db, 'payment_requests'), orderBy('createdAt', 'desc'));
         const unsub = onSnapshot(q, (snap) => {
-            setTransactions(snap.docs.map(d => ({
+            setRequests(snap.docs.map(d => ({
                 id: d.id,
-                ...d.data(),
-                date: d.data().date || (d.data().createdAt?.toDate ? d.data().createdAt.toDate().toLocaleString() : 'N/A')
-            } as Transaction)));
+                ...d.data()
+            } as PaymentRequest)));
             setLoading(false);
         });
         return () => unsub();
     }, []);
 
-    const filteredTransactions = transactions.filter(tx =>
-        tx.user?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        tx.id?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const handleAction = async (request: PaymentRequest, status: 'approved' | 'rejected') => {
+        try {
+            await updateDoc(doc(db, 'payment_requests', request.id), { status });
 
-    const renderItem = ({ item }: { item: Transaction }) => (
+            if (status === 'approved') {
+                await updateDoc(doc(db, 'users', request.userId), { 
+                    plan: 'pro',
+                    proType: request.plan,
+                    planActivatedAt: serverTimestamp()
+                });
+            }
+
+            const message = status === 'approved' 
+                ? `Your payment has been approved! You are now on the Pro plan. Enjoy unlimited access to all Walia AI features.`
+                : `Your payment was rejected. Please ensure your proof of payment is clear and matches the requested amount.`;
+            
+            await addDoc(collection(db, 'notifications'), {
+                userId: request.userId,
+                title: status === 'approved' ? 'Payment Approved ✅' : 'Payment Rejected ❌',
+                message,
+                type: status === 'approved' ? 'system' : 'message',
+                read: false,
+                createdAt: serverTimestamp()
+            });
+
+            Alert.alert('Success', `Request ${status} successfully.`);
+        } catch (error) {
+            console.error(`Error processing ${status}:`, error);
+            Alert.alert('Error', `Failed to ${status} request.`);
+        }
+    };
+
+    const deleteRequest = (id: string) => {
+        Alert.alert(
+            'Confirm Delete',
+            'Are you sure you want to delete this payment record?',
+            [
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'Delete', style: 'destructive', onPress: async () => {
+                    try {
+                        await deleteDoc(doc(db, 'payment_requests', id));
+                    } catch (error) {
+                        console.error('Error deleting request:', error);
+                    }
+                }}
+            ]
+        );
+    };
+
+    const filteredRequests = requests.filter(r => filter === 'all' ? true : r.status === filter);
+
+    const renderItem = ({ item }: { item: PaymentRequest }) => (
         <View style={styles.card}>
             <View style={styles.cardHeader}>
                 <Text style={styles.idText}>#{item.id.slice(-8)}</Text>
                 <View style={[styles.statusBadge, 
-                    item.status === 'Completed' || item.status === 'succeeded' ? styles.statusSuccess :
-                    item.status === 'Failed' ? styles.statusFailed : styles.statusPending
+                    item.status === 'approved' ? styles.statusSuccess :
+                    item.status === 'rejected' ? styles.statusFailed : styles.statusPending
                 ]}>
                     <Text style={[styles.statusText, 
-                        item.status === 'Completed' || item.status === 'succeeded' ? styles.textSuccess :
-                        item.status === 'Failed' ? styles.textFailed : styles.textPending
+                        item.status === 'approved' ? styles.textSuccess :
+                        item.status === 'rejected' ? styles.textFailed : styles.textPending
                     ]}>{item.status}</Text>
                 </View>
             </View>
@@ -55,40 +104,85 @@ export default function AdminPayments() {
             <View style={styles.cardBody}>
                 <View style={styles.infoRow}>
                     <Ionicons name="person" size={14} color="rgba(255,255,255,0.4)" />
-                    <Text style={styles.userName}>{item.user}</Text>
+                    <Text style={styles.userName}>{item.userName}</Text>
                 </View>
                 <View style={styles.infoRow}>
-                    <Ionicons name="card" size={14} color="rgba(255,255,255,0.4)" />
-                    <Text style={styles.planName}>{item.plan} • {item.amount}</Text>
+                    <Ionicons name="mail" size={14} color="rgba(255,255,255,0.4)" />
+                    <Text style={styles.userEmail}>{item.userEmail}</Text>
                 </View>
-                <View style={styles.infoRow}>
-                    <Ionicons name="time" size={14} color="rgba(255,255,255,0.4)" />
-                    <Text style={styles.dateText}>{item.date}</Text>
+                <View style={[styles.infoRow, { marginTop: 8 }]}>
+                    <View style={styles.badgePair}>
+                        <View style={styles.miniBadge}>
+                            <Text style={styles.miniBadgeText}>{item.plan.toUpperCase()}</Text>
+                        </View>
+                        <View style={styles.miniBadge}>
+                            <Text style={styles.miniBadgeText}>{item.amount} {item.currency}</Text>
+                        </View>
+                    </View>
                 </View>
             </View>
 
             <View style={styles.cardFooter}>
-                <Text style={styles.methodText}>{item.method.toUpperCase()}</Text>
+                <View style={styles.footerInfo}>
+                    <Ionicons name="card" size={12} color="rgba(255,255,255,0.3)" />
+                    <Text style={styles.methodText}>{item.method.toUpperCase()}</Text>
+                </View>
+                {item.proofURL && (
+                    <TouchableOpacity 
+                        style={styles.viewProofBtn}
+                        onPress={() => Linking.openURL(item.proofURL)}
+                    >
+                        <Text style={styles.viewProofText}>View Proof</Text>
+                        <Ionicons name="external-link" size={12} color="#4F46E5" />
+                    </TouchableOpacity>
+                )}
             </View>
+
+            {item.status === 'processing' && (
+                <View style={styles.actionRow}>
+                    <TouchableOpacity 
+                        style={[styles.actionBtn, styles.approveBtn]}
+                        onPress={() => handleAction(item, 'approved')}
+                    >
+                        <Ionicons name="checkmark" size={16} color="white" />
+                        <Text style={styles.actionBtnText}>Approve</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity 
+                        style={[styles.actionBtn, styles.rejectBtn]}
+                        onPress={() => handleAction(item, 'rejected')}
+                    >
+                        <Ionicons name="close" size={16} color="#EF4444" />
+                        <Text style={[styles.actionBtnText, { color: '#EF4444' }]}>Reject</Text>
+                    </TouchableOpacity>
+                </View>
+            )}
+
+            <TouchableOpacity 
+                style={styles.deleteBtn}
+                onPress={() => deleteRequest(item.id)}
+            >
+                <Ionicons name="trash" size={16} color="rgba(255,255,255,0.2)" />
+            </TouchableOpacity>
         </View>
     );
 
     return (
         <View style={styles.container}>
             <View style={styles.header}>
-                <Text style={styles.title}>Financial Records</Text>
-                <Text style={styles.subtitle}>Verify transaction logs and monitor subscription revenue.</Text>
+                <Text style={styles.title}>Payment Verification</Text>
+                <Text style={styles.subtitle}>Review and approve manual payment proofs from users.</Text>
             </View>
 
-            <View style={styles.searchContainer}>
-                <Ionicons name="search" size={18} color="rgba(255,255,255,0.2)" style={styles.searchIcon} />
-                <TextInput
-                    style={styles.searchInput}
-                    placeholder="Search by User or Transaction ID..."
-                    placeholderTextColor="rgba(255,255,255,0.2)"
-                    value={searchTerm}
-                    onChangeText={setSearchTerm}
-                />
+            <View style={styles.filterContainer}>
+                {(['processing', 'approved', 'rejected', 'all'] as const).map((f) => (
+                    <TouchableOpacity
+                        key={f}
+                        onPress={() => setFilter(f)}
+                        style={[styles.filterBtn, filter === f && styles.filterBtnActive]}
+                    >
+                        <Text style={[styles.filterBtnText, filter === f && styles.filterBtnTextActive]}>{f}</Text>
+                    </TouchableOpacity>
+                ))}
             </View>
 
             {loading ? (
@@ -97,13 +191,14 @@ export default function AdminPayments() {
                 </View>
             ) : (
                 <FlatList
-                    data={filteredTransactions}
+                    data={filteredRequests}
                     renderItem={renderItem}
                     keyExtractor={item => item.id}
                     contentContainerStyle={styles.listContent}
                     ListEmptyComponent={
                         <View style={styles.centerBox}>
-                            <Text style={styles.emptyText}>No transactions found</Text>
+                            <Ionicons name="time" size={48} color="rgba(255,255,255,0.05)" />
+                            <Text style={styles.emptyText}>No {filter !== 'all' ? filter : ''} requests found.</Text>
                         </View>
                     }
                 />
@@ -129,27 +224,35 @@ const styles = StyleSheet.create({
     },
     subtitle: {
         fontSize: 14,
-        color: 'rgba(255, 255, 255, 0.3)',
+        color: 'rgba(255, 255, 255, 0.4)',
         marginTop: 4,
     },
-    searchContainer: {
+    filterContainer: {
         flexDirection: 'row',
-        alignItems: 'center',
         backgroundColor: 'rgba(255, 255, 255, 0.05)',
+        padding: 4,
         borderRadius: 16,
-        paddingHorizontal: 16,
         marginBottom: 24,
         borderWidth: 1,
         borderColor: 'rgba(255, 255, 255, 0.05)',
     },
-    searchIcon: {
-        marginRight: 12,
-    },
-    searchInput: {
+    filterBtn: {
         flex: 1,
-        height: 50,
-        color: 'white',
-        fontSize: 14,
+        paddingVertical: 10,
+        alignItems: 'center',
+        borderRadius: 12,
+    },
+    filterBtnActive: {
+        backgroundColor: 'white',
+    },
+    filterBtnText: {
+        fontSize: 11,
+        fontWeight: '800',
+        color: 'rgba(255, 255, 255, 0.4)',
+        textTransform: 'capitalize',
+    },
+    filterBtnTextActive: {
+        color: 'black',
     },
     listContent: {
         paddingBottom: 20,
@@ -161,6 +264,7 @@ const styles = StyleSheet.create({
         marginBottom: 16,
         borderWidth: 1,
         borderColor: 'rgba(255, 255, 255, 0.05)',
+        position: 'relative',
     },
     cardHeader: {
         flexDirection: 'row',
@@ -192,7 +296,7 @@ const styles = StyleSheet.create({
     textFailed: { color: '#EF4444' },
     textPending: { color: '#F97316' },
     cardBody: {
-        gap: 8,
+        gap: 6,
     },
     infoRow: {
         flexDirection: 'row',
@@ -200,23 +304,44 @@ const styles = StyleSheet.create({
         gap: 8,
     },
     userName: {
-        fontSize: 14,
-        fontWeight: 'bold',
+        fontSize: 15,
+        fontWeight: '900',
         color: 'white',
     },
-    planName: {
+    userEmail: {
         fontSize: 12,
         color: 'rgba(255, 255, 255, 0.4)',
     },
-    dateText: {
-        fontSize: 11,
-        color: 'rgba(255, 255, 255, 0.2)',
+    badgePair: {
+        flexDirection: 'row',
+        gap: 8,
+    },
+    miniBadge: {
+        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 6,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.05)',
+    },
+    miniBadgeText: {
+        fontSize: 9,
+        fontWeight: '900',
+        color: 'rgba(255, 255, 255, 0.6)',
     },
     cardFooter: {
         marginTop: 16,
         paddingTop: 16,
         borderTopWidth: 1,
         borderTopColor: 'rgba(255, 255, 255, 0.05)',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    footerInfo: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
     },
     methodText: {
         fontSize: 10,
@@ -224,15 +349,59 @@ const styles = StyleSheet.create({
         color: 'rgba(255, 255, 255, 0.3)',
         letterSpacing: 1,
     },
+    viewProofBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+    },
+    viewProofText: {
+        fontSize: 11,
+        fontWeight: '900',
+        color: '#4F46E5',
+    },
+    actionRow: {
+        flexDirection: 'row',
+        gap: 12,
+        marginTop: 20,
+    },
+    actionBtn: {
+        flex: 1,
+        height: 44,
+        borderRadius: 12,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+    },
+    approveBtn: {
+        backgroundColor: '#10B981',
+    },
+    rejectBtn: {
+        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+        borderWidth: 1,
+        borderColor: 'rgba(239, 68, 68, 0.2)',
+    },
+    actionBtnText: {
+        fontSize: 12,
+        fontWeight: '900',
+        color: 'white',
+    },
+    deleteBtn: {
+        position: 'absolute',
+        top: 20,
+        right: 20,
+        opacity: 0.5,
+    },
     centerBox: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        padding: 40,
+        paddingVertical: 100,
     },
     emptyText: {
         color: 'rgba(255, 255, 255, 0.2)',
         fontSize: 14,
         fontWeight: 'bold',
+        marginTop: 16,
     },
 });
