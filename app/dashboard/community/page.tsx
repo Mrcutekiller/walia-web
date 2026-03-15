@@ -43,6 +43,21 @@ interface Post {
     createdAt: any;
 }
 
+function UserNameDisplay({ uid }: { uid: string }) {
+    const [name, setName] = useState('...');
+    useEffect(() => {
+        if (!uid) return;
+        const unsub = onSnapshot(doc(db, 'users', uid), (snap) => {
+            if (snap.exists()) {
+                setName(snap.data().name || snap.data().displayName || 'User');
+            }
+        });
+        return () => unsub();
+    }, [uid]);
+
+    return <span className="text-sm font-black text-white leading-tight">{name}</span>;
+}
+
 export default function CommunityPage() {
     const { user } = useAuth();
     const [posts, setPosts] = useState<Post[]>([]);
@@ -247,7 +262,7 @@ export default function CommunityPage() {
                                             </div>
                                             <div className="flex flex-col">
                                                 <div className="flex items-center gap-2">
-                                                    <span className="text-sm font-black text-white leading-tight">User Name Data</span> {/* Replace with actual resolved name if available, or fetch in component */}
+                                                    <UserNameDisplay uid={post.authorId} />
                                                 </div>
                                                 <span className="text-xs font-bold text-[#64748B]">
                                                     Posted in <span className="text-[#94A3B8]">walia</span> - {formatTimeAgo(post.createdAt)}

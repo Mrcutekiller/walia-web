@@ -25,7 +25,7 @@ import { useEffect, useState } from 'react';
 const SIDEBAR_NAV = [
     { icon: Bot, label: 'AI Chat', href: '/dashboard/ai' },
     { icon: MessageSquare, label: 'Messages', href: '/dashboard/messages' },
-    { icon: Users, label: 'Community', href: '/dashboard/community', badge: 15 },
+    { icon: Users, label: 'Community', href: '/dashboard/community' },
     { icon: Wrench, label: 'Tools', href: '/dashboard/tools' },
     { icon: Calendar, label: 'Events', href: '/dashboard/events' },
     { icon: User, label: 'Profile', href: '/dashboard/profile' },
@@ -79,16 +79,16 @@ export default function DashboardShell({ children }: { children: React.ReactNode
                 lg:translate-x-0 lg:static lg:z-auto overflow-hidden
             `}>
                 {/* Large Background W Element */}
-                <div className="absolute -left-16 top-1/2 -translate-y-1/2 select-none pointer-events-none opacity-[0.03]">
-                    <span className="text-[400px] font-black leading-none text-white tracking-tighter">W</span>
+                <div className="absolute -left-16 top-1/2 -translate-y-1/2 select-none pointer-events-none opacity-[0.03] dark:opacity-[0.05] grayscale">
+                    <Image src="/walia-logo.png" alt="" width={300} height={300} unoptimized className="object-contain" />
                 </div>
 
                 <div className="relative z-10 flex flex-col h-full">
                     {/* Logo */}
                     <div className="flex items-center justify-between p-6 border-b border-white/5 shrink-0">
                         <Link href="/dashboard" className="flex items-center gap-3 group">
-                            <div className="w-10 h-10 rounded-[10px] bg-white text-black flex items-center justify-center group-hover:scale-105 transition-transform overflow-hidden shadow-lg shadow-black/20 font-black text-xl leading-none">
-                                W
+                            <div className="w-10 h-10 rounded-[10px] bg-white border border-gray-100 dark:border-white/10 flex items-center justify-center group-hover:scale-105 transition-transform overflow-hidden shadow-lg shadow-black/5 font-black text-xl leading-none">
+                                <Image src="/walia-logo.png" alt="Walia" width={28} height={28} unoptimized className="object-contain" />
                             </div>
                             <span className="text-xl font-black text-white tracking-widest uppercase">Walia</span>
                         </Link>
