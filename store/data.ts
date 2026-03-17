@@ -4,11 +4,7 @@ export interface ChatUser {
     id: string;
     name: string;
     username: string;
-<<<<<<< HEAD
     photoURL: string;
-=======
-    avatar: string;
->>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
     online: boolean;
     bio: string;
     stats: { likes: string; posts: number; views: string };
@@ -26,11 +22,7 @@ export interface Chat {
     id: string;
     type: 'private' | 'group';
     name: string;
-<<<<<<< HEAD
     photoURL: string;
-=======
-    avatar: string;
->>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
     lastMessage: string;
     lastTime: string;
     unread: number;

@@ -1,22 +1,15 @@
 import { BorderRadius, FontSize, FontWeight, Spacing } from '@/constants/theme';
 import { AIMessage, AIProvider, askAI, PROVIDERS } from '@/services/ai';
-<<<<<<< HEAD
 import { db } from '@/services/firebase';
 import { useAuth } from '@/store/auth';
-=======
-import { useAuth } from '@/store/auth';
 import { AI_CHATS } from '@/store/data';
->>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
 import { useSocial } from '@/store/social';
 import { useTheme } from '@/store/theme';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-<<<<<<< HEAD
 import { addDoc, collection, doc, onSnapshot, orderBy, query, serverTimestamp, updateDoc } from 'firebase/firestore';
-=======
->>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
 import React, { useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
@@ -52,7 +45,7 @@ function AnimatedBubble({ message, colors }: { message: ChatMessage; colors: any
             { opacity: fadeAnim, transform: [{ translateX: slideAnim }] },
         ]}>
             {!isUser && (
-                <View style={[styles.aiAvatarWrap, { borderColor: providerInfo ? `${providerInfo.color}40` : 'rgba(108,99,255,0.3)' }]}>
+                <View style={[styles.aiAvatarWrap, { borderColor: providerInfo ? `${providerInfo.color}40` : colors.divider }]}>
                     {providerInfo ? (
                         <Text style={{ fontSize: 18 }}>{providerInfo.icon}</Text>
                     ) : (
@@ -67,11 +60,11 @@ function AnimatedBubble({ message, colors }: { message: ChatMessage; colors: any
                     : { flex: 1, borderBottomLeftRadius: 4, backgroundColor: colors.surface, borderWidth: 1, borderColor: providerInfo ? `${providerInfo.color}30` : 'transparent' },
             ]}>
                 {isUser ? (
-                    <LinearGradient colors={['#7C75FF', '#5A52E0']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.userGradient}>
+                    <View style={[styles.userGradient, { backgroundColor: colors.primary }]}>
                         {message.imageUri && <Image source={{ uri: message.imageUri }} style={styles.bubbleImage} />}
                         <Text style={styles.userText}>{message.text}</Text>
                         <Text style={styles.userTime}>{message.timestamp}</Text>
-                    </LinearGradient>
+                    </View>
                 ) : (
                     <View style={{ padding: Spacing.lg }}>
                         {providerInfo && (
@@ -99,16 +92,12 @@ export default function AITabScreen() {
     const [message, setMessage] = useState('');
     const [preferredProvider, setPreferredProvider] = useState<AIProvider>('auto');
     const [showModels, setShowModels] = useState(false);
-<<<<<<< HEAD
     const [sessions, setSessions] = useState<{ id: string, title: string, lastText: string, updatedAt: any }[]>([]);
     const [activeSession, setActiveSession] = useState<string | null>(null);
-=======
->>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
     const scrollRef = useRef<ScrollView>(null);
 
     const inputRef = useRef<TextInput>(null);
 
-<<<<<<< HEAD
     // Fetch AI Sessions
     useEffect(() => {
         if (!user) return;
@@ -149,9 +138,6 @@ export default function AITabScreen() {
         });
         return () => unsub();
     }, [activeSession, user]);
-
-=======
->>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
     const buildHistory = (msgs: ChatMessage[]): AIMessage[] =>
         msgs.map(m => ({ role: m.role === 'user' ? 'user' : 'model', parts: [{ text: m.text }] }));
 
@@ -173,13 +159,7 @@ export default function AITabScreen() {
         }
 
         const userMsg: ChatMessage = { id: Date.now().toString(), role: 'user', text: content, imageUri, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) };
-<<<<<<< HEAD
-        // Optimistic UI update
-        // setChatMessages(prev => [...prev, userMsg]);
-
-=======
         setChatMessages(prev => [...prev, userMsg]);
->>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
         setMessage('');
         setShowAttach(false);
         setIsLoading(true);
@@ -187,7 +167,6 @@ export default function AITabScreen() {
         setShowModels(false);
         setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 150);
 
-<<<<<<< HEAD
         let sessionId = activeSession;
         try {
             if (!sessionId) {
@@ -234,13 +213,6 @@ export default function AITabScreen() {
                     createdAt: serverTimestamp()
                 });
             }
-=======
-        try {
-            const { text: aiText, provider } = await askAI(content, buildHistory(chatMessages), preferredProvider);
-            setChatMessages(prev => [...prev, { id: (Date.now() + 1).toString(), role: 'ai', text: aiText, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), provider }]);
-        } catch (e: any) {
-            setChatMessages(prev => [...prev, { id: (Date.now() + 2).toString(), role: 'ai', text: `⚠️ Connection issue.\n\n${e.message}`, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }]);
->>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
         } finally {
             setIsLoading(false);
             setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 150);
@@ -274,7 +246,7 @@ export default function AITabScreen() {
         <View style={[styles.container, { backgroundColor: colors.background }]}>
             {/* Gradient Header */}
             <LinearGradient
-                colors={isDark ? ['#12123A', '#0D0D1A'] : ['#6C63FF', '#8B85FF']}
+                colors={isDark ? ['#000000', '#121212'] : ['#F9FAFB', '#FFFFFF']}
                 style={styles.headerGradient}
             >
                 <SafeAreaView edges={['top']} style={styles.headerInner}>
@@ -284,38 +256,30 @@ export default function AITabScreen() {
                                 <Image source={require('../../assets/images/walia-logo.png')} style={{ width: 44, height: 44 }} resizeMode="contain" />
                             </View>
                             <View>
-                                <Text style={styles.headerTitle}>Walia AI</Text>
+                                <Text style={[styles.headerTitle, { color: colors.text }]}>Walia AI</Text>
                                 <View style={styles.statusRow}>
                                     <View style={[styles.statusDot, { backgroundColor: isLoading ? '#FFA502' : '#2ED573' }]} />
-                                    <Text style={styles.statusText}>{isLoading ? 'Thinking...' : `${providerObj.name} · Online`}</Text>
+                                    <Text style={[styles.statusText, { color: colors.textSecondary }]}>{isLoading ? 'Thinking...' : `${providerObj.name} · Online`}</Text>
                                 </View>
                             </View>
                         </View>
-                        <TouchableOpacity onPress={() => router.push('/ai/')} style={styles.historyBtn}>
-                            <Ionicons name="time-outline" size={16} color="#fff" />
-                            <Text style={styles.historyText}>History</Text>
+                        <TouchableOpacity onPress={() => router.push('/ai/' as any)} style={[styles.historyBtn, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}>
+                            <Ionicons name="time-outline" size={16} color={colors.text} />
+                            <Text style={[styles.historyText, { color: colors.text }]}>History</Text>
                         </TouchableOpacity>
                     </View>
 
                     {/* Stats bar */}
-<<<<<<< HEAD
                     {sessions.length > 0 && !activeSession && (
-                        <View style={styles.statsBar}>
-                            <Text style={styles.statsText}>{sessions.length} total sessions</Text>
+                        <View style={[styles.statsBar, { borderTopColor: colors.divider }]}>
+                            <Text style={[styles.statsText, { color: colors.textSecondary }]}>{sessions.length} total sessions</Text>
                         </View>
                     )}
 
                     {activeSession && (
-                        <View style={styles.statsBar}>
+                        <View style={[styles.statsBar, { borderTopColor: colors.divider }]}>
                             <TouchableOpacity onPress={() => setActiveSession(null)}>
-                                <Text style={styles.clearBtn}>← Back to Home / New Chat</Text>
-=======
-                    {chatMessages.length > 0 && (
-                        <View style={styles.statsBar}>
-                            <Text style={styles.statsText}>{chatMessages.filter(m => m.role === 'user').length} questions asked</Text>
-                            <TouchableOpacity onPress={() => setChatMessages([])}>
-                                <Text style={styles.clearBtn}>Clear chat</Text>
->>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
+                                <Text style={[styles.clearBtn, { color: colors.primary }]}>← Back to Home / New Chat</Text>
                             </TouchableOpacity>
                         </View>
                     )}
@@ -376,10 +340,10 @@ export default function AITabScreen() {
                     {/* Empty State */}
                     {chatMessages.length === 0 && (
                         <View style={styles.emptyState}>
-                            <LinearGradient colors={['#6C63FF', '#5A52E0']} style={styles.emptyLogoRing}>
+                            <View style={[styles.emptyLogoRing, { backgroundColor: colors.surfaceAlt }]}>
                                 <Image source={require('../../assets/images/walia-logo.png')} style={{ width: 72, height: 72 }} resizeMode="contain" />
-                            </LinearGradient>
-                            <Text style={[styles.emptyTitle, { color: colors.text }]}>Hi, I'm Walia AI! 👋</Text>
+                            </View>
+                            <Text style={[styles.emptyTitle, { color: colors.text }]}>Hi, I&apos;m Walia AI! 👋</Text>
                             <Text style={[styles.emptyDesc, { color: colors.textSecondary }]}>
                                 Your ultimate study companion. I can switch between Gemini, ChatGPT, and DeepSeek automatically!
                             </Text>
@@ -393,29 +357,18 @@ export default function AITabScreen() {
                             </View>
 
                             <Text style={[styles.recentLabel, { color: colors.textSecondary }]}>📚 Recent conversations</Text>
-<<<<<<< HEAD
                             {sessions.slice(0, 5).map(c => (
                                 <TouchableOpacity key={c.id} style={[styles.recentCard, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={() => setActiveSession(c.id)}>
-=======
-                            {AI_CHATS.filter(c => user?.id === '1').slice(0, 3).map(c => (
-                                <TouchableOpacity key={c.id} style={[styles.recentCard, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={() => router.push(`/ai/${c.id}` as any)}>
->>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
                                     <View style={styles.recentIcon}>
                                         <Image source={require('../../assets/images/walia-logo.png')} style={{ width: 24, height: 24 }} resizeMode="contain" />
                                     </View>
                                     <View style={{ flex: 1 }}>
                                         <Text style={[styles.recentTitle, { color: colors.text }]}>{c.title}</Text>
-<<<<<<< HEAD
                                         <Text style={[styles.recentSub, { color: colors.textSecondary }]} numberOfLines={1}>{c.lastText}</Text>
                                     </View>
                                     <Text style={[styles.recentTime, { color: colors.textTertiary }]}>
                                         {c.updatedAt ? new Date(c.updatedAt.toDate()).toLocaleDateString() : ''}
                                     </Text>
-=======
-                                        <Text style={[styles.recentSub, { color: colors.textSecondary }]} numberOfLines={1}>{c.lastMessage}</Text>
-                                    </View>
-                                    <Text style={[styles.recentTime, { color: colors.textTertiary }]}>{c.timestamp}</Text>
->>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
                                 </TouchableOpacity>
                             ))}
                         </View>
@@ -491,9 +444,9 @@ export default function AITabScreen() {
                         onPress={() => sendMessage()}
                         disabled={!message.trim() || isLoading}
                     >
-                        <LinearGradient colors={['#7C75FF', '#5A52E0']} style={styles.sendGradient}>
-                            {isLoading ? <ActivityIndicator size="small" color="#fff" /> : <Ionicons name="arrow-up" size={20} color="#fff" />}
-                        </LinearGradient>
+                        <View style={[styles.sendGradient, { backgroundColor: colors.primary }]}>
+                            {isLoading ? <ActivityIndicator size="small" color={colors.textInverse} /> : <Ionicons name="arrow-up" size={20} color={colors.textInverse} />}
+                        </View>
                     </TouchableOpacity>
                 </View>
             </KeyboardAvoidingView>
@@ -507,16 +460,16 @@ const styles = StyleSheet.create({
     headerInner: { paddingHorizontal: Spacing.xl, paddingBottom: Spacing.md },
     headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: Spacing.sm },
     headerLeft: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md },
-    logoCircle: { width: 46, height: 46, borderRadius: 23, backgroundColor: 'rgba(0,0,0,0.4)', overflow: 'hidden', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.25)' },
-    headerTitle: { fontSize: FontSize.lg, fontWeight: FontWeight.bold, color: '#fff' },
+    logoCircle: { width: 46, height: 46, borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: '#eee', backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' },
+    headerTitle: { fontSize: FontSize.lg, fontWeight: FontWeight.heavy },
     statusRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 2 },
     statusDot: { width: 6, height: 6, borderRadius: 3 },
-    statusText: { fontSize: FontSize.xs, color: 'rgba(255,255,255,0.7)' },
-    historyBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: BorderRadius.pill, paddingHorizontal: Spacing.md, paddingVertical: Spacing.xs + 2, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
-    historyText: { fontSize: FontSize.xs, color: '#fff', fontWeight: FontWeight.medium },
-    statsBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: Spacing.sm, paddingTop: Spacing.sm, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.1)' },
-    statsText: { fontSize: FontSize.xs, color: 'rgba(255,255,255,0.6)' },
-    clearBtn: { fontSize: FontSize.xs, color: 'rgba(255,255,255,0.8)', fontWeight: FontWeight.medium },
+    statusText: { fontSize: FontSize.xs },
+    historyBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, borderRadius: 10, paddingHorizontal: Spacing.md, paddingVertical: Spacing.xs + 2, borderWidth: 1 },
+    historyText: { fontSize: FontSize.xs, fontWeight: FontWeight.bold },
+    statsBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: Spacing.sm, paddingTop: Spacing.sm, borderTopWidth: 1 },
+    statsText: { fontSize: FontSize.xs },
+    clearBtn: { fontSize: FontSize.xs, fontWeight: FontWeight.bold },
 
     modelDropdown: { position: 'absolute', bottom: 90, left: Spacing.xl, right: Spacing.xl, borderRadius: BorderRadius.xl, borderWidth: 1, zIndex: 100, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 10, elevation: 8 },
     modelOption: { flexDirection: 'row', alignItems: 'center', padding: Spacing.md, borderBottomWidth: 1, gap: Spacing.md },
@@ -526,39 +479,39 @@ const styles = StyleSheet.create({
 
     messages: { flex: 1 },
     emptyState: { alignItems: 'center', paddingTop: Spacing.xxl },
-    emptyLogoRing: { width: 88, height: 88, borderRadius: 44, alignItems: 'center', justifyContent: 'center', marginBottom: Spacing.xl },
-    emptyTitle: { fontSize: FontSize.xxl, fontWeight: FontWeight.bold, marginBottom: Spacing.sm, textAlign: 'center' },
+    emptyLogoRing: { width: 88, height: 88, borderRadius: 24, alignItems: 'center', justifyContent: 'center', marginBottom: Spacing.xl },
+    emptyTitle: { fontSize: FontSize.xxl, fontWeight: FontWeight.heavy, marginBottom: Spacing.sm, textAlign: 'center' },
     emptyDesc: { fontSize: FontSize.md, textAlign: 'center', lineHeight: 22, paddingHorizontal: Spacing.xxl, marginBottom: Spacing.xxl },
     suggestGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm, alignSelf: 'stretch', marginBottom: Spacing.xxl },
-    suggestChip: { borderRadius: BorderRadius.pill, paddingHorizontal: Spacing.lg, paddingVertical: Spacing.sm + 2, borderWidth: 1 },
-    suggestChipText: { fontSize: FontSize.sm, fontWeight: FontWeight.medium },
-    recentLabel: { alignSelf: 'flex-start', fontSize: FontSize.sm, fontWeight: FontWeight.semibold, marginBottom: Spacing.md },
-    recentCard: { alignSelf: 'stretch', flexDirection: 'row', alignItems: 'center', borderRadius: BorderRadius.xl, padding: Spacing.lg, marginBottom: Spacing.sm, gap: Spacing.md, borderWidth: 1 },
-    recentIcon: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#1A1A2E', overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
-    recentTitle: { fontSize: FontSize.sm, fontWeight: FontWeight.semibold },
+    suggestChip: { borderRadius: 12, paddingHorizontal: Spacing.lg, paddingVertical: Spacing.sm + 2, borderWidth: 1 },
+    suggestChipText: { fontSize: FontSize.sm, fontWeight: FontWeight.bold },
+    recentLabel: { alignSelf: 'flex-start', fontSize: FontSize.sm, fontWeight: FontWeight.heavy, marginBottom: Spacing.md },
+    recentCard: { alignSelf: 'stretch', flexDirection: 'row', alignItems: 'center', borderRadius: 16, padding: Spacing.lg, marginBottom: Spacing.sm, gap: Spacing.md, borderWidth: 1 },
+    recentIcon: { width: 36, height: 36, borderRadius: 10, backgroundColor: '#f5f5f5', overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
+    recentTitle: { fontSize: FontSize.sm, fontWeight: FontWeight.bold },
     recentSub: { fontSize: FontSize.xs, marginTop: 2 },
     recentTime: { fontSize: FontSize.xs },
     bubble: { marginBottom: Spacing.lg },
     userBubble: { alignItems: 'flex-end' },
     aiBubble: { flexDirection: 'row', alignItems: 'flex-start' },
-    aiAvatarWrap: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#0D0D1A', overflow: 'hidden', marginRight: Spacing.sm, marginTop: 4, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
-    bubbleContent: { maxWidth: width * 0.75, borderRadius: BorderRadius.xxl, overflow: 'hidden' },
+    aiAvatarWrap: { width: 36, height: 36, borderRadius: 10, overflow: 'hidden', marginRight: Spacing.sm, marginTop: 4, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+    bubbleContent: { maxWidth: width * 0.75, borderRadius: 16, overflow: 'hidden' },
     userGradient: { padding: Spacing.lg, paddingBottom: Spacing.md },
-    userText: { fontSize: FontSize.md, color: '#fff', lineHeight: 22 },
-    userTime: { fontSize: FontSize.xs, color: 'rgba(255,255,255,0.55)', marginTop: Spacing.xs, textAlign: 'right' },
+    userText: { fontSize: FontSize.md, color: '#fff', lineHeight: 22, fontWeight: FontWeight.medium },
+    userTime: { fontSize: FontSize.xs, color: 'rgba(255,255,255,0.6)', marginTop: Spacing.xs, textAlign: 'right' },
     aiText: { fontSize: FontSize.md, lineHeight: 22 },
     aiTime: { fontSize: FontSize.xs, marginTop: Spacing.xs, textAlign: 'right' },
-    typingBubble: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, borderRadius: BorderRadius.xl, padding: Spacing.lg, flex: 1 },
-    inputBar: { flexDirection: 'row', alignItems: 'flex-end', paddingHorizontal: Spacing.md, paddingVertical: Spacing.md, paddingBottom: Spacing.xl + 52, borderTopWidth: 1, gap: Spacing.sm },
-    modelToggleBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', width: 46, height: 46, borderRadius: BorderRadius.xxl, borderWidth: 1, gap: 2, marginBottom: 2 },
-    inputWrap: { flex: 1, borderRadius: BorderRadius.xxl, paddingHorizontal: Spacing.lg, paddingVertical: Platform.OS === 'ios' ? Spacing.md : Spacing.sm, minHeight: 46, borderWidth: 1 },
+    typingBubble: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, borderRadius: 16, padding: Spacing.lg, flex: 1 },
+    inputBar: { flexDirection: 'row', alignItems: 'flex-end', paddingHorizontal: Spacing.md, paddingVertical: Spacing.md, paddingBottom: Spacing.xl + 20, borderTopWidth: 1, gap: Spacing.sm },
+    modelToggleBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', width: 44, height: 44, borderRadius: 12, borderWidth: 1, gap: 2, marginBottom: 2 },
+    inputWrap: { flex: 1, borderRadius: 14, paddingHorizontal: Spacing.lg, paddingVertical: Platform.OS === 'ios' ? 10 : 6, minHeight: 44, borderWidth: 1 },
     input: { fontSize: FontSize.md, maxHeight: 120, textAlignVertical: 'center' },
-    addBtn: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center', marginBottom: 2 },
+    addBtn: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginBottom: 2 },
     attachPanel: { flexDirection: 'row', gap: Spacing.xl, paddingHorizontal: Spacing.xxl, paddingVertical: Spacing.xl, borderTopWidth: 1, justifyContent: 'center' },
     attachBtn: { alignItems: 'center', gap: Spacing.xs },
-    attachIcon: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center' },
-    attachLabel: { fontSize: FontSize.xs, fontWeight: FontWeight.medium },
-    bubbleImage: { width: 200, height: 150, borderRadius: BorderRadius.lg, marginBottom: Spacing.sm },
+    attachIcon: { width: 56, height: 56, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+    attachLabel: { fontSize: FontSize.xs, fontWeight: FontWeight.bold },
+    bubbleImage: { width: 200, height: 150, borderRadius: 12, marginBottom: Spacing.sm },
     sendBtn: { marginBottom: 2 },
-    sendGradient: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center' },
+    sendGradient: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
 });

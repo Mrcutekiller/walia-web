@@ -1,3 +1,4 @@
+import MembershipCard from '@/components/MembershipCard';
 import { Avatar } from '@/components/ui/Avatar';
 import { BorderRadius, FontSize, FontWeight, Spacing } from '@/constants/theme';
 import { useAuth } from '@/store/auth';
@@ -15,25 +16,25 @@ const MENU_SECTIONS = [
     {
         title: 'General',
         items: [
-            { icon: 'language', label: 'Language', desc: 'English', color: '#6C63FF' },
+            { icon: 'language', label: 'Language', desc: 'English', color: '#000000' },
         ],
     },
     {
         title: 'Settings',
         items: [
-            { icon: 'notifications', label: 'Notifications', desc: 'Push & sound', color: '#FFA502' },
-            { icon: 'shield-checkmark', label: 'Privacy Policy', desc: 'Personal data & ads', color: '#2ED573' },
-            { icon: 'document-text', label: 'Terms of Service', desc: 'App rules & safety', color: '#6C63FF' },
-            { icon: 'moon', label: 'Appearance', desc: 'Dark / Light mode', color: '#6C63FF', isThemeToggle: true },
+            { icon: 'notifications', label: 'Notifications', desc: 'Push & sound', color: '#000000' },
+            { icon: 'shield-checkmark', label: 'Privacy Policy', desc: 'Personal data & ads', color: '#000000' },
+            { icon: 'document-text', label: 'Terms of Service', desc: 'App rules & safety', color: '#000000' },
+            { icon: 'moon', label: 'Appearance', desc: 'Dark / Light mode', color: '#000000', isThemeToggle: true },
         ],
     },
     {
         title: 'Support',
         items: [
-            { icon: 'help-circle', label: 'Help Centre', desc: 'AI Support Chat', color: '#4ECDC4' },
-            { icon: 'chatbubble-ellipses', label: 'Contact Us', desc: 'Telegram: @Mrcute_killer', color: '#6C63FF' },
-            { icon: 'star', label: 'Rate Walia', desc: 'Leave a review ⭐', color: '#FFA502' },
-            { icon: 'information-circle', label: 'About', desc: 'Mission & History', color: '#9CA3AF' },
+            { icon: 'help-circle', label: 'Help Centre', desc: 'AI Support Chat', color: '#000000' },
+            { icon: 'chatbubble-ellipses', label: 'Contact Us', desc: 'Telegram: @Mrcute_killer', color: '#000000' },
+            { icon: 'star', label: 'Rate Walia', desc: 'Leave a review ⭐', color: '#000000' },
+            { icon: 'information-circle', label: 'About', desc: 'Mission & History', color: '#000000' },
         ],
     },
 ];
@@ -46,13 +47,8 @@ export default function ProfileScreen() {
     const social = useSocial();
 
     const { xp, level, xpProgress, isPro, followers, following, posts, totalViews, xpToNextLevel } = social;
-<<<<<<< HEAD
     const myPosts = posts.filter(p => p.authorId === user?.id);
-    const totalLikes = myPosts.reduce((sum, p) => sum + p.likes.length, 0);
-=======
-    const myPosts = posts.filter(p => p.userId === user?.id);
-    const totalLikes = myPosts.reduce((sum, p) => sum + p.likes, 0);
->>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
+    const totalLikes = myPosts.reduce((sum, p) => sum + (p.likes?.length || 0), 0);
 
     const [notifsEnabled, setNotifsEnabled] = useState(true);
 
@@ -93,11 +89,11 @@ export default function ProfileScreen() {
         };
 
         if (label === 'Privacy Policy') {
-            router.push('/legal/privacy');
+            router.push('/legal/privacy' as any);
             return;
         }
         if (label === 'Terms of Service') {
-            router.push('/legal/terms');
+            router.push('/legal/terms' as any);
             return;
         }
 
@@ -141,96 +137,56 @@ export default function ProfileScreen() {
     return (
         <View style={[styles.container, { backgroundColor: colors.background }]}>
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
-                {/* Gradient Cover */}
-                <View style={styles.profileBlock}>
-                    <LinearGradient
-                        colors={isDark ? ['#1A1230', '#12123A', '#0D0D1A'] : ['#6C63FF', '#7C75FF', '#8B85FF']}
-                        style={styles.coverGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-                    >
-                        <SafeAreaView edges={['top']}>
-                            <View style={styles.headerRow}>
-                                <View style={styles.headerLeft}>
-                                    <Text style={styles.headerTitle}>My Profile</Text>
-                                    {isPro && (
-                                        <View style={styles.proChip}>
-                                            <Text style={styles.proChipText}>⭐ PRO</Text>
-                                        </View>
-                                    )}
-                                </View>
-                                <TouchableOpacity style={styles.settingsBtn} onPress={() => router.push('/profile/settings')}>
-                                    <Ionicons name="settings-outline" size={20} color="#fff" />
-                                </TouchableOpacity>
+                <View style={[styles.profileBlock, { backgroundColor: isDark ? '#000' : '#F9FAFB' }]}>
+                    <SafeAreaView edges={['top']}>
+                        <View style={styles.headerRow}>
+                            <View style={styles.headerLeft}>
+                                <Text style={[styles.headerTitle, { color: colors.text }]}>My Profile</Text>
+                                {isPro && (
+                                    <View style={styles.proChip}>
+                                        <Text style={styles.proChipText}>⭐ PRO</Text>
+                                    </View>
+                                )}
                             </View>
-                        </SafeAreaView>
-                        <View style={styles.deco1} /><View style={styles.deco2} />
-                    </LinearGradient>
-
-                    {/* Profile Card */}
-                    <View style={[styles.profileCard, { backgroundColor: colors.surface }]}>
-                        <View style={styles.avatarRow}>
-                            <TouchableOpacity style={styles.avatarRing} onPress={handleUpdateAvatar} disabled={updatingAvatar}>
-<<<<<<< HEAD
-                                <Avatar emoji={user?.photoURL || '🧑‍🎓'} size={74} />
-=======
-                                <Avatar emoji={user?.avatar || '🧑‍🎓'} size={74} />
->>>>>>> 0e3ed76 (feat: web/mobile parity overhaul - all files included)
-                                <View style={styles.editAvatarBadge}>
-                                    <Ionicons name="camera" size={12} color="#fff" />
-                                </View>
+                            <TouchableOpacity style={[styles.settingsBtn, { backgroundColor: colors.surfaceAlt }]} onPress={() => router.push('/profile/settings' as any)}>
+                                <Ionicons name="settings-outline" size={20} color={colors.text} />
                             </TouchableOpacity>
-                            <LinearGradient colors={['#FFA502', '#E65100']} style={styles.levelBadge}>
-                                <Text style={styles.levelText}>Lv.{level}</Text>
-                            </LinearGradient>
                         </View>
-                        <Text style={[styles.name, { color: colors.text }]}>{user?.name || 'Student'}</Text>
-                        <Text style={[styles.username, { color: colors.textSecondary }]}>@{user?.username || 'student'}</Text>
-                        <Text style={[styles.bio, { color: colors.textSecondary }]}>{user?.bio || 'Learning something new every day ✨'}</Text>
+                    </SafeAreaView>
 
-                        {/* XP Bar → Pro */}
-                        <TouchableOpacity onPress={() => router.push('/pro' as any)}>
-                            <View style={styles.xpRow}>
-                                <View style={styles.xpLeft}>
-                                    <Text style={[styles.xpLabel, { color: colors.text }]}>
-                                        {xp.toLocaleString()} XP
-                                        {isPro && <Text style={{ color: '#FFA502' }}> · PRO ✓</Text>}
-                                    </Text>
-                                    <Text style={[styles.xpSub, { color: colors.textTertiary }]}>
-                                        {isPro ? 'Pro plan active 👑' : `${(PRO_PLAN_XP_COST - xp).toLocaleString()} XP to Pro`}
-                                    </Text>
-                                </View>
-                                <Text style={[styles.xpPct, { color: colors.primary }]}>{xpToProPct}%</Text>
-                            </View>
-                            <View style={[styles.xpBarBg, { backgroundColor: colors.surfaceAlt }]}>
-                                <LinearGradient
-                                    colors={isPro ? ['#FFA502', '#E65100'] : ['#6C63FF', '#4ECDC4']}
-                                    style={[styles.xpBarFill, { width: `${xpToProPct}%` as any }]}
-                                    start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-                                />
-                            </View>
-                        </TouchableOpacity>
+                    <View style={styles.profileContent}>
+                        <MembershipCard
+                            name={user?.name || 'Student'}
+                            username={user?.username || 'student'}
+                            id={user?.id?.slice(0, 8).toUpperCase() || 'WALIA-001'}
+                            isPro={isPro}
+                            memberSince="March 2024"
+                            avatar={user?.photoURL || '🧑‍🎓'}
+                        />
 
-                        <TouchableOpacity style={styles.editBtnWrap} onPress={() => router.push('/profile/edit')}>
-                            <LinearGradient colors={['#6C63FF', '#5A52E0']} style={styles.editBtn} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
-                                <Ionicons name="create-outline" size={16} color="#fff" />
-                                <Text style={styles.editBtnText}>Edit Profile</Text>
-                            </LinearGradient>
-                        </TouchableOpacity>
+                        <View style={styles.avatarActionRow}>
+                             <TouchableOpacity style={[styles.avatarUploadBtn, { backgroundColor: colors.surfaceAlt }]} onPress={handleUpdateAvatar}>
+                                <Ionicons name="camera-outline" size={16} color={colors.text} />
+                                <Text style={[styles.avatarActionText, { color: colors.text }]}>Change Avatar</Text>
+                             </TouchableOpacity>
+                             <TouchableOpacity style={[styles.editProfileBtn, { backgroundColor: colors.primary }]} onPress={() => router.push('/profile/edit' as any)}>
+                                <Ionicons name="create-outline" size={16} color={colors.textInverse} />
+                                <Text style={[styles.avatarActionText, { color: colors.textInverse }]}>Edit Bio</Text>
+                             </TouchableOpacity>
+                        </View>
 
                         {/* Real stats */}
                         <View style={[styles.statsRow, { borderTopColor: colors.divider }]}>
                             {[
-                                { val: followers.length.toLocaleString(), label: 'Followers', color: '#FF6B6B' },
-                                { val: following.length.toLocaleString(), label: 'Following', color: '#6C63FF' },
-                                { val: myPosts.length.toLocaleString(), label: 'Posts', color: '#4ECDC4' },
-                                { val: totalLikes.toLocaleString(), label: 'Likes', color: '#FFA502' },
+                                { val: followers.length.toLocaleString(), label: 'Followers', color: colors.text },
+                                { val: following.length.toLocaleString(), label: 'Following', color: colors.text },
+                                { val: myPosts.length.toLocaleString(), label: 'Posts', color: colors.text },
+                                { val: totalLikes.toLocaleString(), label: 'Likes', color: colors.text },
                             ].map(({ val, label, color }, i) => (
-                                <React.Fragment key={label}>
-                                    {i > 0 && <View style={[styles.statDivider, { backgroundColor: colors.divider }]} />}
-                                    <View style={styles.statItem}>
-                                        <Text style={[styles.statVal, { color }]}>{val}</Text>
-                                        <Text style={[styles.statLabel, { color: colors.textSecondary }]}>{label}</Text>
-                                    </View>
-                                </React.Fragment>
+                                <View key={label} style={styles.statItem}>
+                                    <Text style={[styles.statVal, { color }]}>{val}</Text>
+                                    <Text style={[styles.statLabel, { color: colors.textSecondary }]}>{label}</Text>
+                                </View>
                             ))}
                         </View>
                     </View>
@@ -343,36 +299,19 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
     container: { flex: 1 },
-    profileBlock: { marginBottom: Spacing.sm },
-    coverGradient: { height: 160, position: 'relative', overflow: 'hidden' },
-    deco1: { position: 'absolute', width: 180, height: 180, borderRadius: 90, backgroundColor: 'rgba(255,255,255,0.06)', bottom: -60, right: -40 },
-    deco2: { position: 'absolute', width: 120, height: 120, borderRadius: 60, backgroundColor: 'rgba(255,255,255,0.04)', top: -30, left: 20 },
-    headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: Spacing.xl, paddingTop: Spacing.sm },
+    profileBlock: { paddingBottom: Spacing.xl },
+    profileContent: { paddingHorizontal: Spacing.xl },
+    headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: Spacing.xl, height: 60 },
     headerLeft: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
-    headerTitle: { fontSize: FontSize.xl, fontWeight: FontWeight.bold, color: '#fff' },
-    proChip: { backgroundColor: 'rgba(255,165,0,0.3)', borderRadius: BorderRadius.pill, paddingHorizontal: Spacing.sm, paddingVertical: 2, borderWidth: 1, borderColor: '#FFA502' },
-    proChipText: { color: '#FFA502', fontSize: FontSize.xs, fontWeight: FontWeight.bold },
-    settingsBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center' },
-    profileCard: { marginHorizontal: Spacing.xl, borderRadius: BorderRadius.xxl, marginTop: -20, padding: Spacing.xl, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 12, elevation: 5 },
-    avatarRow: { flexDirection: 'row', alignItems: 'flex-end', marginTop: -Spacing.xxxl - 10, marginBottom: Spacing.md },
-    avatarRing: { borderWidth: 3, borderColor: '#6C63FF', borderRadius: 44, padding: 2, position: 'relative' },
-    editAvatarBadge: { position: 'absolute', bottom: 0, right: 0, width: 22, height: 22, borderRadius: 11, backgroundColor: '#6C63FF', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#0A0A18' },
-    levelBadge: { borderRadius: BorderRadius.pill, paddingHorizontal: Spacing.sm + 2, paddingVertical: 4, marginLeft: Spacing.sm, marginBottom: 4 },
-    levelText: { fontSize: FontSize.xs, fontWeight: FontWeight.bold, color: '#fff' },
-    name: { fontSize: FontSize.xl, fontWeight: FontWeight.bold },
-    username: { fontSize: FontSize.sm, marginTop: 2 },
-    bio: { fontSize: FontSize.sm, marginTop: Spacing.sm, lineHeight: 18 },
-    xpRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: Spacing.lg, marginBottom: Spacing.xs },
-    xpLeft: {},
-    xpLabel: { fontSize: FontSize.sm, fontWeight: FontWeight.semibold },
-    xpSub: { fontSize: FontSize.xs, marginTop: 2 },
-    xpPct: { fontSize: FontSize.sm, fontWeight: FontWeight.bold },
-    xpBarBg: { height: 8, borderRadius: 4, overflow: 'hidden', marginBottom: Spacing.lg },
-    xpBarFill: { height: '100%', borderRadius: 4 },
-    editBtnWrap: { marginBottom: Spacing.lg },
-    editBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: Spacing.sm, borderRadius: BorderRadius.pill, paddingVertical: Spacing.md },
-    editBtnText: { color: '#fff', fontSize: FontSize.md, fontWeight: FontWeight.semibold },
-    statsRow: { flexDirection: 'row', justifyContent: 'space-around', paddingTop: Spacing.md, borderTopWidth: 1 },
+    headerTitle: { fontSize: FontSize.xl, fontWeight: FontWeight.heavy },
+    proChip: { backgroundColor: 'rgba(255,165,0,0.15)', borderRadius: BorderRadius.pill, paddingHorizontal: Spacing.sm, paddingVertical: 2, borderWidth: 1, borderColor: '#FFA502' },
+    proChipText: { color: '#FFA502', fontSize: 10, fontWeight: FontWeight.heavy },
+    settingsBtn: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+    avatarActionRow: { flexDirection: 'row', gap: Spacing.md, marginBottom: Spacing.xl },
+    avatarUploadBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 46, borderRadius: 14, borderWidth: 1, borderColor: '#eee' },
+    editProfileBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 46, borderRadius: 14 },
+    avatarActionText: { fontSize: FontSize.sm, fontWeight: FontWeight.bold },
+    statsRow: { flexDirection: 'row', justifyContent: 'space-around', paddingTop: Spacing.xl, borderTopWidth: 1 },
     statItem: { alignItems: 'center' },
     statVal: { fontSize: FontSize.md, fontWeight: FontWeight.bold },
     statLabel: { fontSize: FontSize.xs, marginTop: 2 },

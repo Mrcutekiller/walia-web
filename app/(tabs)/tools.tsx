@@ -46,18 +46,18 @@ export default function ToolsScreen() {
     return (
         <View style={[styles.container, { backgroundColor: colors.background }]}>
             <LinearGradient
-                colors={isDark ? ['#1A1A2E', '#0D0D1A'] : ['#6C63FF', '#7C75FF']}
+                colors={isDark ? ['#000000', '#121212'] : ['#F9FAFB', '#FFFFFF']}
                 style={styles.headerGradient}
             >
                 <SafeAreaView edges={['top']}>
                     <View style={styles.headerContent}>
                         <View>
-                            <Text style={styles.headerTitle}>Study Tools 🛠️</Text>
-                            <Text style={styles.headerSub}>4 tools to supercharge your learning</Text>
+                            <Text style={[styles.headerTitle, { color: colors.text }]}>Study Tools 🛠️</Text>
+                            <Text style={[styles.headerSub, { color: colors.textSecondary }]}>4 tools to supercharge your learning</Text>
                         </View>
-                        <TouchableOpacity style={styles.aiShortcut} onPress={() => router.push('/ai/')}>
-                            <Ionicons name="sparkles" size={18} color="#fff" />
-                            <Text style={styles.aiShortcutText}>Ask AI</Text>
+                        <TouchableOpacity style={[styles.aiShortcut, { backgroundColor: colors.primary, borderColor: colors.primary }]} onPress={() => router.push('/ai/')}>
+                            <Ionicons name="sparkles" size={18} color={colors.textInverse} />
+                            <Text style={[styles.aiShortcutText, { color: colors.textInverse }]}>Ask AI</Text>
                         </TouchableOpacity>
                     </View>
                 </SafeAreaView>
@@ -68,14 +68,14 @@ export default function ToolsScreen() {
                 <View style={styles.grid}>
                     {TOOLS.map((tool, i) => (
                         <TouchableOpacity key={i} style={[styles.toolCard, i % 2 === 1 && styles.toolCardOffset]} onPress={() => router.push(tool.route as any)} activeOpacity={0.85}>
-                            <LinearGradient colors={tool.gradient} style={styles.toolGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+                            <View style={[styles.toolGradient, { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.divider }]}>
                                 <Text style={styles.toolEmoji}>{tool.emoji}</Text>
-                                <Text style={styles.toolTitle}>{tool.title}</Text>
-                                <Text style={styles.toolDesc}>{tool.desc}</Text>
-                                <View style={styles.toolArrow}>
-                                    <Ionicons name="arrow-forward" size={16} color="rgba(255,255,255,0.9)" />
+                                <Text style={[styles.toolTitle, { color: colors.text }]}>{tool.title}</Text>
+                                <Text style={[styles.toolDesc, { color: colors.textSecondary }]}>{tool.desc}</Text>
+                                <View style={[styles.toolArrow, { backgroundColor: colors.surfaceAlt }]}>
+                                    <Ionicons name="arrow-forward" size={16} color={colors.primary} />
                                 </View>
-                            </LinearGradient>
+                            </View>
                         </TouchableOpacity>
                     ))}
                 </View>
@@ -128,28 +128,28 @@ const styles = StyleSheet.create({
     container: { flex: 1 },
     headerGradient: {},
     headerContent: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: Spacing.xl, paddingVertical: Spacing.lg, paddingBottom: Spacing.xl },
-    headerTitle: { fontSize: FontSize.xxl, fontWeight: FontWeight.bold, color: '#fff' },
-    headerSub: { fontSize: FontSize.sm, color: 'rgba(255,255,255,0.7)', marginTop: 3 },
-    aiShortcut: { flexDirection: 'row', gap: 6, alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: BorderRadius.pill, paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm, borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)' },
-    aiShortcutText: { fontSize: FontSize.sm, color: '#fff', fontWeight: FontWeight.semibold },
+    headerTitle: { fontSize: FontSize.xxl, fontWeight: FontWeight.heavy },
+    headerSub: { fontSize: FontSize.sm, marginTop: 3 },
+    aiShortcut: { flexDirection: 'row', gap: 6, alignItems: 'center', borderRadius: BorderRadius.pill, paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm, borderWidth: 1 },
+    aiShortcutText: { fontSize: FontSize.sm, fontWeight: FontWeight.bold },
     content: { padding: Spacing.xl, paddingBottom: 120 },
     grid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.md, marginBottom: Spacing.xl },
-    toolCard: { width: CARD_W, borderRadius: BorderRadius.xl, overflow: 'hidden' },
+    toolCard: { width: CARD_W, borderRadius: 20, overflow: 'hidden' },
     toolCardOffset: { marginTop: Spacing.lg },
-    toolGradient: { padding: Spacing.xl, minHeight: 170, justifyContent: 'space-between' },
+    toolGradient: { padding: Spacing.xl, minHeight: 170, justifyContent: 'space-between', borderRadius: 20 },
     toolEmoji: { fontSize: 32, marginBottom: Spacing.sm },
-    toolTitle: { fontSize: FontSize.lg, fontWeight: FontWeight.bold, color: '#fff' },
-    toolDesc: { fontSize: FontSize.xs, color: 'rgba(255,255,255,0.75)', lineHeight: 16, marginTop: 4 },
-    toolArrow: { alignSelf: 'flex-end', width: 28, height: 28, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center', marginTop: Spacing.sm },
-    statsRow: { flexDirection: 'row', justifyContent: 'space-around', borderRadius: BorderRadius.xl, padding: Spacing.lg, marginBottom: Spacing.xl, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2 },
+    toolTitle: { fontSize: FontSize.lg, fontWeight: FontWeight.bold },
+    toolDesc: { fontSize: FontSize.xs, lineHeight: 16, marginTop: 4 },
+    toolArrow: { alignSelf: 'flex-end', width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginTop: Spacing.sm },
+    statsRow: { flexDirection: 'row', justifyContent: 'space-around', borderRadius: 20, padding: Spacing.lg, marginBottom: Spacing.xl, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2 },
     statItem: { alignItems: 'center' },
-    statVal: { fontSize: FontSize.xl, fontWeight: FontWeight.bold },
+    statVal: { fontSize: FontSize.xl, fontWeight: FontWeight.heavy },
     statLabel: { fontSize: FontSize.xs, marginTop: 2 },
-    sectionTitle: { fontSize: FontSize.lg, fontWeight: FontWeight.bold, marginBottom: Spacing.md },
-    recentCard: { borderRadius: BorderRadius.xl, overflow: 'hidden', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 1 },
+    sectionTitle: { fontSize: FontSize.lg, fontWeight: FontWeight.heavy, marginBottom: Spacing.md },
+    recentCard: { borderRadius: 20, overflow: 'hidden', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 1 },
     recentItem: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md, padding: Spacing.lg },
-    recentIcon: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-    recentTitle: { fontSize: FontSize.md, fontWeight: FontWeight.semibold },
+    recentIcon: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+    recentTitle: { fontSize: FontSize.md, fontWeight: FontWeight.bold },
     recentSub: { fontSize: FontSize.xs, marginTop: 2 },
     badge: { borderRadius: BorderRadius.pill, paddingHorizontal: Spacing.sm + 2, paddingVertical: 3 },
     badgeText: { fontSize: FontSize.xs, fontWeight: FontWeight.bold },
