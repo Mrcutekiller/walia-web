@@ -24,10 +24,10 @@ export function PostCard({ post, onLike, onComment, onShare, onPress, onQuizAnsw
     const { user: currentUser } = useAuth();
     const router = useRouter();
     const user = getUserById(post.authorId);
-    const typeColors: Record<string, string> = { quiz: '#6C63FF', note: '#FFA502', ai_share: '#4ECDC4', text: '#FF6B6B', general: '#FF6B6B' };
+    const typeColors: Record<string, string> = { quiz: '#000000', note: '#000000', ai_share: '#000000', text: '#000000', general: '#000000' };
     const typeIcons: Record<string, string> = { quiz: '🧮', note: '📒', ai_share: '🤖', text: '💬', general: '💬' };
-    const typeLabels: Record<string, string> = { quiz: 'Quiz', note: 'Note', ai_share: 'AI Share', text: 'Post', general: 'General' };
-    const accent = typeColors[post.type] || colors.primary;
+    const typeLabels: Record<string, string> = { quiz: 'QUIZ', note: 'NOTE', ai_share: 'AI INSIGHT', text: 'POST', general: 'GENERAL' };
+    const accent = colors.text;
 
     const getOptionStyle = (i: number) => {
         if (quizAnswered === null || quizAnswered === undefined) {
@@ -51,7 +51,7 @@ export function PostCard({ post, onLike, onComment, onShare, onPress, onQuizAnsw
 
     return (
         <TouchableOpacity
-            style={[styles.card, { backgroundColor: colors.surface, borderLeftColor: accent, borderLeftWidth: 3 }]}
+            style={[styles.card, { backgroundColor: colors.surface }]}
             onPress={onPress}
             activeOpacity={0.9}
         >
@@ -132,21 +132,21 @@ export function PostCard({ post, onLike, onComment, onShare, onPress, onQuizAnsw
 }
 
 const styles = StyleSheet.create({
-    card: { borderRadius: BorderRadius.xl, padding: Spacing.lg, marginBottom: Spacing.md, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6, elevation: 2 },
-    header: { flexDirection: 'row', alignItems: 'center', marginBottom: Spacing.md, justifyContent: 'space-between' },
+    card: { borderRadius: 32, padding: Spacing.xl, marginBottom: Spacing.lg, borderWidth: 1, borderColor: '#f1f5f9' },
+    header: { flexDirection: 'row', alignItems: 'center', marginBottom: Spacing.lg, justifyContent: 'space-between' },
     userInfo: { flexDirection: 'row', alignItems: 'center', flex: 1 },
     headerText: { flex: 1, marginLeft: Spacing.md, marginRight: Spacing.sm },
-    name: { fontSize: FontSize.md, fontWeight: FontWeight.semibold },
-    time: { fontSize: FontSize.xs, marginTop: 2 },
-    typeBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: BorderRadius.pill, paddingHorizontal: Spacing.md, paddingVertical: Spacing.xs },
-    typeBadgeText: { fontSize: FontSize.xs, fontWeight: FontWeight.medium },
-    title: { fontSize: FontSize.lg, fontWeight: FontWeight.bold, marginBottom: Spacing.sm },
-    content: { fontSize: FontSize.md, lineHeight: 22, marginBottom: Spacing.md },
-    quizOptions: { marginBottom: Spacing.md },
-    quizOption: { flexDirection: 'row', alignItems: 'center', borderRadius: BorderRadius.md, padding: Spacing.md, marginBottom: Spacing.sm, gap: Spacing.sm },
-    quizLetter: { fontSize: FontSize.sm, fontWeight: FontWeight.bold, width: 18 },
-    quizText: { fontSize: FontSize.md },
-    actions: { flexDirection: 'row', borderTopWidth: 1, paddingTop: Spacing.md, gap: Spacing.xxl },
-    action: { flexDirection: 'row', alignItems: 'center', gap: Spacing.xs },
-    actionText: { fontSize: FontSize.sm },
+    name: { fontSize: FontSize.md, fontWeight: FontWeight.heavy, letterSpacing: -0.5 },
+    time: { fontSize: 10, fontWeight: FontWeight.bold, opacity: 0.4 },
+    typeBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: BorderRadius.pill, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1, borderColor: '#f1f5f9' },
+    typeBadgeText: { fontSize: 10, fontWeight: FontWeight.heavy, letterSpacing: 1 },
+    title: { fontSize: FontSize.xl, fontWeight: FontWeight.heavy, marginBottom: Spacing.sm, letterSpacing: -0.5 },
+    content: { fontSize: FontSize.md, lineHeight: 24, marginBottom: Spacing.xl, fontWeight: FontWeight.medium, opacity: 0.8 },
+    quizOptions: { marginBottom: Spacing.xl },
+    quizOption: { flexDirection: 'row', alignItems: 'center', borderRadius: 16, padding: Spacing.lg, marginBottom: Spacing.md, gap: Spacing.md, borderWidth: 1, borderColor: '#f8fafc' },
+    quizLetter: { fontSize: FontSize.sm, fontWeight: FontWeight.heavy, width: 20 },
+    quizText: { fontSize: FontSize.md, fontWeight: FontWeight.bold },
+    actions: { flexDirection: 'row', borderTopWidth: 1, borderTopColor: '#f1f5f9', paddingTop: Spacing.lg, gap: Spacing.xl },
+    action: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
+    actionText: { fontSize: 12, fontWeight: FontWeight.bold },
 });

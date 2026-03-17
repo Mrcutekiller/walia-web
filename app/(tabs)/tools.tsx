@@ -12,10 +12,10 @@ const { width } = Dimensions.get('window');
 const CARD_W = (width - Spacing.xl * 2 - Spacing.md) / 2;
 
 const TOOLS = [
-    { title: 'Summarize', desc: 'Condense any text to key points', icon: 'document-text', gradient: ['#6C63FF', '#5A52E0'] as [string, string], route: '/tools/summarize', emoji: '📄' },
-    { title: 'Quiz', desc: 'Generate & take practice tests', icon: 'help-circle', gradient: ['#FF6B6B', '#E53935'] as [string, string], route: '/tools/quiz', emoji: '🧠' },
-    { title: 'Flashcards', desc: 'Flip-card studying system', icon: 'layers', gradient: ['#4ECDC4', '#00897B'] as [string, string], route: '/tools/flashcard', emoji: '🃏' },
-    { title: 'Notes', desc: 'Write & organize your ideas', icon: 'create', gradient: ['#FFA502', '#E65100'] as [string, string], route: '/tools/notes', emoji: '📝' },
+    { title: 'Summarize', desc: 'Condense any text to key points', icon: 'document-text', route: '/tools/summarize', emoji: '📄' },
+    { title: 'Quiz', desc: 'Generate & take practice tests', icon: 'help-circle', route: '/tools/quiz', emoji: '🧠' },
+    { title: 'Flashcards', desc: 'Flip-card studying system', icon: 'layers', route: '/tools/flashcard', emoji: '🃏' },
+    { title: 'Notes', desc: 'Write & organize your ideas', icon: 'create', route: '/tools/notes', emoji: '📝' },
 ];
 
 export default function ToolsScreen() {
@@ -35,11 +35,12 @@ export default function ToolsScreen() {
     ).slice(0, 5);
 
     const getToolIcon = (tool: string) => {
+        const iconColor = colors.text;
         switch (tool) {
-            case 'quiz': return { n: 'help-circle', c: '#FF6B6B' };
-            case 'summarize': return { n: 'document-text', c: '#6C63FF' };
-            case 'flashcard': return { n: 'layers', c: '#4ECDC4' };
-            default: return { n: 'create', c: '#FFA502' };
+            case 'quiz': return { n: 'help-circle', c: iconColor };
+            case 'summarize': return { n: 'document-text', c: iconColor };
+            case 'flashcard': return { n: 'layers', c: iconColor };
+            default: return { n: 'create', c: iconColor };
         }
     };
 
@@ -126,32 +127,31 @@ export default function ToolsScreen() {
 
 const styles = StyleSheet.create({
     container: { flex: 1 },
-    headerGradient: {},
+    headerGradient: { borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
     headerContent: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: Spacing.xl, paddingVertical: Spacing.lg, paddingBottom: Spacing.xl },
-    headerTitle: { fontSize: FontSize.xxl, fontWeight: FontWeight.heavy },
-    headerSub: { fontSize: FontSize.sm, marginTop: 3 },
-    aiShortcut: { flexDirection: 'row', gap: 6, alignItems: 'center', borderRadius: BorderRadius.pill, paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm, borderWidth: 1 },
-    aiShortcutText: { fontSize: FontSize.sm, fontWeight: FontWeight.bold },
+    headerTitle: { fontSize: FontSize.xxl, fontWeight: FontWeight.heavy, letterSpacing: -1 },
+    headerSub: { fontSize: 10, fontWeight: FontWeight.heavy, textTransform: 'uppercase', letterSpacing: 1, marginTop: 4 },
+    aiShortcut: { flexDirection: 'row', gap: 6, alignItems: 'center', borderRadius: BorderRadius.pill, paddingHorizontal: 16, paddingVertical: 8, borderWidth: 1 },
+    aiShortcutText: { fontSize: 10, fontWeight: FontWeight.heavy, textTransform: 'uppercase', letterSpacing: 1 },
     content: { padding: Spacing.xl, paddingBottom: 120 },
     grid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.md, marginBottom: Spacing.xl },
-    toolCard: { width: CARD_W, borderRadius: 20, overflow: 'hidden' },
+    toolCard: { width: CARD_W, borderRadius: 32, overflow: 'hidden' },
     toolCardOffset: { marginTop: Spacing.lg },
-    toolGradient: { padding: Spacing.xl, minHeight: 170, justifyContent: 'space-between', borderRadius: 20 },
-    toolEmoji: { fontSize: 32, marginBottom: Spacing.sm },
-    toolTitle: { fontSize: FontSize.lg, fontWeight: FontWeight.bold },
-    toolDesc: { fontSize: FontSize.xs, lineHeight: 16, marginTop: 4 },
-    toolArrow: { alignSelf: 'flex-end', width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginTop: Spacing.sm },
-    statsRow: { flexDirection: 'row', justifyContent: 'space-around', borderRadius: 20, padding: Spacing.lg, marginBottom: Spacing.xl, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2 },
+    toolGradient: { padding: Spacing.xl, minHeight: 180, justifyContent: 'space-between', borderRadius: 32 },
+    toolEmoji: { fontSize: 36, marginBottom: Spacing.sm },
+    toolTitle: { fontSize: FontSize.lg, fontWeight: FontWeight.heavy, letterSpacing: -0.5 },
+    toolDesc: { fontSize: 11, lineHeight: 16, marginTop: 4, fontWeight: FontWeight.medium, opacity: 0.7 },
+    toolArrow: { alignSelf: 'flex-end', width: 32, height: 32, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginTop: Spacing.sm },
+    statsRow: { flexDirection: 'row', justifyContent: 'space-around', borderRadius: 24, padding: Spacing.xl, marginBottom: Spacing.xl, borderWidth: 1, borderColor: '#f1f5f9' },
     statItem: { alignItems: 'center' },
-    statVal: { fontSize: FontSize.xl, fontWeight: FontWeight.heavy },
-    statLabel: { fontSize: FontSize.xs, marginTop: 2 },
-    sectionTitle: { fontSize: FontSize.lg, fontWeight: FontWeight.heavy, marginBottom: Spacing.md },
-    recentCard: { borderRadius: 20, overflow: 'hidden', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 1 },
+    statVal: { fontSize: FontSize.xl, fontWeight: FontWeight.heavy, letterSpacing: -1 },
+    statLabel: { fontSize: 10, fontWeight: FontWeight.heavy, textTransform: 'uppercase', letterSpacing: 1, marginTop: 4 },
+    sectionTitle: { fontSize: FontSize.lg, fontWeight: FontWeight.heavy, marginBottom: Spacing.lg, letterSpacing: -0.5 },
+    recentCard: { borderRadius: 24, overflow: 'hidden', borderWidth: 1, borderColor: '#f1f5f9' },
     recentItem: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md, padding: Spacing.lg },
-    recentIcon: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-    recentTitle: { fontSize: FontSize.md, fontWeight: FontWeight.bold },
-    recentSub: { fontSize: FontSize.xs, marginTop: 2 },
-    badge: { borderRadius: BorderRadius.pill, paddingHorizontal: Spacing.sm + 2, paddingVertical: 3 },
-    badgeText: { fontSize: FontSize.xs, fontWeight: FontWeight.bold },
+    recentIcon: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+    recentTitle: { fontSize: FontSize.md, fontWeight: FontWeight.bold, letterSpacing: -0.3 },
+    recentSub: { fontSize: FontSize.xs, marginTop: 2, fontWeight: FontWeight.medium, opacity: 0.6 },
+    badge: { borderRadius: BorderRadius.pill, paddingHorizontal: Spacing.sm + 2, paddingVertical: 4 },
     divider: { height: 1, marginHorizontal: Spacing.lg },
 });

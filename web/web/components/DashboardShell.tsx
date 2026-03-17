@@ -32,7 +32,7 @@ const SIDEBAR_NAV = [
 ];
 
 export default function DashboardShell({ children }: { children: React.ReactNode }) {
-    const { user, loading } = useAuth();
+    const { user, profile, loading } = useAuth();
     const { unreadCount } = useNotifications();
     const router = useRouter();
     const pathname = usePathname();
@@ -130,8 +130,29 @@ export default function DashboardShell({ children }: { children: React.ReactNode
                         </Link>
                     </div>
 
-                    {/* User Profile Summary */}
-                    <div className="p-4 border-t border-gray-100 shrink-0">
+                    {/* User Profile Summary & XP Indicator */}
+                    <div className="p-4 border-t border-gray-100 shrink-0 space-y-4">
+                        {/* XP Progress Bar */}
+                        {profile && (
+                            <div className="px-1">
+                                <div className="flex items-center justify-between mb-2">
+                                    <div className="flex items-center gap-1.5">
+                                        <div className="w-5 h-5 rounded-md bg-amber-100 flex items-center justify-center">
+                                            <Zap className="w-3 h-3 text-amber-600 fill-amber-600" />
+                                        </div>
+                                        <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Level {Math.floor((profile.xp || 0) / 500) + 1}</span>
+                                    </div>
+                                    <span className="text-[10px] font-bold text-gray-400">{(profile.xp || 0) % 500} / 500 XP</span>
+                                </div>
+                                <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                                    <div 
+                                        className="h-full bg-amber-400 rounded-full transition-all duration-1000" 
+                                        style={{ width: `${((profile.xp || 0) % 500) / 500 * 100}%` }}
+                                    />
+                                </div>
+                            </div>
+                        )}
+
                         <div className="flex items-center gap-3 p-3 rounded-2xl bg-gray-50 border border-gray-50 hover:bg-gray-100 transition-colors cursor-pointer group">
                             <div className="w-10 h-10 rounded-[12px] bg-gray-200 flex items-center justify-center shrink-0 overflow-hidden shadow-inner border border-gray-100">
                                 {user.photoURL ? (
@@ -141,7 +162,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
                                 )}
                             </div>
                             <div className="flex-1 min-w-0">
-                                <p className="text-[13px] font-bold text-black truncate">{user.displayName || user.email?.split('@')[0] || 'User'}</p>
+                                <p className="text-[13px] font-bold text-black truncate">{profile?.name || user.displayName || user.email?.split('@')[0] || 'User'}</p>
                                 <p className="text-[10px] font-medium text-gray-400 truncate mt-0.5">{user.email}</p>
                             </div>
                             <button onClick={handleLogout} title="Log out" className="w-8 h-8 rounded-full bg-gray-100 hover:bg-red-50 text-gray-400 hover:text-red-500 flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 shrink-0">

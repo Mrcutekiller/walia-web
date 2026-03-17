@@ -11,12 +11,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 const { width } = Dimensions.get('window');
 
 const PRO_FEATURES = [
-    { icon: 'infinite', label: 'Unlimited AI Chats', desc: 'No daily limit on Walia AI conversations', color: '#6C63FF' },
-    { icon: 'flash', label: 'Priority AI Speed', desc: 'Faster responses, never in queue', color: '#FFA502' },
-    { icon: 'layers', label: 'Advanced Tools', desc: 'Unlimited summaries, quizzes & flashcards', color: '#4ECDC4' },
-    { icon: 'people', label: 'Exclusive Community', desc: 'Access Pro-only study groups', color: '#FF6B6B' },
-    { icon: 'shield-checkmark', label: 'Ad-Free Experience', desc: 'Clean, distraction-free learning', color: '#2ED573' },
-    { icon: 'star', label: 'Pro Badge', desc: 'Stand out with a gold Pro badge', color: '#FFA502' },
+    { icon: 'infinite', label: 'Unlimited AI Chats', desc: 'GPT-4, Gemini 2.0 & Claude models', color: '#000000' },
+    { icon: 'flash', label: 'Priority AI Speed', desc: 'Instant responses with no queue', color: '#000000' },
+    { icon: 'layers', label: '12+ Advanced Tools', desc: 'Unlimited summaries, quizzes & reports', color: '#000000' },
+    { icon: 'people', label: 'Exclusive Community', desc: 'Access Pro-only study groups', color: '#000000' },
+    { icon: 'shield-checkmark', label: 'Ad-Free Experience', desc: 'Clean, distraction-free learning', color: '#000000' },
+    { icon: 'star', label: 'Pro Badge', desc: 'Verified Citizen gold badge', color: '#000000' },
 ];
 
 export default function ProScreen() {
@@ -29,44 +29,40 @@ export default function ProScreen() {
     const canAfford = xp >= PRO_PLAN_XP_COST;
 
     const handleBuyWithMoney = () => {
-        Alert.alert('💳 Buy Pro Plan', `1,500 ETB / month\n\nPayment integration coming soon!\n\nFor now, keep earning XP to unlock Pro for free.`);
+        Alert.alert('💳 Buy Pro Plan', `$12 / month (approx. 1,350 ETB)\n\nPayment integration coming soon!\n\nFor now, keep earning XP to unlock Pro for free.`);
     };
 
     return (
         <View style={[styles.container, { backgroundColor: colors.background }]}>
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 60 }}>
-                {/* Hero gradient */}
-                <LinearGradient
-                    colors={isPro ? ['#FFA502', '#E65100'] : ['#1A1230', '#6C63FF', '#4ECDC4']}
-                    style={styles.hero}
-                    start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-                >
+                {/* Hero section */}
+                <View style={[styles.hero, { backgroundColor: isDark ? '#000' : '#F9FAFB', borderBottomWidth: 1, borderBottomColor: colors.divider }]}>
                     <SafeAreaView edges={['top']}>
                         <View style={styles.heroHeader}>
-                            <TouchableOpacity onPress={() => router.back()} style={styles.closeBtn}>
-                                <Ionicons name="close" size={20} color="#fff" />
+                            <TouchableOpacity onPress={() => router.back()} style={[styles.closeBtn, { backgroundColor: colors.surfaceAlt }]}>
+                                <Ionicons name="close" size={20} color={colors.text} />
                             </TouchableOpacity>
-                            {isPro && <View style={styles.proBadge}><Text style={styles.proBadgeText}>⭐ PRO</Text></View>}
+                            {isPro && <View style={[styles.proBadge, { backgroundColor: colors.primary }]}><Text style={styles.proBadgeText}>⭐ PRO</Text></View>}
                         </View>
                     </SafeAreaView>
 
                     <View style={styles.heroContent}>
-                        <View style={styles.heroIcon}>
+                        <View style={[styles.heroIcon, { backgroundColor: colors.surface, borderColor: colors.divider }]}>
                             <Text style={{ fontSize: 48 }}>{isPro ? '👑' : '✨'}</Text>
                         </View>
-                        <Text style={styles.heroTitle}>{isPro ? 'You\'re Pro!' : 'Walia Pro'}</Text>
-                        <Text style={styles.heroSub}>
+                        <h1 style={[styles.heroTitle, { color: colors.text }]}>{isPro ? 'You\'re Pro!' : 'Walia Pro'}</h1>
+                        <Text style={[styles.heroSub, { color: colors.textSecondary }]}>
                             {isPro
                                 ? 'Enjoy all premium features with no limits'
-                                : '10,000 XP or 1,500 ETB · Unlock everything'}
+                                : '10,000 XP or $12/mo · Unlock everything'}
                         </Text>
-                        <View style={styles.pricePill}>
-                            <Text style={styles.priceXp}>10,000 XP</Text>
-                            <Text style={styles.priceSep}> or </Text>
-                            <Text style={styles.priceEtb}>1,500 ETB</Text>
+                        <View style={[styles.pricePill, { backgroundColor: colors.surfaceAlt }]}>
+                            <Text style={[styles.priceXp, { color: colors.text }]}>10,000 XP</Text>
+                            <Text style={[styles.priceSep, { color: colors.textTertiary }]}> or </Text>
+                            <Text style={[styles.priceEtb, { color: colors.text }]}>$12 / mo</Text>
                         </View>
                     </View>
-                </LinearGradient>
+                </View>
 
                 {/* XP Progress card (if not pro) */}
                 {!isPro && (
@@ -150,7 +146,7 @@ export default function ProScreen() {
                         </LinearGradient>
                     </TouchableOpacity>
                     <TouchableOpacity style={[styles.moneyBtn, { borderColor: colors.border }]} onPress={handleBuyWithMoney}>
-                        <Text style={[styles.moneyBtnText, { color: colors.text }]}>Buy with 1,500 ETB</Text>
+                        <Text style={[styles.moneyBtnText, { color: colors.text }]}>Buy with $12 / month</Text>
                     </TouchableOpacity>
                 </View>
             )}

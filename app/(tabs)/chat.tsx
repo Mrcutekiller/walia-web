@@ -78,34 +78,36 @@ export default function ChatScreen() {
 
     return (
         <View style={[styles.container, { backgroundColor: colors.background }]}>
-            <LinearGradient colors={isDark ? ['#1A1A2E', '#0D0D1A'] : ['#6C63FF', '#8B85FF']} style={styles.headerGradient}>
+            <View style={[styles.headerContainer, { backgroundColor: isDark ? '#000' : '#fff', borderBottomWidth: 1, borderBottomColor: colors.divider }]}>
                 <SafeAreaView edges={['top']}>
                     <View style={styles.header}>
                         <View>
-                            <Text style={styles.headerSub}>Connect & Learn</Text>
-                            <Text style={styles.headerTitle}>Walia Social</Text>
+                            <Text style={[styles.headerSub, { color: colors.textSecondary }]}>Connect & Learn</Text>
+                            <Text style={[styles.headerTitle, { color: colors.text }]}>Walia Social</Text>
                         </View>
-                        <TouchableOpacity style={styles.newBtn} onPress={() => router.push('/chat/new')}>
-                            <Ionicons name="create-outline" size={20} color="#fff" />
+                        <TouchableOpacity style={[styles.newBtn, { backgroundColor: colors.surfaceAlt }]} onPress={() => router.push('/chat/new')}>
+                            <Ionicons name="create-outline" size={20} color={colors.text} />
                         </TouchableOpacity>
                     </View>
                 </SafeAreaView>
-            </LinearGradient>
 
-            <View style={[styles.tabBar, { backgroundColor: colors.surface, borderBottomColor: colors.divider }]}>
-                {(['messages', 'groups', 'community'] as const).map(key => {
-                    const active = activeTab === key;
-                    const icons = { messages: 'chatbubble', groups: 'people', community: 'earth' };
-                    return (
-                        <TouchableOpacity key={key} style={styles.tabItem} onPress={() => setActiveTab(key)}>
-                            <Ionicons name={`${icons[key]}${active ? '' : '-outline'}` as any} size={20} color={active ? colors.primary : colors.textTertiary} />
-                            <Text style={[styles.tabLabel, { color: active ? colors.primary : colors.textTertiary, fontWeight: active ? FontWeight.semibold : FontWeight.regular }]}>
-                                {key.charAt(0).toUpperCase() + key.slice(1)}
-                            </Text>
-                            {active && <View style={[styles.tabIndicator, { backgroundColor: colors.primary }]} />}
-                        </TouchableOpacity>
-                    );
-                })}
+                <View style={styles.tabBar}>
+                    {(['messages', 'groups', 'community'] as const).map(key => {
+                        const active = activeTab === key;
+                        const icons = { messages: 'chatbubble', groups: 'people', community: 'earth' };
+                        return (
+                            <TouchableOpacity key={key} style={styles.tabItem} onPress={() => setActiveTab(key)}>
+                                <View style={[styles.tabIconContainer, active && { backgroundColor: colors.primary + '10' }]}>
+                                    <Ionicons name={`${icons[key]}${active ? '' : '-outline'}` as any} size={20} color={active ? colors.primary : colors.textTertiary} />
+                                </View>
+                                <Text style={[styles.tabLabel, { color: active ? colors.text : colors.textTertiary, fontWeight: active ? FontWeight.heavy : FontWeight.bold }]}>
+                                    {key.charAt(0).toUpperCase() + key.slice(1)}
+                                </Text>
+                                {active && <View style={[styles.tabIndicator, { backgroundColor: colors.text }]} />}
+                            </TouchableOpacity>
+                        );
+                    })}
+                </View>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} style={styles.list} contentContainerStyle={{ paddingBottom: 100 }}>
@@ -150,30 +152,31 @@ export default function ChatScreen() {
 
 const styles = StyleSheet.create({
     container: { flex: 1 },
-    headerGradient: { paddingBottom: Spacing.md },
-    header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: Spacing.xl, paddingTop: Spacing.sm },
-    headerSub: { fontSize: FontSize.sm, color: 'rgba(255,255,255,0.7)' },
-    headerTitle: { fontSize: FontSize.xxl, fontWeight: FontWeight.bold, color: '#fff' },
-    newBtn: { width: 38, height: 38, borderRadius: 19, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
-    tabBar: { flexDirection: 'row', borderBottomWidth: 1 },
-    tabItem: { flex: 1, alignItems: 'center', paddingVertical: Spacing.sm + 4, gap: 3 },
-    tabLabel: { fontSize: FontSize.xs },
-    tabIndicator: { position: 'absolute', bottom: 0, left: '20%', right: '20%', height: 2, borderRadius: 2 },
-    list: { flex: 1, paddingHorizontal: Spacing.xl },
-    sectionLabel: { fontSize: FontSize.xs, fontWeight: FontWeight.semibold, textTransform: 'uppercase', letterSpacing: 1, marginTop: Spacing.xl, marginBottom: Spacing.sm },
-    chatItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: Spacing.md, borderBottomWidth: 1 },
+    headerContainer: { zIndex: 10 },
+    header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: Spacing.xl, paddingTop: Spacing.sm, paddingBottom: Spacing.md },
+    headerSub: { fontSize: 10, fontWeight: FontWeight.heavy, textTransform: 'uppercase', letterSpacing: 1.5 },
+    headerTitle: { fontSize: FontSize.xxl, fontWeight: FontWeight.heavy },
+    newBtn: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'transparent' },
+    tabBar: { flexDirection: 'row', paddingHorizontal: Spacing.md, gap: Spacing.xs, paddingBottom: 2 },
+    tabItem: { flex: 1, alignItems: 'center', paddingVertical: Spacing.md, gap: 4, position: 'relative' },
+    tabIndicator: { position: 'absolute', bottom: 0, left: '25%', right: '25%', height: 2, borderRadius: 2 },
+    tabIconContainer: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginBottom: 2 },
+    tabLabel: { fontSize: 10, textTransform: 'uppercase', letterSpacing: 0.5 },
+    list: { flex: 1 },
+    sectionLabel: { fontSize: 10, fontWeight: FontWeight.heavy, textTransform: 'uppercase', letterSpacing: 1.5, marginTop: Spacing.xl, marginBottom: Spacing.sm, paddingHorizontal: Spacing.xl, color: '#94a3b8' },
+    chatItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: Spacing.lg, borderBottomWidth: 1, paddingHorizontal: Spacing.xl },
     chatInfo: { flex: 1, marginLeft: Spacing.md },
     chatTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 },
     chatName: { fontSize: FontSize.md, fontWeight: FontWeight.bold },
-    chatTime: { fontSize: 10 },
-    chatMsg: { fontSize: FontSize.sm },
-    empty: { textAlign: 'center', color: 'rgba(0,0,0,0.3)', marginTop: 20, fontSize: FontSize.sm },
-    newGroupBtn: { flexDirection: 'row', alignItems: 'center', borderRadius: BorderRadius.xl, padding: Spacing.lg, marginTop: Spacing.md, borderWidth: 1, gap: Spacing.md },
-    newGroupIcon: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
-    newGroupText: { flex: 1, fontSize: FontSize.md, fontWeight: FontWeight.medium },
-    communityContent: { paddingTop: Spacing.md },
-    composeBar: { flexDirection: 'row', alignItems: 'center', borderRadius: BorderRadius.xl, padding: Spacing.md, marginBottom: Spacing.lg, borderWidth: 1, gap: Spacing.md },
-    composePlaceholder: { flex: 1, fontSize: FontSize.sm },
-    postBtn: { borderRadius: BorderRadius.pill, paddingHorizontal: Spacing.md, paddingVertical: Spacing.xs + 2 },
-    postBtnText: { fontSize: FontSize.xs, fontWeight: FontWeight.bold, color: '#fff' },
+    chatTime: { fontSize: 10, fontWeight: FontWeight.semibold },
+    chatMsg: { fontSize: FontSize.sm, fontWeight: FontWeight.medium },
+    empty: { textAlign: 'center', color: '#94a3b8', marginTop: 40, fontSize: FontSize.sm, fontStyle: 'italic', paddingHorizontal: Spacing.xl },
+    newGroupBtn: { flexDirection: 'row', alignItems: 'center', borderRadius: BorderRadius.xl, padding: Spacing.lg, marginTop: Spacing.md, marginHorizontal: Spacing.xl, borderWidth: 1, gap: Spacing.md },
+    newGroupIcon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+    newGroupText: { flex: 1, fontSize: FontSize.md, fontWeight: FontWeight.bold },
+    communityContent: { paddingTop: Spacing.md, paddingHorizontal: Spacing.xl },
+    composeBar: { flexDirection: 'row', alignItems: 'center', borderRadius: 24, padding: Spacing.md, marginBottom: Spacing.xl, borderWidth: 1, gap: Spacing.md },
+    composePlaceholder: { flex: 1, fontSize: FontSize.sm, fontWeight: FontWeight.medium, marginLeft: 4 },
+    postBtn: { borderRadius: BorderRadius.pill, paddingHorizontal: Spacing.lg, paddingVertical: Spacing.sm },
+    postBtnText: { fontSize: FontSize.xs, fontWeight: FontWeight.heavy, textTransform: 'uppercase', letterSpacing: 1 },
 });

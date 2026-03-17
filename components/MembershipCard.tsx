@@ -53,17 +53,17 @@ export default function MembershipCard({ name, username, id, isPro, memberSince,
             {/* Front Side */}
             <Animated.View style={[styles.card, frontAnimatedStyle, { backgroundColor: colors.surface, backfaceVisibility: 'hidden' }]}>
                 <LinearGradient
-                    colors={isPro ? ['#000000', '#1A1A1A'] : ['#F9FAFB', '#F3F4F6']}
-                    style={styles.cardGradient}
+                    colors={isPro ? ['#000000', '#1A1A1A'] : ['#FFFFFF', '#FDFDFD']}
+                    style={[styles.cardGradient, !isPro && { borderWidth: 1, borderColor: '#f1f5f9' }]}
                 >
                     <View style={styles.cardHeader}>
                         <View style={styles.logoRow}>
-                            <View style={styles.logoCircle}>
+                            <View style={[styles.logoCircle, { backgroundColor: isPro ? '#222' : '#f8fafc' }]}>
                                 <Image source={require('../assets/images/walia-logo.png')} style={styles.logo} resizeMode="contain" />
                             </View>
                             <Text style={[styles.logoText, { color: isPro ? '#FFFFFF' : '#000000' }]}>WALIA</Text>
                         </View>
-                        {isPro && <View style={styles.proBadge}><Text style={styles.proBadgeText}>PRO</Text></View>}
+                        {isPro && <View style={styles.proBadge}><Text style={styles.proBadgeText}>PRO MEMBER</Text></View>}
                     </View>
 
                     <View style={styles.cardMain}>
@@ -165,20 +165,21 @@ const styles = StyleSheet.create({
         height: '100%',
     },
     logoText: {
-        fontSize: FontSize.lg,
+        fontSize: 14,
         fontWeight: FontWeight.heavy,
-        letterSpacing: 2,
+        letterSpacing: 3,
     },
     proBadge: {
-        backgroundColor: '#FFA502',
-        paddingHorizontal: Spacing.sm,
-        paddingVertical: 2,
-        borderRadius: BorderRadius.sm,
+        backgroundColor: '#FFFFFF',
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 8,
     },
     proBadgeText: {
         color: '#000000',
-        fontSize: 10,
+        fontSize: 8,
         fontWeight: FontWeight.heavy,
+        letterSpacing: 1,
     },
     cardMain: {
         flexDirection: 'row',
@@ -186,31 +187,34 @@ const styles = StyleSheet.create({
         gap: Spacing.lg,
     },
     avatarWrap: {
-        width: 70,
-        height: 70,
-        borderRadius: 35,
-        backgroundColor: 'rgba(255,255,255,0.1)',
+        width: 64,
+        height: 64,
+        borderRadius: 24,
+        backgroundColor: 'rgba(255,255,255,0.05)',
         alignItems: 'center',
         justifyContent: 'center',
         borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.2)',
+        borderColor: 'rgba(255,255,255,0.1)',
     },
     userInfo: {
         flex: 1,
     },
     idLabel: {
-        fontSize: 8,
+        fontSize: 7,
         fontWeight: FontWeight.heavy,
-        letterSpacing: 1,
+        letterSpacing: 1.5,
         marginBottom: 2,
+        textTransform: 'uppercase',
     },
     userName: {
-        fontSize: FontSize.lg,
+        fontSize: 20,
         fontWeight: FontWeight.heavy,
+        letterSpacing: -0.5,
     },
     userHandle: {
-        fontSize: FontSize.sm,
-        fontWeight: FontWeight.medium,
+        fontSize: 10,
+        fontWeight: FontWeight.bold,
+        opacity: 0.5,
     },
     cardFooter: {
         flexDirection: 'row',
@@ -226,6 +230,9 @@ const styles = StyleSheet.create({
     footerValue: {
         fontSize: FontSize.sm,
         fontWeight: FontWeight.bold,
+    },
+    idWrap: {
+        alignItems: 'flex-end',
     },
     bgW: {
         position: 'absolute',

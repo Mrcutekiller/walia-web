@@ -165,6 +165,22 @@ export default function ProfileScreen() {
                             avatar={user?.photoURL || '🧑‍🎓'}
                         />
 
+                        {/* XP Progress Bar */}
+                        <View style={[styles.xpContainer, { backgroundColor: colors.surface, borderColor: colors.divider }]}>
+                            <View style={styles.xpHeader}>
+                                <View style={styles.levelBadge}>
+                                    <Text style={styles.levelText}>LVL {level}</Text>
+                                </View>
+                                <Text style={[styles.xpText, { color: colors.textSecondary }]}>
+                                    <Text style={{ fontWeight: FontWeight.heavy, color: colors.text }}>{xp.toLocaleString()}</Text> / {((level + 1) * 1000).toLocaleString()} XP
+                                </Text>
+                            </View>
+                            <View style={[styles.progressBarBg, { backgroundColor: colors.surfaceAlt }]}>
+                                <View style={[styles.progressBarFill, { width: `${xpProgress}%`, backgroundColor: colors.text }]} />
+                            </View>
+                            <Text style={styles.xpCaption}>{(level + 1) * 1000 - xp} XP to reach Level {level + 1}</Text>
+                        </View>
+
                         <View style={styles.avatarActionRow}>
                              <TouchableOpacity style={[styles.avatarUploadBtn, { backgroundColor: colors.surfaceAlt }]} onPress={handleUpdateAvatar}>
                                 <Ionicons name="camera-outline" size={16} color={colors.text} />
@@ -322,10 +338,18 @@ const styles = StyleSheet.create({
     proChip: { backgroundColor: 'rgba(255,165,0,0.15)', borderRadius: BorderRadius.pill, paddingHorizontal: Spacing.sm, paddingVertical: 2, borderWidth: 1, borderColor: '#FFA502' },
     proChipText: { color: '#FFA502', fontSize: 10, fontWeight: FontWeight.heavy },
     settingsBtn: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+    xpContainer: { padding: Spacing.xl, borderRadius: 24, borderWidth: 1, marginBottom: Spacing.xl },
+    xpHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+    levelBadge: { backgroundColor: '#000', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
+    levelText: { color: '#fff', fontSize: 10, fontWeight: FontWeight.heavy, letterSpacing: 1 },
+    xpText: { fontSize: 12 },
+    progressBarBg: { height: 6, borderRadius: 3, overflow: 'hidden' },
+    progressBarFill: { height: '100%', borderRadius: 3 },
+    xpCaption: { fontSize: 10, fontWeight: FontWeight.bold, color: '#94a3b8', marginTop: 8, textTransform: 'uppercase', letterSpacing: 0.5 },
     avatarActionRow: { flexDirection: 'row', gap: Spacing.md, marginBottom: Spacing.xl },
-    avatarUploadBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 46, borderRadius: 14, borderWidth: 1, borderColor: '#eee' },
+    avatarUploadBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 46, borderRadius: 14, borderWidth: 1, borderColor: '#f1f5f9' },
     editProfileBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 46, borderRadius: 14 },
-    avatarActionText: { fontSize: FontSize.sm, fontWeight: FontWeight.bold },
+    avatarActionText: { fontSize: 12, fontWeight: FontWeight.heavy, textTransform: 'uppercase', letterSpacing: 1 },
     statsRow: { flexDirection: 'row', justifyContent: 'space-around', paddingTop: Spacing.xl, borderTopWidth: 1 },
     statItem: { alignItems: 'center' },
     statVal: { fontSize: FontSize.md, fontWeight: FontWeight.bold },
