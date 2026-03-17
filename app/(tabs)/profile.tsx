@@ -1,5 +1,6 @@
 import MembershipCard from '@/components/MembershipCard';
 import { Avatar } from '@/components/ui/Avatar';
+import { PostCard } from '@/components/ui/PostCard';
 import { BorderRadius, FontSize, FontWeight, Spacing } from '@/constants/theme';
 import { useAuth } from '@/store/auth';
 import { PRO_PLAN_XP_COST, useSocial } from '@/store/social';
@@ -244,6 +245,20 @@ export default function ProfileScreen() {
                         </View>
                     </View>
                 ))}
+
+                {/* My Feed */}
+                {myPosts.length > 0 && (
+                    <View style={styles.menuSection}>
+                        <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>My Feed</Text>
+                        {myPosts.map(p => (
+                            <PostCard 
+                                key={p.id} 
+                                post={p} 
+                                onLike={() => social.likePost(p.id)} 
+                            />
+                        ))}
+                    </View>
+                )}
 
                 {/* Danger Zone */}
                 <View style={styles.dangerZone}>

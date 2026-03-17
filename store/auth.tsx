@@ -50,6 +50,9 @@ interface User {
     whyWalia?: string;
     bio?: string;
     phone?: string;
+    country?: string;
+    level?: string;
+    goal?: string;
     createdAt?: any;
     plan?: string;
 }
@@ -83,6 +86,9 @@ const DEFAULT_USER: User = {
     whyWalia: '',
     bio: '',
     phone: '',
+    country: '',
+    level: '',
+    goal: '',
     plan: 'free',
 };
 

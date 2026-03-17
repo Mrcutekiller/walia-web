@@ -16,10 +16,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 const STEPS = [
     { title: "What's your name?", subtitle: 'How should Walia call you?' },
     { title: 'Create your account', subtitle: 'Choose a username and set your password' },
+    { title: 'A bit more about you', subtitle: 'Help us personalize your experience' },
+    { title: 'Where are you from?', subtitle: 'We\'ll tailor content for your region' },
     { title: 'Your study level?', subtitle: 'Walia will personalize content for you' },
     { title: 'What\'s your goal?', subtitle: 'We\'ll tailor the experience just for you' },
     { title: 'Profile Picture', subtitle: 'How should other students see you?' },
 ];
+
+const GENDERS = ['Male', 'Female', 'Other', 'Private'];
+const COUNTRIES = ['Ethiopia', 'USA', 'UK', 'Canada', 'Germany', 'UAE', 'Kenya', 'Other'];
 
 const LEVELS = ['High School', 'Undergraduate', 'Graduate', 'Self-Learning', 'Professional'];
 const GOALS = [
@@ -40,6 +45,9 @@ export default function SignupScreen() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [phone, setPhone] = useState('');
+    const [age, setAge] = useState('');
+    const [gender, setGender] = useState('');
+    const [country, setCountry] = useState('');
     const [level, setLevel] = useState('');
     const [goal, setGoal] = useState('');
     const [avatar, setAvatar] = useState<string | null>(null);
@@ -48,7 +56,9 @@ export default function SignupScreen() {
 
     const canNext = [
         name.trim().length > 0,
-        email.trim() && username.trim() && password.length >= 6 && phone.trim().length >= 10,
+        email.trim() && username.trim() && password.length >= 6,
+        age.trim() && gender !== '',
+        country !== '' && phone.trim().length >= 10,
         level !== '',
         goal !== '',
         true, // Avatar is optional
@@ -58,7 +68,7 @@ export default function SignupScreen() {
         if (step < STEPS.length - 1) { setStep(step + 1); return; }
         setLoading(true);
         try {
-            await signup({ name, email, username, phone, level, goal }, password);
+            await signup({ name, email, username, phone, level, goal, age, gender, country }, password);
             if (avatar) {
                 try {
                     await uploadAvatar(avatar);
@@ -144,13 +154,44 @@ export default function SignupScreen() {
                                 <Input label="Password" placeholder="Min. 6 characters" value={password} onChangeText={setPassword} secureTextEntry
                                     icon={<Ionicons name="lock-closed-outline" size={20} color="rgba(255,255,255,0.6)" />}
                                     style={{ marginBottom: Spacing.md }} containerStyle={styles.darkInput} labelStyle={styles.darkLabel} inputStyle={styles.darkInputText} />
-                                <Input label="Phone Number" placeholder="+251 ..." value={phone} onChangeText={setPhone} keyboardType="phone-pad"
-                                    icon={<Ionicons name="call-outline" size={20} color="rgba(255,255,255,0.6)" />}
-                                    style={{ marginBottom: Spacing.md }} containerStyle={styles.darkInput} labelStyle={styles.darkLabel} inputStyle={styles.darkInputText} />
                             </View>
                         )}
 
                         {step === 2 && (
+                            <View style={styles.fields}>
+                                <Input label="How old are you?" placeholder="e.g. 20" value={age} onChangeText={setAge} keyboardType="numeric"
+                                    icon={<Ionicons name="calendar-outline" size={20} color="rgba(255,255,255,0.6)" />}
+                                    style={{ marginBottom: Spacing.xl }} containerStyle={styles.darkInput} labelStyle={styles.darkLabel} inputStyle={styles.darkInputText} />
+                                
+                                <Text style={[styles.darkLabel, { marginBottom: Spacing.sm, fontSize: FontSize.sm, fontWeight: '700' }]}>Gender</Text>
+                                <View style={styles.chipGrid}>
+                                    {GENDERS.map(g => (
+                                        <TouchableOpacity key={g} style={[styles.chip, gender === g && styles.chipActive]} onPress={() => setGender(g)}>
+                                            <Text style={[styles.chipText, gender === g && styles.chipTextActive]}>{g}</Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
+                            </View>
+                        )}
+
+                        {step === 3 && (
+                            <View style={styles.fields}>
+                                <Input label="Phone Number" placeholder="+251 ..." value={phone} onChangeText={setPhone} keyboardType="phone-pad"
+                                    icon={<Ionicons name="call-outline" size={20} color="rgba(255,255,255,0.6)" />}
+                                    style={{ marginBottom: Spacing.xl }} containerStyle={styles.darkInput} labelStyle={styles.darkLabel} inputStyle={styles.darkInputText} />
+
+                                <Text style={[styles.darkLabel, { marginBottom: Spacing.sm, fontSize: FontSize.sm, fontWeight: '700' }]}>Country</Text>
+                                <View style={styles.chipGrid}>
+                                    {COUNTRIES.map(c => (
+                                        <TouchableOpacity key={c} style={[styles.chip, country === c && styles.chipActive]} onPress={() => setCountry(c)}>
+                                            <Text style={[styles.chipText, country === c && styles.chipTextActive]}>{c}</Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
+                            </View>
+                        )}
+
+                        {step === 4 && (
                             <View style={styles.chipGrid}>
                                 {LEVELS.map(l => (
                                     <TouchableOpacity key={l} style={[styles.chip, level === l && styles.chipActive]} onPress={() => setLevel(l)}>
@@ -160,7 +201,7 @@ export default function SignupScreen() {
                             </View>
                         )}
 
-                        {step === 3 && (
+                        {step === 5 && (
                             <View style={styles.goalGrid}>
                                 {GOALS.map(g => (
                                     <TouchableOpacity key={g.label} style={[styles.goalCard, goal === g.label && styles.goalCardActive]} onPress={() => setGoal(g.label)}>
@@ -171,7 +212,7 @@ export default function SignupScreen() {
                             </View>
                         )}
 
-                        {step === 4 && (
+                        {step === 6 && (
                             <View style={styles.avatarPickerSection}>
                                 <TouchableOpacity style={styles.avatarMain} onPress={pickImage}>
                                     {avatar ? (
