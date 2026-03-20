@@ -54,7 +54,7 @@ export default function MembershipCard({ name, username, id, isPro, memberSince,
             <Animated.View style={[styles.card, frontAnimatedStyle, { backgroundColor: colors.surface, backfaceVisibility: 'hidden' }]}>
                 <LinearGradient
                     colors={isPro ? ['#000000', '#1A1A1A'] : ['#FFFFFF', '#FDFDFD']}
-                    style={[styles.cardGradient, !isPro && { borderWidth: 1, borderColor: '#f1f5f9' }]}
+                    style={[styles.cardGradient, !isPro && { borderWidth: 1, borderColor: '#E5E7EB' }]}
                 >
                     <View style={styles.cardHeader}>
                         <View style={styles.logoRow}>

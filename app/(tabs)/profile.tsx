@@ -198,7 +198,7 @@ export default function ProfileScreen() {
                                 { val: followers.length.toLocaleString(), label: 'Followers', color: colors.text },
                                 { val: following.length.toLocaleString(), label: 'Following', color: colors.text },
                                 { val: myPosts.length.toLocaleString(), label: 'Posts', color: colors.text },
-                                { val: totalLikes.toLocaleString(), label: 'Likes', color: colors.text },
+                                { val: String((user as any)?.tokens || 0), label: 'Tokens', color: isPro ? '#6C63FF' : colors.text },
                             ].map(({ val, label, color }, i) => (
                                 <View key={label} style={styles.statItem}>
                                     <Text style={[styles.statVal, { color }]}>{val}</Text>
@@ -261,6 +261,28 @@ export default function ProfileScreen() {
                         </View>
                     </View>
                 ))}
+
+                {user?.isAdmin && (
+                    <View style={styles.menuSection}>
+                        <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Admin Access</Text>
+                        <View style={[styles.menu, { backgroundColor: colors.surface }]}>
+                            <TouchableOpacity
+                                style={[styles.menuItem, { borderBottomColor: 'transparent' }]}
+                                onPress={() => router.push('/admin' as any)}
+                                activeOpacity={0.7}
+                            >
+                                <View style={[styles.menuIcon, { backgroundColor: '#FFA50215' }]}>
+                                    <Ionicons name="shield-checkmark-outline" size={19} color="#FFA502" />
+                                </View>
+                                <View style={styles.menuContent}>
+                                    <Text style={[styles.menuLabel, { color: colors.text }]}>Admin Dashboard</Text>
+                                    <Text style={[styles.menuDesc, { color: colors.textTertiary }]}>Manage users, payments, and platform</Text>
+                                </View>
+                                <Ionicons name="chevron-forward" size={16} color={colors.textTertiary} />
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                )}
 
                 {/* My Feed */}
                 {myPosts.length > 0 && (
@@ -347,7 +369,7 @@ const styles = StyleSheet.create({
     progressBarFill: { height: '100%', borderRadius: 3 },
     xpCaption: { fontSize: 10, fontWeight: FontWeight.bold, color: '#94a3b8', marginTop: 8, textTransform: 'uppercase', letterSpacing: 0.5 },
     avatarActionRow: { flexDirection: 'row', gap: Spacing.md, marginBottom: Spacing.xl },
-    avatarUploadBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 46, borderRadius: 14, borderWidth: 1, borderColor: '#f1f5f9' },
+    avatarUploadBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 46, borderRadius: 14, borderWidth: 1, borderColor: '#E5E7EB' },
     editProfileBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, height: 46, borderRadius: 14 },
     avatarActionText: { fontSize: 12, fontWeight: FontWeight.heavy, textTransform: 'uppercase', letterSpacing: 1 },
     statsRow: { flexDirection: 'row', justifyContent: 'space-around', paddingTop: Spacing.xl, borderTopWidth: 1 },

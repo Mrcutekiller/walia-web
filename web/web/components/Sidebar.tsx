@@ -10,12 +10,14 @@ import {
     Users,
     Wrench,
     X,
-    Zap
+    Zap,
+    ShieldCheck
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { usePathname } from 'next/navigation';
+import { useTokens } from '@/context/TokenContext';
 
 const sidebarLinks = [
     { name: 'AI Hub', href: '/dashboard/ai', icon: Sparkles },
@@ -29,6 +31,7 @@ const sidebarLinks = [
 export default function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
     const { user, profile } = useAuth();
     const pathname = usePathname();
+    const { tokenDisplay, isPro } = useTokens();
 
     return (
         <>
@@ -89,6 +92,20 @@ export default function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose:
                                 </Link>
                             );
                         })}
+
+                        {profile?.isAdmin && (
+                            <>
+                                <p className="px-4 text-[10px] font-black text-amber-500/50 uppercase tracking-[0.2em] mb-4 mt-8">Admin Panel</p>
+                                <Link
+                                    href="/dashboard/admin"
+                                    onClick={() => { if (window.innerWidth < 1024) onClose(); }}
+                                    className="flex items-center px-4 py-4 rounded-2xl transition-all group text-amber-500/60 hover:text-amber-500 hover:bg-amber-500/10"
+                                >
+                                    <ShieldCheck className="w-5 h-5 mr-4 transition-transform group-hover:scale-110 text-amber-500/50 group-hover:text-amber-500" />
+                                    <span className="font-bold text-sm">Dashboard</span>
+                                </Link>
+                            </>
+                        )}
                     </nav>
 
                     {/* Bottom Card */}
@@ -128,6 +145,20 @@ export default function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose:
                                     className="h-full bg-walia-primary rounded-full transition-all duration-1000"
                                     style={{ width: `${Math.min(100, ((profile?.xp || 0) % 1000) / 10)}%` }}
                                 />
+                            </div>
+                        </div>
+
+                        {/* Token Badge */}
+                        <div className="flex items-center justify-between px-4 py-3 rounded-2xl bg-white/5 border border-white/5">
+                            <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Daily Tokens</span>
+                            <div className="flex items-center gap-1.5">
+                                <span className="text-sm">🪙</span>
+                                <span className={cn(
+                                    "text-xs font-black tracking-wider",
+                                    isPro ? "text-walia-primary" : "text-white"
+                                )}>
+                                    {tokenDisplay}
+                                </span>
                             </div>
                         </div>
 

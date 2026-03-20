@@ -8,6 +8,7 @@ import 'react-native-reanimated';
 import { AuthProvider, useAuth } from '@/store/auth';
 import { SocialProvider, XpToastContainer, useSocial } from '@/store/social';
 import { ThemeProvider, useTheme } from '@/store/theme';
+import { TokenProvider } from '@/store/tokens';
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
@@ -93,7 +94,9 @@ export default function RootLayout() {
     <AuthProvider>
       <ThemeProvider>
         <SocialProvider>
-          <InnerApp />
+          <TokenProvider>
+            <InnerApp />
+          </TokenProvider>
         </SocialProvider>
       </ThemeProvider>
     </AuthProvider>

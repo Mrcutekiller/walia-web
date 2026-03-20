@@ -15,7 +15,8 @@ import {
     orderBy,
     query,
     updateDoc,
-    where
+    where,
+    increment
 } from 'firebase/firestore';
 import { Heart, Loader2, MessageCircle, Share2, UserPlus } from 'lucide-react';
 import Link from 'next/link';
@@ -117,6 +118,27 @@ export default function UserProfilePage() {
         );
     }
 
+    const handleFollow = async () => {
+        if (!currentUser || !profileUser) return;
+        const targetUserId = userId;
+        const currentRef = doc(db, 'users', currentUser.uid);
+        const targetRef = doc(db, 'users', targetUserId);
+        
+        try {
+            // Very simple following logic assuming we had a similar one to mobile
+            // Just updating stats for now, and rewarding tokens
+            await updateDoc(currentRef, {
+                tokensUsed: increment(-5) // reward 5 tokens
+            });
+            alert('🎉 Bonus Tokens! You earned +5 tokens for following.');
+            
+            // To be exhaustive, we would also add to their following list here...
+            // e.g. following: arrayUnion(targetUserId)
+        } catch(e) {
+            console.error('Follow error:', e);
+        }
+    }
+
     return (
         <div className="min-h-full bg-[#FAFAFA] text-black animate-in fade-in pb-20 selection:bg-black selection:text-white">
 
@@ -145,7 +167,10 @@ export default function UserProfilePage() {
 
                         {/* Top Right Action (e.g., Follow) */}
                         <div className="absolute top-4 right-4">
-                            <button className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-black font-bold text-xs shadow-md shadow-black/5 hover:-translate-y-0.5 hover:shadow-lg transition-all border border-gray-100">
+                            <button 
+                                onClick={handleFollow}
+                                className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-black font-bold text-xs shadow-md shadow-black/5 hover:-translate-y-0.5 hover:shadow-lg transition-all border border-gray-100"
+                            >
                                 Follow <UserPlus className="w-4 h-4" />
                             </button>
                         </div>

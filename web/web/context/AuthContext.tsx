@@ -7,7 +7,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 
 interface AuthContextType {
     user: User | null;
-    profile: any | null;
+    profile: { isAdmin?: boolean; [key: string]: any } | null;
     loading: boolean;
 }
 

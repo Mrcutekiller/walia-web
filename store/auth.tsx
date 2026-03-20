@@ -55,6 +55,7 @@ interface User {
     goal?: string;
     createdAt?: any;
     plan?: string;
+    isAdmin?: boolean;
 }
 
 interface AuthContextType {

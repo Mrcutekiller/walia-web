@@ -9,8 +9,19 @@ import {
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { useTokens } from '@/context/TokenContext';
+import { useRouter } from 'next/navigation';
 
-const TOOLS = [
+interface Tool {
+    id: 'summarizer'|'quiz_maker'|'flashcards'|'image_scanner'|'code_assistant'|'translator'|'grammar_pro'|'citations';
+    title: string;
+    desc: string;
+    icon: any;
+    color: string;
+    href: string;
+}
+
+const TOOLS: Tool[] = [
     {
         id: 'summarizer',
         title: 'Summarizer',
@@ -20,7 +31,7 @@ const TOOLS = [
         href: '/dashboard/ai?mode=summarizer'
     },
     {
-        id: 'quiz',
+        id: 'quiz_maker',
         title: 'Quiz Maker',
         desc: 'Generate MCQs and tests from notes.',
         icon: GraduationCap,
@@ -36,7 +47,7 @@ const TOOLS = [
         href: '/dashboard/ai?mode=flashcards'
     },
     {
-        id: 'scanner',
+        id: 'image_scanner',
         title: 'Image Scanner',
         desc: 'Extract text and equations from photos.',
         icon: ImageIcon,
@@ -44,7 +55,7 @@ const TOOLS = [
         href: '/dashboard/ai?mode=scanner'
     },
     {
-        id: 'code',
+        id: 'code_assistant',
         title: 'Code Assistant',
         desc: 'Debug and explain coding logic.',
         icon: Code,
@@ -52,7 +63,7 @@ const TOOLS = [
         href: '/dashboard/ai?mode=code'
     },
     {
-        id: 'translate',
+        id: 'translator',
         title: 'Translator',
         desc: 'Academic translation in 50+ languages.',
         icon: Languages,
@@ -60,7 +71,7 @@ const TOOLS = [
         href: '/dashboard/ai?mode=translate'
     },
     {
-        id: 'grammar',
+        id: 'grammar_pro',
         title: 'Grammar Pro',
         desc: 'Refine your academic writing.',
         icon: PenTool,
@@ -68,7 +79,7 @@ const TOOLS = [
         href: '/dashboard/ai?mode=grammar'
     },
     {
-        id: 'cite',
+        id: 'citations',
         title: 'Citations',
         desc: 'Generate APA/MLA references.',
         icon: Quote,
@@ -78,21 +89,46 @@ const TOOLS = [
 ];
 
 export default function ToolsPage() {
+    const { tokenDisplay, consumeTokens, isPro } = useTokens();
+    const router = useRouter();
+
+    const handleToolClick = (e: React.MouseEvent, tool: Tool) => {
+        e.preventDefault();
+        if (consumeTokens(tool.id)) {
+            router.push(tool.href);
+        } else {
+            alert('🪙 Out of tokens! Upgrade to Pro for unlimited usage.');
+        }
+    };
+
     return (
         <div className="min-h-full bg-white dark:bg-[#0A101D] p-6 lg:p-10 space-y-12">
             
-            {/* Header section */}
-            <div className="max-w-4xl">
-                <div className="inline-flex items-center px-3 py-1.5 rounded-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 text-[10px] font-black uppercase text-black dark:text-white tracking-widest mb-4">
-                    <Zap className="w-3 h-3 mr-2" /> Academic Toolkit
+            {/* Header section w/ Token badge */}
+            <div className="max-w-4xl flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4 pt-4">
+                <div>
+                    <div className="inline-flex items-center px-3 py-1.5 rounded-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 text-[10px] font-black uppercase text-black dark:text-white tracking-widest mb-4">
+                        <Zap className="w-3 h-3 mr-2" /> Academic Toolkit
+                    </div>
+                    <h1 className="text-4xl lg:text-5xl font-black text-black dark:text-white tracking-tight leading-tight">
+                        Smart Tools for<br />Modern Students.
+                    </h1>
                 </div>
-                <h1 className="text-4xl lg:text-5xl font-black text-black dark:text-white tracking-tight leading-tight">
-                    Smart Tools for<br />Modern Students.
-                </h1>
-                <p className="text-gray-500 dark:text-gray-400 font-medium mt-4 max-w-lg leading-relaxed">
-                    Access our full suite of AI-powered study aids designed to help you climb higher and think smarter.
-                </p>
+                {/* Token Badge */}
+                <div className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-[#FAFAFA] dark:bg-[#162032] border border-gray-100 dark:border-white/10">
+                    <span className="text-xl">🪙</span>
+                    <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Daily Tokens</p>
+                        <span className={cn("text-lg font-black tracking-wide", isPro ? "text-walia-primary" : "text-black dark:text-white")}>
+                            {tokenDisplay}
+                        </span>
+                    </div>
+                </div>
             </div>
+
+            <p className="text-gray-500 dark:text-gray-400 font-medium max-w-lg leading-relaxed pb-4">
+                Access our full suite of AI-powered study aids. Each tool consumes a specific number of tokens.
+            </p>
 
             {/* Tools Grid */}
             <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -105,9 +141,9 @@ export default function ToolsPage() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: i * 0.05 }}
                         >
-                            <Link 
-                                href={tool.href}
-                                className="group block h-full p-8 rounded-[32px] bg-[#FAFAFA] dark:bg-[#162032] border border-gray-100 dark:border-white/5 hover:border-black/10 dark:hover:border-white/20 transition-all hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)] relative overflow-hidden"
+                            <button 
+                                onClick={(e) => handleToolClick(e, tool as Tool)}
+                                className="group w-full text-left block h-full p-8 rounded-[32px] bg-[#FAFAFA] dark:bg-[#162032] border border-gray-100 dark:border-white/5 hover:border-black/10 dark:hover:border-white/20 transition-all hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)] relative overflow-hidden"
                             >
                                 <div className={cn("inline-flex w-14 h-14 rounded-2xl items-center justify-center mb-6 transition-transform group-hover:scale-110", tool.color)}>
                                     <Icon className="w-7 h-7" />
@@ -115,13 +151,18 @@ export default function ToolsPage() {
                                 <h3 className="text-xl font-black text-black dark:text-white mb-3">{tool.title}</h3>
                                 <p className="text-sm text-gray-400 font-medium leading-relaxed">{tool.desc}</p>
                                 
-                                <div className="mt-8 flex items-center text-[10px] font-black uppercase tracking-widest text-gray-300 group-hover:text-black dark:group-hover:text-white transition-colors">
-                                    Open Tool <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                                <div className="mt-8 flex items-center justify-between">
+                                    <div className="flex items-center text-[10px] font-black uppercase tracking-widest text-gray-300 group-hover:text-black dark:group-hover:text-white transition-colors">
+                                        Open Tool <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                                    </div>
+                                    <div className="px-2 py-1 rounded-md bg-black/5 dark:bg-white/5 text-[10px] font-bold text-gray-500">
+                                        🪙 {(tool.id === 'summarizer' || tool.id === 'quiz_maker' || tool.id === 'flashcards') ? '3' : tool.id === 'image_scanner' ? '5' : '2'}
+                                    </div>
                                 </div>
                                 
                                 {/* Subtle background glow */}
                                 <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-current opacity-[0.02] blur-2xl group-hover:opacity-[0.05] transition-opacity" />
-                            </Link>
+                            </button>
                         </motion.div>
                     );
                 })}

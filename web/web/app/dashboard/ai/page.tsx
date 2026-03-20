@@ -4,12 +4,14 @@ import { useAuth } from '@/context/AuthContext';
 import { 
     Send, Sparkles, User, Brain, Paperclip, 
     Loader2, ArrowLeft, History, MessageSquare, 
-    Plus, MoreVertical, Trash2 
+    Plus, MoreVertical, Trash2, Share2 
 } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
+import { useTokens } from '@/context/TokenContext';
+import { useRouter } from 'next/navigation';
 
 interface Message {
     role: 'user' | 'assistant';
@@ -39,6 +41,8 @@ export default function AIChatPage() {
     const [mode, setMode] = useState(MODES[0]);
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const scrollRef = useRef<HTMLDivElement>(null);
+    const { tokenDisplay, isPro, consumeTokens } = useTokens();
+    const router = useRouter();
 
     useEffect(() => {
         if (scrollRef.current) {
@@ -48,6 +52,11 @@ export default function AIChatPage() {
 
     const handleSend = async () => {
         if (!input.trim() || loading) return;
+
+        if (!consumeTokens('ai_chat')) {
+            alert("🪙 Out of Tokens! Upgrade to Pro for unlimited AI chats.");
+            return;
+        }
 
         const userMsg: Message = {
             role: 'user',
@@ -169,9 +178,9 @@ export default function AIChatPage() {
                         <div className="p-4 border-t border-gray-100 dark:border-white/5">
                             <div className="p-4 rounded-2xl bg-black dark:bg-white text-white dark:text-black relative overflow-hidden group">
                                 <Sparkles className="absolute -right-2 -bottom-2 w-16 h-16 opacity-10 group-hover:scale-110 transition-transform" />
-                                <p className="text-[10px] font-black uppercase tracking-widest mb-1">PRO Credits</p>
-                                <p className="text-xl font-black">Unlimited</p>
-                                <p className="text-[9px] font-bold opacity-60 mt-1 uppercase">Next Reset: 24h</p>
+                                <p className="text-[10px] font-black uppercase tracking-widest mb-1">Daily Tokens</p>
+                                <p className="text-xl font-black">{tokenDisplay}</p>
+                                <p className="text-[9px] font-bold opacity-60 mt-1 uppercase">{isPro ? 'Pro Active' : 'Resets in 24h'}</p>
                             </div>
                         </div>
                     </motion.aside>
@@ -253,9 +262,21 @@ export default function AIChatPage() {
                                         )}>
                                             {m.content}
                                         </div>
-                                        <p className="text-[10px] font-bold text-gray-300 dark:text-gray-500 uppercase tracking-widest px-1">
-                                            {m.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                        </p>
+                                        <div className="flex items-center gap-4 px-1">
+                                            <p className="text-[10px] font-bold text-gray-300 dark:text-gray-500 uppercase tracking-widest">
+                                                {m.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            </p>
+                                            {!isUser && (
+                                                <button 
+                                                    onClick={() => router.push(`/dashboard/community?initialText=${encodeURIComponent(`Check out this AI Insight:\n\n${m.content}`)}`)}
+                                                    className="flex items-center gap-1.5 text-gray-400 hover:text-black dark:hover:text-white transition-colors"
+                                                    title="Share to Community"
+                                                >
+                                                    <Share2 className="w-3.5 h-3.5" />
+                                                    <span className="text-[10px] uppercase font-bold tracking-widest">Share</span>
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
                                 </motion.div>
                             );

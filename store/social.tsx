@@ -46,6 +46,8 @@ export interface SocialPost {
     comments: Comment[]; // kept for local usage
     quizOptions?: string[];
     quizAnswer?: number;
+    tags?: string[];
+    isAdminPost?: boolean;
 }
 
 export interface Comment {
@@ -97,7 +99,7 @@ interface SocialContextType extends SocialState {
     unfollowUser: (userId: string) => void;
     isFollowing: (userId: string) => boolean;
     // Posts
-    addPost: (post: Omit<SocialPost, 'id' | 'likes' | 'liked' | 'shares' | 'comments' | 'timestamp'>) => void;
+    addPost: (post: Omit<SocialPost, 'id' | 'authorId' | 'likes' | 'commentCount' | 'comments' | 'createdAt'>) => void;
     likePost: (postId: string) => void;
     addComment: (postId: string, comment: Omit<Comment, 'id' | 'timestamp'>) => void;
     // Stats
@@ -276,12 +278,27 @@ export function SocialProvider({ children }: { children: ReactNode }) {
     }, [showXpToast]);
 
     // ── Follow ──
-    const followUser = useCallback((userId: string) => {
+    const followUser = useCallback(async (userId: string) => {
+        const isCurrentlyFollowing = state.following.includes(userId);
+        
         updateState(prev => ({
             ...prev,
-            following: prev.following.includes(userId) ? prev.following : [...prev.following, userId],
+            following: isCurrentlyFollowing ? prev.following : [...prev.following, userId],
         }));
-    }, [updateState]);
+
+        if (!isCurrentlyFollowing && auth.currentUser) {
+            // Reward 5 tokens
+            try {
+                const userRef = doc(db, 'users', auth.currentUser.uid);
+                await updateDoc(userRef, {
+                    tokensUsed: increment(-5) // decreasing used = increasing remaining
+                });
+                Alert.alert('🎉 Bonus Tokens', 'You earned +5 tokens for following a user!');
+            } catch (e) {
+                console.error("Failed to reward tokens", e);
+            }
+        }
+    }, [state.following, updateState]);
 
     const unfollowUser = useCallback((userId: string) => {
         updateState(prev => ({
@@ -293,7 +310,7 @@ export function SocialProvider({ children }: { children: ReactNode }) {
     const isFollowing = useCallback((userId: string) => state.following.includes(userId), [state.following]);
 
     // ── Posts ──
-    const addPost = useCallback(async (post: Omit<SocialPost, 'id' | 'likes' | 'commentCount' | 'comments' | 'createdAt'>) => {
+    const addPost = useCallback(async (post: Omit<SocialPost, 'id' | 'authorId' | 'likes' | 'commentCount' | 'comments' | 'createdAt'>) => {
         if (!auth.currentUser) return;
         const newPostData = {
             ...post,
@@ -305,6 +322,18 @@ export function SocialProvider({ children }: { children: ReactNode }) {
         };
         await addDoc(collection(db, 'posts'), newPostData);
         addXP(XP_REWARDS.post_created, 'Post created 📝');
+
+        // Reward 10 tokens
+        try {
+            const userRef = doc(db, 'users', auth.currentUser.uid);
+            await updateDoc(userRef, {
+                tokensUsed: increment(-10) // decreasing used = increasing remaining
+            });
+            Alert.alert('🎉 Bonus Tokens', 'You earned +10 tokens for posting to the community!');
+        } catch (e) {
+            console.error("Failed to reward tokens", e);
+        }
+
     }, [addXP]);
 
     const likePost = useCallback(async (postId: string) => {

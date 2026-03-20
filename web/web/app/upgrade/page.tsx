@@ -54,7 +54,7 @@ export default function UpgradePage() {
         if (!canAffordWithXp || !user) return;
         setUploading(true);
         try {
-            await addDoc(collection(db, 'payment_requests'), {
+            await addDoc(collection(db, 'payments'), {
                 userId: user.uid,
                 userEmail: user.email,
                 userName: profile?.name || user.displayName,
@@ -62,7 +62,7 @@ export default function UpgradePage() {
                 amount: 10000,
                 currency: 'XP',
                 method: 'XP Unlock',
-                status: 'processing',
+                status: 'pending',
                 createdAt: serverTimestamp()
             });
             setSuccess(true);
@@ -104,7 +104,7 @@ export default function UpgradePage() {
             const proofURL = await getDownloadURL(storageRef);
 
             // 2. Create payment request
-            await addDoc(collection(db, 'payment_requests'), {
+            await addDoc(collection(db, 'payments'), {
                 userId: user.uid,
                 userEmail: user.email,
                 userName: profile?.name || user.displayName,
@@ -112,8 +112,8 @@ export default function UpgradePage() {
                 amount: currentPrice,
                 currency,
                 method: selectedMethod,
-                proofURL,
-                status: 'processing',
+                receiptUrl: proofURL,
+                status: 'pending',
                 createdAt: serverTimestamp()
             });
 

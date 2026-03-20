@@ -5,6 +5,7 @@ import { useAuth } from '@/store/auth';
 import { AI_CHATS } from '@/store/data';
 import { useSocial } from '@/store/social';
 import { useTheme } from '@/store/theme';
+import { useTokens } from '@/store/tokens';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -22,7 +23,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
 
-type ChatMessage = { id: string; role: 'user' | 'ai'; text: string; imageUri?: string; timestamp: string; provider?: AIProvider };
+type ChatMessage = { id: string; role: 'user' | 'ai'; text: string; imageUri?: string; timestamp: string; provider?: AIProvider; onShare?: () => void };
 
 function AnimatedBubble({ message, colors }: { message: ChatMessage; colors: any }) {
     const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -49,7 +50,7 @@ function AnimatedBubble({ message, colors }: { message: ChatMessage; colors: any
                     {providerInfo ? (
                         <Text style={{ fontSize: 18 }}>{providerInfo.icon}</Text>
                     ) : (
-                        <Image source={require('../../assets/images/walia-logo.png')} style={{ width: 32, height: 32 }} resizeMode="contain" />
+                        <Image source={require('../../assets/images/walia-logo.png')} style={{ width: 22, height: 22 }} resizeMode="contain" />
                     )}
                 </View>
             )}
@@ -57,23 +58,31 @@ function AnimatedBubble({ message, colors }: { message: ChatMessage; colors: any
                 styles.bubbleContent,
                 isUser
                     ? { borderBottomRightRadius: 4 }
-                    : { flex: 1, borderBottomLeftRadius: 4, backgroundColor: colors.surface, borderWidth: 1, borderColor: providerInfo ? `${providerInfo.color}30` : 'transparent' },
+                    : { flex: 1, borderBottomLeftRadius: 4, backgroundColor: '#FAFAFA', borderWidth: 1, borderColor: providerInfo ? `${providerInfo.color}30` : colors.border },
             ]}>
                 {isUser ? (
                     <View style={[styles.userGradient, { backgroundColor: colors.primary }]}>
                         {message.imageUri && <Image source={{ uri: message.imageUri }} style={styles.bubbleImage} />}
-                        <Text style={styles.userText}>{message.text}</Text>
-                        <Text style={styles.userTime}>{message.timestamp}</Text>
+                        <Text style={[styles.chatText, { color: colors.textInverse }]}>{message.text}</Text>
                     </View>
                 ) : (
-                    <View style={{ padding: Spacing.lg }}>
-                        {providerInfo && (
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 4 }}>
-                                <Text style={{ fontSize: FontSize.xs, color: providerInfo.color, fontWeight: FontWeight.bold }}>{providerInfo.name}</Text>
+                    <View style={styles.aiBubbleInner}>
+                        {providerInfo != null && (
+                            <View style={[styles.providerTag, { backgroundColor: `${providerInfo.color}15` }]}>
+                                <Text style={{ fontSize: 10 }}>{providerInfo.icon}</Text>
+                                <Text style={[styles.providerName, { color: providerInfo.color }]}>{providerInfo.name}</Text>
                             </View>
                         )}
-                        <Text style={[styles.aiText, { color: colors.text }]}>{message.text}</Text>
-                        <Text style={[styles.aiTime, { color: colors.textTertiary }]}>{message.timestamp}</Text>
+                        <Text style={[styles.chatText, { color: colors.text }]}>{message.text}</Text>
+                        
+                        {/* Share Button for AI */}
+                        <TouchableOpacity 
+                            style={[styles.aiShareBtn, { backgroundColor: colors.surfaceAlt, borderColor: colors.divider }]}
+                            onPress={message.onShare}
+                        >
+                            <Ionicons name="share-social-outline" size={14} color={colors.textSecondary} />
+                            <Text style={[styles.aiShareText, { color: colors.textSecondary }]}>Share</Text>
+                        </TouchableOpacity>
                     </View>
                 )}
             </View>
@@ -84,8 +93,9 @@ function AnimatedBubble({ message, colors }: { message: ChatMessage; colors: any
 export default function AITabScreen() {
     const router = useRouter();
     const { colors, isDark } = useTheme();
-    const { isPro, recordAiMessage, dailyAiCount } = useSocial();
+    const { isPro, recordAiMessage } = useSocial();
     const { user } = useAuth();
+    const { tokenDisplay, consumeTokens, canAfford, tokensRemaining } = useTokens();
     const [isLoading, setIsLoading] = useState(false);
     const [showAttach, setShowAttach] = useState(false);
     const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -131,6 +141,7 @@ export default function AITabScreen() {
                     imageUri: data.image,
                     timestamp: data.createdAt ? new Date(data.createdAt.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                     provider: data.provider,
+                    onShare: () => handleShareAIResponse(data.text)
                 } as ChatMessage;
             });
             setChatMessages(msgs);
@@ -141,22 +152,46 @@ export default function AITabScreen() {
     const buildHistory = (msgs: ChatMessage[]): AIMessage[] =>
         msgs.map(m => ({ role: m.role === 'user' ? 'user' : 'model', parts: [{ text: m.text }] }));
 
+    const handleShareAIResponse = (text: string) => {
+        Alert.alert(
+            "Share AI Insight",
+            "Where would you like to share this?",
+            [
+                { text: "Cancel", style: "cancel" },
+                { text: "To Community", onPress: () => shareToCommunity(text) },
+                { text: "To Chat", onPress: () => shareToChat(text) },
+            ]
+        );
+    };
+
+    const shareToChat = (text: string) => {
+        router.push({
+            pathname: '/chat/new',
+            params: { initialText: `Check out this AI Insight:\n\n${text}` }
+        });
+    };
+
+    const shareToCommunity = async (text: string) => {
+        try {
+            // Very simple post creation inside the component since addPost handles details
+            router.push({
+                pathname: '/community/new-post',
+                params: { initialText: `Check out this AI Insight:\n\n${text}` }
+            });
+        } catch (e) {
+            console.error("Share failed", e);
+        }
+    };
+
     const sendMessage = async (text?: string, imageUri?: string) => {
         const content = (text ?? message).trim();
         if (!content && !imageUri || isLoading) return;
 
-        // Check limits
-        if (!isPro && !recordAiMessage()) {
-            Alert.alert(
-                '🚀 Daily Limit Hit',
-                `Free users are limited to 20 AI messages per day.\n\nUpgrade to Pro for unlimited chats and access to ChatGPT/DeepSeek!`,
-                [
-                    { text: 'Maybe Later', style: 'cancel' },
-                    { text: 'Upgrade to Pro', onPress: () => router.push('/pro' as any) }
-                ]
-            );
-            return;
+        // Check token balance
+        if (!consumeTokens('ai_chat')) {
+            return; // consumeTokens shows alert internally
         }
+        recordAiMessage(); // still track for stats
 
         const userMsg: ChatMessage = { id: Date.now().toString(), role: 'user', text: content, imageUri, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) };
         setChatMessages(prev => [...prev, userMsg]);
@@ -263,10 +298,15 @@ export default function AITabScreen() {
                                 </View>
                             </View>
                         </View>
-                        <TouchableOpacity onPress={() => router.push('/ai/' as any)} style={[styles.historyBtn, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}>
-                            <Ionicons name="time-outline" size={16} color={colors.text} />
-                            <Text style={[styles.historyText, { color: colors.text }]}>History</Text>
-                        </TouchableOpacity>
+                        <View style={styles.headerRight}>
+                            <View style={[styles.tokenPill, { backgroundColor: isPro ? '#6C63FF15' : colors.surfaceAlt, borderColor: isPro ? '#6C63FF30' : colors.border }]}>
+                                <Text style={{ fontSize: 12 }}>🪙</Text>
+                                <Text style={[styles.tokenText, { color: isPro ? '#6C63FF' : colors.text }]}>{tokenDisplay}</Text>
+                            </View>
+                            <TouchableOpacity onPress={() => router.push('/ai/' as any)} style={[styles.historyBtn, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}>
+                                <Ionicons name="time-outline" size={16} color={colors.text} />
+                            </TouchableOpacity>
+                        </View>
                     </View>
 
                     {/* Stats bar */}
@@ -504,7 +544,7 @@ const styles = StyleSheet.create({
     typingBubble: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, borderRadius: 16, padding: Spacing.lg, flex: 1 },
     inputBar: { flexDirection: 'row', alignItems: 'flex-end', paddingHorizontal: Spacing.md, paddingVertical: Spacing.md, paddingBottom: Spacing.xl + 20, borderTopWidth: 1, gap: Spacing.sm },
     modelToggleBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', width: 44, height: 44, borderRadius: 12, borderWidth: 1, gap: 2, marginBottom: 2 },
-    inputWrap: { flex: 1, borderRadius: 14, paddingHorizontal: Spacing.lg, paddingVertical: Platform.OS === 'ios' ? 10 : 6, minHeight: 44, borderWidth: 1 },
+    inputWrap: { flex: 1, borderRadius: 28, paddingHorizontal: Spacing.lg, paddingVertical: Platform.OS === 'ios' ? 10 : 6, minHeight: 44, borderWidth: 1 },
     input: { fontSize: FontSize.md, maxHeight: 120, textAlignVertical: 'center' },
     addBtn: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginBottom: 2 },
     attachPanel: { flexDirection: 'row', gap: Spacing.xl, paddingHorizontal: Spacing.xxl, paddingVertical: Spacing.xl, borderTopWidth: 1, justifyContent: 'center' },
@@ -513,5 +553,14 @@ const styles = StyleSheet.create({
     attachLabel: { fontSize: FontSize.xs, fontWeight: FontWeight.bold },
     bubbleImage: { width: 200, height: 150, borderRadius: 12, marginBottom: Spacing.sm },
     sendBtn: { marginBottom: 2 },
-    sendGradient: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-});
+    sendGradient: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+    headerRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    tokenPill: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 20, borderWidth: 1 },
+    tokenText: { fontSize: 11, fontWeight: FontWeight.heavy, letterSpacing: 0.5 },
+    chatText: { fontSize: FontSize.md, lineHeight: 22, fontWeight: FontWeight.medium },
+    aiBubbleInner: { padding: Spacing.lg },
+    providerTag: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 8, alignSelf: 'flex-start', marginBottom: 6 },
+    providerName: { fontSize: 10, fontWeight: FontWeight.bold },
+    bubbleFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: Spacing.lg, paddingBottom: Spacing.sm },
+    shareBtn: { width: 26, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
+} as any);

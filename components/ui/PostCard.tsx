@@ -49,9 +49,24 @@ export function PostCard({ post, onLike, onComment, onShare, onPress, onQuizAnsw
         return null;
     };
 
+    const renderContentWithHashtags = (text: string) => {
+        if (!text) return null;
+        const words = text.split(/(\s+)/);
+        return words.map((word, index) => {
+            if (word.match(/^#\w+/)) {
+                return (
+                    <Text key={index} style={{ color: colors.primary, fontWeight: FontWeight.heavy }}>
+                        {word}
+                    </Text>
+                );
+            }
+            return <Text key={index}>{word}</Text>;
+        });
+    };
+
     return (
         <TouchableOpacity
-            style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.divider }]}
+            style={[styles.card, { backgroundColor: post.isAdminPost ? colors.surfaceAlt : colors.surface, borderColor: post.isAdminPost ? colors.primary : colors.divider, borderWidth: post.isAdminPost ? 1 : 1 }]}
             onPress={onPress}
             activeOpacity={0.9}
         >
@@ -64,7 +79,15 @@ export function PostCard({ post, onLike, onComment, onShare, onPress, onQuizAnsw
                 >
                     <Avatar emoji={user?.photoURL || '👤'} size={38} />
                     <View style={styles.headerText}>
-                        <Text style={[styles.name, { color: colors.text }]}>{user?.name || 'Unknown'}</Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                            <Text style={[styles.name, { color: colors.text }]}>{user?.name || 'Unknown'}</Text>
+                            {post.isAdminPost && (
+                                <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: colors.primary + '20', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 12, gap: 2 }}>
+                                    <Ionicons name="checkmark-circle" size={12} color={colors.primary} />
+                                    <Text style={{ fontSize: 9, fontWeight: '900', color: colors.primary, textTransform: 'uppercase' }}>Admin</Text>
+                                </View>
+                            )}
+                        </View>
                         <Text style={[styles.time, { color: colors.textTertiary }]}>
                             {post.createdAt ? new Date(post.createdAt.toDate?.() || post.createdAt).toLocaleDateString() : 'Just now'}
                         </Text>
@@ -79,7 +102,9 @@ export function PostCard({ post, onLike, onComment, onShare, onPress, onQuizAnsw
             {/* Content */}
             <View style={styles.contentBody}>
                 {post.title && <Text style={[styles.title, { color: colors.text }]}>{post.title}</Text>}
-                <Text style={[styles.content, { color: colors.textSecondary }]} numberOfLines={5}>{post.content}</Text>
+                <Text style={[styles.content, { color: colors.textSecondary }]} numberOfLines={5}>
+                    {renderContentWithHashtags(post.content)}
+                </Text>
             </View>
 
             {/* Quiz options — with inline result highlighting */}

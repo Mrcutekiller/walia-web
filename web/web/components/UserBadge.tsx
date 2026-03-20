@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react';
 interface UserBadgeProps {
     uid: string;
     showUsername?: boolean;
+    hideName?: boolean;
     className?: string;
     size?: 'sm' | 'md' | 'lg';
 }

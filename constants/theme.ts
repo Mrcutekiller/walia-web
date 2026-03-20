@@ -1,32 +1,32 @@
 export const Colors = {
   primary: '#000000',
-  primaryLight: '#262626',
+  primaryLight: '#1A1A1A',
   primaryDark: '#000000',
-  secondary: '#FFFFFF',
-  accent: '#000000',
-  success: '#4ADE80',
-  warning: '#F59E0B',
-  error: '#EF4444',
+  secondary: '#FF6B6B',
+  accent: '#6C63FF',
+  success: '#2ED573',
+  warning: '#FFA502',
+  error: '#FF4757',
 
-  background: '#000000',
-  surface: '#111111',
-  surfaceAlt: '#1A1A1A',
-  card: '#111111',
+  background: '#FFFFFF',
+  surface: '#FFFFFF',
+  surfaceAlt: '#F9FAFB',
+  card: '#FFFFFF',
 
-  text: '#FFFFFF',
-  textSecondary: '#A1A1AA',
-  textTertiary: '#71717A',
-  textInverse: '#000000',
+  text: '#1A1A2E',
+  textSecondary: '#6B7280',
+  textTertiary: '#9CA3AF',
+  textInverse: '#FFFFFF',
 
-  border: 'rgba(255,255,255,0.1)',
-  borderLight: 'rgba(255,255,255,0.05)',
-  divider: 'rgba(255,255,255,0.1)',
+  border: '#E5E7EB',
+  borderLight: '#F3F4F6',
+  divider: '#F0F0F5',
 
-  sent: '#FFFFFF',
-  received: '#262626',
+  sent: '#000000',
+  received: '#F0F0F5',
 
-  overlay: 'rgba(0,0,0,0.7)',
-  shadow: 'rgba(0,0,0,0.3)',
+  overlay: 'rgba(0,0,0,0.5)',
+  shadow: 'rgba(0,0,0,0.08)',
 };
 
 export const Spacing = {

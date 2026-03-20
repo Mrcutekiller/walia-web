@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
     scroll: { padding: Spacing.xl },
     inputGroup: { marginBottom: Spacing.xl },
     label: { fontSize: 10, fontWeight: FontWeight.heavy, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 },
-    input: { paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
+    input: { paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#E5E7EB' },
     row: { flexDirection: 'row' },
     statusGrid: { flexDirection: 'row', gap: Spacing.md, marginTop: 4 },
     statusOption: { flex: 1, alignItems: 'center', paddingVertical: 16, borderRadius: 16, gap: 8 },

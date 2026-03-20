@@ -16,7 +16,8 @@ import {
     arrayRemove,
     addDoc,
     serverTimestamp,
-    getDoc
+    getDoc,
+    increment
 } from 'firebase/firestore';
 import {
     Heart,
@@ -32,8 +33,9 @@ import {
     PartyPopper
 } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSearchParams } from 'next/navigation';
 
 interface Post {
     id: string;
@@ -44,14 +46,18 @@ interface Post {
     commentCount: number;
     type: 'general' | 'ai_share' | 'quiz' | 'note' | 'text';
     title?: string;
+    tags?: string[];
+    isAdminPost?: boolean;
 }
 
-export default function CommunityPage() {
+function CommunityContent() {
     const { user, profile } = useAuth();
+    const searchParams = useSearchParams();
     const [posts, setPosts] = useState<Post[]>([]);
     const [loading, setLoading] = useState(true);
-    const [newPost, setNewPost] = useState('');
+    const [newPost, setNewPost] = useState(searchParams.get('initialText') || '');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isAdminPost, setIsAdminPost] = useState(false);
 
     useEffect(() => {
         const q = query(collection(db, 'posts'), orderBy('createdAt', 'desc'), limit(50));
@@ -76,6 +82,10 @@ export default function CommunityPage() {
         if (!user || !newPost.trim()) return;
         setIsSubmitting(true);
         try {
+            // Extract hashtags using basic regex (e.g. #FinalsPrep)
+            // match returns array or null, default to empty array
+            const extractedTags = newPost.match(/#\w+/g) || [];
+
             await addDoc(collection(db, 'posts'), {
                 authorId: user.uid,
                 content: newPost.trim(),
@@ -83,7 +93,18 @@ export default function CommunityPage() {
                 likes: [],
                 commentCount: 0,
                 type: 'general',
+                tags: extractedTags,
+                isAdminPost: profile?.isAdmin ? isAdminPost : false,
             });
+            // Reward Tokens
+            try {
+                await updateDoc(doc(db, 'users', user.uid), {
+                    tokensUsed: increment(-10)
+                });
+                alert("🎉 Bonus Tokens! You earned +10 tokens for posting.");
+            } catch (e) {
+                console.error("Token reward failed", e);
+            }
             setNewPost('');
         } catch (err) {
             console.error(err);
@@ -108,6 +129,17 @@ export default function CommunityPage() {
         interval = seconds / 60;
         if (interval > 1) return Math.floor(interval) + "m";
         return Math.floor(seconds) + "s";
+    };
+
+    const renderTextWithHashtags = (text: string) => {
+        if (!text) return null;
+        const words = text.split(/(\s+)/);
+        return words.map((word, index) => {
+            if (word.match(/^#\w+/)) {
+                return <span key={index} className="text-amber-500 font-bold hover:underline cursor-pointer">{word}</span>;
+            }
+            return <span key={index}>{word}</span>;
+        });
     };
 
     return (
@@ -182,6 +214,17 @@ export default function CommunityPage() {
                                         <button className="w-10 h-10 rounded-full hover:bg-gray-100 dark:hover:bg-white/5 flex items-center justify-center text-gray-400 transition-colors">
                                             <Sparkles className="w-5 h-5" />
                                         </button>
+                                        {profile?.isAdmin && (
+                                            <label className="flex items-center gap-2 text-sm text-gray-500 font-bold ml-4 cursor-pointer">
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={isAdminPost} 
+                                                    onChange={(e) => setIsAdminPost(e.target.checked)} 
+                                                    className="rounded text-black dark:text-white"
+                                                />
+                                                Official Post
+                                            </label>
+                                        )}
                                     </div>
                                     <button 
                                         onClick={handleCreatePost}
@@ -210,7 +253,12 @@ export default function CommunityPage() {
                                         initial={{ opacity: 0, y: 20 }}
                                         whileInView={{ opacity: 1, y: 0 }}
                                         viewport={{ once: true }}
-                                        className="bg-white dark:bg-[#162032] rounded-[2.5rem] p-6 md:p-8 border border-gray-200 dark:border-white/5 shadow-sm hover:shadow-xl hover:shadow-black/5 dark:hover:shadow-white/5 transition-all relative overflow-hidden group"
+                                        className={cn(
+                                            "rounded-[2.5rem] p-6 md:p-8 shadow-sm transition-all relative overflow-hidden group border",
+                                            post.isAdminPost 
+                                                ? "bg-amber-50/30 dark:bg-amber-900/10 border-amber-200 dark:border-amber-700/30 hover:shadow-amber-200/50" 
+                                                : "bg-white dark:bg-[#162032] border-gray-200 dark:border-white/5 hover:shadow-xl hover:shadow-black/5 dark:hover:shadow-white/5"
+                                        )}
                                     >
                                         {/* Optional Glow for special post types */}
                                         {post.type === 'ai_share' && (
@@ -218,9 +266,16 @@ export default function CommunityPage() {
                                         )}
 
                                         <div className="flex items-center justify-between mb-6 relative z-10">
-                                            <Link href={`/dashboard/profile/${post.authorId}`} className="group/author">
-                                                <UserBadge uid={post.authorId} size="sm" className="hover:opacity-80 transition-opacity" />
-                                            </Link>
+                                            <div className="flex flex-row items-center gap-2">
+                                                <Link href={`/dashboard/profile/${post.authorId}`} className="group/author">
+                                                    <UserBadge uid={post.authorId} size="sm" className="hover:opacity-80 transition-opacity" />
+                                                </Link>
+                                                {post.isAdminPost && (
+                                                    <span className="flex items-center gap-1 bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest">
+                                                        <CheckCircle2 className="w-3 h-3" /> Admin
+                                                    </span>
+                                                )}
+                                            </div>
                                             <p className="text-xs font-bold text-gray-400">{formatTimeAgo(post.createdAt)}</p>
                                         </div>
 
@@ -236,7 +291,9 @@ export default function CommunityPage() {
                                                 </span>
                                             )}
                                             {post.title && <h3 className="text-xl font-black text-black dark:text-white mb-3 tracking-tight">{post.title}</h3>}
-                                            <p className="text-[15px] text-gray-700 dark:text-gray-300 leading-relaxed font-medium whitespace-pre-wrap">{post.content}</p>
+                                            <p className="text-[15px] text-gray-700 dark:text-gray-300 leading-relaxed font-medium whitespace-pre-wrap">
+                                                {renderTextWithHashtags(post.content)}
+                                            </p>
                                         </div>
 
                                         {/* Interaction Bar */}
@@ -316,5 +373,13 @@ export default function CommunityPage() {
 
             </div>
         </div>
+    );
+}
+
+export default function CommunityPage() {
+    return (
+        <Suspense fallback={<div>Loading Community...</div>}>
+            <CommunityContent />
+        </Suspense>
     );
 }

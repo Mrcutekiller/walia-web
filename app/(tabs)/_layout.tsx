@@ -34,14 +34,14 @@ function FloatingTabBar({ state, navigation }: any) {
     (r: any) => TAB_CONFIG[r.name] !== undefined
   );
 
-  const barBg = isDark ? '#1A1A2E' : '#1A1A2E';
-  const activeBg = isDark ? '#FFFFFF' : '#FFFFFF';
-  const activeText = '#1A1A2E';
-  const inactiveIcon = 'rgba(255,255,255,0.65)';
+  const barBg = isDark ? '#121212' : '#FFFFFF';
+  const activeBg = isDark ? '#FFFFFF' : '#000000';
+  const activeText = isDark ? '#000000' : '#FFFFFF';
+  const inactiveIcon = isDark ? 'rgba(255,255,255,0.5)' : '#9CA3AF';
 
   return (
     <View style={[styles.tabBarWrapper, { paddingBottom: insets.bottom + 8 }]}>
-      <View style={[styles.tabBar, { backgroundColor: barBg }]}>
+      <View style={[styles.tabBar, { backgroundColor: barBg, borderWidth: isDark ? 0 : 1, borderColor: '#E5E7EB' }]}>
         {visibleRoutes.map((route: any) => {
           const config = TAB_CONFIG[route.name];
           const isFocused = state.routes[state.index]?.name === route.name;
@@ -114,10 +114,10 @@ const styles = StyleSheet.create({
     width: '88%',
     gap: 4,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.06,
     shadowRadius: 12,
-    elevation: 8,
+    elevation: 6,
   },
   tabItem: {
     flex: 1,

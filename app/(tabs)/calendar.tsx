@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
     header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: Spacing.xl, paddingVertical: Spacing.md },
     title: { fontSize: FontSize.xxl, fontWeight: FontWeight.heavy, letterSpacing: -1 },
     addBtn: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-    calendar: { borderRadius: 24, marginHorizontal: Spacing.xl, overflow: 'hidden', borderWidth: 1, borderColor: '#f1f5f9' },
+    calendar: { borderRadius: 24, marginHorizontal: Spacing.xl, overflow: 'hidden', borderWidth: 1, borderColor: '#E5E7EB' },
     reminders: { padding: Spacing.xl },
     remindersHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.lg },
     remindersTitle: { fontSize: FontSize.lg, fontWeight: FontWeight.heavy, letterSpacing: -0.5 },

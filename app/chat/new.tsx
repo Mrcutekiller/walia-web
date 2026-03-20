@@ -123,10 +123,10 @@ export default function NewChatScreen() {
                             <Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />
                         </TouchableOpacity>
                     )}
-                    ListEmptyHeaderComponent={() => !search ? null : (
+                    ListEmptyComponent={() => !search ? null : (
                         <Text style={styles.emptyText}>No users found matching "{search}"</Text>
                     )}
-                </ScrollView>
+                />
             )}
         </SafeAreaView>
     );

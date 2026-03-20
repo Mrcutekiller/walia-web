@@ -5,7 +5,7 @@ import Navbar from '@/components/Navbar';
 import { db } from '@/lib/firebase';
 import { formatTimeAgo } from '@/lib/utils';
 import { collection, onSnapshot, orderBy, query, Timestamp } from 'firebase/firestore';
-import { ArrowRight, Brain, Calendar, ChevronRight, Download, MessageSquare, Sparkles, Star, Users, Wrench, Zap } from 'lucide-react';
+import { ArrowRight, Brain, Calendar, ChevronRight, Download, MessageSquare, Sparkles, Star, Users, Wrench, Zap, Camera, FileText } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
@@ -325,6 +325,54 @@ export default function Home() {
           </div>
         </section>
 
+
+        {/* ━━━━━━━━━━ TOKEN SYSTEM EXPLORER ━━━━━━━━━━ */}
+        <section className="py-32 bg-gray-50 border-y border-gray-200">
+          <div className="container mx-auto px-6 md:px-12">
+            <div className="text-center mb-16 space-y-4 reveal">
+              <div className="inline-flex items-center px-3 py-1.5 rounded-full bg-black/5 border border-black/10 text-[10px] font-black uppercase text-black tracking-widest">
+                <Zap className="w-3 h-3 mr-2" /> Token Economy
+              </div>
+              <h2 className="text-4xl md:text-5xl font-black text-black tracking-tight">
+                How tokens work.
+              </h2>
+              <p className="text-base text-gray-500 max-w-md mx-auto font-medium">
+                Free users get <strong className="text-black">100 tokens</strong> daily. Upgrade to Pro for unlimited access.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto stagger">
+              {[
+                { label: 'AI Chat', cost: 1, desc: 'Per message sent', icon: MessageSquare },
+                { label: 'Summarizer', cost: 3, desc: 'Per document/text', icon: FileText },
+                { label: 'Image Scanner', cost: 5, desc: 'Per photo analyzed', icon: Camera },
+                { label: 'Pro Tools', cost: 2, desc: 'Code, Quiz, Grammar', icon: Wrench },
+              ].map((item, i) => (
+                <div key={i} className="bg-white rounded-3xl p-8 border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all">
+                  <div className="w-12 h-12 bg-black/5 rounded-2xl flex items-center justify-center mb-6">
+                    <item.icon className="w-6 h-6 text-black" />
+                  </div>
+                  <h3 className="text-xl font-bold text-black">{item.label}</h3>
+                  <p className="text-sm text-gray-500 font-medium mb-4">{item.desc}</p>
+                  <div className="inline-flex items-center px-3 py-1.5 bg-gray-50 rounded-lg text-xs font-black tracking-wider text-black border border-gray-200">
+                    🪙 {item.cost} Token{item.cost > 1 ? 's' : ''}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="max-w-3xl mx-auto mt-12 bg-black text-white p-8 rounded-3xl flex items-center justify-between reveal overflow-hidden relative shadow-2xl">
+              <Sparkles className="absolute -right-8 -top-8 w-48 h-48 opacity-10 blur-3xl animate-pulse" />
+              <div className="relative z-10 space-y-2">
+                <h4 className="text-2xl font-black">Unlimited Learning.</h4>
+                <p className="text-white/60 text-sm font-medium">Get Walia Pro and never worry about tokens again.</p>
+              </div>
+              <Link href="/signup" className="relative z-10 px-6 py-3 bg-white text-black font-bold rounded-xl text-sm hover:bg-white/90 transition-colors shrink-0">
+                Upgrade Now
+              </Link>
+            </div>
+          </div>
+        </section>
 
         {/* ━━━━━━━━━━ LIVE REVIEWS SECTION ━━━━━━━━━━ */}
         <section className="py-32 bg-white">

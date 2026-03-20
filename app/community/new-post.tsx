@@ -32,17 +32,22 @@ export default function NewPostScreen() {
     const [quizOptions, setQuizOptions] = useState(['', '', '', '']);
     const [quizAnswer, setQuizAnswer] = useState(0);
     const [loading, setLoading] = useState(false);
+    const [isAdminPost, setIsAdminPost] = useState(false);
 
     const handlePost = async () => {
         if (!content.trim()) return;
         setLoading(true);
         try {
+            const extractedTags = content.match(/#\w+/g) || [];
+
             await addPost({
                 type: type === 'quiz' ? 'quiz' : 'text',
                 title: title.trim() || undefined,
                 content: content.trim(),
                 quizOptions: type === 'quiz' ? quizOptions : undefined,
                 quizAnswer: type === 'quiz' ? quizAnswer : undefined,
+                tags: extractedTags,
+                isAdminPost: user?.isAdmin ? isAdminPost : false,
             });
             router.back();
         } catch (error) {
@@ -91,6 +96,18 @@ export default function NewPostScreen() {
                             </TouchableOpacity>
                         ))}
                     </View>
+
+                    {user?.isAdmin && (
+                        <TouchableOpacity 
+                            onPress={() => setIsAdminPost(!isAdminPost)}
+                            style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 16 }}
+                        >
+                            <View style={{ width: 20, height: 20, borderRadius: 4, borderWidth: 2, borderColor: isAdminPost ? colors.primary : colors.textTertiary, backgroundColor: isAdminPost ? colors.primary : 'transparent', alignItems: 'center', justifyContent: 'center' }}>
+                                {isAdminPost && <Ionicons name="checkmark" size={14} color="#fff" />}
+                            </View>
+                            <Text style={{ fontSize: 12, fontWeight: 'bold', color: colors.textSecondary }}>Post as Official Admin</Text>
+                        </TouchableOpacity>
+                    )}
 
                     {/* Title (Optional for text, Required for Quiz) */}
                     <TextInput
