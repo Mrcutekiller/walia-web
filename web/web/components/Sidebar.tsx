@@ -27,7 +27,7 @@ const sidebarLinks = [
 ];
 
 export default function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
-    const { user } = useAuth();
+    const { user, profile } = useAuth();
     const pathname = usePathname();
 
     return (
@@ -117,13 +117,27 @@ export default function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose:
 
                     {/* User Section */}
                     <div className="p-4 pb-8 space-y-4">
+                        {/* XP Progress Bar */}
+                        <div className="px-4 py-3 rounded-2xl bg-white/5 border border-white/5">
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Level {profile?.level || 1}</span>
+                                <span className="text-[10px] font-black text-walia-primary uppercase tracking-widest">{profile?.xp || 0} XP</span>
+                            </div>
+                            <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                                <div 
+                                    className="h-full bg-walia-primary rounded-full transition-all duration-1000"
+                                    style={{ width: `${Math.min(100, ((profile?.xp || 0) % 1000) / 10)}%` }}
+                                />
+                            </div>
+                        </div>
+
                         <div className="flex items-center p-4 rounded-2xl bg-white/5 border border-white/5 border-transparent hover:border-white/10 transition-all">
                             <div className="w-10 h-10 rounded-full bg-walia-primary/20 border border-walia-primary/30 flex items-center justify-center mr-4">
                                 <User className="w-5 h-5 text-walia-primary" />
                             </div>
                             <div className="flex-1 overflow-hidden">
-                                <p className="text-sm font-bold text-white truncate">{user?.displayName || 'User'}</p>
-                                <p className="text-[10px] text-white/30 truncate">@{user?.email?.split('@')[0] || 'member'}</p>
+                                <p className="text-sm font-bold text-white truncate">{profile?.displayName || user?.displayName || 'User'}</p>
+                                <p className="text-[10px] text-white/30 truncate">@{profile?.username || user?.email?.split('@')[0] || 'member'}</p>
                             </div>
                             <Link href="/dashboard/settings">
                                 <Settings className="w-5 h-5 text-white/20 hover:text-white transition-colors" />

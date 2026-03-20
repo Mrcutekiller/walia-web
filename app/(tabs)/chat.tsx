@@ -2,6 +2,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { PostCard } from '@/components/ui/PostCard';
 import { BorderRadius, FontSize, FontWeight, Spacing } from '@/constants/theme';
 import { auth, db } from '@/services/firebase';
+import { useAuth } from '@/store/auth';
 import { XP_REWARDS, useSocial } from '@/store/social';
 import { useTheme } from '@/store/theme';
 import { Ionicons } from '@expo/vector-icons';
@@ -23,6 +24,7 @@ type TabType = 'messages' | 'groups' | 'community';
 export default function ChatScreen() {
     const router = useRouter();
     const { colors, isDark } = useTheme();
+    const { user } = useAuth();
     const { posts, likePost, addXP } = useSocial();
     const [activeTab, setActiveTab] = useState<TabType>('messages');
 
@@ -85,7 +87,7 @@ export default function ChatScreen() {
                             <Text style={[styles.headerSub, { color: colors.textSecondary }]}>Connect & Learn</Text>
                             <Text style={[styles.headerTitle, { color: colors.text }]}>Walia Social</Text>
                         </View>
-                        <TouchableOpacity style={[styles.newBtn, { backgroundColor: colors.surfaceAlt }]} onPress={() => router.push('/chat/new')}>
+                        <TouchableOpacity style={[styles.newBtn, { backgroundColor: colors.surfaceAlt }]} onPress={() => router.push('/chat/new' as any)}>
                             <Ionicons name="create-outline" size={20} color={colors.text} />
                         </TouchableOpacity>
                     </View>
@@ -120,7 +122,7 @@ export default function ChatScreen() {
 
                 {activeTab === 'groups' && (
                     <>
-                        <TouchableOpacity style={[styles.newGroupBtn, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={() => router.push('/chat/new')}>
+                        <TouchableOpacity style={[styles.newGroupBtn, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={() => router.push('/chat/new' as any)}>
                             <LinearGradient colors={['#6C63FF', '#5A52E0']} style={styles.newGroupIcon}>
                                 <Ionicons name="people" size={20} color="#fff" />
                             </LinearGradient>
@@ -134,12 +136,37 @@ export default function ChatScreen() {
 
                 {activeTab === 'community' && (
                     <View style={styles.communityContent}>
-                        <TouchableOpacity style={[styles.composeBar, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={() => router.push('/community/new-post')}>
-                            <Text style={[styles.composePlaceholder, { color: colors.textTertiary }]}>Share something with the community...</Text>
+                        {/* Trending Section */}
+                        <View style={styles.trendingSection}>
+                            <View style={styles.sectionHeader}>
+                                <Ionicons name="trending-up" size={14} color={colors.primary} />
+                                <Text style={[styles.sectionTitle, { color: colors.text }]}>Trending Topics</Text>
+                            </View>
+                            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.trendingScroll}>
+                                {[
+                                    { tag: '#FinalsPrep', color: '#6366f1' },
+                                    { tag: '#AIHacks', color: '#f59e0b' },
+                                    { tag: '#StudySession', color: '#10b981' },
+                                    { tag: '#WaliaPro', color: '#f43f5e' }
+                                ].map((item, i) => (
+                                    <View key={i} style={[styles.trendingTag, { backgroundColor: item.color + '15', borderColor: item.color + '30' }]}>
+                                        <Text style={[styles.trendingTagText, { color: item.color }]}>{item.tag}</Text>
+                                    </View>
+                                ))}
+                            </ScrollView>
+                        </View>
+
+                        <TouchableOpacity style={[styles.composeBar, { backgroundColor: colors.surface, borderColor: colors.divider }]} onPress={() => router.push('/community/new-post' as any)}>
+                            <View style={styles.composeInner}>
+                                <Avatar emoji={user?.photoURL || '👤'} size={32} />
+                                <Text style={[styles.composePlaceholder, { color: colors.textTertiary }]}>Share something with the community...</Text>
+                            </View>
                             <View style={[styles.postBtn, { backgroundColor: colors.primary }]}>
-                                <Text style={styles.postBtnText}>Post</Text>
+                                <Ionicons name="add" size={20} color={colors.textInverse} />
                             </View>
                         </TouchableOpacity>
+
+                        <Text style={[styles.sectionLabel, { color: colors.textSecondary, paddingHorizontal: 0, marginBottom: Spacing.md }]}>Recent Feed</Text>
                         {posts.map(p => (
                             <PostCard key={p.id} post={p} onLike={() => likePost(p.id)} onQuizAnswer={(idx) => handleQuizAnswer(p.id, idx)} quizAnswered={quizAnswers[p.id] ?? null} />
                         ))}
@@ -175,8 +202,14 @@ const styles = StyleSheet.create({
     newGroupIcon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
     newGroupText: { flex: 1, fontSize: FontSize.md, fontWeight: FontWeight.bold },
     communityContent: { paddingTop: Spacing.md, paddingHorizontal: Spacing.xl },
-    composeBar: { flexDirection: 'row', alignItems: 'center', borderRadius: 24, padding: Spacing.md, marginBottom: Spacing.xl, borderWidth: 1, gap: Spacing.md },
-    composePlaceholder: { flex: 1, fontSize: FontSize.sm, fontWeight: FontWeight.medium, marginLeft: 4 },
-    postBtn: { borderRadius: BorderRadius.pill, paddingHorizontal: Spacing.lg, paddingVertical: Spacing.sm },
-    postBtnText: { fontSize: FontSize.xs, fontWeight: FontWeight.heavy, textTransform: 'uppercase', letterSpacing: 1 },
+    trendingSection: { marginBottom: Spacing.xl },
+    sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: Spacing.md },
+    sectionTitle: { fontSize: 12, fontWeight: FontWeight.heavy, textTransform: 'uppercase', letterSpacing: 0.5 },
+    trendingScroll: { gap: Spacing.sm, paddingRight: Spacing.xl },
+    trendingTag: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 14, borderWidth: 1 },
+    trendingTagText: { fontSize: 11, fontWeight: FontWeight.bold },
+    composeBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderRadius: 24, padding: Spacing.md, marginBottom: Spacing.xl, borderWidth: 1 },
+    composeInner: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
+    composePlaceholder: { fontSize: FontSize.sm, fontWeight: FontWeight.medium, opacity: 0.5 },
+    postBtn: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
 });

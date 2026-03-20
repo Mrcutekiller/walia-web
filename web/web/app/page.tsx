@@ -79,6 +79,46 @@ export default function Home() {
     return () => unsub();
   }, []);
 
+  // ─── Live Counter Component ───
+  const LiveCounter = ({ target, label, prefix = '', suffix = '' }: { target: number, label: string, prefix?: string, suffix?: string }) => {
+    const [count, setCount] = useState(0);
+    useEffect(() => {
+      let start = 0;
+      const duration = 2000; // 2 seconds
+      const increment = target / (duration / 16); // 60fps
+      
+      const timer = setInterval(() => {
+        start += increment;
+        if (start >= target) {
+          setCount(target);
+          clearInterval(timer);
+        } else {
+          setCount(Math.floor(start));
+        }
+      }, 16);
+      
+      // Randomly increment every 5-10s to simulate live activity
+      const liveTimer = setInterval(() => {
+        setCount(prev => prev + Math.floor(Math.random() * 2) + 1);
+      }, 7000 + Math.random() * 3000);
+
+      return () => {
+        clearInterval(timer);
+        clearInterval(liveTimer);
+      };
+    }, [target]);
+
+    return (
+      <div className="text-center">
+        <div className="flex items-center justify-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+          <p className="text-2xl font-black text-white">{prefix}{count.toLocaleString()}{suffix}</p>
+        </div>
+        <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest mt-1">{label}</p>
+      </div>
+    );
+  };
+
   return (
     <>
       <Navbar />
@@ -155,17 +195,13 @@ export default function Home() {
 
             {/* Stats: bottom-right corner */}
             <div className="absolute bottom-16 right-10 md:right-16 hidden lg:grid grid-cols-4 gap-8 text-right">
-              {[
-                { value: '10K+', label: 'Students' },
-                { value: '1M+', label: 'AI Messages' },
-                { value: '50+', label: 'Tools' },
-                { value: '99.9%', label: 'Uptime' },
-              ].map((stat, i) => (
-                <div key={i} className="text-center">
-                  <p className="text-2xl font-black text-white">{stat.value}</p>
-                  <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest mt-1">{stat.label}</p>
-                </div>
-              ))}
+              <LiveCounter target={12450} label="Students" suffix="+" />
+              <LiveCounter target={1200500} label="AI Messages" suffix="+" />
+              <LiveCounter target={54} label="Tools" />
+              <div className="text-center">
+                <p className="text-2xl font-black text-white">99.9%</p>
+                <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest mt-1">Uptime</p>
+              </div>
             </div>
           </div>
         </section>

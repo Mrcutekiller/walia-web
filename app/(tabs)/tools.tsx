@@ -12,10 +12,14 @@ const { width } = Dimensions.get('window');
 const CARD_W = (width - Spacing.xl * 2 - Spacing.md) / 2;
 
 const TOOLS = [
-    { title: 'Summarize', desc: 'Condense any text to key points', icon: 'document-text', route: '/tools/summarize', emoji: '📄' },
-    { title: 'Quiz', desc: 'Generate & take practice tests', icon: 'help-circle', route: '/tools/quiz', emoji: '🧠' },
-    { title: 'Flashcards', desc: 'Flip-card studying system', icon: 'layers', route: '/tools/flashcard', emoji: '🃏' },
-    { title: 'Notes', desc: 'Write & organize your ideas', icon: 'create', route: '/tools/notes', emoji: '📝' },
+    { title: 'Summarizer', desc: 'Condense long articles and textbooks.', icon: 'document-text', route: '/ai?mode=summarizer', emoji: '📄', color: '#3b82f6' },
+    { title: 'Quiz Maker', desc: 'Generate MCQs and tests from notes.', icon: 'help-circle', route: '/ai?mode=quiz', emoji: '🧠', color: '#10b981' },
+    { title: 'Flashcards', desc: 'AI-generated study card sets.', icon: 'layers', route: '/ai?mode=flashcard', emoji: '🃏', color: '#f59e0b' },
+    { title: 'Image Scanner', desc: 'Extract text and equations from photos.', icon: 'scan', route: '/ai?mode=scanner', emoji: '📸', color: '#a855f7' },
+    { title: 'Code Assistant', desc: 'Debug and explain coding logic.', icon: 'code-slash', route: '/ai?mode=code', emoji: '💻', color: '#6366f1' },
+    { title: 'Translator', desc: 'Academic translation in 50+ languages.', icon: 'language', route: '/ai?mode=translate', emoji: '🌐', color: '#f43f5e' },
+    { title: 'Grammar Pro', desc: 'Refine your academic writing.', icon: 'pencil', route: '/ai?mode=grammar', emoji: '✍️', color: '#06b6d4' },
+    { title: 'Citations', desc: 'Generate APA/MLA references.', icon: 'quote', route: '/ai?mode=cite', emoji: '📚', color: '#f97316' },
 ];
 
 export default function ToolsScreen() {
@@ -28,6 +32,10 @@ export default function ToolsScreen() {
         summarize: studyHistory.filter(h => h.tool === 'summarize').length,
         flashcard: studyHistory.filter(h => h.tool === 'flashcard').length,
         notes: studyHistory.filter(h => h.tool === 'notes').length || 0,
+        scanner: studyHistory.filter(h => h.tool as any === 'scanner').length || 0,
+        code: studyHistory.filter(h => h.tool as any === 'code').length || 0,
+        translate: studyHistory.filter(h => h.tool as any === 'translate').length || 0,
+        grammar: studyHistory.filter(h => h.tool as any === 'grammar').length || 0,
     };
 
     const sortedHistory = [...studyHistory].sort((a, b) =>
@@ -35,13 +43,8 @@ export default function ToolsScreen() {
     ).slice(0, 5);
 
     const getToolIcon = (tool: string) => {
-        const iconColor = colors.text;
-        switch (tool) {
-            case 'quiz': return { n: 'help-circle', c: iconColor };
-            case 'summarize': return { n: 'document-text', c: iconColor };
-            case 'flashcard': return { n: 'layers', c: iconColor };
-            default: return { n: 'create', c: iconColor };
-        }
+        const t = TOOLS.find(tt => tt.title.toLowerCase().includes(tool.toLowerCase()));
+        return { n: t?.icon || 'create', c: t?.color || colors.primary };
     };
 
     return (
@@ -53,8 +56,8 @@ export default function ToolsScreen() {
                 <SafeAreaView edges={['top']}>
                     <View style={styles.headerContent}>
                         <View>
-                            <Text style={[styles.headerTitle, { color: colors.text }]}>Study Tools 🛠️</Text>
-                            <Text style={[styles.headerSub, { color: colors.textSecondary }]}>4 tools to supercharge your learning</Text>
+                            <Text style={[styles.headerSub, { color: colors.textSecondary }]}>Academic Toolkit</Text>
+                            <Text style={[styles.headerTitle, { color: colors.text }]}>Walia Tools</Text>
                         </View>
                         <TouchableOpacity style={[styles.aiShortcut, { backgroundColor: colors.primary, borderColor: colors.primary }]} onPress={() => router.push('/ai/')}>
                             <Ionicons name="sparkles" size={18} color={colors.textInverse} />
@@ -68,27 +71,31 @@ export default function ToolsScreen() {
                 {/* Tool cards grid */}
                 <View style={styles.grid}>
                     {TOOLS.map((tool, i) => (
-                        <TouchableOpacity key={i} style={[styles.toolCard, i % 2 === 1 && styles.toolCardOffset]} onPress={() => router.push(tool.route as any)} activeOpacity={0.85}>
-                            <View style={[styles.toolGradient, { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.divider }]}>
-                                <Text style={styles.toolEmoji}>{tool.emoji}</Text>
-                                <Text style={[styles.toolTitle, { color: colors.text }]}>{tool.title}</Text>
-                                <Text style={[styles.toolDesc, { color: colors.textSecondary }]}>{tool.desc}</Text>
-                                <View style={[styles.toolArrow, { backgroundColor: colors.surfaceAlt }]}>
-                                    <Ionicons name="arrow-forward" size={16} color={colors.primary} />
+                        <TouchableOpacity key={i} style={[styles.toolCard]} onPress={() => router.push(tool.route as any)} activeOpacity={0.85}>
+                            <View style={[styles.toolInner, { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.divider }]}>
+                                <View style={[styles.iconBox, { backgroundColor: tool.color + '15' }]}>
+                                    <Ionicons name={tool.icon as any} size={28} color={isDark ? tool.color : tool.color} />
+                                </View>
+                                <View>
+                                    <Text style={[styles.toolTitle, { color: colors.text }]}>{tool.title}</Text>
+                                    <Text style={[styles.toolDesc, { color: colors.textSecondary }]} numberOfLines={2}>{tool.desc}</Text>
+                                </View>
+                                <View style={styles.toolFooter}>
+                                    <Text style={[styles.toolEmoji]}>{tool.emoji}</Text>
+                                    <View style={[styles.toolArrow, { backgroundColor: colors.surfaceAlt }]}>
+                                        <Ionicons name="arrow-forward" size={14} color={colors.text} />
+                                    </View>
                                 </View>
                             </View>
                         </TouchableOpacity>
                     ))}
                 </View>
 
-                {/* Stats row */}
+                {/* Stats summary moved to a more compact style */}
                 <View style={[styles.statsRow, { backgroundColor: colors.surface }]}>
-                    {[[counts.quiz, 'Quizzes'], [counts.notes, 'Notes'], [counts.flashcard, 'Flashcards'], [counts.summarize, 'Summaries']].map(([val, label]) => (
-                        <View key={label} style={styles.statItem}>
-                            <Text style={[styles.statVal, { color: colors.primary }]}>{val}</Text>
-                            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>{label}</Text>
-                        </View>
-                    ))}
+                    <Text style={[styles.statsLabel, { color: colors.textSecondary }]}>Total Sessions: {studyHistory.length}</Text>
+                    <View style={styles.statsSeparator} />
+                    <Text style={[styles.statsLabel, { color: colors.textSecondary }]}>XP Earned: {studyHistory.length * 20}</Text>
                 </View>
 
                 {/* Recent activity */}
@@ -135,17 +142,17 @@ const styles = StyleSheet.create({
     aiShortcutText: { fontSize: 10, fontWeight: FontWeight.heavy, textTransform: 'uppercase', letterSpacing: 1 },
     content: { padding: Spacing.xl, paddingBottom: 120 },
     grid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.md, marginBottom: Spacing.xl },
-    toolCard: { width: CARD_W, borderRadius: 32, overflow: 'hidden' },
-    toolCardOffset: { marginTop: Spacing.lg },
-    toolGradient: { padding: Spacing.xl, minHeight: 180, justifyContent: 'space-between', borderRadius: 32 },
-    toolEmoji: { fontSize: 36, marginBottom: Spacing.sm },
-    toolTitle: { fontSize: FontSize.lg, fontWeight: FontWeight.heavy, letterSpacing: -0.5 },
-    toolDesc: { fontSize: 11, lineHeight: 16, marginTop: 4, fontWeight: FontWeight.medium, opacity: 0.7 },
-    toolArrow: { alignSelf: 'flex-end', width: 32, height: 32, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginTop: Spacing.sm },
-    statsRow: { flexDirection: 'row', justifyContent: 'space-around', borderRadius: 24, padding: Spacing.xl, marginBottom: Spacing.xl, borderWidth: 1, borderColor: '#f1f5f9' },
-    statItem: { alignItems: 'center' },
-    statVal: { fontSize: FontSize.xl, fontWeight: FontWeight.heavy, letterSpacing: -1 },
-    statLabel: { fontSize: 10, fontWeight: FontWeight.heavy, textTransform: 'uppercase', letterSpacing: 1, marginTop: 4 },
+    toolCard: { width: CARD_W, borderRadius: 32, marginBottom: Spacing.md },
+    toolInner: { padding: Spacing.lg, minHeight: 180, justifyContent: 'space-between', borderRadius: 32 },
+    iconBox: { width: 56, height: 56, borderRadius: 18, alignItems: 'center', justifyContent: 'center', marginBottom: Spacing.md },
+    toolTitle: { fontSize: FontSize.md, fontWeight: FontWeight.heavy, letterSpacing: -0.5 },
+    toolDesc: { fontSize: 10, lineHeight: 14, marginTop: 4, fontWeight: FontWeight.medium, opacity: 0.6 },
+    toolFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: Spacing.md },
+    toolEmoji: { fontSize: 24 },
+    toolArrow: { width: 28, height: 28, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+    statsRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderRadius: 20, padding: Spacing.md, marginBottom: Spacing.xl, borderWidth: 1, borderColor: '#f1f5f9', gap: Spacing.md },
+    statsLabel: { fontSize: 10, fontWeight: FontWeight.heavy, textTransform: 'uppercase', letterSpacing: 1 },
+    statsSeparator: { width: 4, height: 4, borderRadius: 2, backgroundColor: '#cbd5e1' },
     sectionTitle: { fontSize: FontSize.lg, fontWeight: FontWeight.heavy, marginBottom: Spacing.lg, letterSpacing: -0.5 },
     recentCard: { borderRadius: 24, overflow: 'hidden', borderWidth: 1, borderColor: '#f1f5f9' },
     recentItem: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md, padding: Spacing.lg },

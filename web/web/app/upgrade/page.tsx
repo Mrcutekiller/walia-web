@@ -43,10 +43,36 @@ export default function UpgradePage() {
     const currency = isEthiopia ? 'ETB' : 'USD';
     
     // Pricing
-    const monthlyPrice = isEthiopia ? 1200 : 10;
-    const yearlyPrice = isEthiopia ? 10000 : 100;
+    const monthlyPrice = isEthiopia ? 1350 : 12;
+    const yearlyPrice = isEthiopia ? 13500 : 120;
 
     const currentPrice = yearly ? yearlyPrice : monthlyPrice;
+    
+    const canAffordWithXp = (profile?.xp || 0) >= 10000;
+
+    const handleXpUpgrade = async () => {
+        if (!canAffordWithXp || !user) return;
+        setUploading(true);
+        try {
+            await addDoc(collection(db, 'payment_requests'), {
+                userId: user.uid,
+                userEmail: user.email,
+                userName: profile?.name || user.displayName,
+                plan: 'xp_unlock',
+                amount: 10000,
+                currency: 'XP',
+                method: 'XP Unlock',
+                status: 'processing',
+                createdAt: serverTimestamp()
+            });
+            setSuccess(true);
+        } catch (e) {
+            console.error(e);
+            alert('Failed to process XP upgrade');
+        } finally {
+            setUploading(false);
+        }
+    };
 
     const ethMethods = [
         { id: 'telebirr', name: 'Telebirr', details: 'Phone: 0911223344 (Username: Walia AI)' },
@@ -205,10 +231,31 @@ export default function UpgradePage() {
                                 </ul>
                                 <button 
                                     onClick={() => setStep(2)}
-                                    className="w-full py-4 rounded-2xl bg-white text-black font-black text-sm hover:scale-[1.02] transition-transform flex items-center justify-center gap-2 shadow-xl shadow-white/10"
+                                    className="w-full py-4 rounded-2xl bg-white text-black font-black text-sm hover:scale-[1.02] transition-transform flex items-center justify-center gap-2 shadow-xl shadow-white/10 mb-4"
                                 >
                                     Proceed to Payment <ArrowRight className="w-4 h-4" />
                                 </button>
+
+                                <div className="p-1 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mb-4" />
+
+                                <button 
+                                    onClick={handleXpUpgrade}
+                                    disabled={!canAffordWithXp || uploading}
+                                    className={`w-full py-4 rounded-2xl flex flex-col items-center justify-center gap-1 transition-all ${canAffordWithXp ? 'bg-gradient-to-br from-amber-400 to-amber-600 text-black shadow-xl shadow-amber-500/20 hover:scale-[1.02]' : 'bg-white/5 border border-white/5 opacity-50 text-white/40'}`}
+                                >
+                                    <div className="flex items-center gap-2 font-black text-sm uppercase tracking-widest">
+                                        <Zap className="w-4 h-4" />
+                                        Unlock with 10,000 XP
+                                    </div>
+                                    <span className="text-[10px] font-bold uppercase opacity-60">
+                                        Your Balance: {profile?.xp || 0} XP
+                                    </span>
+                                </button>
+                                {!canAffordWithXp && (
+                                    <p className="text-[10px] text-center text-white/20 font-bold uppercase tracking-widest mt-2">
+                                        Need {(10000 - (profile?.xp || 0)).toLocaleString()} more XP
+                                    </p>
+                                )}
                             </div>
                         </div>
                     </div>

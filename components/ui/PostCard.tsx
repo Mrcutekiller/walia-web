@@ -25,8 +25,8 @@ export function PostCard({ post, onLike, onComment, onShare, onPress, onQuizAnsw
     const router = useRouter();
     const user = getUserById(post.authorId);
     const typeColors: Record<string, string> = { quiz: '#000000', note: '#000000', ai_share: '#000000', text: '#000000', general: '#000000' };
-    const typeIcons: Record<string, string> = { quiz: '🧮', note: '📒', ai_share: '🤖', text: '💬', general: '💬' };
-    const typeLabels: Record<string, string> = { quiz: 'QUIZ', note: 'NOTE', ai_share: 'AI INSIGHT', text: 'POST', general: 'GENERAL' };
+    const typeIcons: Record<string, string> = { quiz: '🧠', note: '📒', ai_share: '✨', text: '💬', general: '💬' };
+    const typeLabels: Record<string, string> = { quiz: 'QUIZ', note: 'NOTE', ai_share: 'AI INSIGHT', text: 'POST', general: 'POST' };
     const accent = colors.text;
 
     const getOptionStyle = (i: number) => {
@@ -34,24 +34,24 @@ export function PostCard({ post, onLike, onComment, onShare, onPress, onQuizAnsw
             return { backgroundColor: colors.surfaceAlt };
         }
         if (i === post.quizAnswer) {
-            return { backgroundColor: '#2ED57320', borderWidth: 1.5, borderColor: '#2ED573' };
+            return { backgroundColor: '#10b98115', borderWidth: 1.5, borderColor: '#10b981' };
         }
         if (i === quizAnswered && i !== post.quizAnswer) {
-            return { backgroundColor: '#FF475720', borderWidth: 1.5, borderColor: '#FF4757' };
+            return { backgroundColor: '#ef444415', borderWidth: 1.5, borderColor: '#ef4444' };
         }
         return { backgroundColor: colors.surfaceAlt, opacity: 0.5 };
     };
 
     const getOptionIcon = (i: number) => {
         if (quizAnswered === null || quizAnswered === undefined) return null;
-        if (i === post.quizAnswer) return <Ionicons name="checkmark-circle" size={18} color="#2ED573" />;
-        if (i === quizAnswered && i !== post.quizAnswer) return <Ionicons name="close-circle" size={18} color="#FF4757" />;
+        if (i === post.quizAnswer) return <Ionicons name="checkmark-circle" size={18} color="#10b981" />;
+        if (i === quizAnswered && i !== post.quizAnswer) return <Ionicons name="close-circle" size={18} color="#ef4444" />;
         return null;
     };
 
     return (
         <TouchableOpacity
-            style={[styles.card, { backgroundColor: colors.surface }]}
+            style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.divider }]}
             onPress={onPress}
             activeOpacity={0.9}
         >
@@ -62,7 +62,7 @@ export function PostCard({ post, onLike, onComment, onShare, onPress, onQuizAnsw
                     onPress={() => router.push(`/profile/${post.authorId}` as any)}
                     activeOpacity={0.7}
                 >
-                    <Avatar emoji={user?.photoURL || '👤'} size={40} />
+                    <Avatar emoji={user?.photoURL || '👤'} size={38} />
                     <View style={styles.headerText}>
                         <Text style={[styles.name, { color: colors.text }]}>{user?.name || 'Unknown'}</Text>
                         <Text style={[styles.time, { color: colors.textTertiary }]}>
@@ -70,15 +70,17 @@ export function PostCard({ post, onLike, onComment, onShare, onPress, onQuizAnsw
                         </Text>
                     </View>
                 </TouchableOpacity>
-                <View style={[styles.typeBadge, { backgroundColor: `${accent}18` }]}>
-                    <Text style={{ fontSize: 12 }}>{typeIcons[post.type]}</Text>
-                    <Text style={[styles.typeBadgeText, { color: accent }]}>{typeLabels[post.type]}</Text>
+                <View style={[styles.typeBadge, { backgroundColor: colors.surfaceAlt, borderColor: colors.divider }]}>
+                    <Text style={{ fontSize: 10 }}>{typeIcons[post.type]}</Text>
+                    <Text style={[styles.typeBadgeText, { color: colors.textSecondary }]}>{typeLabels[post.type]}</Text>
                 </View>
             </View>
 
             {/* Content */}
-            {post.title && <Text style={[styles.title, { color: colors.text }]}>{post.title}</Text>}
-            <Text style={[styles.content, { color: colors.text }]}>{post.content}</Text>
+            <View style={styles.contentBody}>
+                {post.title && <Text style={[styles.title, { color: colors.text }]}>{post.title}</Text>}
+                <Text style={[styles.content, { color: colors.textSecondary }]} numberOfLines={5}>{post.content}</Text>
+            </View>
 
             {/* Quiz options — with inline result highlighting */}
             {post.type === 'quiz' && post.quizOptions && (
@@ -91,16 +93,16 @@ export function PostCard({ post, onLike, onComment, onShare, onPress, onQuizAnsw
                             activeOpacity={quizAnswered != null ? 1 : 0.7}
                             disabled={quizAnswered != null}
                         >
-                            <Text style={[styles.quizLetter, { color: quizAnswered != null && (i === post.quizAnswer || i === quizAnswered) ? (i === post.quizAnswer ? '#2ED573' : '#FF4757') : colors.textSecondary }]}>
+                            <Text style={[styles.quizLetter, { color: quizAnswered != null && (i === post.quizAnswer || i === quizAnswered) ? (i === post.quizAnswer ? '#10b981' : '#ef4444') : colors.textTertiary }]}>
                                 {String.fromCharCode(65 + i)}
                             </Text>
-                            <Text style={[styles.quizText, { color: colors.text, flex: 1 }]}>{opt}</Text>
+                            <Text style={[styles.quizText, { color: colors.text }]}>{opt}</Text>
                             {getOptionIcon(i)}
                         </TouchableOpacity>
                     ))}
                     {quizAnswered != null && (
-                        <Text style={{ fontSize: FontSize.xs, color: colors.textTertiary, marginTop: Spacing.xs, textAlign: 'center' }}>
-                            {quizAnswered === post.quizAnswer ? '🎉 You got it right!' : `✅ Correct answer: ${String.fromCharCode(65 + (post.quizAnswer ?? 0))}`}
+                        <Text style={{ fontSize: 10, color: colors.textTertiary, marginTop: Spacing.xs, textAlign: 'center', fontWeight: FontWeight.bold, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                            {quizAnswered === post.quizAnswer ? '🎉 Correct!' : `✅ Correct: ${String.fromCharCode(65 + (post.quizAnswer ?? 0))}`}
                         </Text>
                     )}
                 </View>
@@ -108,23 +110,24 @@ export function PostCard({ post, onLike, onComment, onShare, onPress, onQuizAnsw
 
             {/* Actions */}
             <View style={[styles.actions, { borderTopColor: colors.divider }]}>
-                <TouchableOpacity style={styles.action} onPress={onLike}>
-                    <Ionicons
-                        name={post.likes?.includes(currentUser?.id || '') ? 'heart' : 'heart-outline'}
-                        size={20}
-                        color={post.likes?.includes(currentUser?.id || '') ? '#FF6B6B' : colors.textSecondary}
-                    />
-                    <Text style={[styles.actionText, { color: post.likes?.includes(currentUser?.id || '') ? '#FF6B6B' : colors.textSecondary }]}>
-                        {post.likes?.length || 0}
-                    </Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.action} onPress={onComment}>
-                    <Ionicons name="chatbubble-outline" size={18} color={colors.textSecondary} />
-                    <Text style={[styles.actionText, { color: colors.textSecondary }]}>{post.commentCount || 0}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.action} onPress={onShare}>
-                    <Ionicons name="share-outline" size={18} color={colors.textSecondary} />
-                    <Text style={[styles.actionText, { color: colors.textSecondary }]}>0</Text>
+                <View style={styles.actionGroup}>
+                    <TouchableOpacity style={styles.action} onPress={onLike}>
+                        <Ionicons
+                            name={post.likes?.includes(currentUser?.id || '') ? 'heart' : 'heart-outline'}
+                            size={20}
+                            color={post.likes?.includes(currentUser?.id || '') ? '#FF6B6B' : colors.textSecondary}
+                        />
+                        <Text style={[styles.actionText, { color: post.likes?.includes(currentUser?.id || '') ? '#FF6B6B' : colors.textSecondary }]}>
+                            {post.likes?.length || 0}
+                        </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.action} onPress={onComment}>
+                        <Ionicons name="chatbox-outline" size={18} color={colors.textSecondary} />
+                        <Text style={[styles.actionText, { color: colors.textSecondary }]}>{post.commentCount || 0}</Text>
+                    </TouchableOpacity>
+                </View>
+                <TouchableOpacity style={styles.shareBtn} onPress={onShare}>
+                    <Ionicons name="share-social-outline" size={18} color={colors.textTertiary} />
                 </TouchableOpacity>
             </View>
         </TouchableOpacity>
@@ -132,21 +135,24 @@ export function PostCard({ post, onLike, onComment, onShare, onPress, onQuizAnsw
 }
 
 const styles = StyleSheet.create({
-    card: { borderRadius: 32, padding: Spacing.xl, marginBottom: Spacing.lg, borderWidth: 1, borderColor: '#f1f5f9' },
-    header: { flexDirection: 'row', alignItems: 'center', marginBottom: Spacing.lg, justifyContent: 'space-between' },
+    card: { borderRadius: 32, padding: Spacing.xl, marginBottom: Spacing.lg, borderWidth: 1 },
+    header: { flexDirection: 'row', alignItems: 'center', marginBottom: Spacing.xl, justifyContent: 'space-between' },
     userInfo: { flexDirection: 'row', alignItems: 'center', flex: 1 },
-    headerText: { flex: 1, marginLeft: Spacing.md, marginRight: Spacing.sm },
+    headerText: { flex: 1, marginLeft: Spacing.md },
     name: { fontSize: FontSize.md, fontWeight: FontWeight.heavy, letterSpacing: -0.5 },
-    time: { fontSize: 10, fontWeight: FontWeight.bold, opacity: 0.4 },
-    typeBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: BorderRadius.pill, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1, borderColor: '#f1f5f9' },
-    typeBadgeText: { fontSize: 10, fontWeight: FontWeight.heavy, letterSpacing: 1 },
-    title: { fontSize: FontSize.xl, fontWeight: FontWeight.heavy, marginBottom: Spacing.sm, letterSpacing: -0.5 },
-    content: { fontSize: FontSize.md, lineHeight: 24, marginBottom: Spacing.xl, fontWeight: FontWeight.medium, opacity: 0.8 },
+    time: { fontSize: 10, fontWeight: FontWeight.bold, opacity: 0.4, marginTop: 1 },
+    typeBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: BorderRadius.pill, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1 },
+    typeBadgeText: { fontSize: 9, fontWeight: FontWeight.heavy, letterSpacing: 0.8, textTransform: 'uppercase' },
+    contentBody: { marginBottom: Spacing.xl },
+    title: { fontSize: FontSize.lg, fontWeight: FontWeight.heavy, marginBottom: Spacing.sm, letterSpacing: -0.5 },
+    content: { fontSize: FontSize.sm, lineHeight: 22, fontWeight: FontWeight.medium, opacity: 0.9 },
     quizOptions: { marginBottom: Spacing.xl },
-    quizOption: { flexDirection: 'row', alignItems: 'center', borderRadius: 16, padding: Spacing.lg, marginBottom: Spacing.md, gap: Spacing.md, borderWidth: 1, borderColor: '#f8fafc' },
-    quizLetter: { fontSize: FontSize.sm, fontWeight: FontWeight.heavy, width: 20 },
-    quizText: { fontSize: FontSize.md, fontWeight: FontWeight.bold },
-    actions: { flexDirection: 'row', borderTopWidth: 1, borderTopColor: '#f1f5f9', paddingTop: Spacing.lg, gap: Spacing.xl },
+    quizOption: { flexDirection: 'row', alignItems: 'center', borderRadius: 16, padding: Spacing.lg, marginBottom: Spacing.md, gap: Spacing.md, borderWidth: 1, borderColor: 'transparent' },
+    quizLetter: { fontSize: FontSize.xs, fontWeight: FontWeight.heavy, width: 20 },
+    quizText: { fontSize: FontSize.sm, fontWeight: FontWeight.bold, flex: 1 },
+    actions: { flexDirection: 'row', borderTopWidth: 1, paddingTop: Spacing.lg, alignItems: 'center', justifyContent: 'space-between' },
+    actionGroup: { flexDirection: 'row', gap: Spacing.xl },
     action: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
-    actionText: { fontSize: 12, fontWeight: FontWeight.bold },
+    actionText: { fontSize: 12, fontWeight: FontWeight.heavy, letterSpacing: 0.2 },
+    shareBtn: { width: 32, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
 });

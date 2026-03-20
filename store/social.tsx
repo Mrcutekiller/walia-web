@@ -30,7 +30,7 @@ export const XP_REWARDS = {
     comment_added: 10,
 };
 export const PRO_PLAN_XP_COST = 10000;
-export const PRO_PLAN_ETB_COST = 1500;
+export const PRO_PLAN_ETB_COST = 1350;
 export const XP_PER_LEVEL = 500;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
