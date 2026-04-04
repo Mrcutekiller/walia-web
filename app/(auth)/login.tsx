@@ -64,8 +64,8 @@ export default function LoginScreen() {
                             <View style={styles.logoRing}>
                                 <Image source={require('../../assets/images/walia-logo.png')} style={styles.logoImg} resizeMode="contain" />
                             </View>
-                            <Text style={styles.title}>Welcome Back</Text>
-                            <Text style={styles.subtitle}>Sign in to continue with Walia</Text>
+                            <Text style={styles.title}>Welcome back</Text>
+                            <Text style={styles.subtitle}>Sign in to continue to Walia.</Text>
                         </View>
 
                         {/* Form */}
@@ -140,7 +140,7 @@ export default function LoginScreen() {
                         {/* Or divider */}
                         <View style={styles.dividerRow}>
                             <View style={styles.divider} />
-                            <Text style={styles.dividerText}>Walia AI</Text>
+                            <Text style={styles.dividerText}>or email</Text>
                             <View style={styles.divider} />
                         </View>
                     </ScrollView>
@@ -151,37 +151,78 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1 },
-    bgBase: { ...StyleSheet.absoluteFillObject, backgroundColor: '#000' },
-    bgGlow: { position: 'absolute', width: 350, height: 350, borderRadius: 175, backgroundColor: '#fff', opacity: 0.05, top: -120, alignSelf: 'center' },
-    content: { paddingHorizontal: Spacing.xxl, paddingVertical: Spacing.xl, paddingBottom: Spacing.huge },
-    backBtn: { width: 38, height: 38, borderRadius: 19, backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center', marginBottom: Spacing.xl },
-    logoSection: { alignItems: 'center', marginBottom: Spacing.xxxl },
-    logoRing: { width: 80, height: 80, borderRadius: 40, backgroundColor: '#000', overflow: 'hidden', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.2)', marginBottom: Spacing.xl },
-    logoImg: { width: 80, height: 80 },
-    title: { fontSize: 34, fontWeight: '900', color: '#fff', marginBottom: Spacing.sm },
-    subtitle: { fontSize: FontSize.md, color: 'rgba(255,255,255,0.5)', fontWeight: '600' },
-    form: { gap: Spacing.lg, marginBottom: Spacing.xl },
-    errorBox: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, backgroundColor: 'rgba(255,107,107,0.12)', borderRadius: BorderRadius.lg, padding: Spacing.md, borderWidth: 1, borderColor: 'rgba(255,107,107,0.3)' },
-    errorText: { color: '#FF6B6B', fontSize: FontSize.sm, flex: 1 },
-    inputBlock: { gap: Spacing.sm },
-    inputLabel: { fontSize: FontSize.sm, fontWeight: '700', color: 'rgba(255,255,255,0.6)', letterSpacing: 0.3 },
-    inputRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: BorderRadius.xl, paddingHorizontal: Spacing.lg, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', minHeight: 54 },
-    inputIcon: { marginRight: Spacing.md },
-    textInput: { flex: 1, fontSize: FontSize.md, color: '#fff', paddingVertical: Spacing.md },
-    forgotBtn: { alignSelf: 'flex-end' },
-    forgotText: { fontSize: FontSize.sm, color: '#fff', fontWeight: '600', opacity: 0.6 },
-    loginBtn: { backgroundColor: '#fff', borderRadius: BorderRadius.pill, paddingVertical: 18, alignItems: 'center', marginBottom: Spacing.xl, shadowColor: '#fff', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.1, shadowRadius: 10, elevation: 4 },
-    loginBtnText: { color: '#000', fontSize: FontSize.lg, fontWeight: '900' },
-    signupLink: { alignItems: 'center', marginBottom: Spacing.xxl },
-    signupText: { fontSize: FontSize.md, color: 'rgba(255,255,255,0.4)', fontWeight: '600' },
-    signupBold: { color: '#fff', fontWeight: '900' },
-    dividerRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.lg, marginBottom: Spacing.xl },
-    divider: { flex: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.1)' },
-    dividerText: { fontSize: FontSize.sm, color: 'rgba(255,255,255,0.3)', fontWeight: '700' },
-    socialButtons: { marginBottom: Spacing.xl },
-    socialBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: Spacing.md, paddingVertical: 16, borderRadius: BorderRadius.pill, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', backgroundColor: 'rgba(255,255,255,0.05)' },
-    socialBtnText: { fontSize: FontSize.md, fontWeight: '700', color: '#fff' },
-    demoBtn: { backgroundColor: 'rgba(255,255,255,0.07)', borderRadius: BorderRadius.pill, paddingVertical: 16, alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
-    demoBtnText: { color: 'rgba(255,255,255,0.7)', fontSize: FontSize.md, fontWeight: '700' },
+    container: { flex: 1, backgroundColor: '#fff' },
+    bgBase: { ...StyleSheet.absoluteFillObject, backgroundColor: '#fff' },
+    bgGlow: { position: 'absolute', width: 350, height: 350, borderRadius: 175, backgroundColor: '#000', opacity: 0.02, top: -120, alignSelf: 'center' },
+    content: { paddingHorizontal: 32, paddingVertical: Spacing.xl, paddingBottom: Spacing.huge },
+    backBtn: { width: 44, height: 44, borderRadius: 12, backgroundColor: '#F8F9FA', alignItems: 'center', justifyContent: 'center', marginBottom: Spacing.xl, borderWidth: 1, borderColor: '#EDF2F7' },
+    logoSection: { alignItems: 'flex-start', marginBottom: 32 },
+    logoRing: { 
+        width: 44, height: 44, borderRadius: 10, 
+        backgroundColor: '#fff', overflow: 'hidden', 
+        borderWidth: 1, borderColor: '#EDF2F7', 
+        marginBottom: 20,
+        shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2
+    },
+    logoImg: { width: 32, height: 32 },
+    title: { fontSize: 30, fontFamily: 'Inter_900Black', color: '#000', marginBottom: 8 },
+    subtitle: { fontSize: 14, color: '#718096', fontFamily: 'Inter_500Medium' },
+    form: { gap: 20, marginBottom: 24 },
+    errorBox: { 
+        flexDirection: 'row', 
+        alignItems: 'center', 
+        gap: 8, 
+        backgroundColor: '#FFF5F5', 
+        borderRadius: 16, 
+        padding: 14, 
+        borderWidth: 1, 
+        borderColor: '#FED7D7' 
+    },
+    errorText: { color: '#C53030', fontSize: 13, fontFamily: 'Inter_600SemiBold', flex: 1 },
+    inputBlock: { gap: 8 },
+    inputLabel: { fontSize: 10, fontFamily: 'Inter_900Black', color: '#A0AEC0', textTransform: 'uppercase', letterSpacing: 1.5, marginLeft: 4 },
+    inputRow: { 
+        flexDirection: 'row', 
+        alignItems: 'center', 
+        backgroundColor: '#F8F9FA', 
+        borderRadius: 20, 
+        paddingHorizontal: 16, 
+        borderWidth: 1, 
+        borderColor: '#EDF2F7', 
+        minHeight: 56 
+    },
+    inputIcon: { marginRight: 12, opacity: 0.4 },
+    textInput: { flex: 1, fontSize: 15, color: '#000', fontFamily: 'Inter_500Medium', paddingVertical: 12 },
+    forgotBtn: { alignSelf: 'flex-end', marginTop: -8 },
+    forgotText: { fontSize: 12, color: '#000', fontFamily: 'Inter_700Bold', opacity: 0.8 },
+    loginBtn: { 
+        backgroundColor: '#000', 
+        borderRadius: 20, 
+        paddingVertical: 18, 
+        alignItems: 'center', 
+        flexDirection: 'row',
+        justifyContent: 'center',
+        marginBottom: 24, 
+        shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.15, shadowRadius: 15, elevation: 6 
+    },
+    loginBtnText: { color: '#fff', fontSize: 16, fontFamily: 'Inter_900Black' },
+    signupLink: { alignItems: 'center', marginBottom: 32 },
+    signupText: { fontSize: 14, color: '#718096', fontFamily: 'Inter_500Medium' },
+    signupBold: { color: '#000', fontFamily: 'Inter_900Black' },
+    dividerRow: { flexDirection: 'row', alignItems: 'center', gap: 16, marginBottom: 24 },
+    divider: { flex: 1, height: 1, backgroundColor: '#EDF2F7' },
+    dividerText: { fontSize: 10, color: '#A0AEC0', fontFamily: 'Inter_800ExtraBold', textTransform: 'uppercase', letterSpacing: 1.5 },
+    socialButtons: { gap: 12 },
+    socialBtn: { 
+        flexDirection: 'row', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        gap: 12, 
+        paddingVertical: 16, 
+        borderRadius: 20, 
+        borderWidth: 1, 
+        borderColor: '#EDF2F7', 
+        backgroundColor: '#fff' 
+    },
+    socialBtnText: { fontSize: 15, fontFamily: 'Inter_700Bold', color: '#000' },
 });

@@ -33,8 +33,8 @@ export default function ReviewForm({ onSuccess }: ReviewFormProps) {
 
         try {
             const reviewData = {
-                userId: user.uid,
-                userName: user.displayName || user.email?.split('@')[0] || 'Anonymous',
+                userId: user.id,
+                userName: user.name || user.email?.split('@')[0] || 'Anonymous',
                 userPhoto: user.photoURL || '',
                 rating,
                 comment: text.trim(),
@@ -148,7 +148,7 @@ export default function ReviewForm({ onSuccess }: ReviewFormProps) {
             </button>
 
             <p className="text-xs text-gray-400 text-center font-medium">
-                Submitting as <span className="font-bold text-black">{user.displayName || user.email?.split('@')[0]}</span>
+                Submitting as <span className="font-bold text-black">{user.name || user.email?.split('@')[0]}</span>
             </p>
         </div>
     );

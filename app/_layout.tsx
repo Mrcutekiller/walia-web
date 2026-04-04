@@ -1,90 +1,139 @@
 import { DarkTheme, DefaultTheme, ThemeProvider as NavThemeProvider } from '@react-navigation/native';
+import { 
+  Inter_400Regular, 
+  Inter_500Medium, 
+  Inter_600SemiBold, 
+  Inter_700Bold, 
+  Inter_800ExtraBold, 
+  Inter_900Black,
+  useFonts 
+} from '@expo-google-fonts/inter';
 import { SplashScreen, Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import 'react-native-reanimated';
 
+// Prevent the splash screen from auto-hiding before asset loading is complete.
+SplashScreen.preventAutoHideAsync();
+
 import { AuthProvider, useAuth } from '@/store/auth';
 import { SocialProvider, XpToastContainer, useSocial } from '@/store/social';
 import { ThemeProvider, useTheme } from '@/store/theme';
 import { TokenProvider } from '@/store/tokens';
+import { Colors } from '@/constants/theme';
 
 // Keep the splash screen visible while we fetch resources
-SplashScreen.preventAutoHideAsync();
-
 function RootNavigator() {
   const { isAuthenticated, isLoading } = useAuth();
-  const { checkDailyLogin } = useSocial();
   const segments = useSegments();
   const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
 
+  const [fontsLoaded, fontError] = useFonts({
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_600SemiBold,
+    Inter_700Bold,
+    Inter_800ExtraBold,
+    Inter_900Black,
+  });
+
+  const [forceRender, setForceRender] = useState(false);
+
   useEffect(() => {
     setIsMounted(true);
+    // Absolute failsafe to ensure we eventually render app no matter what
+    const timer = setTimeout(() => {
+        setForceRender(true);
+        SplashScreen.hideAsync().catch(() => {});
+    }, 3500);
+    return () => clearTimeout(timer);
   }, []);
+
+  const fontsReady = fontsLoaded || fontError || forceRender;
 
   // Handle routing based on auth state
   useEffect(() => {
-    if (isLoading || !isMounted) return;
+    if (isLoading || !isMounted || !fontsReady) return;
 
+    // Handle navigation when segment is root '/'
     const inAuth = segments[0] === '(auth)';
-    if (!isAuthenticated && !inAuth) {
-      router.replace('/(auth)/welcome');
-    } else if (isAuthenticated && inAuth) {
+    const seg1 = segments[1] as string | undefined;
+    const onNewUserScreen = seg1 === 'features' || seg1 === 'pricing';
+
+    // To prevent infinite route loops, delay slightly or just rely on router replace
+    if (!isAuthenticated && !inAuth && segments.length > 0) {
+      if (String(segments[0]) !== '(auth)') {
+        router.replace('/(auth)/welcome');
+      }
+    } else if (isAuthenticated && inAuth && !onNewUserScreen) {
       router.replace('/(tabs)');
     }
-  }, [isAuthenticated, isLoading, segments, isMounted]);
+  }, [isAuthenticated, isLoading, segments, isMounted, fontsReady]);
 
   // Handle hiding the splash screen
   useEffect(() => {
-    if (!isLoading && isMounted) {
-      SplashScreen.hideAsync();
+    if (!isLoading && isMounted && fontsReady) {
+      SplashScreen.hideAsync().catch((e) => console.warn('SplashScreen hide warning:', e));
     }
-  }, [isLoading, isMounted]);
+  }, [isLoading, isMounted, fontsReady]);
 
-  // Check daily login XP on app open
+  // Absolute fallback: always hide splash after 5 seconds no matter what
   useEffect(() => {
-    if (isAuthenticated) {
-      checkDailyLogin();
-    }
-  }, [isAuthenticated]);
+    const timer = setTimeout(() => {
+      SplashScreen.hideAsync().catch(() => {});
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (!fontsReady) return null;
 
   return (
     <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="(auth)" />
       <Stack.Screen name="(tabs)" />
-      <Stack.Screen name="chat/[id]" options={{ headerShown: false }} />
-      <Stack.Screen name="chat/group/[id]" options={{ headerShown: false }} />
-      <Stack.Screen name="chat/new" options={{ headerShown: false, presentation: 'modal' }} />
-      <Stack.Screen name="community/index" options={{ headerShown: false }} />
-      <Stack.Screen name="community/post/[id]" options={{ headerShown: false }} />
-      <Stack.Screen name="community/new-post" options={{ headerShown: false, presentation: 'modal' }} />
-      <Stack.Screen name="ai/index" options={{ headerShown: false }} />
-      <Stack.Screen name="ai/[id]" options={{ headerShown: false }} />
-      <Stack.Screen name="tools/summarize" options={{ headerShown: false }} />
-      <Stack.Screen name="tools/quiz" options={{ headerShown: false }} />
-      <Stack.Screen name="tools/flashcard" options={{ headerShown: false }} />
-      <Stack.Screen name="tools/notes" options={{ headerShown: false }} />
-      <Stack.Screen name="calendar/add" options={{ headerShown: false, presentation: 'modal' }} />
-      <Stack.Screen name="profile/edit" options={{ headerShown: false }} />
-      <Stack.Screen name="profile/settings" options={{ headerShown: false }} />
-      <Stack.Screen name="profile/[id]" options={{ headerShown: false }} />
-      <Stack.Screen name="pro" options={{ headerShown: false, presentation: 'modal' }} />
     </Stack>
   );
 }
 
 function InnerApp() {
   const { isDark } = useTheme();
+
+  const CustomDefaultTheme = {
+    ...DefaultTheme,
+    colors: {
+      ...DefaultTheme.colors,
+      primary: Colors.primary,
+      background: Colors.background,
+      card: Colors.card,
+      text: Colors.text,
+      border: Colors.border,
+      notification: Colors.accent,
+    },
+  };
+
+  const CustomDarkTheme = {
+    ...DarkTheme,
+    colors: {
+      ...DarkTheme.colors,
+      primary: Colors.primary,
+      background: Colors.primaryDark,
+      card: Colors.darkSurface,
+      text: Colors.textInverse,
+      border: Colors.borderDark,
+      notification: Colors.accent,
+    },
+  };
+
   return (
-    <NavThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
-      <View style={{ flex: 1 }}>
+    <NavThemeProvider value={isDark ? CustomDarkTheme : CustomDefaultTheme}>
+      <View style={{ flex: 1, backgroundColor: isDark ? Colors.primaryDark : Colors.background }}>
         <RootNavigator />
         <XpToastContainer />
+        <StatusBar style={isDark ? 'light' : 'dark'} />
       </View>
-      <StatusBar style={isDark ? 'light' : 'dark'} />
     </NavThemeProvider>
   );
 }

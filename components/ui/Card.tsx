@@ -24,11 +24,14 @@ export function Card({ children, style, variant = 'default' }: CardProps) {
 
 const styles = StyleSheet.create({
     card: {
-        backgroundColor: Colors.surface,
-        borderRadius: BorderRadius.lg,
-        padding: Spacing.lg,
+        backgroundColor: Colors.card,
+        borderRadius: BorderRadius.xxl, // 24px (rounded-3xl)
+        padding: 32, // px-8
+        borderWidth: 1,
+        borderColor: Colors.border,
     },
     flat: {
-        backgroundColor: Colors.surfaceAlt,
+        backgroundColor: Colors.backgroundAlt,
+        borderWidth: 0,
     },
 });

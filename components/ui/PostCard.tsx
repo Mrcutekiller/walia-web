@@ -55,7 +55,7 @@ export function PostCard({ post, onLike, onComment, onShare, onPress, onQuizAnsw
         return words.map((word, index) => {
             if (word.match(/^#\w+/)) {
                 return (
-                    <Text key={index} style={{ color: colors.primary, fontWeight: FontWeight.heavy }}>
+                    <Text key={index} style={{ color: colors.primary, fontWeight: FontWeight.black }}>
                         {word}
                     </Text>
                 );
@@ -164,20 +164,20 @@ const styles = StyleSheet.create({
     header: { flexDirection: 'row', alignItems: 'center', marginBottom: Spacing.xl, justifyContent: 'space-between' },
     userInfo: { flexDirection: 'row', alignItems: 'center', flex: 1 },
     headerText: { flex: 1, marginLeft: Spacing.md },
-    name: { fontSize: FontSize.md, fontWeight: FontWeight.heavy, letterSpacing: -0.5 },
+    name: { fontSize: FontSize.md, fontWeight: FontWeight.black, letterSpacing: -0.5 },
     time: { fontSize: 10, fontWeight: FontWeight.bold, opacity: 0.4, marginTop: 1 },
     typeBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: BorderRadius.pill, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1 },
-    typeBadgeText: { fontSize: 9, fontWeight: FontWeight.heavy, letterSpacing: 0.8, textTransform: 'uppercase' },
+    typeBadgeText: { fontSize: 9, fontWeight: FontWeight.black, letterSpacing: 0.8, textTransform: 'uppercase' },
     contentBody: { marginBottom: Spacing.xl },
-    title: { fontSize: FontSize.lg, fontWeight: FontWeight.heavy, marginBottom: Spacing.sm, letterSpacing: -0.5 },
+    title: { fontSize: FontSize.lg, fontWeight: FontWeight.black, marginBottom: Spacing.sm, letterSpacing: -0.5 },
     content: { fontSize: FontSize.sm, lineHeight: 22, fontWeight: FontWeight.medium, opacity: 0.9 },
     quizOptions: { marginBottom: Spacing.xl },
-    quizOption: { flexDirection: 'row', alignItems: 'center', borderRadius: 16, padding: Spacing.lg, marginBottom: Spacing.md, gap: Spacing.md, borderWidth: 1, borderColor: 'transparent' },
-    quizLetter: { fontSize: FontSize.xs, fontWeight: FontWeight.heavy, width: 20 },
+    quizOption: { flexDirection: 'row', alignItems: 'center', borderRadius: 20, padding: Spacing.lg, marginBottom: Spacing.md, gap: Spacing.md, borderWidth: 1, borderColor: 'transparent' },
+    quizLetter: { fontSize: FontSize.xs, fontWeight: FontWeight.black, width: 20 },
     quizText: { fontSize: FontSize.sm, fontWeight: FontWeight.bold, flex: 1 },
     actions: { flexDirection: 'row', borderTopWidth: 1, paddingTop: Spacing.lg, alignItems: 'center', justifyContent: 'space-between' },
     actionGroup: { flexDirection: 'row', gap: Spacing.xl },
     action: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
-    actionText: { fontSize: 12, fontWeight: FontWeight.heavy, letterSpacing: 0.2 },
+    actionText: { fontSize: 12, fontWeight: FontWeight.black, letterSpacing: 0.2 },
     shareBtn: { width: 32, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
 });

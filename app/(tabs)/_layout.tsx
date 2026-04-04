@@ -34,14 +34,14 @@ function FloatingTabBar({ state, navigation }: any) {
     (r: any) => TAB_CONFIG[r.name] !== undefined
   );
 
-  const barBg = isDark ? '#121212' : '#FFFFFF';
+  const barBg = isDark ? '#141414' : '#FFFFFF'; // DarkSurface or White
   const activeBg = isDark ? '#FFFFFF' : '#000000';
   const activeText = isDark ? '#000000' : '#FFFFFF';
-  const inactiveIcon = isDark ? 'rgba(255,255,255,0.5)' : '#9CA3AF';
+  const inactiveIcon = isDark ? 'rgba(255,255,255,0.4)' : '#A0AEC0';
 
   return (
-    <View style={[styles.tabBarWrapper, { paddingBottom: insets.bottom + 8 }]}>
-      <View style={[styles.tabBar, { backgroundColor: barBg, borderWidth: isDark ? 0 : 1, borderColor: '#E5E7EB' }]}>
+    <View style={[styles.tabBarWrapper, { paddingBottom: insets.bottom + 12 }]}>
+      <View style={[styles.tabBar, { backgroundColor: barBg, borderWidth: 1, borderColor: isDark ? '#2D2D2D' : '#F0F0F5' }]}>
         {visibleRoutes.map((route: any) => {
           const config = TAB_CONFIG[route.name];
           const isFocused = state.routes[state.index]?.name === route.name;
@@ -70,7 +70,9 @@ function FloatingTabBar({ state, navigation }: any) {
                   <Text style={[styles.activeLabel, { color: activeText }]}>{config.label}</Text>
                 </View>
               ) : (
-                <Ionicons name={`${config.icon}-outline` as any} size={22} color={inactiveIcon} />
+                <View style={styles.inactiveIconWrapper}>
+                  <Ionicons name={`${config.icon}-outline` as any} size={22} color={inactiveIcon} />
+                </View>
               )}
             </TouchableOpacity>
           );
@@ -107,37 +109,49 @@ const styles = StyleSheet.create({
   },
   tabBar: {
     flexDirection: 'row',
-    borderRadius: 50,
-    paddingVertical: 10,
-    paddingHorizontal: 10,
+    borderRadius: 32,
+    paddingVertical: 8,
+    paddingHorizontal: 8,
     alignItems: 'center',
-    width: '88%',
+    width: '92%',
     gap: 4,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    elevation: 8,
   },
   tabItem: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 8,
-    borderRadius: 40,
-    minHeight: 44,
+    paddingVertical: 12,
+    borderRadius: 24, // rounded-3xl
+    minHeight: 48,
   },
   tabItemActive: {
-    flex: 1.8,
+    flex: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  inactiveIconWrapper: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   activeContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
+    paddingHorizontal: 12,
   },
   activeLabel: {
-    fontSize: FontSize.sm,
-    fontWeight: '700',
-    letterSpacing: 0.2,
+    fontSize: 13,
+    fontFamily: 'Inter_700Bold',
+    letterSpacing: -0.2,
   },
 });

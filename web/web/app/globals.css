@@ -31,6 +31,47 @@
   /* ─── Borders ─── */
   --color-walia-border: #E0E0E0;
   --color-walia-border-dark: #2D2D2D;
+
+  /* ─── Walia Monolith LIGHT (Stitch Design System) ─── */
+  /* "The Digital Atelier" - High-End Editorial Light Mode */
+  --color-surface: #f9f9f9;
+  --color-surface-container: #ebeeef;
+  --color-surface-container-low: #f2f4f4;
+  --color-surface-container-high: #e4e9ea;
+  --color-surface-container-highest: #dde4e5;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-bright: #f9f9f9;
+  --color-surface-dim: #d4dbdd;
+  --color-surface-variant: #dde4e5;
+
+  --color-primary: #5f5e5e;
+  --color-primary-dim: #535252;
+  --color-primary-container: #e5e2e1;
+  --color-on-primary: #faf7f6;
+  --color-on-primary-container: #525151;
+
+  --color-secondary: #5f5f5f;
+  --color-secondary-container: #e4e2e1;
+  --color-on-secondary: #fbf8f8;
+
+  --color-tertiary: #6f576f;
+  --color-tertiary-container: #f8d9f6;
+  --color-on-tertiary: #fff7fa;
+
+  --color-on-surface: #2d3435;
+  --color-on-surface-variant: #5a6061;
+  --color-on-background: #2d3435;
+  --color-background: #f9f9f9;
+
+  --color-outline: #757c7d;
+  --color-outline-variant: #adb3b4;
+
+  --color-error: #9e3f4e;
+  --color-error-container: #ff8b9a;
+  --color-on-error: #fff7f7;
+
+  --font-manrope: "Manrope", sans-serif;
+  --font-inter: "Inter", sans-serif;
 }
 
 /* ─── Base ─── */
@@ -45,9 +86,10 @@ html {
 }
 
 body {
-  background-color: var(--color-walia-bg);
-  color: var(--color-walia-text);
+  background-color: var(--color-surface);
+  color: var(--color-on-background);
   -webkit-font-smoothing: antialiased;
+  font-family: var(--font-inter);
 }
 
 /* ─── Scrollbar ─── */

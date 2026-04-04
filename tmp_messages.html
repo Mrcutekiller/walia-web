@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Walia AI | Messages</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "inverse-surface": "#0c0f0f",
+              "secondary": "#5f5f5f",
+              "tertiary-container": "#f8d9f6",
+              "error-dim": "#4f0116",
+              "tertiary-fixed": "#f8d9f6",
+              "outline-variant": "#adb3b4",
+              "on-secondary-fixed-variant": "#5c5b5b",
+              "tertiary-dim": "#634c63",
+              "surface-container-low": "#f2f4f4",
+              "on-primary-fixed-variant": "#5c5b5b",
+              "on-tertiary": "#fff7fa",
+              "secondary-fixed": "#e4e2e1",
+              "outline": "#757c7d",
+              "surface-container-lowest": "#ffffff",
+              "on-background": "#2d3435",
+              "secondary-fixed-dim": "#d6d4d3",
+              "primary": "#5f5e5e",
+              "tertiary": "#6f576f",
+              "surface": "#f9f9f9",
+              "on-surface": "#2d3435",
+              "surface-dim": "#d4dbdd",
+              "on-tertiary-fixed": "#4e384e",
+              "error": "#9e3f4e",
+              "on-secondary-container": "#525252",
+              "primary-container": "#e5e2e1",
+              "on-primary-fixed": "#403f3f",
+              "on-error": "#fff7f7",
+              "error-container": "#ff8b9a",
+              "surface-tint": "#5f5e5e",
+              "surface-variant": "#dde4e5",
+              "surface-container": "#ebeeef",
+              "on-primary-container": "#525151",
+              "surface-bright": "#f9f9f9",
+              "inverse-on-surface": "#9c9d9d",
+              "secondary-dim": "#535353",
+              "on-secondary-fixed": "#3f3f3f",
+              "on-error-container": "#782232",
+              "secondary-container": "#e4e2e1",
+              "primary-dim": "#535252",
+              "on-tertiary-fixed-variant": "#6c546c",
+              "primary-fixed-dim": "#d6d4d3",
+              "tertiary-fixed-dim": "#eacbe7",
+              "inverse-primary": "#ffffff",
+              "surface-container-highest": "#dde4e5",
+              "on-secondary": "#fbf8f8",
+              "on-surface-variant": "#5a6061",
+              "primary-fixed": "#e5e2e1",
+              "on-primary": "#faf7f6",
+              "background": "#f9f9f9",
+              "surface-container-high": "#e4e9ea",
+              "on-tertiary-container": "#614a61"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+</head>
+<body class="bg-surface text-on-surface font-body antialiased overflow-hidden">
+<div class="flex h-screen overflow-hidden">
+<!-- SideNavBar (from JSON) -->
+<aside class="flex flex-col h-full py-6 px-4 bg-[#f2f4f4] dark:bg-slate-900 h-screen w-64 border-r-0 font-['Manrope'] font-medium text-sm tracking-tight fixed left-0 top-0 z-50">
+<div class="flex items-center gap-3 mb-10 px-2">
+<div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center overflow-hidden">
+<img alt="Walia AI Logo" class="w-full h-full object-cover" data-alt="professional minimalist logo design for an AI company with geometric shapes and soft grey tones" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDfv2neDz2gVTpbJRpP3P9Ykit0QmGSRJm5ntxmm2U1C7E-iO1SdNcl9V3wob9kQcK0bOX8a7rBRc_m76igYHfehzbfkY-2ZyCEUDKatku9je7Vocx14fCGzTP-pFXQgSXLrv-J67cRuTOYL2b7M-Cgc5edBIJrOxrjQ_gw_KdB5BQBVMQwWxEQujdGMBZ2HKkAE61jm_QJyVsjKiNzmImqiomvZSLrVOEGNyJwmcJqDnXvpJQxjTMGDjSIc69HYQn578PuBTBDAHg"/>
+</div>
+<div>
+<h1 class="text-xl font-bold text-[#2d3435] dark:text-white leading-none">Walia AI</h1>
+<span class="text-[10px] text-primary/60 uppercase tracking-widest font-bold">Professional Workspace</span>
+</div>
+</div>
+<button class="mb-8 flex items-center gap-3 bg-primary text-on-primary py-3 px-4 rounded-xl shadow-sm hover:bg-primary-dim transition-all duration-200">
+<span class="material-symbols-outlined text-sm">add</span>
+<span class="font-semibold">New Interaction</span>
+</button>
+<nav class="space-y-1 flex-1">
+<!-- AI Chat -->
+<a class="flex items-center gap-4 px-4 py-3 rounded-xl text-[#adb3b4] dark:text-slate-500 hover:bg-[#ebeeef] dark:hover:bg-slate-800 transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="smart_toy">smart_toy</span>
+<span>AI Chat</span>
+</a>
+<!-- Messages - ACTIVE -->
+<a class="flex items-center gap-4 px-4 py-3 rounded-xl text-[#5f5e5e] dark:text-white font-semibold border-r-2 border-[#5f5e5e] transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="forum">forum</span>
+<span>Messages</span>
+</a>
+<!-- Community -->
+<a class="flex items-center gap-4 px-4 py-3 rounded-xl text-[#adb3b4] dark:text-slate-500 hover:bg-[#ebeeef] dark:hover:bg-slate-800 transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+<span>Community</span>
+</a>
+<!-- Tools -->
+<a class="flex items-center gap-4 px-4 py-3 rounded-xl text-[#adb3b4] dark:text-slate-500 hover:bg-[#ebeeef] dark:hover:bg-slate-800 transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="handyman">handyman</span>
+<span>Tools</span>
+</a>
+<!-- Calendar -->
+<a class="flex items-center gap-4 px-4 py-3 rounded-xl text-[#adb3b4] dark:text-slate-500 hover:bg-[#ebeeef] dark:hover:bg-slate-800 transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="calendar_today">calendar_today</span>
+<span>Calendar</span>
+</a>
+</nav>
+<div class="mt-auto space-y-1">
+<a class="flex items-center gap-4 px-4 py-3 rounded-xl text-[#adb3b4] dark:text-slate-500 hover:bg-[#ebeeef] dark:hover:bg-slate-800 transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+<span>Profile</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-xl text-[#adb3b4] dark:text-slate-500 hover:bg-[#ebeeef] dark:hover:bg-slate-800 transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Layout (Two-Pane) -->
+<main class="flex flex-1 ml-64 h-full bg-surface">
+<!-- Conversation List Pane (Middle) -->
+<section class="w-[400px] flex flex-col bg-surface-container-low border-r-0 relative z-10">
+<!-- Top Header for Messages -->
+<header class="flex flex-col gap-6 px-8 py-6">
+<div class="flex items-center justify-between">
+<h2 class="text-2xl font-headline font-bold text-on-surface">Messages</h2>
+<div class="flex items-center gap-2">
+<button class="w-10 h-10 flex items-center justify-center rounded-full bg-surface-container hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant">search</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-full bg-primary text-on-primary shadow-sm hover:scale-95 transition-transform">
+<span class="material-symbols-outlined">add</span>
+</button>
+</div>
+</div>
+<!-- Stories Section (Instagram Style) -->
+<div class="flex gap-4 overflow-x-auto hide-scrollbar pb-2">
+<div class="flex flex-col items-center gap-2 flex-shrink-0">
+<div class="w-16 h-16 rounded-full p-0.5 border-2 border-primary">
+<div class="w-full h-full rounded-full border-2 border-surface-container-low overflow-hidden">
+<img alt="My Story" class="w-full h-full object-cover" data-alt="professional headshot of a creative individual in a bright studio setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCfY_9CEdAIzi-MEiHyM_lIdRjzxOZd2nb51h9eDLNccyL_3z79bCqhFyREeyHWJs4DCKUE15QJV_o4r916ROpVLIJ6zQi_BcuNnWjdJ8ddmAGf7mVzyneTDvZk7xKpwJWkyL6DIkhWEUP4AW0eNVixKSK2v88qijQCPOz1zoSP_tyUvIvGRw6Q4d3-lV38SnQ5CR9OtWDSg5i2Mz-Xn1tx2qwYO4Ezu63sPQDKJBM5vf0se52zjQBHqlNj1dkKsue6XGyj0qrv2Pw"/>
+</div>
+</div>
+<span class="text-[10px] font-semibold text-on-surface-variant">You</span>
+</div>
+<div class="flex flex-col items-center gap-2 flex-shrink-0">
+<div class="w-16 h-16 rounded-full p-0.5 border-2 border-tertiary">
+<div class="w-full h-full rounded-full border-2 border-surface-container-low overflow-hidden">
+<img alt="Sarah Story" class="w-full h-full object-cover" data-alt="vibrant portrait of a woman with colorful background and artistic lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBh6w3nLsEQO2g2lqN6trgNqavdg25Cc4GjNzKXVINvQ0MlqWm_9G4B-zoOYMFrNEBK3pZurRRB0nR1HuqdAdbeVABdYgu7v2wOgHkBZKQQrDnFNnwyjsxgfhfVOkp5P4_Qw0C7BATPRzbVxwj_ymKJfh6jukW7Ofy9Vemy18yZ5-m86wZFTW5bHOL7lDqPGzdw_d8CU0UEb3_5Y2_qEKUmnJ4ZA50t2miPQGeUZ9LrQqvilFo-ymcAOvQU2Z4B9FXeq7PN377AObE"/>
+</div>
+</div>
+<span class="text-[10px] font-semibold text-on-surface-variant">Sarah</span>
+</div>
+<div class="flex flex-col items-center gap-2 flex-shrink-0 opacity-50">
+<div class="w-16 h-16 rounded-full p-0.5 border-2 border-outline-variant">
+<div class="w-full h-full rounded-full border-2 border-surface-container-low overflow-hidden">
+<img alt="Marcus Story" class="w-full h-full object-cover" data-alt="natural outdoor portrait of a young man during sunset with warm lens flares" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAceR3-_ofB42hi0pIRrOGwxWgZ4zbV47LWIHl3OVdAoW5_MTujP0j8uU18Z-k5m2kUJGQT59r17Sy8Y2g1iRCPHkoQ52_bFreiuj1EHqKBswipBQsxdNeYiv0Ftr12UCLm3McmvEsAuAf0LDfRdnztlKU2pOFrKL2yWy5JNR718C-OMJcfwBDOeEjYg1MqP7iWWjN2xN-j4Y0Yitr2vTC1r2MNJWsr0BrOywxGsHALF-pZP6ga-E_TFx11vPpxhT1AA2iBQLyrjZs"/>
+</div>
+</div>
+<span class="text-[10px] font-semibold text-on-surface-variant">Marcus</span>
+</div>
+<div class="flex flex-col items-center gap-2 flex-shrink-0">
+<div class="w-16 h-16 rounded-full p-0.5 border-2 border-tertiary">
+<div class="w-full h-full rounded-full border-2 border-surface-container-low overflow-hidden">
+<img alt="Elena Story" class="w-full h-full object-cover" data-alt="close-up of an elegant woman in a minimalist architectural environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDNWqYUsT6T01-ygMiuSlhuXa8z31M1hptr763_5zwh-t0csA81R0Lv9YFNMBfCPp7wRypXaT6BoLHwuyMVEt9A-SzQiHemqNVCqTfOmTirfoOrHNq5rmtK5Oh2foqKB03N9w1DvI_b7iHtDJO_58B9VpOjd7QfrW83p47uXZYCWoIR6ltfyNg8XDXVHjiWrJQTdSiV6qyJZ9RrHv9Vg9StLCnEOnscSVeEiVTLU-WF6o6wkmbzlM5QpJzYnp_vrfdhtNXQpyD34HQ"/>
+</div>
+</div>
+<span class="text-[10px] font-semibold text-on-surface-variant">Elena</span>
+</div>
+<div class="flex flex-col items-center gap-2 flex-shrink-0">
+<div class="w-16 h-16 rounded-full p-0.5 border-2 border-primary">
+<div class="w-full h-full rounded-full border-2 border-surface-container-low overflow-hidden">
+<img alt="Liam Story" class="w-full h-full object-cover" data-alt="modern urban portrait of a man in front of a glass office building" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQIf4cdQNNJyHieo3Hu6zneNee0QiY_ntQ_7WXrDPf-50Ampw9e12rKLPWguJ3HAyjKlhzginWE6ziv6-WB0H5UbLRMEuaUa5c_myy25JSIpyl-T8nuiysUFo9Kz7XhTw2GHcniV5EFcF8cn-Z7B_ns44E2H96OWK6kppJ7IunHewYCpKcvVdS2LQLvBX_Bo2938U3gGaaCAvh2yt2QMj27soubRttlW-OJG2lIKWK0NdslOPbiZpcpaKHmk3AOWc2nSnnkQ6l7Pg"/>
+</div>
+</div>
+<span class="text-[10px] font-semibold text-on-surface-variant">Liam</span>
+</div>
+</div>
+<!-- Category Tabs -->
+<div class="flex gap-6 border-b-0">
+<button class="pb-2 text-on-surface font-semibold border-b-2 border-primary text-sm transition-all">All</button>
+<button class="pb-2 text-on-surface-variant font-medium text-sm hover:text-on-surface transition-all">Chats</button>
+<button class="pb-2 text-on-surface-variant font-medium text-sm hover:text-on-surface transition-all">Groups</button>
+</div>
+</header>
+<!-- Scrollable List -->
+<div class="flex-1 overflow-y-auto px-4 pb-10 space-y-1">
+<!-- Conversation Item - Active -->
+<div class="flex items-center gap-4 p-4 rounded-2xl bg-surface-container-lowest shadow-[0_4px_20px_rgba(45,52,53,0.04)] cursor-pointer">
+<div class="relative flex-shrink-0">
+<img alt="Elena" class="w-12 h-12 rounded-full object-cover" data-alt="professional portrait of a creative director in a stylish office" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD32B3uHOvukz0MUwk5KKTfPlkIwweZh3RDGmBzVrzGjLEbLOlaliYDOjLQSmK0J3kIQuqT5ZKN1JEro4iYbdRkWG1b49CcegePHkgZ-0r49RmjIeq5V_e3TH5PctRT6UsDnexnJEtoUBIrsJrXxit7QShsjIKXoj5FdJBve5ECYZx7-nLinO8g2tJShy2KkFp9Z8vnmZT-1mSj6U3XnLYGp7Jg3iTG2AQndEvBBUYdj7xdLODO7Bj0dxVOfWIHYaz5iYK-MS4aKAs"/>
+<div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-surface-container-lowest rounded-full"></div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-baseline mb-0.5">
+<h3 class="font-semibold text-on-surface truncate">Elena Vance</h3>
+<span class="text-[10px] text-on-surface-variant font-medium">10:42 AM</span>
+</div>
+<p class="text-sm text-on-surface-variant truncate font-medium">I've attached the final AI prototypes for the...</p>
+</div>
+<div class="w-5 h-5 bg-primary rounded-full flex items-center justify-center">
+<span class="text-[10px] text-on-primary font-bold">2</span>
+</div>
+</div>
+<!-- Conversation Item -->
+<div class="flex items-center gap-4 p-4 rounded-2xl hover:bg-surface-container transition-colors cursor-pointer group">
+<div class="relative flex-shrink-0">
+<img alt="Marcus" class="w-12 h-12 rounded-full object-cover" data-alt="confident professional man in business casual attire" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBlf9yawqFEv2dgLaISXY22wjR5diYr5iH_ojAz3i8uJegLtTSMu9LUf1fEM91dps1OZuxRmH7TWv_0FY_ccjUowqZOysu3d_D2sJQ4B1QamLIk2Cud38XR7i2H_Io1WLH21dwIm3Q44L3Ukpx50swwKWzCVF7rrBU-e6pj9XN4a8fd1k_AiLxjU4ddu9zRcd4KyYYfwzWTNV1TII5LCBtfdzns2gsefRD6XGA96N_wUTGsLZn_l-j2mR0O3TArnIF6z05Zd37vwq8"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-baseline mb-0.5">
+<h3 class="font-semibold text-on-surface truncate">Marcus Aurelius</h3>
+<span class="text-[10px] text-on-surface-variant">Yesterday</span>
+</div>
+<p class="text-sm text-on-surface-variant truncate">The quarterly data looks promising. Let's sync.</p>
+</div>
+</div>
+<!-- Conversation Item -->
+<div class="flex items-center gap-4 p-4 rounded-2xl hover:bg-surface-container transition-colors cursor-pointer group">
+<div class="relative flex-shrink-0">
+<div class="w-12 h-12 rounded-full bg-tertiary-fixed flex items-center justify-center text-on-tertiary-fixed font-bold">DT</div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-baseline mb-0.5">
+<h3 class="font-semibold text-on-surface truncate">Design Team</h3>
+<span class="text-[10px] text-on-surface-variant">Yesterday</span>
+</div>
+<p class="text-sm text-on-surface-variant truncate"><span class="text-primary font-medium">Sarah:</span> Can someone check the Figma link?</p>
+</div>
+</div>
+<!-- Conversation Item -->
+<div class="flex items-center gap-4 p-4 rounded-2xl hover:bg-surface-container transition-colors cursor-pointer group">
+<div class="relative flex-shrink-0">
+<img alt="Sarah" class="w-12 h-12 rounded-full object-cover" data-alt="woman laughing in a sun-drenched cafe with soft focus" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5r0665lDwEEHctSm9UcjwTtHVubH8fbpfoIbaZw7qz7qt2c7pftaYKPyab1LKG3uB70r_-9YFRvJ7WEAPOj8MHYZfG2_qHYQ_9YhmTh6G3Zfz_2rhhaqDOSAOIB3Kn13T5qvjj4BZ5fBXPODl28U8DleO7fh8kHb_JpCMX52aKKsYudpuEN0JkBGoiRjiOElM-CQz9s37P3sIeiyQFtOGJoPFIDSPnuJNJv3KEFwEwh3VSsXkRbL5y2tUt5k-C6Xh5gU2jbhc55g"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-baseline mb-0.5">
+<h3 class="font-semibold text-on-surface truncate">Sarah Jenkins</h3>
+<span class="text-[10px] text-on-surface-variant">Tue</span>
+</div>
+<p class="text-sm text-on-surface-variant truncate">That AI generated image is incredible! How did you...</p>
+</div>
+</div>
+<!-- Conversation Item -->
+<div class="flex items-center gap-4 p-4 rounded-2xl hover:bg-surface-container transition-colors cursor-pointer group">
+<div class="relative flex-shrink-0">
+<img alt="Liam" class="w-12 h-12 rounded-full object-cover" data-alt="focused creative professional working in a modern studio" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCR5dPXyjjnPH_YSr-8XY2EA3z0vj_4OtQsJEUIOCs1fX7rM_Z8jvJR8eKOey0z-utesY9RuBQyyam64d5GGfUP74rGh0D6s6ffdgKIsxj0f8t3qxQhTyZLH64PJHrAyHMihxzcqllaKvKRbsN3JbZQV3L4VZGmeVJpkoH1k5OxjFab0ZDH-uS4N_aiAE3TjsjYoEJVvyLxjnM9-3QeOjcqV9p48Ymjsf3fxm9_xwK6LzdFYxY23A-OzD1qKPnAvTJpEOvVKrIZ16w"/>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-baseline mb-0.5">
+<h3 class="font-semibold text-on-surface truncate">Liam Fox</h3>
+<span class="text-[10px] text-on-surface-variant">Mon</span>
+</div>
+<p class="text-sm text-on-surface-variant truncate">Sent you the API documentation.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Chat Window (Right Pane) -->
+<section class="flex-1 flex flex-col bg-surface overflow-hidden relative">
+<!-- Chat Header -->
+<header class="flex items-center justify-between px-10 h-20 bg-surface-container-lowest/80 backdrop-blur-md z-20">
+<div class="flex items-center gap-4">
+<div class="relative">
+<img alt="Elena" class="w-11 h-11 rounded-full object-cover" data-alt="close-up of a smiling woman with glasses in a professional environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7cLsjSXJ5z57ODhIX3e6gDFQftB7fxp3uhvinvmz3LNlFp-uMzqa8NZXih2mYDY0xRmE63txy_XtO_rv_KNug439TxunlMJIBTLVSWPI__IMsGPb5jfths7WUgxM_ftReB2-WKCT2S6y6sstpeLdludCN2il2hwHiqML1BlJiluN_S8mdK-pHpcUmbxus7TCctyWKbKYWLZ74bxyYiCJfaU6L0A8b_o2_hlwSWXP6ftWnwIo87XlE1q_1I7zE2NGWK7ODzw_9GI8"/>
+<div class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-surface-container-lowest rounded-full"></div>
+</div>
+<div>
+<h2 class="font-headline font-bold text-on-surface leading-tight">Elena Vance</h2>
+<p class="text-[11px] text-green-600 font-semibold tracking-wide flex items-center gap-1">
+<span class="w-1 h-1 bg-green-600 rounded-full"></span> Online
+                            </p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="w-10 h-10 flex items-center justify-center rounded-xl bg-surface-container-low hover:bg-surface-container text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined">videocam</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-xl bg-surface-container-low hover:bg-surface-container text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined">call</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-xl bg-surface-container-low hover:bg-surface-container text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</header>
+<!-- Messages Area -->
+<div class="flex-1 overflow-y-auto px-10 py-8 space-y-8 flex flex-col hide-scrollbar">
+<div class="flex justify-center">
+<span class="px-4 py-1 rounded-full bg-surface-container text-[11px] font-bold text-on-surface-variant uppercase tracking-widest">Today</span>
+</div>
+<!-- Received Message -->
+<div class="flex gap-4 max-w-[70%] group">
+<div class="mt-auto">
+<img alt="Elena" class="w-8 h-8 rounded-full" data-alt="avatar of Elena Vance" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCVpDwrg65Ya7YVp2nUeHs-v9og16gk6UnADZT4Pqfoyj-MK3kduYTBiizprQ91OjfMGmlj18M3rYG3PZe4d9y6yEQtuR2we5T6bkrrN3-O2pdP8dUlZfTxJ69C1Vc9cl5JqXG92BNLuX4K_NwDKsebJ5KAPVNAcpwR8EOyxF7jMduuaGjXYtLqmAjBtXWLnF-ixFnVzddNkYFioKpCbtZ6oUAaN5wxRxoq-K8U9rTY_2L0e7GVxh15qol8TI4B2UfO6wiFh0sb5Yo"/>
+</div>
+<div class="space-y-1">
+<div class="bg-surface-container-low text-on-surface px-5 py-3 rounded-2xl rounded-bl-none text-sm font-medium leading-relaxed">
+                                Hey! Have you had a chance to look at the new Walia AI design language we discussed?
+                            </div>
+<span class="text-[10px] text-on-surface-variant/60 font-medium">10:38 AM</span>
+</div>
+</div>
+<!-- Sent Message -->
+<div class="flex flex-col items-end gap-1 ml-auto max-w-[70%]">
+<div class="bg-primary text-on-primary px-5 py-3 rounded-2xl rounded-br-none text-sm font-medium leading-relaxed shadow-sm">
+                            Just checking them now. The "No-Line" architecture really sets a professional tone. Love the tonal shifts!
+                        </div>
+<div class="flex items-center gap-2">
+<span class="text-[10px] text-on-surface-variant/60 font-medium">10:40 AM</span>
+<span class="material-symbols-outlined text-sm text-primary" style="font-variation-settings: 'FILL' 1;">done_all</span>
+</div>
+</div>
+<!-- Received Message with Asset -->
+<div class="flex gap-4 max-w-[70%]">
+<div class="mt-auto">
+<img alt="Elena" class="w-8 h-8 rounded-full" data-alt="avatar of Elena Vance" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB6PbGZ8U4nq-4HwhJqpw28KnT4kfLGLC0eXaZ-o-_DnCpHLHlBFsidX2w6nUpcmBRtynBzP9Jxp6YRh3ObBrSBdpj5wKJi1s4rAlKCoPdgly2VNwABJQRHomTtzu_PTsiPVB02CxI3z61O-8kY2r2FrxQD_KDo5YjiqP0l4YtHomwGFezOPUwcxlpQ7sb-FnHaAKTEapICzH_CIRMhM9_jP87Zkn6KiwNTGBy0xIVpEnEJrTNdJ2jY_yBXPcEE79Zg95o7xKR-Eww"/>
+</div>
+<div class="space-y-3">
+<div class="bg-surface-container-low text-on-surface px-5 py-3 rounded-2xl rounded-bl-none text-sm font-medium leading-relaxed">
+                                Exactly. Here's the updated asset for the "Atelier" project workspace.
+                            </div>
+<div class="rounded-2xl overflow-hidden shadow-sm aspect-video w-full max-w-[320px] bg-surface-container">
+<img alt="Project Asset" class="w-full h-full object-cover" data-alt="abstract 3D rendering of soft geometric shapes in muted grey and beige tones reflecting a high-end minimalist design" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPDPv5hGw5LBI65YPsZlX4X43JcGQ0JDdOsxuGDjX53xIknf4Imc0w6HPCxXbJzwbelUn-56XrSFs0Xvi214wAjgqIhRtA5rzauSE4CQpeQQl1cNvCOaM43IGsYudl9ozEwCmEzKU2KxS6r4YrtllLnOUPHp9ZzMlshM5S2klO2opwTwI3P8kuyqsbZbvg9C3KqjF6DTZf7c6zo4M8zp8Xxsd0_-0rQC5qGEioiZkZfm9ZbNuIvjn6KveooJiCf2BleLdB3BEkDNk"/>
+</div>
+<span class="text-[10px] text-on-surface-variant/60 font-medium">10:42 AM</span>
+</div>
+</div>
+</div>
+<!-- Message Input Area -->
+<footer class="px-10 py-6 bg-surface">
+<div class="flex items-center gap-4 bg-surface-container-low px-4 py-3 rounded-2xl border-0 ring-1 ring-black/5 focus-within:ring-primary/20 transition-all">
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">add_circle</span>
+</button>
+<input class="flex-1 bg-transparent border-none focus:ring-0 text-sm font-medium placeholder:text-on-surface-variant/50" placeholder="Type a message..." type="text"/>
+<div class="flex items-center gap-2">
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">sentiment_satisfied</span>
+</button>
+<button class="w-10 h-10 rounded-xl bg-primary text-on-primary flex items-center justify-center hover:scale-105 transition-transform active:scale-95">
+<span class="material-symbols-outlined">send</span>
+</button>
+</div>
+</div>
+</footer>
+</section>
+<!-- Info Pane (Rightmost) -->
+<section class="w-[320px] bg-surface-container-low/30 flex flex-col border-l-0 hidden xl:flex">
+<div class="p-8 flex flex-col items-center text-center">
+<img alt="Elena Vance" class="w-24 h-24 rounded-full object-cover mb-4 ring-4 ring-surface" data-alt="large detailed portrait of Elena Vance in a soft minimalist setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCaeNP2Qo9ytBxikm-khSDX4I8nXFljM-tt50kMPzoNR1hghuy0sy2mafs4ULpHGcWAJqyKIgztBpFRaDC5R-65MydZzkrA1MU4VJyF2ydNDzkVOUiS4Cq8gGjXuRKkCW6HwLU-24mvb_JOivRfG8jBjUJh1LNeFP7ySFi7jhX65NORymOmSSjaiFBvibh2hhIuCOh0tCA3p-ItwvcJrDKFUsCedEduoJT9j_itobopURyCWoE97i1T5SNLS7sszSHloC7b2561HRs"/>
+<h3 class="text-lg font-headline font-bold text-on-surface">Elena Vance</h3>
+<p class="text-xs text-on-surface-variant font-medium mb-6">Creative Director at Walia AI</p>
+<div class="grid grid-cols-2 gap-3 w-full">
+<button class="flex flex-col items-center gap-1 p-3 rounded-xl bg-surface-container-lowest hover:bg-surface-container transition-colors group">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary">person</span>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase">Profile</span>
+</button>
+<button class="flex flex-col items-center gap-1 p-3 rounded-xl bg-surface-container-lowest hover:bg-surface-container transition-colors group">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary">notifications_off</span>
+<span class="text-[10px] font-bold text-on-surface-variant uppercase">Mute</span>
+</button>
+</div>
+</div>
+<div class="px-8 flex-1 overflow-y-auto space-y-8 hide-scrollbar pb-10">
+<!-- Media Section -->
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<h4 class="text-[11px] font-bold text-on-surface-variant uppercase tracking-widest">Shared Assets</h4>
+<button class="text-[10px] font-bold text-primary">View All</button>
+</div>
+<div class="grid grid-cols-3 gap-2">
+<div class="aspect-square rounded-lg overflow-hidden bg-surface-container">
+<img alt="Asset 1" class="w-full h-full object-cover" data-alt="minimalist white office desk with clean laptop and stationery" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCmec3jt24sS9omt6SG4klHHownVVrVzSmLjzpTT4e61wLZdO6hOVnCTdDA1sJS7wBwYLbpJHlzaYI9er0ugzznfIyiWOKD5e6ZD4ClR9NpZLTBkotAUeDvKHhKnDkJhH3JgO1_iTErh2vhyW27k3Z2jMzksERVEhyyi6LRhtAZ3W1cN7Yz6DKv6O4w2yZbsPuiPVG7qNJFQIvcXXaOXxUN4kLH3wjQP9YS8q2dDQdXSIGQKLlRwnMAA-vLW7dWk16tF2q4Qd6Z7WE"/>
+</div>
+<div class="aspect-square rounded-lg overflow-hidden bg-surface-container">
+<img alt="Asset 2" class="w-full h-full object-cover" data-alt="aerial view of a design workspace with color palettes and sketches" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCL1VNuseXf6oLc8g0FBRcI6PZTPOIaH3oi292OTPDWm-3w7-xRLrFKCqEIRQ9sozVqzxLO2JRbqz60-_ebExmuMNLpEiz7K1-Qr1z8gq8BNKYQ52nosbQhFcEkLY_NjrJ0tlQ9C10VmMNhLKn-N20U5j_xLNOvNxmvMLVL-FnoTsUvzLkybt0XRj9BK_I4eXKQUFrtaxsNUXOgk-zftlqrGC_vzfyt1-IRL2AD_EiMsUr9n7m41sY38lTfRKuyqBm1pE9HG2IOhoM"/>
+</div>
+<div class="aspect-square rounded-lg overflow-hidden bg-surface-container">
+<img alt="Asset 3" class="w-full h-full object-cover" data-alt="collection of high-tech devices arranged neatly on a grey surface" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD1Pn0YTNCvBoGISZn1Z5pM44-MNjdFJHgy9UccCenijWijFkzvQ8YZVnZLB1x6BC0A9eSQYyZkXr2pKs0WLOXDsXzHxfs9dEvOxFhzby09ZsMyAyasd6bKdrQ7w4B97KuzWdGLwo_MPWU8nHmxZGI33tjaKgdemAYNmOQCxKFH3UijnLDLRxDOERVUtMV0MEIeX-9V00fa7dOUgXinK_NysVHvgEMTzcbCW7hvveXMsjqJ-bLluDN7uf0LzmVkabS-M_k8jIt6_Q8"/>
+</div>
+<div class="aspect-square rounded-lg overflow-hidden bg-surface-container">
+<img alt="Asset 4" class="w-full h-full object-cover" data-alt="abstract digital pattern with clean lines and soft lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzIDfcHFAnNmH6Vh4WZPObjfGyzsM70S_QWrfN5P1iXDBegf1TFSgsW__j7favQv6v9cvGni3Tx3TRxM5CEmtfcNbmVxuLkHqLBNijG7MGCDf0QbUZFQj7rDVtcjpOSGYolhHvg0ssNQvntNJPSyGQAHh4fxK7Zi8Sr0fxYWg9yAsx6wspHW1YWJ9aemthVHGRTkUQQW7aJ8uxB24kalQJEGFcK_hwZqV05of3RYynks1F1_xskGw0S95A7fAjeYuhCDdvr0WZFcM"/>
+</div>
+<div class="aspect-square rounded-lg overflow-hidden bg-surface-container relative">
+<img alt="Asset 5" class="w-full h-full object-cover brightness-50" data-alt="group of people collaborating in a bright modern office" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB4nRtvIWy_G0YXBpv7LQHJCQ3cyOebjl_7F9l-WeLslBqpY2nnoHCcmlVCj5bDMJHg93z-gjZ9K3wvM53ZG51dKQqREGzq2aC2VfzAPXxmMltJh-0tl0vphukmxXdjQ3eJM8O8dP5YblBahF-XwE-CKfTzF6DRElaOrsLbiGGLrxzQkzcLjdaVcTw3Sa3JFvbTNt8KYTceH3y_aAm8R-iJEMtfp3bK0SPDj4pUdxSSnRV5heWJHgDs8z6k0iMZIMYI-nloYqpRa8A"/>
+<div class="absolute inset-0 flex items-center justify-center">
+<span class="text-xs font-bold text-white">+12</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Documents Section -->
+<div class="space-y-4">
+<h4 class="text-[11px] font-bold text-on-surface-variant uppercase tracking-widest">Documents</h4>
+<div class="space-y-3">
+<div class="flex items-center gap-3 group cursor-pointer">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">description</span>
+</div>
+<div class="flex-1 min-w-0">
+<h5 class="text-xs font-semibold text-on-surface truncate">Brand_Guidelines_V2.pdf</h5>
+<p class="text-[10px] text-on-surface-variant">4.2 MB • Oct 24</p>
+</div>
+</div>
+<div class="flex items-center gap-3 group cursor-pointer">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined">table_view</span>
+</div>
+<div class="flex-1 min-w-0">
+<h5 class="text-xs font-semibold text-on-surface truncate">User_Feedback_Results.xlsx</h5>
+<p class="text-[10px] text-on-surface-variant">1.8 MB • Oct 21</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Privacy Section -->
+<div class="space-y-4 pt-4">
+<button class="w-full flex items-center justify-between text-error font-semibold text-xs py-2 px-1 hover:bg-error/5 rounded-lg transition-colors">
+<span>Block Elena</span>
+<span class="material-symbols-outlined text-sm">block</span>
+</button>
+</div>
+</div>
+</section>
+</main>
+</div>
+</body></html>

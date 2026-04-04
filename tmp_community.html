@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Walia Community — Digital Atelier</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "surface-container": "#f2f4f4",
+            "outline-variant": "#e2e8f0",
+            "background": "#fdfdfd",
+            "primary": "#1a1a1a",
+            "on-primary": "#ffffff",
+            "secondary": "#5f5e5e",
+            "tertiary": "#6f576f",
+            "tertiary-container": "#f8d9f6",
+            "on-surface": "#2d3435",
+            "on-surface-variant": "#5a6061",
+            "outline": "#757c7d",
+            "surface-container-low": "#f8f9fa",
+            "surface-container-lowest": "#ffffff",
+          },
+          fontFamily: {
+            "headline": ["Manrope", "sans-serif"],
+            "body": ["Inter", "sans-serif"],
+            "label": ["Inter", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #fdfdfd;
+      color: #2d3435;
+      -webkit-font-smoothing: antialiased;
+    }
+    .tonal-card {
+      background-color: #ffffff;
+      transition: background-color 0.2s ease;
+    }
+    .tonal-card:hover {
+      background-color: #fcfcfc;
+    }
+    .no-line-border {
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.03);
+    }
+    .premium-scrollbar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .premium-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .premium-scrollbar::-webkit-scrollbar-thumb {
+      background: #e2e8f0;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface">
+<div class="flex h-screen overflow-hidden">
+<!-- SideNavBar (Shared Component 11) -->
+<aside class="h-screen w-64 flex flex-col sticky top-0 bg-[#f2f4f4] border-none py-8 px-6 space-y-8 flex-shrink-0">
+<div class="text-2xl font-semibold text-[#2d3435] tracking-tight font-headline">Walia AI</div>
+<nav class="flex flex-col space-y-1 flex-1">
+<a class="flex items-center gap-3 px-4 py-2.5 text-[#2d3435]/60 hover:bg-[#ebeeef] transition-colors duration-200 rounded-md font-['Manrope'] font-medium tracking-tight text-sm active:opacity-80 active:scale-[0.99]" href="#">
+<span class="material-symbols-outlined text-[20px]">chat_bubble</span>
+          AI Chat
+        </a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-[#2d3435]/60 hover:bg-[#ebeeef] transition-colors duration-200 rounded-md font-['Manrope'] font-medium tracking-tight text-sm active:opacity-80 active:scale-[0.99]" href="#">
+<span class="material-symbols-outlined text-[20px]">mail</span>
+          Messages
+        </a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-[#5f5e5e] font-semibold border-r-2 border-[#5f5e5e] bg-[#ebeeef] font-['Manrope'] tracking-tight text-sm active:opacity-80 active:scale-[0.99]" href="#">
+<span class="material-symbols-outlined text-[20px]">groups</span>
+          Community
+        </a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-[#2d3435]/60 hover:bg-[#ebeeef] transition-colors duration-200 rounded-md font-['Manrope'] font-medium tracking-tight text-sm active:opacity-80 active:scale-[0.99]" href="#">
+<span class="material-symbols-outlined text-[20px]">construction</span>
+          Tools
+        </a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-[#2d3435]/60 hover:bg-[#ebeeef] transition-colors duration-200 rounded-md font-['Manrope'] font-medium tracking-tight text-sm active:opacity-80 active:scale-[0.99]" href="#">
+<span class="material-symbols-outlined text-[20px]">calendar_today</span>
+          Calendar
+        </a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-[#2d3435]/60 hover:bg-[#ebeeef] transition-colors duration-200 rounded-md font-['Manrope'] font-medium tracking-tight text-sm active:opacity-80 active:scale-[0.99]" href="#">
+<span class="material-symbols-outlined text-[20px]">person</span>
+          Profile
+        </a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-[#2d3435]/60 hover:bg-[#ebeeef] transition-colors duration-200 rounded-md font-['Manrope'] font-medium tracking-tight text-sm active:opacity-80 active:scale-[0.99]" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+          Settings
+        </a>
+</nav>
+<div class="mt-auto pt-6 border-t border-black/5">
+<div class="flex items-center gap-3 mb-6">
+<img alt="User profile avatar with level indicator" class="w-10 h-10 rounded-xl object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAT38vIdL4t_KO4dBkmE3fiGqmt-2BoaPknU-ZhvLt3Icax75W6EreiHk6q6itK0jGiYhLe2Ac2nrMIzCNt2G8Phl-VNrL8jE6UZd93f8LCEv3nKkMzkUvgBUry7egM0B02RPjAUAbH-qbbAU9FfOjTVn6jREKGdkXpBfNN-em4bbDE-1W3Ew8PTuxZkTyWpBmtmnEBM_fygJVqOs7oElJISUzjYR5Ol50KGflxUlo4oHrGt4XorKZxPA6Y2Tl0rdLnPwDVKbdoaTY"/>
+<div>
+<div class="text-sm font-bold font-headline">Walia User</div>
+<div class="text-[10px] text-outline uppercase tracking-widest font-medium">Level 12 • 2,450 XP</div>
+</div>
+</div>
+<button class="w-full py-2.5 bg-primary text-on-primary rounded-md text-xs font-bold uppercase tracking-widest hover:bg-black/80 transition-all active:scale-[0.98]">
+          Go Pro
+        </button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 overflow-y-auto premium-scrollbar">
+<div class="max-w-[1400px] mx-auto grid grid-cols-12 gap-0">
+<!-- Left Feed Filters -->
+<aside class="col-span-3 hidden lg:block py-10 px-8">
+<div class="sticky top-10 flex flex-col gap-8">
+<div class="space-y-1">
+<h3 class="px-3 text-[10px] font-extrabold text-outline uppercase tracking-[0.15em] mb-3">Discovery</h3>
+<button class="w-full flex items-center gap-3 px-3 py-2.5 bg-surface-container text-primary rounded-lg text-sm font-bold tracking-tight">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">trending_up</span>
+                Trending
+              </button>
+<button class="w-full flex items-center gap-3 px-3 py-2.5 text-secondary hover:bg-surface-container/50 rounded-lg text-sm font-medium transition-all">
+<span class="material-symbols-outlined text-[20px]">auto_awesome</span>
+                For You
+              </button>
+<button class="w-full flex items-center gap-3 px-3 py-2.5 text-secondary hover:bg-surface-container/50 rounded-lg text-sm font-medium transition-all">
+<span class="material-symbols-outlined text-[20px]">groups_3</span>
+                Groups
+              </button>
+</div>
+<div class="space-y-4">
+<h3 class="px-3 text-[10px] font-extrabold text-outline uppercase tracking-[0.15em]">Live Pulse</h3>
+<div class="p-4 bg-surface-container-low rounded-xl border border-black/[0.02]">
+<div class="flex items-center gap-2 mb-2">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-tertiary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-tertiary"></span>
+</span>
+<span class="text-[11px] font-bold uppercase tracking-tight">New Discussion</span>
+</div>
+<p class="text-xs text-on-surface-variant leading-relaxed font-medium">Join the live study session starting in 15 mins.</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Center Feed -->
+<section class="col-span-12 lg:col-span-6 border-x border-black/[0.04] min-h-screen bg-white">
+<!-- Top Bar (Mobile/Tablet visible) -->
+<div class="sticky top-0 z-10 glass-effect bg-white/80 backdrop-blur-md px-6 py-4 flex items-center justify-between border-b border-black/[0.03]">
+<h2 class="text-lg font-bold font-headline tracking-tight">Community Feed</h2>
+<div class="lg:hidden">
+<span class="material-symbols-outlined">search</span>
+</div>
+</div>
+<!-- Post Composer (Tonal Shift) -->
+<div class="p-6 border-b border-black/[0.03] bg-surface-container-low/30">
+<div class="flex gap-4">
+<img alt="Current User" class="w-12 h-12 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuArgXCK5G0GjfXrLZrINnsUCxKUM90Naje5kzhvJsxTdpzDDYHJu8Ja9r6rc13ZgaYEeiDTZd6uBpDexdBFR0Mr8vuV5UwNl_r4uLyfCEUZNoSsrx6CqhaAzQ7MpcnRYuRc0W6FJah-PWCC15cyRoNp8MEaCZHiwyZht9A-Lan9mPHVZjQrQD8DAFJvyB5BmP3sStaHhMVwr0vW4ungshE23Ma_PTqLERytf7CWHxn2r7krCioIx7mdLrT9ESHaF2XDbWcb45Q8CdY"/>
+<div class="flex-1">
+<textarea class="w-full bg-transparent border-none focus:ring-0 text-on-surface placeholder-outline text-lg resize-none min-h-[50px] p-0 font-medium leading-tight" placeholder="What's happening in the lab?"></textarea>
+<div class="flex items-center justify-between mt-4">
+<div class="flex gap-1 text-primary/60">
+<button class="p-2 hover:bg-surface-container rounded-full transition-colors"><span class="material-symbols-outlined text-[20px]">image</span></button>
+<button class="p-2 hover:bg-surface-container rounded-full transition-colors"><span class="material-symbols-outlined text-[20px]">gif_box</span></button>
+<button class="p-2 hover:bg-surface-container rounded-full transition-colors"><span class="material-symbols-outlined text-[20px]">data_object</span></button>
+<button class="p-2 hover:bg-surface-container rounded-full transition-colors"><span class="material-symbols-outlined text-[20px]">sentiment_satisfied</span></button>
+</div>
+<button class="bg-primary text-on-primary px-6 py-2 rounded-full text-sm font-bold tracking-tight hover:opacity-90 active:scale-95 transition-all">
+                    Post
+                  </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Feed Posts -->
+<div class="divide-y divide-black/[0.03]">
+<!-- Post 1 -->
+<article class="p-6 transition-colors hover:bg-surface-container-low/20">
+<div class="flex gap-4">
+<img alt="Sarah Chen" class="w-12 h-12 rounded-full object-cover flex-shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDiTRtk8o97ZA1rC9p1iLk6khCFwehBkP5j-ZCWXFEiM-k6KJe23nTWTpu7Z_ooAiIm-oqUjRy_hwsrLMQ1t_cYeBClSk3RVQJNOsWtnvnpdbSkgfgH7D2xp9GrAbVzfSGdaK9mRYkEDjMEWhSF5JV4L7MjIsWpYcunq8o47kz8osC9nAOQXLWm5P8hbzQOk_GQjXh-nF6FnxkCy8u1uC0WmQOGijdeBvdWrmdpIO9WAiYf3C9RvSbRjwVmxHZ7JUwyy6Jpg3k60zM"/>
+<div class="flex-1 space-y-3">
+<div class="flex items-center justify-between">
+<div>
+<span class="font-bold font-headline text-sm tracking-tight">Sarah Chen</span>
+<span class="text-xs text-outline font-medium ml-2">@schen_dev • 2h</span>
+</div>
+<button class="text-outline-variant hover:text-primary"><span class="material-symbols-outlined text-[20px]">more_horiz</span></button>
+</div>
+<p class="text-[15px] leading-relaxed text-on-surface font-medium">
+                    Just finished refactoring the neural network backend for the project. The latency dropped by 40%! Who knew that simple matrix optimization could go this far? 🚀 <span class="text-blue-600">#AIHacks #Optimization</span>
+</p>
+<!-- AI Insight Card (Tonal Architecture) -->
+<div class="p-4 bg-tertiary-container/20 rounded-2xl border-none">
+<div class="flex items-center gap-2 mb-1.5 text-tertiary">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">bolt</span>
+<span class="text-[9px] font-extrabold uppercase tracking-[0.1em]">AI Insight</span>
+</div>
+<p class="text-[12px] text-tertiary/90 leading-normal font-medium">Sarah's approach aligns with the 'Tensor-Slicing' methodology often used in high-frequency trading systems.</p>
+</div>
+<div class="flex items-center justify-between max-w-sm pt-2 text-outline font-semibold">
+<button class="flex items-center gap-1.5 hover:text-blue-500 transition-colors text-xs">
+<span class="material-symbols-outlined text-[18px]">chat_bubble</span> 24
+                    </button>
+<button class="flex items-center gap-1.5 hover:text-green-500 transition-colors text-xs">
+<span class="material-symbols-outlined text-[18px]">rebase_edit</span> 12
+                    </button>
+<button class="flex items-center gap-1.5 hover:text-red-500 transition-colors text-xs">
+<span class="material-symbols-outlined text-[18px]">favorite</span> 142
+                    </button>
+<button class="flex items-center gap-1.5 hover:text-blue-500 transition-colors text-xs">
+<span class="material-symbols-outlined text-[18px]">share</span>
+</button>
+</div>
+</div>
+</div>
+</article>
+<!-- Post 2 -->
+<article class="p-6 transition-colors hover:bg-surface-container-low/20">
+<div class="flex gap-4">
+<img alt="Marcus Wright" class="w-12 h-12 rounded-full object-cover flex-shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAXQRE0aNn12CvhdEE8aHInbLqrsKkwui2dJoJGVMNlFctoxbtAmgE97k536dD9F-E5g9DpYNUd3hmLKWwOBC6kAB4PSfL4NX3qfVGn2RQtxqVUTKNaR0yywsOxzzoHf01xTLw-PpHZWkR_Gb_HPYsiCllibrq9VzCLSTb7pLi2xtN2Oa0Ok1DD_4hu0-zM89KesGiLBfP-uSFWoaH3P-X7wlS0quyOPFqaootSnFIdHChbw15PwEQnD3z_hkczkMae_7tFh543LVU"/>
+<div class="flex-1 space-y-3">
+<div class="flex items-center justify-between">
+<div>
+<span class="font-bold font-headline text-sm tracking-tight">Marcus Wright</span>
+<span class="text-xs text-outline font-medium ml-2">@marcus_w • 5h</span>
+</div>
+<button class="text-outline-variant hover:text-primary"><span class="material-symbols-outlined text-[20px]">more_horiz</span></button>
+</div>
+<p class="text-[15px] leading-relaxed text-on-surface font-medium">
+                    Late night study vibes at the campus library. The architecture here always keeps me inspired. Studying for <span class="text-blue-600">#FinalsPrep</span> with the new Walia AI Focus mode.
+                  </p>
+<div class="rounded-2xl overflow-hidden aspect-[16/9] relative group no-line-border">
+<img alt="Campus Library" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNIhElRqT9hDxy7dTXv763nbtZylB2mgRD463B5uRMXBf8oGW05KqYIIdCMKBp_q88WnxAAI7JyVCNbiGythdpk8K-_mnr93UFrs8kQm903KbFr7_nXsTbxyEymoGhSg8QrebwIZgSx8baS785DSc9W33ZnjHi439nEicfsvxi2elvTkKsyLtxisUlWsgYe_9x5PJuVKHa-TvQwTdghiLkAvLqj0Xq0ImM3JDa3TC9o_arOWe_ubmyBVnSoXZK3OF7IKBvuEL8M8I"/>
+</div>
+<div class="flex items-center justify-between max-w-sm pt-2 text-outline font-semibold">
+<button class="flex items-center gap-1.5 hover:text-blue-500 transition-colors text-xs">
+<span class="material-symbols-outlined text-[18px]">chat_bubble</span> 8
+                    </button>
+<button class="flex items-center gap-1.5 hover:text-green-500 transition-colors text-xs">
+<span class="material-symbols-outlined text-[18px]">rebase_edit</span> 4
+                    </button>
+<button class="flex items-center gap-1.5 text-red-500 transition-colors text-xs">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">favorite</span> 89
+                    </button>
+<button class="flex items-center gap-1.5 hover:text-blue-500 transition-colors text-xs">
+<span class="material-symbols-outlined text-[18px]">share</span>
+</button>
+</div>
+</div>
+</div>
+</article>
+</div>
+</section>
+<!-- Right Side Context -->
+<aside class="col-span-3 hidden xl:block py-10 px-8">
+<div class="sticky top-10 space-y-6">
+<!-- Search -->
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors text-[18px]">search</span>
+<input class="w-full pl-11 pr-4 py-2.5 bg-surface-container border-none rounded-full text-sm placeholder-outline font-medium focus:ring-0 focus:bg-surface-container-low transition-all" placeholder="Search Community" type="text"/>
+</div>
+<!-- Premium Tonal Block -->
+<div class="bg-primary p-6 rounded-3xl relative overflow-hidden text-on-primary">
+<div class="absolute -right-6 -top-6 w-32 h-32 bg-white/5 rounded-full blur-3xl"></div>
+<h3 class="text-xl font-bold font-headline mb-2 leading-tight">Elevate your study game.</h3>
+<p class="text-on-primary/60 text-xs mb-6 leading-relaxed font-medium">Get advanced AI analysis, unlimited cloud storage, and priority support.</p>
+<button class="w-full py-3 bg-white text-primary rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-white/90 transition-all active:scale-95">
+                Join Walia Pro
+              </button>
+</div>
+<!-- Trending (Editorial Style) -->
+<div class="bg-surface-container-low rounded-3xl p-6">
+<h3 class="text-sm font-bold font-headline mb-5 px-1">Trending Topics</h3>
+<div class="space-y-5">
+<div class="px-1 group cursor-pointer">
+<p class="text-[9px] text-outline font-extrabold uppercase tracking-widest mb-1">Academics</p>
+<h4 class="text-[13px] font-bold group-hover:underline">#FinalsPrep</h4>
+<p class="text-[10px] text-outline-variant font-semibold">2.4k Posts</p>
+</div>
+<div class="px-1 group cursor-pointer">
+<p class="text-[9px] text-outline font-extrabold uppercase tracking-widest mb-1">Technology</p>
+<h4 class="text-[13px] font-bold group-hover:underline">#AIHacks</h4>
+<p class="text-[10px] text-outline-variant font-semibold">12.1k Posts</p>
+</div>
+<div class="px-1 group cursor-pointer">
+<p class="text-[9px] text-outline font-extrabold uppercase tracking-widest mb-1">Community</p>
+<h4 class="text-[13px] font-bold group-hover:underline">#WaliaMeetup</h4>
+<p class="text-[10px] text-outline-variant font-semibold">840 Posts</p>
+</div>
+</div>
+<button class="mt-6 text-[11px] font-bold text-primary hover:opacity-70 px-1">Show more</button>
+</div>
+<!-- Footer -->
+<footer class="px-1 flex flex-wrap gap-x-3 gap-y-1 opacity-40">
+<a class="text-[10px] font-semibold hover:underline" href="#">Privacy</a>
+<a class="text-[10px] font-semibold hover:underline" href="#">Terms</a>
+<a class="text-[10px] font-semibold hover:underline" href="#">Cookies</a>
+<a class="text-[10px] font-semibold hover:underline" href="#">Advertising</a>
+<p class="text-[10px] font-semibold w-full mt-2">© 2024 Walia AI Inc.</p>
+</footer>
+</div>
+</aside>
+</div>
+</main>
+</div>
+<!-- Mobile Floating Action Button -->
+<button class="lg:hidden fixed bottom-6 right-6 w-14 h-14 bg-primary text-on-primary rounded-full shadow-xl flex items-center justify-center active:scale-95 transition-transform z-50">
+<span class="material-symbols-outlined text-[24px]">add</span>
+</button>
+</body></html>

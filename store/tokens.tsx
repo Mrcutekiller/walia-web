@@ -58,7 +58,13 @@ export function TokenProvider({ children }: { children: React.ReactNode }) {
     // Sync from Firestore
     useEffect(() => {
         if (!auth.currentUser) return;
+        
+        const fallbackTimer = setTimeout(() => {
+            console.warn('TokenProvider sync timeout, using defaults');
+        }, 5000);
+
         const unsub = onSnapshot(doc(db, 'users', auth.currentUser.uid), (snap) => {
+            clearTimeout(fallbackTimer);
             if (snap.exists()) {
                 const data = snap.data();
                 setIsPro(data.isPro || false);
@@ -80,8 +86,14 @@ export function TokenProvider({ children }: { children: React.ReactNode }) {
                     setLastResetDate(savedDate);
                 }
             }
+        }, (error) => {
+            clearTimeout(fallbackTimer);
+            console.warn('TokenProvider sync error:', error);
         });
-        return () => unsub();
+        return () => {
+            clearTimeout(fallbackTimer);
+            unsub();
+        };
     }, [auth.currentUser]);
 
     const dailyLimit = isPro ? PRO_DAILY_TOKENS : FREE_DAILY_TOKENS;

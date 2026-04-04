@@ -102,7 +102,7 @@ export default function ChatScreen() {
                                 <View style={[styles.tabIconContainer, active && { backgroundColor: colors.primary + '10' }]}>
                                     <Ionicons name={`${icons[key]}${active ? '' : '-outline'}` as any} size={20} color={active ? colors.primary : colors.textTertiary} />
                                 </View>
-                                <Text style={[styles.tabLabel, { color: active ? colors.text : colors.textTertiary, fontWeight: active ? FontWeight.heavy : FontWeight.bold }]}>
+                                <Text style={[styles.tabLabel, { color: active ? colors.text : colors.textTertiary, fontWeight: active ? FontWeight.black : FontWeight.bold }]}>
                                     {key.charAt(0).toUpperCase() + key.slice(1)}
                                 </Text>
                                 {active && <View style={[styles.tabIndicator, { backgroundColor: colors.text }]} />}
@@ -181,8 +181,8 @@ const styles = StyleSheet.create({
     container: { flex: 1 },
     headerContainer: { zIndex: 10 },
     header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: Spacing.xl, paddingTop: Spacing.sm, paddingBottom: Spacing.md },
-    headerSub: { fontSize: 10, fontWeight: FontWeight.heavy, textTransform: 'uppercase', letterSpacing: 1.5 },
-    headerTitle: { fontSize: FontSize.xxl, fontWeight: FontWeight.heavy },
+    headerSub: { fontSize: 10, fontWeight: FontWeight.black, textTransform: 'uppercase', letterSpacing: 1.5 },
+    headerTitle: { fontSize: FontSize.xxl, fontWeight: FontWeight.black },
     newBtn: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'transparent' },
     tabBar: { flexDirection: 'row', paddingHorizontal: Spacing.md, gap: Spacing.xs, paddingBottom: 2 },
     tabItem: { flex: 1, alignItems: 'center', paddingVertical: Spacing.md, gap: 4, position: 'relative' },
@@ -190,11 +190,11 @@ const styles = StyleSheet.create({
     tabIconContainer: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginBottom: 2 },
     tabLabel: { fontSize: 10, textTransform: 'uppercase', letterSpacing: 0.5 },
     list: { flex: 1 },
-    sectionLabel: { fontSize: 10, fontWeight: FontWeight.heavy, textTransform: 'uppercase', letterSpacing: 1.5, marginTop: Spacing.xl, marginBottom: Spacing.sm, paddingHorizontal: Spacing.xl, color: '#94a3b8' },
+    sectionLabel: { fontSize: 10, fontWeight: FontWeight.black, textTransform: 'uppercase', letterSpacing: 1.5, marginTop: Spacing.xl, marginBottom: Spacing.sm, paddingHorizontal: Spacing.xl, color: '#94a3b8' },
     chatItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: Spacing.lg, borderBottomWidth: 1, paddingHorizontal: Spacing.xl },
     chatInfo: { flex: 1, marginLeft: Spacing.md },
     chatTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 },
-    chatName: { fontSize: FontSize.md, fontWeight: FontWeight.bold },
+    chatName: { fontSize: FontSize.md, fontWeight: FontWeight.black },
     chatTime: { fontSize: 10, fontWeight: FontWeight.semibold },
     chatMsg: { fontSize: FontSize.sm, fontWeight: FontWeight.medium },
     empty: { textAlign: 'center', color: '#94a3b8', marginTop: 40, fontSize: FontSize.sm, fontStyle: 'italic', paddingHorizontal: Spacing.xl },
@@ -204,10 +204,10 @@ const styles = StyleSheet.create({
     communityContent: { paddingTop: Spacing.md, paddingHorizontal: Spacing.xl },
     trendingSection: { marginBottom: Spacing.xl },
     sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: Spacing.md },
-    sectionTitle: { fontSize: 12, fontWeight: FontWeight.heavy, textTransform: 'uppercase', letterSpacing: 0.5 },
+    sectionTitle: { fontSize: 12, fontWeight: FontWeight.black, textTransform: 'uppercase', letterSpacing: 0.5 },
     trendingScroll: { gap: Spacing.sm, paddingRight: Spacing.xl },
-    trendingTag: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 14, borderWidth: 1 },
-    trendingTagText: { fontSize: 11, fontWeight: FontWeight.bold },
+    trendingTag: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: BorderRadius.pill, borderWidth: 1 },
+    trendingTagText: { fontSize: 11, fontWeight: FontWeight.black },
     composeBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderRadius: 24, padding: Spacing.md, marginBottom: Spacing.xl, borderWidth: 1 },
     composeInner: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
     composePlaceholder: { fontSize: FontSize.sm, fontWeight: FontWeight.medium, opacity: 0.5 },

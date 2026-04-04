@@ -17,15 +17,17 @@ const STEPS = [
     { title: "What's your name?", subtitle: 'How should Walia call you?' },
     { title: 'Create your account', subtitle: 'Choose a username and set your password' },
     { title: 'A bit more about you', subtitle: 'Help us personalize your experience' },
-    { title: 'Where are you from?', subtitle: 'We\'ll tailor content for your region' },
+    { title: 'Where are you from?', subtitle: "We'll tailor content for your region" },
     { title: 'Your study level?', subtitle: 'Walia will personalize content for you' },
-    { title: 'What\'s your goal?', subtitle: 'We\'ll tailor the experience just for you' },
+    { title: "What's your goal?", subtitle: "We'll tailor the experience just for you" },
+    { title: 'What do you study?', subtitle: 'Pick all the subjects that apply' },
+    { title: 'Your study style?', subtitle: 'How do you learn best?' },
+    { title: 'How did you hear about us?', subtitle: 'Help us understand how you found Walia' },
     { title: 'Profile Picture', subtitle: 'How should other students see you?' },
 ];
 
 const GENDERS = ['Male', 'Female', 'Other', 'Private'];
 const COUNTRIES = ['Ethiopia', 'USA', 'UK', 'Canada', 'Germany', 'UAE', 'Kenya', 'Other'];
-
 const LEVELS = ['High School', 'Undergraduate', 'Graduate', 'Self-Learning', 'Professional'];
 const GOALS = [
     { emoji: '📚', label: 'Ace my exams' },
@@ -34,6 +36,42 @@ const GOALS = [
     { emoji: '🔬', label: 'Research' },
     { emoji: '🎓', label: 'Get my degree' },
     { emoji: '🚀', label: 'Personal growth' },
+];
+const SUBJECTS = [
+    { emoji: '🔢', label: 'Mathematics' },
+    { emoji: '🔭', label: 'Science' },
+    { emoji: '⚗️', label: 'Chemistry' },
+    { emoji: '🧬', label: 'Biology' },
+    { emoji: '💻', label: 'Computer Science' },
+    { emoji: '📖', label: 'Literature' },
+    { emoji: '🌐', label: 'History' },
+    { emoji: '💰', label: 'Economics' },
+    { emoji: '🗣️', label: 'Languages' },
+    { emoji: '🎨', label: 'Arts & Design' },
+    { emoji: '⚖️', label: 'Law' },
+    { emoji: '🧠', label: 'Psychology' },
+    { emoji: '🏥', label: 'Medicine' },
+    { emoji: '📊', label: 'Business' },
+    { emoji: '🌱', label: 'Agriculture' },
+    { emoji: '🔧', label: 'Engineering' },
+];
+const STUDY_STYLES = [
+    { emoji: '🎧', label: 'Solo focus', desc: 'I study alone, undistracted' },
+    { emoji: '👥', label: 'Study groups', desc: 'I learn better with others' },
+    { emoji: '⚡', label: 'Short sessions', desc: 'Quick bursts throughout the day' },
+    { emoji: '📅', label: 'Long sessions', desc: 'Deep dives, 2+ hours at a time' },
+    { emoji: '🌙', label: 'Night owl', desc: 'I study best late at night' },
+    { emoji: '☀️', label: 'Early bird', desc: 'Morning is my peak time' },
+];
+const REFERRAL_SOURCES = [
+    { emoji: '📲', label: 'Social Media', desc: 'TikTok, Instagram, X/Twitter' },
+    { emoji: '👫', label: 'Friend or Family', desc: 'Someone recommended it' },
+    { emoji: '🔍', label: 'Google Search', desc: 'Found it while searching' },
+    { emoji: '📺', label: 'YouTube', desc: 'Saw a video or ad' },
+    { emoji: '🏫', label: 'School / Teacher', desc: 'Recommended by my school' },
+    { emoji: '📰', label: 'Blog / Article', desc: 'Read about it online' },
+    { emoji: '📻', label: 'Radio / TV', desc: 'Heard an ad' },
+    { emoji: '🤷', label: 'Other', desc: 'Something else' },
 ];
 
 export default function SignupScreen() {
@@ -50,34 +88,47 @@ export default function SignupScreen() {
     const [country, setCountry] = useState('');
     const [level, setLevel] = useState('');
     const [goal, setGoal] = useState('');
+    const [subjects, setSubjects] = useState<string[]>([]);
+    const [studyStyle, setStudyStyle] = useState('');
+    const [referralSource, setReferralSource] = useState('');
     const [avatar, setAvatar] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const { uploadAvatar } = useAuth();
 
+    const toggleSubject = (label: string) => {
+        setSubjects(prev =>
+            prev.includes(label) ? prev.filter(s => s !== label) : [...prev, label]
+        );
+    };
+
     const canNext = [
-        name.trim().length > 0,
-        email.trim() && username.trim() && password.length >= 6,
-        age.trim() && gender !== '',
-        country !== '' && phone.trim().length >= 10,
-        level !== '',
-        goal !== '',
-        true, // Avatar is optional
+        name.trim().length > 0,                                  // 0
+        email.trim() && username.trim() && password.length >= 6, // 1
+        age.trim() && gender !== '',                             // 2
+        country !== '' && phone.trim().length >= 10,             // 3
+        level !== '',                                            // 4
+        goal !== '',                                             // 5
+        subjects.length > 0,                                     // 6
+        studyStyle !== '',                                        // 7
+        referralSource !== '',                                    // 8
+        true,                                                    // 9 avatar optional
     ][step];
 
     const handleNext = async () => {
         if (step < STEPS.length - 1) { setStep(step + 1); return; }
         setLoading(true);
         try {
-            await signup({ name, email, username, phone, level, goal, age, gender, country }, password);
+            await signup({
+                name, email, username, phone, level, goal, age, gender, country,
+                subjects, studyStyle, referralSource,
+            }, password);
             if (avatar) {
-                try {
-                    await uploadAvatar(avatar);
-                } catch (imgErr) {
+                try { await uploadAvatar(avatar); } catch (imgErr) {
                     console.error('Avatar upload failed:', imgErr);
-                    // Don't block signup if only avatar upload fails
                 }
             }
-            router.replace('/(auth)/features');
+            // Go to pricing screen first, then features, then dashboard
+            router.replace('/(auth)/pricing' as any);
         } catch (e: any) {
             Alert.alert('Signup Issue', e.message);
         } finally { setLoading(false); }
@@ -90,10 +141,7 @@ export default function SignupScreen() {
             aspect: [1, 1],
             quality: 0.5,
         });
-
-        if (!result.canceled) {
-            setAvatar(result.assets[0].uri);
-        }
+        if (!result.canceled) setAvatar(result.assets[0].uri);
     };
 
     return (
@@ -114,10 +162,14 @@ export default function SignupScreen() {
                     <View style={{ width: 38 }} />
                 </View>
 
-                {/* Progress dots */}
+                {/* Progress */}
                 <View style={styles.progressRow}>
                     {STEPS.map((_, i) => (
-                        <View key={i} style={[styles.progressDot, i <= step && styles.progressDotActive, i === step && styles.progressDotCurrent]} />
+                        <View key={i} style={[
+                            styles.progressDot,
+                            i <= step && styles.progressDotActive,
+                            i === step && styles.progressDotCurrent
+                        ]} />
                     ))}
                 </View>
 
@@ -127,6 +179,7 @@ export default function SignupScreen() {
                         <Text style={styles.title}>{STEPS[step].title}</Text>
                         <Text style={styles.subtitle}>{STEPS[step].subtitle}</Text>
 
+                        {/* ── Step 0: Name ── */}
                         {step === 0 && (
                             <View style={styles.fields}>
                                 <Input
@@ -143,6 +196,7 @@ export default function SignupScreen() {
                             </View>
                         )}
 
+                        {/* ── Step 1: Account ── */}
                         {step === 1 && (
                             <View style={styles.fields}>
                                 <Input label="Email" placeholder="you@email.com" value={email} onChangeText={setEmail} keyboardType="email-address"
@@ -157,12 +211,12 @@ export default function SignupScreen() {
                             </View>
                         )}
 
+                        {/* ── Step 2: Age & Gender ── */}
                         {step === 2 && (
                             <View style={styles.fields}>
                                 <Input label="How old are you?" placeholder="e.g. 20" value={age} onChangeText={setAge} keyboardType="numeric"
                                     icon={<Ionicons name="calendar-outline" size={20} color="rgba(255,255,255,0.6)" />}
                                     style={{ marginBottom: Spacing.xl }} containerStyle={styles.darkInput} labelStyle={styles.darkLabel} inputStyle={styles.darkInputText} />
-                                
                                 <Text style={[styles.darkLabel, { marginBottom: Spacing.sm, fontSize: FontSize.sm, fontWeight: '700' }]}>Gender</Text>
                                 <View style={styles.chipGrid}>
                                     {GENDERS.map(g => (
@@ -174,12 +228,12 @@ export default function SignupScreen() {
                             </View>
                         )}
 
+                        {/* ── Step 3: Country & Phone ── */}
                         {step === 3 && (
                             <View style={styles.fields}>
                                 <Input label="Phone Number" placeholder="+251 ..." value={phone} onChangeText={setPhone} keyboardType="phone-pad"
                                     icon={<Ionicons name="call-outline" size={20} color="rgba(255,255,255,0.6)" />}
                                     style={{ marginBottom: Spacing.xl }} containerStyle={styles.darkInput} labelStyle={styles.darkLabel} inputStyle={styles.darkInputText} />
-
                                 <Text style={[styles.darkLabel, { marginBottom: Spacing.sm, fontSize: FontSize.sm, fontWeight: '700' }]}>Country</Text>
                                 <View style={styles.chipGrid}>
                                     {COUNTRIES.map(c => (
@@ -191,6 +245,7 @@ export default function SignupScreen() {
                             </View>
                         )}
 
+                        {/* ── Step 4: Level ── */}
                         {step === 4 && (
                             <View style={styles.chipGrid}>
                                 {LEVELS.map(l => (
@@ -201,6 +256,7 @@ export default function SignupScreen() {
                             </View>
                         )}
 
+                        {/* ── Step 5: Goal ── */}
                         {step === 5 && (
                             <View style={styles.goalGrid}>
                                 {GOALS.map(g => (
@@ -212,7 +268,59 @@ export default function SignupScreen() {
                             </View>
                         )}
 
+                        {/* ── Step 6: Subjects ── */}
                         {step === 6 && (
+                            <>
+                                <Text style={styles.multiHint}>Select all that apply</Text>
+                                <View style={styles.subjectGrid}>
+                                    {SUBJECTS.map(s => {
+                                        const active = subjects.includes(s.label);
+                                        return (
+                                            <TouchableOpacity key={s.label} style={[styles.subjectCard, active && styles.subjectCardActive]} onPress={() => toggleSubject(s.label)}>
+                                                <Text style={styles.subjectEmoji}>{s.emoji}</Text>
+                                                <Text style={[styles.subjectLabel, active && styles.subjectLabelActive]}>{s.label}</Text>
+                                                {active && <View style={styles.checkBadge}><Ionicons name="checkmark" size={10} color="#000" /></View>}
+                                            </TouchableOpacity>
+                                        );
+                                    })}
+                                </View>
+                            </>
+                        )}
+
+                        {/* ── Step 7: Study Style ── */}
+                        {step === 7 && (
+                            <View style={styles.styleGrid}>
+                                {STUDY_STYLES.map(s => (
+                                    <TouchableOpacity key={s.label} style={[styles.styleCard, studyStyle === s.label && styles.styleCardActive]} onPress={() => setStudyStyle(s.label)}>
+                                        <Text style={styles.styleEmoji}>{s.emoji}</Text>
+                                        <View style={{ flex: 1 }}>
+                                            <Text style={[styles.styleLabel, studyStyle === s.label && styles.styleLabelActive]}>{s.label}</Text>
+                                            <Text style={styles.styleDesc}>{s.desc}</Text>
+                                        </View>
+                                        {studyStyle === s.label && <Ionicons name="checkmark-circle" size={22} color="#fff" />}
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+                        )}
+
+                        {/* ── Step 8: Referral Source ── */}
+                        {step === 8 && (
+                            <View style={styles.styleGrid}>
+                                {REFERRAL_SOURCES.map(r => (
+                                    <TouchableOpacity key={r.label} style={[styles.styleCard, referralSource === r.label && styles.styleCardActive]} onPress={() => setReferralSource(r.label)}>
+                                        <Text style={styles.styleEmoji}>{r.emoji}</Text>
+                                        <View style={{ flex: 1 }}>
+                                            <Text style={[styles.styleLabel, referralSource === r.label && styles.styleLabelActive]}>{r.label}</Text>
+                                            <Text style={styles.styleDesc}>{r.desc}</Text>
+                                        </View>
+                                        {referralSource === r.label && <Ionicons name="checkmark-circle" size={22} color="#fff" />}
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+                        )}
+
+                        {/* ── Step 9: Avatar ── */}
+                        {step === 9 && (
                             <View style={styles.avatarPickerSection}>
                                 <TouchableOpacity style={styles.avatarMain} onPress={pickImage}>
                                     {avatar ? (
@@ -262,29 +370,44 @@ const styles = StyleSheet.create({
     header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: Spacing.xl, paddingTop: Spacing.md },
     backBtn: { width: 38, height: 38, borderRadius: 19, backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center' },
     headerLogo: { width: 36, height: 36, backgroundColor: '#000', borderRadius: 18, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
-    progressRow: { flexDirection: 'row', justifyContent: 'center', gap: Spacing.sm, paddingVertical: Spacing.xl },
-    progressDot: { width: 28, height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.15)' },
+    progressRow: { flexDirection: 'row', justifyContent: 'center', gap: 4, paddingVertical: Spacing.lg, flexWrap: 'wrap', paddingHorizontal: Spacing.xl },
+    progressDot: { width: 20, height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.15)' },
     progressDotActive: { backgroundColor: 'rgba(255,255,255,0.4)' },
-    progressDotCurrent: { backgroundColor: '#fff', width: 48 },
+    progressDotCurrent: { backgroundColor: '#fff', width: 32 },
     content: { paddingHorizontal: Spacing.xxl, paddingBottom: Spacing.huge },
     stepLabel: { fontSize: FontSize.xs, color: 'rgba(255,255,255,0.4)', fontWeight: '700', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: Spacing.sm },
-    title: { fontSize: 32, fontWeight: '800', color: '#fff', marginBottom: Spacing.sm, lineHeight: 38 },
+    title: { fontSize: 30, fontWeight: '800', color: '#fff', marginBottom: Spacing.sm, lineHeight: 36 },
     subtitle: { fontSize: FontSize.md, color: 'rgba(255,255,255,0.5)', marginBottom: Spacing.xxl, lineHeight: 22, fontWeight: '600' },
     fields: { gap: Spacing.md },
-    darkInput: { backgroundColor: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.1)', borderRadius: BorderRadius.xl },
+    darkInput: { backgroundColor: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.1)', borderRadius: 16 },
     darkLabel: { color: 'rgba(255,255,255,0.6)', fontWeight: '700' },
     darkInputText: { color: '#fff' },
     chipGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.md },
-    chip: { borderRadius: BorderRadius.pill, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.15)', paddingHorizontal: Spacing.xl, paddingVertical: Spacing.md, backgroundColor: 'rgba(255,255,255,0.03)' },
+    chip: { borderRadius: 999, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.15)', paddingHorizontal: Spacing.xl, paddingVertical: Spacing.md, backgroundColor: 'rgba(255,255,255,0.03)' },
     chipActive: { borderColor: '#fff', backgroundColor: 'rgba(255,255,255,0.1)' },
     chipText: { fontSize: FontSize.md, color: 'rgba(255,255,255,0.6)', fontWeight: '600' },
     chipTextActive: { color: '#fff', fontWeight: '800' },
     goalGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.md },
-    goalCard: { width: '47%', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: BorderRadius.xl, padding: Spacing.xl, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.1)', alignItems: 'center', gap: Spacing.sm },
+    goalCard: { width: '47%', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 20, padding: Spacing.xl, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.1)', alignItems: 'center', gap: Spacing.sm },
     goalCardActive: { borderColor: '#fff', backgroundColor: 'rgba(255,255,255,0.1)' },
     goalEmoji: { fontSize: 32 },
     goalLabel: { fontSize: FontSize.sm, color: 'rgba(255,255,255,0.6)', textAlign: 'center', fontWeight: '700' },
     goalLabelActive: { color: '#fff' },
+    multiHint: { fontSize: FontSize.sm, color: 'rgba(255,255,255,0.35)', fontWeight: '600', marginBottom: Spacing.lg, letterSpacing: 0.3 },
+    subjectGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm },
+    subjectCard: { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 999, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.12)', paddingHorizontal: 14, paddingVertical: 10, backgroundColor: 'rgba(255,255,255,0.03)', position: 'relative' },
+    subjectCardActive: { borderColor: '#fff', backgroundColor: 'rgba(255,255,255,0.12)' },
+    subjectEmoji: { fontSize: 16 },
+    subjectLabel: { fontSize: 13, color: 'rgba(255,255,255,0.55)', fontWeight: '600' },
+    subjectLabelActive: { color: '#fff', fontWeight: '800' },
+    checkBadge: { position: 'absolute', top: -4, right: -4, width: 16, height: 16, borderRadius: 8, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' },
+    styleGrid: { gap: Spacing.md },
+    styleCard: { flexDirection: 'row', alignItems: 'center', gap: Spacing.lg, backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 20, padding: Spacing.lg, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.1)' },
+    styleCardActive: { borderColor: '#fff', backgroundColor: 'rgba(255,255,255,0.08)' },
+    styleEmoji: { fontSize: 28 },
+    styleLabel: { fontSize: FontSize.md, color: 'rgba(255,255,255,0.7)', fontWeight: '700' },
+    styleLabelActive: { color: '#fff' },
+    styleDesc: { fontSize: FontSize.xs, color: 'rgba(255,255,255,0.35)', marginTop: 2, fontWeight: '500' },
     avatarPickerSection: { alignItems: 'center', paddingTop: Spacing.xl },
     avatarMain: { width: 140, height: 140, borderRadius: 70, backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 2, borderColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center', position: 'relative' },
     avatarEdit: { width: 136, height: 136, borderRadius: 68 },
@@ -293,7 +416,7 @@ const styles = StyleSheet.create({
     editBadge: { position: 'absolute', bottom: 5, right: 5, width: 34, height: 34, borderRadius: 17, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', borderWidth: 3, borderColor: '#000' },
     avatarHint: { fontSize: FontSize.sm, color: 'rgba(255,255,255,0.4)', textAlign: 'center', marginTop: Spacing.xxl, paddingHorizontal: Spacing.xl, lineHeight: 20, fontWeight: '500' },
     footer: { paddingHorizontal: Spacing.xxl, paddingBottom: Spacing.xl, gap: Spacing.md },
-    nextBtn: { backgroundColor: '#fff', borderRadius: BorderRadius.pill, paddingVertical: 18, alignItems: 'center', shadowColor: '#fff', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.1, shadowRadius: 10, elevation: 4 },
+    nextBtn: { backgroundColor: '#fff', borderRadius: 999, paddingVertical: 18, alignItems: 'center', shadowColor: '#fff', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.1, shadowRadius: 10, elevation: 4 },
     nextBtnDisabled: { backgroundColor: 'rgba(255,255,255,0.1)', shadowOpacity: 0 },
     nextBtnText: { color: '#000', fontSize: FontSize.lg, fontWeight: '900' },
     signinLink: { alignItems: 'center' },

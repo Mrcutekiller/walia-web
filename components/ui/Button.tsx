@@ -44,21 +44,70 @@ export function Button({ title, onPress, variant = 'primary', size = 'md', loadi
 }
 
 const styles = StyleSheet.create({
-    base: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: Spacing.sm },
-    primary: { backgroundColor: Colors.primary, borderRadius: BorderRadius.pill },
-    secondary: { backgroundColor: Colors.surfaceAlt, borderRadius: BorderRadius.pill },
-    outline: { backgroundColor: 'transparent', borderRadius: BorderRadius.pill, borderWidth: 1.5, borderColor: Colors.primary },
-    ghost: { backgroundColor: 'transparent' },
-    size_sm: { paddingVertical: Spacing.sm, paddingHorizontal: Spacing.lg },
-    size_md: { paddingVertical: Spacing.md + 2, paddingHorizontal: Spacing.xxl },
-    size_lg: { paddingVertical: Spacing.lg, paddingHorizontal: Spacing.xxxl },
-    disabled: { opacity: 0.5 },
-    text: { fontWeight: FontWeight.semibold },
-    text_primary: { color: Colors.textInverse, fontSize: FontSize.md },
-    text_secondary: { color: Colors.primary, fontSize: FontSize.md },
-    text_outline: { color: Colors.primary, fontSize: FontSize.md },
-    text_ghost: { color: Colors.primary, fontSize: FontSize.md },
+    base: { 
+        flexDirection: 'row', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        gap: Spacing.sm,
+        borderRadius: BorderRadius.lg, // 16px (rounded-2xl)
+    },
+    primary: { 
+        backgroundColor: Colors.primary,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.1,
+        shadowRadius: 20,
+        elevation: 10,
+    },
+    secondary: { 
+        backgroundColor: Colors.background,
+        borderWidth: 1,
+        borderColor: Colors.border,
+    },
+    outline: { 
+        backgroundColor: 'transparent', 
+        borderWidth: 1.5, 
+        borderColor: Colors.primary 
+    },
+    ghost: { 
+        backgroundColor: 'transparent' 
+    },
+    size_sm: { 
+        paddingVertical: 10, 
+        paddingHorizontal: 16 
+    },
+    size_md: { 
+        paddingVertical: 14, 
+        paddingHorizontal: 24 
+    },
+    size_lg: { 
+        paddingVertical: 18, 
+        paddingHorizontal: 32 // ~px-8
+    },
+    disabled: { 
+        opacity: 0.5 
+    },
+    text: { 
+        fontWeight: FontWeight.bold, // font-bold
+        letterSpacing: -0.2,
+    },
+    text_primary: { 
+        color: Colors.textInverse, 
+        fontSize: FontSize.md 
+    },
+    text_secondary: { 
+        color: Colors.primary, 
+        fontSize: FontSize.md 
+    },
+    text_outline: { 
+        color: Colors.primary, 
+        fontSize: FontSize.md 
+    },
+    text_ghost: { 
+        color: Colors.primary, 
+        fontSize: FontSize.md 
+    },
     textSize_sm: { fontSize: FontSize.sm },
     textSize_md: { fontSize: FontSize.md },
-    textSize_lg: { fontSize: FontSize.lg },
+    textSize_lg: { fontSize: FontSize.lg + 1 },
 });

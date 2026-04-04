@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Walia AI Chat - The Digital Atelier</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-container": "#ebeeef",
+              "on-tertiary-fixed-variant": "#6c546c",
+              "outline-variant": "#adb3b4",
+              "background": "#f9f9f9",
+              "tertiary-fixed-dim": "#eacbe7",
+              "primary-container": "#e5e2e1",
+              "tertiary-container": "#f8d9f6",
+              "on-tertiary-fixed": "#4e384e",
+              "secondary-dim": "#535353",
+              "outline": "#757c7d",
+              "surface-variant": "#dde4e5",
+              "on-surface-variant": "#5a6061",
+              "secondary-fixed-dim": "#d6d4d3",
+              "on-error-container": "#782232",
+              "error-container": "#ff8b9a",
+              "surface-container-lowest": "#ffffff",
+              "on-background": "#2d3435",
+              "surface-dim": "#d4dbdd",
+              "on-surface": "#2d3435",
+              "on-error": "#fff7f7",
+              "secondary-container": "#e4e2e1",
+              "primary-dim": "#535252",
+              "surface-container-high": "#e4e9ea",
+              "error": "#9e3f4e",
+              "primary-fixed": "#e5e2e1",
+              "surface-tint": "#5f5e5e",
+              "primary": "#5f5e5e",
+              "tertiary": "#6f576f",
+              "tertiary-fixed": "#f8d9f6",
+              "secondary": "#5f5f5f",
+              "inverse-primary": "#ffffff",
+              "tertiary-dim": "#634c63",
+              "surface-bright": "#f9f9f9",
+              "inverse-surface": "#0c0f0f",
+              "on-secondary-container": "#525252",
+              "on-secondary-fixed-variant": "#5c5b5b",
+              "on-primary": "#faf7f6",
+              "inverse-on-surface": "#9c9d9d",
+              "surface-container-highest": "#dde4e5",
+              "secondary-fixed": "#e4e2e1",
+              "primary-fixed-dim": "#d6d4d3",
+              "on-secondary-fixed": "#3f3f3f",
+              "on-secondary": "#fbf8f8",
+              "error-dim": "#4f0116",
+              "on-primary-fixed-variant": "#5c5b5b",
+              "on-primary-container": "#525151",
+              "on-tertiary": "#fff7fa",
+              "on-tertiary-container": "#614a61",
+              "surface-container-low": "#f2f4f4",
+              "on-primary-fixed": "#403f3f",
+              "surface": "#f9f9f9"
+            },
+            fontFamily: {
+              "headline": ["Manrope", "sans-serif"],
+              "body": ["Inter", "sans-serif"],
+              "label": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* Custom Walia Monolith Tonal Shadows */
+        .walia-elevated {
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.03);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body antialiased selection:bg-primary/10">
+<div class="flex h-screen overflow-hidden">
+<!-- SIDE NAVIGATION BAR (Implementation of COMPONENTS_11) -->
+<aside class="hidden md:flex flex-col h-screen w-64 sticky top-0 bg-[#f2f4f4] dark:bg-slate-800/50 py-8 px-6 space-y-8">
+<div class="text-2xl font-semibold text-[#2d3435] dark:text-white tracking-tight font-headline">
+            Walia AI
+        </div>
+<nav class="flex-1 flex flex-col gap-1 overflow-y-auto no-scrollbar">
+<a class="flex items-center gap-3 px-4 py-3 text-[#5f5e5e] dark:text-white font-semibold border-r-2 border-[#5f5e5e] bg-surface-container-lowest/50 font-headline text-sm tracking-tight active:opacity-80 active:scale-[0.99] transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="chat_bubble">chat_bubble</span>
+<span>AI Chat</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#2d3435]/60 dark:text-slate-400 hover:bg-[#ebeeef] dark:hover:bg-slate-800 transition-colors duration-200 font-headline font-medium text-sm tracking-tight active:opacity-80 active:scale-[0.99]" href="#">
+<span class="material-symbols-outlined" data-icon="mail">mail</span>
+<span>Messages</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#2d3435]/60 dark:text-slate-400 hover:bg-[#ebeeef] dark:hover:bg-slate-800 transition-colors duration-200 font-headline font-medium text-sm tracking-tight active:opacity-80 active:scale-[0.99]" href="#">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+<span>Community</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#2d3435]/60 dark:text-slate-400 hover:bg-[#ebeeef] dark:hover:bg-slate-800 transition-colors duration-200 font-headline font-medium text-sm tracking-tight active:opacity-80 active:scale-[0.99]" href="#">
+<span class="material-symbols-outlined" data-icon="construction">construction</span>
+<span>Tools</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#2d3435]/60 dark:text-slate-400 hover:bg-[#ebeeef] dark:hover:bg-slate-800 transition-colors duration-200 font-headline font-medium text-sm tracking-tight active:opacity-80 active:scale-[0.99]" href="#">
+<span class="material-symbols-outlined" data-icon="calendar_today">calendar_today</span>
+<span>Calendar</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#2d3435]/60 dark:text-slate-400 hover:bg-[#ebeeef] dark:hover:bg-slate-800 transition-colors duration-200 font-headline font-medium text-sm tracking-tight active:opacity-80 active:scale-[0.99]" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span>Profile</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#2d3435]/60 dark:text-slate-400 hover:bg-[#ebeeef] dark:hover:bg-slate-800 transition-colors duration-200 font-headline font-medium text-sm tracking-tight active:opacity-80 active:scale-[0.99]" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+</nav>
+<div class="pt-6 space-y-4">
+<div class="flex items-center gap-3 px-2">
+<div class="relative">
+<img alt="User profile avatar" class="w-10 h-10 rounded-full object-cover grayscale opacity-80" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJPj7HiFwgl51r7ZVI1t0Px4HjoNpPJmNd8GZ1ne9b3HNOD4mFUMpJW15tv2Ql1-OZza--2R8wedOxmyFJYkzk6Gm-33DoZU38MrgAnAaI0SMerVsvcik7XTK8UD4uEnkbA2zZRE-yCd0pfJSu5uT3fCaWB_pCVqUw891h0P4ILitYYtvPVH0YmUTm0X_9KKBDCpKoLZ2zj_tX64tIJ-zzaO4pzM88bMZC6_CYdiGfe9RABmTnghRbVL2AERd2kjXWnmeRJTo-6f4"/>
+<div class="absolute -bottom-1 -right-1 w-4 h-4 bg-primary text-[8px] flex items-center justify-center text-on-primary font-bold rounded-full border-2 border-[#f2f4f4]">12</div>
+</div>
+<div>
+<p class="text-sm font-semibold text-on-surface">Walia User</p>
+<p class="text-[10px] text-outline/70 font-medium tracking-tight">2,450 XP</p>
+</div>
+</div>
+<button class="w-full bg-[#2d3435] text-white py-2.5 rounded-lg text-sm font-medium hover:bg-black transition-all active:scale-[0.98] font-headline">
+                Go Pro
+            </button>
+</div>
+</aside>
+<!-- MAIN CANVAS -->
+<main class="flex-1 flex flex-col bg-surface relative min-w-0">
+<!-- TOP APP BAR -->
+<header class="flex justify-between items-center w-full h-20 px-10 bg-surface/80 backdrop-blur-xl sticky top-0 z-40 transition-all">
+<div class="flex items-center gap-6">
+<h1 class="text-xl font-headline font-bold text-[#2d3435] tracking-tight">Walia AI Chat</h1>
+<div class="hidden sm:flex items-center px-4 py-1.5 bg-surface-container-low rounded-full gap-2.5">
+<span class="w-1.5 h-1.5 bg-primary/40 rounded-full"></span>
+<span class="text-[11px] font-bold text-outline uppercase tracking-wider font-label">Model: Walia 4.0</span>
+<span class="material-symbols-outlined text-[14px] text-outline" data-icon="keyboard_arrow_down">keyboard_arrow_down</span>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2.5 text-outline/70 hover:text-on-surface hover:bg-surface-container-low rounded-full transition-all">
+<span class="material-symbols-outlined" data-icon="share">share</span>
+</button>
+<button class="p-2.5 text-outline/70 hover:text-on-surface hover:bg-surface-container-low rounded-full transition-all">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+</button>
+<div class="w-px h-6 bg-outline-variant/10 mx-2"></div>
+<button class="p-2.5 text-outline/70 hover:text-on-surface hover:bg-surface-container-low rounded-full transition-all">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+</div>
+</header>
+<!-- CHAT HISTORY -->
+<div class="flex-1 overflow-y-auto px-6 md:px-20 py-10 space-y-16 no-scrollbar">
+<!-- AI Response (Tonal Shift, No Borders) -->
+<div class="max-w-4xl mx-auto flex gap-8">
+<div class="flex-shrink-0 w-11 h-11 rounded-xl bg-surface-container flex items-center justify-center text-primary-dim">
+<span class="material-symbols-outlined text-xl" data-icon="token">token</span>
+</div>
+<div class="flex-1 space-y-5">
+<div class="text-[11px] font-bold text-outline uppercase tracking-[0.2em] font-headline">Walia AI System</div>
+<div class="bg-surface-container-lowest p-8 rounded-3xl walia-elevated leading-relaxed text-on-surface/90 text-[15px] font-medium tracking-tight">
+                        Welcome back. How can I assist you with your professional creative workflow today? I can help you draft editorial copy, analyze market trends, or manage your digital atelier.
+                    </div>
+</div>
+</div>
+<!-- User Message (Subtle Tonal Background) -->
+<div class="max-w-4xl mx-auto flex flex-row-reverse gap-8">
+<div class="flex-shrink-0 w-11 h-11 rounded-full bg-surface-container flex items-center justify-center overflow-hidden">
+<img alt="User Profile" class="grayscale contrast-125" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD0rJMUas4EOJdtpLUpomPSMS4pHMMNmpNITtcFINLEslch5WTxRhpB0UBoAneSc2F3hZkzt1wIoFAwibZmDMjktz_WhjkiJtSx6yvuGU51Qrem1rPcDwazztepiLybzglJ0yQzeYobicMiwc5928NDacDChpqPhgq80YLdnkzRQnGn6qQoGN950K-FZiFZ0WVnZJjZXFPg0OHfQwN1NH4vd-p0rg-QS5BlZRNvNRsh-hvXR71f7PiToW5SkHrJD3dKLw_rSjF094Q"/>
+</div>
+<div class="flex-1 space-y-5 text-right">
+<div class="text-[11px] font-bold text-outline uppercase tracking-[0.2em] font-headline">Editorial Request</div>
+<div class="bg-surface-container-low/60 p-8 rounded-3xl inline-block text-left leading-relaxed text-on-surface/90 text-[15px] font-medium tracking-tight max-w-[85%]">
+                        I'm looking to outline a new design system based on "Tonal Architecture." Could you help me define the surface hierarchy for a monochromatic, warm-neutral interface?
+                    </div>
+</div>
+</div>
+<!-- AI Detailed Response -->
+<div class="max-w-4xl mx-auto flex gap-8">
+<div class="flex-shrink-0 w-11 h-11 rounded-xl bg-surface-container flex items-center justify-center text-primary-dim">
+<span class="material-symbols-outlined text-xl" data-icon="token">token</span>
+</div>
+<div class="flex-1 space-y-8">
+<div class="text-[11px] font-bold text-outline uppercase tracking-[0.2em] font-headline">Walia AI Response</div>
+<div class="bg-surface-container-lowest p-10 rounded-[2rem] walia-elevated space-y-10">
+<p class="leading-relaxed text-[17px] font-medium text-on-surface tracking-tight">Designing with **Tonal Architecture** relies on value shifts rather than lines. Here is a proposed hierarchy for your monochromatic workspace:</p>
+<!-- Premium Tonal Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="p-8 bg-background/50 rounded-2xl">
+<div class="text-[10px] font-bold text-outline uppercase tracking-[0.15em] mb-4">Base Layer</div>
+<div class="text-xl font-headline font-bold text-on-surface">Surface <span class="font-normal text-outline/50 ml-2">#F9F9F9</span></div>
+<p class="text-sm text-on-surface-variant mt-4 leading-relaxed">The primary canvas. Provides a high-key, airy foundation that prioritizes clarity.</p>
+</div>
+<div class="p-8 bg-surface-container-low rounded-2xl">
+<div class="text-[10px] font-bold text-outline uppercase tracking-[0.15em] mb-4">Navigation</div>
+<div class="text-xl font-headline font-bold text-on-surface">Container <span class="font-normal text-outline/50 ml-2">#EBEEEF</span></div>
+<p class="text-sm text-on-surface-variant mt-4 leading-relaxed">Deeper tonal value for sidebars and toolbars to anchor focus through volume.</p>
+</div>
+</div>
+<div class="p-8 bg-[#f2f4f4] rounded-2xl border-l-4 border-primary/20 italic text-on-surface-variant text-lg font-headline tracking-tight">
+                            "The absence of lines forces the user's eye to navigate through volume and breathing room."
+                        </div>
+<div class="flex gap-4 pt-6">
+<button class="flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-surface-container-low text-xs font-bold uppercase tracking-widest text-outline hover:bg-surface-container hover:text-on-surface transition-all">
+<span class="material-symbols-outlined text-lg" data-icon="content_copy">content_copy</span> Copy System
+                            </button>
+<button class="flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-surface-container-low text-xs font-bold uppercase tracking-widest text-outline hover:bg-surface-container hover:text-on-surface transition-all">
+<span class="material-symbols-outlined text-lg" data-icon="refresh">refresh</span> Regenerate
+                            </button>
+</div>
+</div>
+</div>
+</div>
+<div class="h-40"></div>
+</div>
+<!-- INPUT AREA (Fixed Floating) -->
+<div class="px-6 md:px-20 pb-10 pt-4 bg-gradient-to-t from-surface via-surface to-surface/0 absolute bottom-0 left-0 right-0">
+<div class="max-w-4xl mx-auto relative group">
+<div class="bg-surface-container-lowest rounded-3xl walia-elevated p-3 transition-all duration-500 border border-transparent focus-within:border-primary/5">
+<textarea class="w-full bg-transparent border-none focus:ring-0 p-5 min-h-[64px] max-h-56 resize-none text-on-surface font-headline text-lg placeholder:text-outline/40 leading-relaxed" placeholder="Message Walia AI..."></textarea>
+<div class="flex items-center justify-between px-3 pb-3">
+<div class="flex items-center gap-1.5">
+<button class="p-3 rounded-2xl text-outline/60 hover:bg-surface-container-low hover:text-on-surface transition-all">
+<span class="material-symbols-outlined text-2xl" data-icon="add_circle">add_circle</span>
+</button>
+<button class="p-3 rounded-2xl text-outline/60 hover:bg-surface-container-low hover:text-on-surface transition-all">
+<span class="material-symbols-outlined text-2xl" data-icon="image">image</span>
+</button>
+<button class="p-3 rounded-2xl text-outline/60 hover:bg-surface-container-low hover:text-on-surface transition-all">
+<span class="material-symbols-outlined text-2xl" data-icon="mic">mic</span>
+</button>
+<div class="w-px h-6 bg-outline-variant/10 mx-2"></div>
+<button class="p-3 rounded-2xl text-outline/60 hover:bg-surface-container-low hover:text-on-surface transition-all">
+<span class="material-symbols-outlined text-2xl" data-icon="language">language</span>
+</button>
+</div>
+<button class="flex items-center justify-center w-12 h-12 rounded-2xl bg-[#2d3435] text-white hover:bg-black shadow-lg shadow-black/5 active:scale-90 transition-all">
+<span class="material-symbols-outlined text-xl" data-icon="arrow_upward">arrow_upward</span>
+</button>
+</div>
+</div>
+<div class="text-center mt-5">
+<span class="text-[9px] text-outline/40 uppercase tracking-[0.3em] font-bold">Walia Monolith • Editorial Creative Engine • 2024</span>
+</div>
+</div>
+</div>
+</main>
+<!-- MOBILE NAV OVERLAY (Implementation of COMPONENTS_11 style) -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-surface-container-lowest/90 backdrop-blur-lg border-t border-outline-variant/5 flex justify-around items-center py-4 z-50">
+<a class="flex flex-col items-center gap-1.5 text-primary" href="#">
+<span class="material-symbols-outlined text-2xl" data-icon="chat_bubble" style="font-variation-settings: 'FILL' 1;">chat_bubble</span>
+<span class="text-[10px] font-bold uppercase tracking-wider">Chat</span>
+</a>
+<a class="flex flex-col items-center gap-1.5 text-outline/60" href="#">
+<span class="material-symbols-outlined text-2xl" data-icon="groups">groups</span>
+<span class="text-[10px] font-bold uppercase tracking-wider">Community</span>
+</a>
+<a class="flex flex-col items-center gap-1.5 text-outline/60" href="#">
+<span class="material-symbols-outlined text-2xl" data-icon="person">person</span>
+<span class="text-[10px] font-bold uppercase tracking-wider">Profile</span>
+</a>
+</nav>
+</div>
+</body></html>

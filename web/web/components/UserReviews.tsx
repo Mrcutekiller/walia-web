@@ -35,7 +35,7 @@ export default function UserReviews() {
     useEffect(() => {
         if (!user) return;
 
-        const q = query(collection(db, 'reviews'), where('userId', '==', user.uid));
+        const q = query(collection(db, 'reviews'), where('userId', '==', user.id));
         const unsub = onSnapshot(q, (snapshot) => {
             setReviews(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Review)));
             setLoading(false);
@@ -104,8 +104,8 @@ export default function UserReviews() {
                             if (!user || editRating === 0) return;
                             try {
                                 await addDoc(collection(db, 'reviews'), {
-                                    userId: user.uid,
-                                    userName: user.displayName || 'Anonymous',
+                                    userId: user.id,
+                                    userName: user.name || 'Anonymous',
                                     userPhoto: user.photoURL || '',
                                     rating: editRating,
                                     comment: editComment,

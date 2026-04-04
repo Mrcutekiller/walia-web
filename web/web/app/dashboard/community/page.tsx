@@ -30,7 +30,8 @@ import {
     Sparkles,
     CheckCircle2,
     Search,
-    PartyPopper
+    PartyPopper,
+    MoreVertical
 } from 'lucide-react';
 import Link from 'next/link';
 import { Suspense, useEffect, useState } from 'react';
@@ -51,7 +52,7 @@ interface Post {
 }
 
 function CommunityContent() {
-    const { user, profile } = useAuth();
+    const { user } = useAuth();
     const searchParams = useSearchParams();
     const [posts, setPosts] = useState<Post[]>([]);
     const [loading, setLoading] = useState(true);
@@ -72,9 +73,9 @@ function CommunityContent() {
     const handleLike = async (post: Post) => {
         if (!user) return;
         const postRef = doc(db, 'posts', post.id);
-        const isLiked = post.likes?.includes(user.uid);
+        const isLiked = post.likes?.includes(user.id);
         await updateDoc(postRef, {
-            likes: isLiked ? arrayRemove(user.uid) : arrayUnion(user.uid)
+            likes: isLiked ? arrayRemove(user.id) : arrayUnion(user.id)
         });
     };
 
@@ -87,18 +88,18 @@ function CommunityContent() {
             const extractedTags = newPost.match(/#\w+/g) || [];
 
             await addDoc(collection(db, 'posts'), {
-                authorId: user.uid,
+                authorId: user.id,
                 content: newPost.trim(),
                 createdAt: serverTimestamp(),
                 likes: [],
                 commentCount: 0,
                 type: 'general',
                 tags: extractedTags,
-                isAdminPost: profile?.isAdmin ? isAdminPost : false,
+                isAdminPost: user?.isAdmin ? isAdminPost : false,
             });
             // Reward Tokens
             try {
-                await updateDoc(doc(db, 'users', user.uid), {
+                await updateDoc(doc(db, 'users', user.id), {
                     tokensUsed: increment(-10)
                 });
                 alert("🎉 Bonus Tokens! You earned +10 tokens for posting.");
@@ -143,93 +144,81 @@ function CommunityContent() {
     };
 
     return (
-        <div className="min-h-full bg-[#FAFAFA] dark:bg-[#0A101D] text-black dark:text-white pb-24">
-            <div className="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 px-4 pt-8 md:pt-12">
+        <div className="flex-1 overflow-y-auto premium-scrollbar min-h-screen">
+            <div className="max-w-[1400px] mx-auto grid grid-cols-12 gap-0">
                 
-                {/* ── LEFT SIDEBAR: User Info & Tags ── */}
-                <aside className="lg:col-span-3 hidden lg:flex flex-col gap-6 sticky top-8 h-fit">
-                    {/* User Mini Card */}
-                    <div className="bg-white dark:bg-[#162032] rounded-[2rem] p-6 border border-gray-200 dark:border-white/5 shadow-sm">
-                        <div className="flex flex-col items-center text-center">
-                            <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-white/10 mb-4 overflow-hidden shadow-inner border border-gray-100 dark:border-white/5">
-                                {user?.photoURL ? (
-                                    <img src={user.photoURL} alt="Avatar" className="w-full h-full object-cover" />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-2xl font-black text-gray-300">
-                                        {profile?.name?.charAt(0) || 'W'}
-                                    </div>
-                                )}
-                            </div>
-                            <h3 className="font-black text-black dark:text-white truncate w-full">{profile?.name || 'Walia Student'}</h3>
-                            <p className="text-xs font-bold text-gray-400 mt-0.5">@{profile?.username || 'user'}</p>
-                            
-                            <div className="grid grid-cols-2 gap-4 w-full mt-6 pt-6 border-t border-gray-100 dark:border-white/5">
-                                <div>
-                                    <p className="text-sm font-black text-black dark:text-white">{profile?.followersCount || 0}</p>
-                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Followers</p>
+                {/* ── LEFT FEED FILTERS ── */}
+                <aside className="col-span-3 hidden lg:block py-10 px-8">
+                    <div className="sticky top-10 flex flex-col gap-8">
+                        <div className="space-y-1">
+                            <h3 className="px-3 text-[10px] font-extrabold text-[var(--color-outline)] uppercase tracking-[0.15em] mb-3 font-[family-name:var(--font-manrope)]">Discovery</h3>
+                            <button className="w-full flex items-center gap-3 px-3 py-2.5 bg-[var(--color-surface-container)] text-[var(--color-primary)] rounded-lg text-sm font-bold tracking-tight font-[family-name:var(--font-manrope)]">
+                                <TrendingUp className="w-5 h-5 flex-shrink-0" />
+                                Trending
+                            </button>
+                            <button className="w-full flex items-center gap-3 px-3 py-2.5 text-[var(--color-secondary)] hover:bg-[var(--color-surface-container)]/50 rounded-lg text-sm font-medium transition-all font-[family-name:var(--font-manrope)]">
+                                <Sparkles className="w-5 h-5 flex-shrink-0" />
+                                For You
+                            </button>
+                            <button className="w-full flex items-center gap-3 px-3 py-2.5 text-[var(--color-secondary)] hover:bg-[var(--color-surface-container)]/50 rounded-lg text-sm font-medium transition-all font-[family-name:var(--font-manrope)]">
+                                <MessageCircle className="w-5 h-5 flex-shrink-0" />
+                                Groups
+                            </button>
+                        </div>
+                        <div className="space-y-4">
+                            <h3 className="px-3 text-[10px] font-extrabold text-[var(--color-outline)] uppercase tracking-[0.15em] font-[family-name:var(--font-manrope)]">Live Pulse</h3>
+                            <div className="p-4 bg-[var(--color-surface-container-low)] rounded-xl border border-[var(--color-outline)]/5">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <span className="relative flex h-2 w-2 flex-shrink-0">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-tertiary)] opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--color-tertiary)]"></span>
+                                    </span>
+                                    <span className="text-[11px] font-bold uppercase tracking-tight font-[family-name:var(--font-manrope)]">New Discussion</span>
                                 </div>
-                                <div>
-                                    <p className="text-sm font-black text-black dark:text-white">{profile?.xp || 0}</p>
-                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">XP</p>
-                                </div>
+                                <p className="text-xs text-[var(--color-on-surface-variant)] leading-relaxed font-medium">Join the live study session starting in 15 mins.</p>
                             </div>
                         </div>
                     </div>
-
-                    {/* Navigation Mini */}
-                    <div className="bg-white dark:bg-[#162032] rounded-[2rem] p-4 border border-gray-200 dark:border-white/5 shadow-sm space-y-1">
-                        {[
-                            { icon: TrendingUp, label: 'Trending', href: '#' },
-                            { icon: Sparkles, label: 'For You', href: '#' },
-                            { icon: MessageCircle, label: 'Groups', href: '#' },
-                        ].map((item, i) => (
-                            <Link key={i} href={item.href} className="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-gray-50 dark:hover:bg-white/5 text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white font-bold text-sm transition-all group">
-                                <item.icon className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                                <span>{item.label}</span>
-                            </Link>
-                        ))}
-                    </div>
                 </aside>
 
-                {/* ── MAIN FEED ── */}
-                <main className="lg:col-span-6 space-y-6">
-                    {/* Create Post Card */}
-                    <div className="bg-white dark:bg-[#162032] rounded-[2.5rem] p-6 border border-gray-200 dark:border-white/5 shadow-sm animate-in fade-in slide-in-from-top-4 duration-700">
+                {/* ── CENTER FEED ── */}
+                <section className="col-span-12 xl:col-span-6 lg:col-span-9 border-x border-[var(--color-outline)]/10 min-h-screen bg-[var(--color-surface-container-lowest)]">
+                    {/* Top Bar (Mobile/Tablet visible) */}
+                    <div className="sticky top-0 z-10 bg-[var(--color-surface-container-lowest)]/80 backdrop-blur-md px-6 py-4 flex items-center justify-between border-b border-[var(--color-outline)]/10">
+                        <h2 className="text-lg font-bold font-[family-name:var(--font-manrope)] tracking-tight">Community Feed</h2>
+                        <div className="xl:hidden text-[var(--color-outline)]">
+                            <Search className="w-5 h-5" />
+                        </div>
+                    </div>
+
+                    {/* Post Composer */}
+                    <div className="p-6 border-b border-[var(--color-outline)]/10 bg-[var(--color-surface-container-low)]/30">
                         <div className="flex gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-white/10 shrink-0 overflow-hidden shadow-inner flex items-center justify-center border border-gray-100 dark:border-white/5">
-                                {user?.photoURL ? <img src={user.photoURL} className="w-full h-full object-cover" /> : <span className="text-xl font-black text-gray-300">?</span>}
+                            <div className="w-12 h-12 rounded-full overflow-hidden bg-[var(--color-surface-container)] shrink-0 flex items-center justify-center">
+                                {user?.photoURL ? <img src={user.photoURL} alt="User" className="w-full h-full object-cover grayscale contrast-125" /> : <span className="font-bold text-[var(--color-outline-variant)] uppercase">{user?.name?.charAt(0) || 'U'}</span>}
                             </div>
                             <div className="flex-1">
                                 <textarea 
                                     value={newPost}
                                     onChange={(e) => setNewPost(e.target.value)}
-                                    placeholder="What's happening in your studies?"
-                                    className="w-full bg-transparent border-none focus:ring-0 text-lg font-medium placeholder:text-gray-300 dark:placeholder:text-white/10 resize-none min-h-[100px] py-2"
+                                    className="w-full bg-transparent border-none focus:ring-0 text-[var(--color-on-surface)] placeholder-[var(--color-outline)] text-lg resize-none min-h-[50px] p-0 font-medium leading-tight font-[family-name:var(--font-inter)]" 
+                                    placeholder="What's happening in the lab?"
                                 />
-                                <div className="flex items-center justify-between pt-4 border-t border-gray-50 dark:border-white/5">
-                                    <div className="flex gap-2">
-                                        <button className="w-10 h-10 rounded-full hover:bg-gray-100 dark:hover:bg-white/5 flex items-center justify-center text-gray-400 transition-colors">
-                                            <ImageIcon className="w-5 h-5" />
-                                        </button>
-                                        <button className="w-10 h-10 rounded-full hover:bg-gray-100 dark:hover:bg-white/5 flex items-center justify-center text-gray-400 transition-colors">
-                                            <Sparkles className="w-5 h-5" />
-                                        </button>
-                                        {profile?.isAdmin && (
-                                            <label className="flex items-center gap-2 text-sm text-gray-500 font-bold ml-4 cursor-pointer">
-                                                <input 
-                                                    type="checkbox" 
-                                                    checked={isAdminPost} 
-                                                    onChange={(e) => setIsAdminPost(e.target.checked)} 
-                                                    className="rounded text-black dark:text-white"
-                                                />
-                                                Official Post
+                                <div className="flex items-center justify-between mt-4">
+                                    <div className="flex gap-1 text-[var(--color-secondary)]">
+                                        <button className="p-2 hover:bg-[var(--color-surface-container)] rounded-full transition-colors"><ImageIcon className="w-5 h-5 text-[var(--color-secondary)]" /></button>
+                                        <button className="p-2 hover:bg-[var(--color-surface-container)] rounded-full transition-colors"><Sparkles className="w-5 h-5 text-[var(--color-secondary)]" /></button>
+                                        {user?.isAdmin && (
+                                            <label className="flex items-center gap-2 text-xs font-bold ml-2 cursor-pointer text-[var(--color-tertiary)] bg-[var(--color-tertiary-container)]/50 px-3 py-1.5 rounded-full">
+                                                <input type="checkbox" checked={isAdminPost} onChange={(e) => setIsAdminPost(e.target.checked)} className="rounded border-[var(--color-tertiary)] bg-[var(--color-surface-container-lowest)] text-[var(--color-tertiary)] focus:ring-[var(--color-tertiary)] focus:ring-offset-0 w-3 h-3" />
+                                                Official
                                             </label>
                                         )}
                                     </div>
                                     <button 
                                         onClick={handleCreatePost}
                                         disabled={!newPost.trim() || isSubmitting}
-                                        className="bg-black dark:bg-white text-white dark:text-black px-6 py-2.5 rounded-full font-black text-xs uppercase tracking-widest shadow-lg hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
+                                        className="bg-[var(--color-primary)] text-[var(--color-on-primary)] px-6 py-2 rounded-full text-sm font-bold tracking-tight hover:opacity-90 active:scale-95 transition-all font-[family-name:var(--font-manrope)] disabled:opacity-50"
                                     >
                                         {isSubmitting ? 'Posting...' : 'Post'}
                                     </button>
@@ -238,139 +227,119 @@ function CommunityContent() {
                         </div>
                     </div>
 
-                    {/* Posts List */}
-                    <div className="space-y-6">
+                    {/* Feed Posts List */}
+                    <div className="divide-y divide-[var(--color-outline)]/5 pb-24">
                         {loading ? (
-                            Array.from({ length: 3 }).map((_, i) => (
-                                <div key={i} className="h-64 rounded-[2.5rem] bg-gray-100 dark:bg-white/5 animate-pulse" />
-                            ))
+                            <div className="p-8 text-center text-[var(--color-outline)] font-medium text-sm">Loading feed...</div>
                         ) : (
                             posts.map((post) => {
-                                const isLiked = post.likes?.includes(user?.uid || '');
+                                const isLiked = post.likes?.includes(user?.id || '');
                                 return (
-                                    <motion.article 
-                                        key={post.id}
-                                        initial={{ opacity: 0, y: 20 }}
-                                        whileInView={{ opacity: 1, y: 0 }}
-                                        viewport={{ once: true }}
-                                        className={cn(
-                                            "rounded-[2.5rem] p-6 md:p-8 shadow-sm transition-all relative overflow-hidden group border",
-                                            post.isAdminPost 
-                                                ? "bg-amber-50/30 dark:bg-amber-900/10 border-amber-200 dark:border-amber-700/30 hover:shadow-amber-200/50" 
-                                                : "bg-white dark:bg-[#162032] border-gray-200 dark:border-white/5 hover:shadow-xl hover:shadow-black/5 dark:hover:shadow-white/5"
-                                        )}
-                                    >
-                                        {/* Optional Glow for special post types */}
-                                        {post.type === 'ai_share' && (
-                                            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 blur-[60px] pointer-events-none rounded-full" />
-                                        )}
+                                    <article key={post.id} className={cn("p-6 transition-colors hover:bg-[var(--color-surface-container-low)]/20", post.isAdminPost && "bg-[var(--color-tertiary-container)]/10")}>
+                                        <div className="flex gap-4">
+                                            <div className="w-12 h-12 shrink-0 flex justify-center mt-1">
+                                                <UserBadge uid={post.authorId} size="md" className="grayscale contrast-125" />
+                                            </div>
+                                            <div className="flex-1 space-y-3 min-w-0">
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-2 overflow-hidden">
+                                                        <span className="font-bold font-[family-name:var(--font-manrope)] text-sm tracking-tight truncate">User {post.authorId.substring(0, 4)}</span>
+                                                        <span className="text-xs text-[var(--color-outline)] font-medium shrink-0">• {formatTimeAgo(post.createdAt)}</span>
+                                                        {post.isAdminPost && <span className="bg-[var(--color-tertiary)] text-[var(--color-on-primary)] text-[9px] px-1.5 py-0.5 rounded font-bold uppercase tracking-widest shrink-0">Admin</span>}
+                                                    </div>
+                                                </div>
+                                                
+                                                {/* Text Content */}
+                                                <p className="text-[15px] leading-relaxed text-[var(--color-on-surface)] font-medium whitespace-pre-wrap break-words">
+                                                    {post.title && <span className="block font-bold mb-2 font-[family-name:var(--font-manrope)]">{post.title}</span>}
+                                                    {renderTextWithHashtags(post.content)}
+                                                </p>
 
-                                        <div className="flex items-center justify-between mb-6 relative z-10">
-                                            <div className="flex flex-row items-center gap-2">
-                                                <Link href={`/dashboard/profile/${post.authorId}`} className="group/author">
-                                                    <UserBadge uid={post.authorId} size="sm" className="hover:opacity-80 transition-opacity" />
-                                                </Link>
-                                                {post.isAdminPost && (
-                                                    <span className="flex items-center gap-1 bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest">
-                                                        <CheckCircle2 className="w-3 h-3" /> Admin
-                                                    </span>
+                                                {/* AI Output / Special Format Content */}
+                                                {post.type !== 'general' && (
+                                                    <div className={cn("p-4 rounded-2xl border-none mt-3", post.type === 'ai_share' ? "bg-[var(--color-tertiary-container)]/20" : "bg-[var(--color-surface-container)]")}>
+                                                        <div className={cn("flex items-center gap-2 mb-1.5", post.type === 'ai_share' ? "text-[var(--color-tertiary)]" : "text-[var(--color-primary)]")}>
+                                                            <Sparkles className="w-3.5 h-3.5" />
+                                                            <span className="text-[9px] font-extrabold uppercase tracking-[0.1em]">{post.type.replace('_share', ' Insight')}</span>
+                                                        </div>
+                                                        <p className={cn("text-[12px] leading-normal font-medium", post.type === 'ai_share' ? "text-[var(--color-tertiary)]/90" : "text-[var(--color-on-surface-variant)]")}>
+                                                            This post was generated or shared from a specific tool context.
+                                                        </p>
+                                                    </div>
                                                 )}
-                                            </div>
-                                            <p className="text-xs font-bold text-gray-400">{formatTimeAgo(post.createdAt)}</p>
-                                        </div>
 
-                                        <div className="mb-6 relative z-10">
-                                            {post.type !== 'general' && (
-                                                <span className={cn(
-                                                    "inline-block px-3 py-1 border rounded-full text-[10px] font-black uppercase tracking-widest mb-4",
-                                                    post.type === 'ai_share' ? "bg-indigo-50 dark:bg-indigo-500/10 border-indigo-100 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-400" :
-                                                    post.type === 'quiz' ? "bg-amber-50 dark:bg-amber-500/10 border-amber-100 dark:border-amber-500/20 text-amber-600 dark:text-amber-400" :
-                                                    "bg-gray-50 dark:bg-white/5 border-gray-100 dark:border-white/10 text-gray-500"
-                                                )}>
-                                                    {post.type.replace('_share', ' ✨')}
-                                                </span>
-                                            )}
-                                            {post.title && <h3 className="text-xl font-black text-black dark:text-white mb-3 tracking-tight">{post.title}</h3>}
-                                            <p className="text-[15px] text-gray-700 dark:text-gray-300 leading-relaxed font-medium whitespace-pre-wrap">
-                                                {renderTextWithHashtags(post.content)}
-                                            </p>
-                                        </div>
+                                                {/* Interaction Bar */}
+                                                <div className="flex items-center justify-between max-w-sm pt-2 text-[var(--color-outline)] font-semibold">
+                                                    <Link href={`/dashboard/community/${post.id}`} className="flex items-center gap-1.5 hover:text-blue-500 transition-colors text-xs font-[family-name:var(--font-inter)]">
+                                                        <MessageCircle className="w-[18px] h-[18px]" /> {post.commentCount || 0}
+                                                    </Link>
+                                                    <button className="flex items-center gap-1.5 hover:text-green-500 transition-colors text-xs">
+                                                        <TrendingUp className="w-[18px] h-[18px]" />
+                                                    </button>
+                                                    <button onClick={() => handleLike(post)} className={cn("flex items-center gap-1.5 transition-colors text-xs", isLiked ? "text-red-500" : "hover:text-red-500")}>
+                                                        <Heart className={cn("w-[18px] h-[18px]", isLiked && "fill-current")} /> {post.likes?.length || 0}
+                                                    </button>
+                                                    <button className="flex items-center gap-1.5 hover:text-blue-500 transition-colors text-xs">
+                                                        <Share2 className="w-[18px] h-[18px]" />
+                                                    </button>
+                                                </div>
 
-                                        {/* Interaction Bar */}
-                                        <div className="flex items-center border-t border-gray-50 dark:border-white/5 pt-5 relative z-10">
-                                            <div className="flex items-center space-x-6">
-                                                <button 
-                                                    onClick={() => handleLike(post)} 
-                                                    className={cn('flex items-center gap-2 text-sm font-bold transition-all', isLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-500')}
-                                                >
-                                                    <div className={cn('w-10 h-10 rounded-full flex items-center justify-center transition-colors', isLiked ? 'bg-red-50 dark:bg-red-500/10' : 'hover:bg-red-50 dark:hover:bg-red-500/10')}>
-                                                        <Heart className={cn('w-4 h-4', isLiked && 'fill-current')} />
-                                                    </div>
-                                                    <span>{post.likes?.length || 0}</span>
-                                                </button>
-                                                <Link href={`/dashboard/community/${post.id}`} className="flex items-center gap-2 text-sm font-bold text-gray-400 hover:text-black dark:hover:text-white transition-all">
-                                                    <div className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
-                                                        <MessageCircle className="w-4 h-4" />
-                                                    </div>
-                                                    <span>{post.commentCount || 0}</span>
-                                                </Link>
                                             </div>
-                                            <button className="w-10 h-10 ml-auto rounded-full bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-400 hover:text-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 hover:scale-105 transition-all">
-                                                <Share2 className="w-4 h-4" />
-                                            </button>
                                         </div>
-                                    </motion.article>
+                                    </article>
                                 );
                             })
                         )}
                     </div>
-                </main>
+                </section>
 
-                {/* ── RIGHT SIDEBAR: Trending ── */}
-                <aside className="lg:col-span-3 hidden lg:flex flex-col gap-6 sticky top-8 h-fit">
-                    <div className="bg-white dark:bg-[#162032] rounded-[2rem] p-6 border border-gray-200 dark:border-white/5 shadow-sm overflow-hidden relative">
-                        {/* Abstract background shape */}
-                        <div className="absolute -top-10 -right-10 w-32 h-32 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
-
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className="w-10 h-10 rounded-2xl bg-amber-100 dark:bg-amber-500/10 flex items-center justify-center text-amber-600">
-                                <TrendingUp className="w-5 h-5" />
+                {/* ── RIGHT CONTEXT ── */}
+                <aside className="col-span-3 hidden xl:block py-10 px-8">
+                    <div className="sticky top-10 space-y-6">
+                        {/* Search */}
+                        <div className="relative group">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-outline)] group-focus-within:text-[var(--color-primary)] transition-colors w-[18px] h-[18px]" />
+                            <input type="text" className="w-full pl-11 pr-4 py-2.5 bg-[var(--color-surface-container)] border-none rounded-full text-sm placeholder:text-[var(--color-outline)] font-medium focus:ring-0 focus:bg-[var(--color-surface-container-low)] transition-all font-[family-name:var(--font-inter)] text-[var(--color-on-surface)]" placeholder="Search Community" />
+                        </div>
+                        
+                        {/* Premium Tonal Block */}
+                        <div className="bg-[var(--color-primary)] p-6 rounded-3xl relative overflow-hidden text-[var(--color-on-primary)] shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)]">
+                            <div className="absolute -right-6 -top-6 w-32 h-32 bg-[var(--color-surface-container-lowest)] opacity-5 rounded-full blur-3xl"></div>
+                            <h3 className="text-xl font-bold font-[family-name:var(--font-manrope)] mb-2 leading-tight">Elevate your study game.</h3>
+                            <p className="text-[var(--color-on-primary)]/70 text-xs mb-6 leading-relaxed font-medium font-[family-name:var(--font-inter)]">Get advanced AI analysis, unlimited cloud storage, and priority support.</p>
+                            <Link href="/dashboard/upgrade" className="block text-center w-full py-3 bg-[var(--color-surface-container-lowest)] text-[var(--color-primary)] rounded-xl text-xs font-bold uppercase tracking-widest hover:scale-[0.98] transition-all font-[family-name:var(--font-manrope)]">
+                                Join Walia Pro
+                            </Link>
+                        </div>
+                        
+                        {/* Trending Topics */}
+                        <div className="bg-[var(--color-surface-container-low)] rounded-3xl p-6">
+                            <h3 className="text-sm font-bold font-[family-name:var(--font-manrope)] mb-5 px-1 tracking-tight text-[var(--color-on-surface)]">Trending Topics</h3>
+                            <div className="space-y-5">
+                                {[
+                                    { cat: 'Academics', title: '#FinalsPrep', stat: '2.4k Posts' },
+                                    { cat: 'Technology', title: '#AIHacks', stat: '12.1k Posts' },
+                                    { cat: 'Community', title: '#WaliaMeetup', stat: '840 Posts' }
+                                ].map((t, idx) => (
+                                    <div key={idx} className="px-1 group cursor-pointer">
+                                        <p className="text-[9px] text-[var(--color-outline)] font-extrabold uppercase tracking-widest mb-1 font-[family-name:var(--font-inter)]">{t.cat}</p>
+                                        <h4 className="text-[13px] font-bold text-[var(--color-on-surface)] group-hover:underline font-[family-name:var(--font-manrope)]">{t.title}</h4>
+                                        <p className="text-[10px] text-[var(--color-outline-variant)] font-semibold font-[family-name:var(--font-inter)]">{t.stat}</p>
+                                    </div>
+                                ))}
                             </div>
-                            <h3 className="text-lg font-black tracking-tight">Trending</h3>
+                            <button className="mt-6 text-[11px] font-bold text-[var(--color-primary)] hover:opacity-70 px-1 font-[family-name:var(--font-inter)]">Show more</button>
                         </div>
 
-                        <ul className="space-y-6">
-                            {[
-                                { tag: '#FinalsPrep', posts: '2.4k students', color: 'text-indigo-500' },
-                                { tag: '#AIHacks', posts: '1.8k posts', color: 'text-amber-500' },
-                                { tag: '#StudySession', posts: '950 online', color: 'text-emerald-500' },
-                                { tag: '#WaliaPro', posts: '420 winners', color: 'text-rose-500' }
-                            ].map((item, i) => (
-                                <li key={i} className="group cursor-pointer">
-                                    <p className="text-sm font-black text-black dark:text-white group-hover:text-amber-500 transition-colors">{item.tag}</p>
-                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">{item.posts}</p>
-                                </li>
+                        {/* Footer */}
+                        <footer className="px-1 flex flex-wrap gap-x-3 gap-y-1 opacity-40">
+                            {['Privacy', 'Terms', 'Cookies', 'Advertising'].map(link => (
+                                <a key={link} href="#" className="text-[10px] text-[var(--color-on-surface)] font-semibold hover:underline font-[family-name:var(--font-inter)]">{link}</a>
                             ))}
-                        </ul>
-
-                        <button className="w-full mt-8 py-3 rounded-2xl border-2 border-gray-100 dark:border-white/5 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:border-black dark:hover:border-white hover:text-black dark:hover:text-white transition-all">
-                            View All Topics
-                        </button>
+                            <p className="text-[10px] text-[var(--color-on-surface)] font-semibold w-full mt-2 font-[family-name:var(--font-inter)]">© {new Date().getFullYear()} Walia AI Inc.</p>
+                        </footer>
                     </div>
-
-                    {/* Pro CTA */}
-                    <Link href="/dashboard/upgrade" className="group rounded-[2rem] p-6 bg-black text-white shadow-xl shadow-black/20 hover:scale-[1.02] transition-transform overflow-hidden relative">
-                        <div className="relative z-10">
-                            <PartyPopper className="w-8 h-8 text-amber-400 mb-4" />
-                            <h4 className="text-lg font-black tracking-tight leading-tight">Join Walia Pro</h4>
-                            <p className="text-white/50 text-xs font-bold mt-2">Get verified badges and priority AI tools.</p>
-                        </div>
-                        <div className="absolute -bottom-8 -right-8 opacity-20 group-hover:scale-110 transition-transform">
-                            <CheckCircle2 className="w-24 h-24 text-white" />
-                        </div>
-                    </Link>
                 </aside>
-
             </div>
         </div>
     );

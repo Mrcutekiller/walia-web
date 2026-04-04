@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Walia AI - Tools</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-primary-fixed-variant": "#5c5b5b",
+                        "surface": "#f9f9f9",
+                        "surface-dim": "#d4dbdd",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary": "#fff7fa",
+                        "on-tertiary-container": "#614a61",
+                        "secondary-fixed": "#e4e2e1",
+                        "tertiary-dim": "#634c63",
+                        "on-tertiary-fixed-variant": "#6c546c",
+                        "outline-variant": "#adb3b4",
+                        "on-error": "#fff7f7",
+                        "inverse-primary": "#ffffff",
+                        "on-primary-container": "#525151",
+                        "error-dim": "#4f0116",
+                        "on-surface-variant": "#5a6061",
+                        "surface-container": "#ebeeef",
+                        "secondary-fixed-dim": "#d6d4d3",
+                        "surface-tint": "#5f5e5e",
+                        "error": "#9e3f4e",
+                        "primary-fixed": "#e5e2e1",
+                        "inverse-on-surface": "#9c9d9d",
+                        "on-secondary-fixed-variant": "#5c5b5b",
+                        "inverse-surface": "#0c0f0f",
+                        "background": "#f9f9f9",
+                        "on-secondary": "#fbf8f8",
+                        "surface-bright": "#f9f9f9",
+                        "secondary-dim": "#535353",
+                        "on-secondary-container": "#525252",
+                        "on-primary-fixed": "#403f3f",
+                        "on-background": "#2d3435",
+                        "surface-variant": "#dde4e5",
+                        "primary-fixed-dim": "#d6d4d3",
+                        "tertiary": "#6f576f",
+                        "on-tertiary-fixed": "#4e384e",
+                        "primary-container": "#e5e2e1",
+                        "on-secondary-fixed": "#3f3f3f",
+                        "on-primary": "#faf7f6",
+                        "secondary": "#5f5f5f",
+                        "outline": "#757c7d",
+                        "primary": "#5f5e5e",
+                        "primary-dim": "#535252",
+                        "surface-container-high": "#e4e9ea",
+                        "on-surface": "#2d3435",
+                        "tertiary-fixed-dim": "#eacbe7",
+                        "on-error-container": "#782232",
+                        "surface-container-highest": "#dde4e5",
+                        "tertiary-container": "#f8d9f6",
+                        "surface-container-low": "#f2f4f4",
+                        "tertiary-fixed": "#f8d9f6",
+                        "error-container": "#ff8b9a",
+                        "secondary-container": "#e4e2e1"
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9f9f9;
+        }
+        .ghost-border {
+            outline: 1px solid rgba(173, 179, 180, 0.15);
+        }
+    </style>
+</head>
+<body class="text-on-surface">
+<div class="flex min-h-screen">
+<!-- SideNavBar -->
+<aside class="h-screen w-64 flex flex-col sticky top-0 bg-[#f9f9f9] dark:bg-slate-900 flex flex-col h-full py-8 px-6 space-y-8 font-['Manrope'] font-medium tracking-tight">
+<div class="flex flex-col">
+<span class="text-2xl font-semibold text-[#2d3435] dark:text-white tracking-tight">Walia AI</span>
+<span class="text-xs text-[#5f5e5e] opacity-70 mt-1 uppercase tracking-widest">Level 12 • 2,450 XP</span>
+</div>
+<nav class="flex-1 space-y-2">
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg text-[#2d3435]/60 hover:bg-[#ebeeef] transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="chat_bubble">chat_bubble</span>
+                    AI Chat
+                </a>
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg text-[#2d3435]/60 hover:bg-[#ebeeef] transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="mail">mail</span>
+                    Messages
+                </a>
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg text-[#2d3435]/60 hover:bg-[#ebeeef] transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+                    Community
+                </a>
+<!-- Active Navigation: Tools -->
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg text-[#5f5e5e] dark:text-white font-semibold border-r-2 border-[#5f5e5e] bg-[#ebeeef]" href="#">
+<span class="material-symbols-outlined" data-icon="construction">construction</span>
+                    Tools
+                </a>
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg text-[#2d3435]/60 hover:bg-[#ebeeef] transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="calendar_today">calendar_today</span>
+                    Calendar
+                </a>
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg text-[#2d3435]/60 hover:bg-[#ebeeef] transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+                    Profile
+                </a>
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg text-[#2d3435]/60 hover:bg-[#ebeeef] transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+                    Settings
+                </a>
+</nav>
+<div class="pt-8">
+<button class="w-full bg-[#5f5e5e] text-white py-3 rounded-lg font-bold text-sm tracking-wide active:opacity-80 active:scale-[0.99] transition-all">
+                    Go Pro
+                </button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 bg-surface">
+<!-- TopNavBar -->
+<header class="docked full-width top-0 sticky z-40 bg-[#f9f9f9]/80 backdrop-blur-xl flex justify-between items-center w-full px-8 py-4 font-['Manrope'] font-medium">
+<div class="flex items-center gap-4">
+<h1 class="text-xl font-bold text-[#2d3435]">Tools</h1>
+</div>
+<div class="flex items-center gap-6">
+<div class="relative hidden md:block">
+<div class="flex items-center bg-surface-container px-4 py-2 rounded-full w-64 ghost-border">
+<span class="material-symbols-outlined text-outline text-sm" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm w-full font-body placeholder:text-outline-variant" placeholder="Search AI tools..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4 text-primary">
+<span class="material-symbols-outlined cursor-pointer hover:opacity-70 transition-opacity" data-icon="notifications">notifications</span>
+<span class="material-symbols-outlined cursor-pointer hover:opacity-70 transition-opacity" data-icon="help_outline">help_outline</span>
+<div class="w-8 h-8 rounded-full bg-surface-container-high overflow-hidden ghost-border">
+<img alt="Profile" class="w-full h-full object-cover" data-alt="close-up portrait of a professional male designer in a minimal bright studio environment looking at the camera" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCdn0H-Iqkc8dcjcMb-uIZfyyVcyIsO1G_lYVVg3mSeXqmVHNkkwKNCuUXt0DoxiNhrtXgrDsaWxa57DngUATeCq7uP3DUunxrTo6fNREGpE5ISUCJWLem7aRLu-vZlZSgJ1PaXZjuhk_W9u0qxUmamAoPA-ZNQ-tJrZ7g242hlnoC0qh0fNMvj3nqy8bAq8o_tvzvjea37kFU5zCEWN6Ktg28mQBLhEzZ0fqKi09EHyvI5CvEImzKPubPe4ExvBU3EyzLs3rkaMHU"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Page Content -->
+<div class="max-w-6xl mx-auto px-8 py-12">
+<!-- Hero Section -->
+<section class="mb-16">
+<p class="font-label text-xs tracking-widest text-primary uppercase mb-3">Workspace</p>
+<h2 class="font-headline text-5xl font-medium tracking-tight text-on-surface leading-tight max-w-2xl">
+                        AI Utilities for the <br/><span class="text-primary-dim">Modern Professional.</span>
+</h2>
+<div class="mt-8 flex gap-4 overflow-x-auto pb-4 no-scrollbar">
+<span class="px-4 py-1.5 rounded-full bg-on-surface text-surface text-xs font-medium cursor-pointer">All Tools</span>
+<span class="px-4 py-1.5 rounded-full bg-surface-container-low text-on-surface-variant text-xs font-medium cursor-pointer hover:bg-surface-container transition-colors">Productivity</span>
+<span class="px-4 py-1.5 rounded-full bg-surface-container-low text-on-surface-variant text-xs font-medium cursor-pointer hover:bg-surface-container transition-colors">Creative</span>
+<span class="px-4 py-1.5 rounded-full bg-surface-container-low text-on-surface-variant text-xs font-medium cursor-pointer hover:bg-surface-container transition-colors">Development</span>
+</div>
+</section>
+<!-- Tools Grid (Bento Layout Style) -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 items-start">
+<!-- Feature Tool (Large) -->
+<div class="lg:col-span-8 bg-surface-container-low rounded-xl p-8 flex flex-col justify-between group transition-all duration-300">
+<div>
+<div class="flex justify-between items-start mb-12">
+<div class="w-14 h-14 rounded-xl bg-surface-container-lowest flex items-center justify-center ghost-border shadow-sm">
+<span class="material-symbols-outlined text-primary text-3xl" data-icon="description">description</span>
+</div>
+<span class="bg-tertiary/10 text-tertiary px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase">Popular</span>
+</div>
+<h3 class="font-headline text-2xl font-semibold mb-4">Document Analyzer</h3>
+<p class="text-on-surface-variant leading-relaxed max-w-md font-body">
+                                Upload complex legal, technical, or research documents. Extract insights, summarize key findings, and ask natural language questions about your local files.
+                            </p>
+</div>
+<div class="mt-12 flex items-center justify-between">
+<div class="flex -space-x-2">
+<img class="w-8 h-8 rounded-full border-2 border-surface" data-alt="close-up portrait of a user icon in professional attire" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCRaZAvlGd_cqk3Cyjrref2POr2zPlrSG83wHbck3u2Ban4LKV-E6mmC01_Vs8UjYMfLYXsL7UADVvvWpzJajRjdHd2BE0qyHZQqyHqMRG4jaHCxbK3OMkXef3GJRZqV2OiO7np49MUWDwnIpivj5Lzyp-AfKz-DB_oSmUFZ5SzH7FqxRoeov2SBTfHohurHugsdqt7raJbIX5yJ_-Uhi16W6sHpPYeUTcphst-srvv_KmJO24OA2tRxRsczgfjOkP87cKvhNZ8rkQ"/>
+<img class="w-8 h-8 rounded-full border-2 border-surface" data-alt="close-up portrait of a user icon smiling" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDE69uilmgqEpE1ex74L8dG2m3F-z8DErUeAGWeuRI0lSGOzB3CzQRI6-z2wIkF9ERXbO8hRD08CjVOAfoloEnVUwunf6ys2RUmdtpnrujK4C6_1KWDxZVHOAgE2zoR4moT9nVyAtb2UVLkW9nPEwQ5lA8YqJctbfcM3eTPSPYqJYgbWwno7A6MXL40pBiEOKdiULPG77IEXMNTD4TG_X3TlFmHu0KPot6BNG2N60Eu-YI51GXzmjG4miwHytczyoJ39bnQrgv3Ea4"/>
+<div class="w-8 h-8 rounded-full border-2 border-surface bg-surface-container-highest flex items-center justify-center text-[10px] font-bold">+12</div>
+</div>
+<button class="bg-primary text-on-primary px-6 py-2.5 rounded-lg text-sm font-semibold transition-all hover:shadow-lg hover:-translate-y-0.5">Launch Tool</button>
+</div>
+</div>
+<!-- Small Tool 1 -->
+<div class="lg:col-span-4 bg-surface-container-lowest rounded-xl p-8 ghost-border flex flex-col h-full hover:bg-surface-container-low transition-all">
+<div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-primary" data-icon="auto_awesome_motion">auto_awesome_motion</span>
+</div>
+<h3 class="font-headline text-xl font-semibold mb-3">Content Planner</h3>
+<p class="text-on-surface-variant text-sm leading-relaxed mb-8 flex-1 font-body">
+                            Generate multi-channel content calendars based on your brand voice and target audience data.
+                        </p>
+<button class="w-full py-2.5 bg-surface-container-high text-on-surface text-sm font-semibold rounded-lg hover:bg-surface-container-highest transition-colors">Launch</button>
+</div>
+<!-- Small Tool 2 -->
+<div class="lg:col-span-4 bg-surface-container-lowest rounded-xl p-8 ghost-border flex flex-col hover:bg-surface-container-low transition-all">
+<div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-primary" data-icon="brush">brush</span>
+</div>
+<h3 class="font-headline text-xl font-semibold mb-3">Design Assistant</h3>
+<p class="text-on-surface-variant text-sm leading-relaxed mb-8 font-body">
+                            Transform wireframes into high-fidelity UI suggestions or generate custom icon sets in your brand's style.
+                        </p>
+<button class="w-full py-2.5 bg-surface-container-high text-on-surface text-sm font-semibold rounded-lg hover:bg-surface-container-highest transition-colors">Launch</button>
+</div>
+<!-- Medium Tool (Stretched) -->
+<div class="lg:col-span-8 bg-surface-container-low rounded-xl p-8 flex flex-col md:flex-row gap-8 items-center">
+<div class="flex-1">
+<div class="w-12 h-12 rounded-xl bg-surface-container-lowest flex items-center justify-center mb-6 ghost-border">
+<span class="material-symbols-outlined text-primary" data-icon="code">code</span>
+</div>
+<h3 class="font-headline text-xl font-semibold mb-3">Code Reviewer</h3>
+<p class="text-on-surface-variant text-sm leading-relaxed mb-6 font-body">
+                                Get instant, context-aware feedback on your pull requests. Identifies security vulnerabilities and suggests performance optimizations.
+                            </p>
+<button class="bg-primary text-on-primary px-6 py-2.5 rounded-lg text-sm font-semibold transition-all">Launch Tool</button>
+</div>
+<div class="w-full md:w-64 h-48 bg-surface-container-lowest rounded-lg overflow-hidden ghost-border p-4 relative">
+<!-- Decorative code visual -->
+<div class="space-y-2 opacity-20">
+<div class="h-2 w-3/4 bg-on-surface rounded"></div>
+<div class="h-2 w-1/2 bg-on-surface rounded"></div>
+<div class="h-2 w-5/6 bg-on-surface rounded"></div>
+<div class="h-2 w-2/3 bg-on-surface rounded"></div>
+<div class="h-2 w-1/4 bg-primary rounded"></div>
+<div class="h-2 w-3/4 bg-on-surface rounded"></div>
+</div>
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="bg-white p-3 rounded-lg shadow-xl flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" data-icon="check_circle">check_circle</span>
+<span class="text-[10px] font-bold font-label uppercase tracking-widest">Optimized</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Extra Tool -->
+<div class="lg:col-span-4 bg-surface-container-lowest rounded-xl p-8 ghost-border flex flex-col hover:bg-surface-container-low transition-all">
+<div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-primary" data-icon="translate">translate</span>
+</div>
+<h3 class="font-headline text-xl font-semibold mb-3">Localization Expert</h3>
+<p class="text-on-surface-variant text-sm leading-relaxed mb-8 font-body">
+                            Professional-grade translation that preserves cultural nuance and technical accuracy.
+                        </p>
+<button class="w-full py-2.5 bg-surface-container-high text-on-surface text-sm font-semibold rounded-lg hover:bg-surface-container-highest transition-colors">Launch</button>
+</div>
+</div>
+<!-- Footer Section -->
+<footer class="mt-24 pt-12 border-t border-surface-container flex flex-col md:flex-row justify-between items-center gap-8">
+<div>
+<p class="text-on-surface-variant text-sm font-body">© 2024 Walia AI Systems. All rights reserved.</p>
+</div>
+<div class="flex gap-8 text-on-surface-variant text-xs font-medium uppercase tracking-widest">
+<a class="hover:text-primary transition-colors" href="#">Documentation</a>
+<a class="hover:text-primary transition-colors" href="#">API Keys</a>
+<a class="hover:text-primary transition-colors" href="#">Support</a>
+</div>
+</footer>
+</div>
+</main>
+</div>
+</body></html>

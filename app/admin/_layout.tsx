@@ -30,6 +30,7 @@ export default function AdminLayout() {
             <Stack.Screen name="payments" options={{ title: 'Payments' }} />
             <Stack.Screen name="notifications" options={{ title: 'Broadcasts' }} />
             <Stack.Screen name="support" options={{ title: 'Support Inbox' }} />
+            <Stack.Screen name="settings" options={{ title: 'Global Settings' }} />
         </Stack>
     );
 }

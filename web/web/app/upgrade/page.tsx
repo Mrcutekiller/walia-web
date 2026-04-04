@@ -31,7 +31,7 @@ const PRO_FEATURES = [
 ];
 
 export default function UpgradePage() {
-    const { user, profile } = useAuth();
+    const { user } = useAuth();
     const [step, setStep] = useState(1); // 1: Pricing, 2: Payment Method, 3: Proof
     const [yearly, setYearly] = useState(false);
     const [selectedMethod, setSelectedMethod] = useState('');
@@ -39,7 +39,7 @@ export default function UpgradePage() {
     const [screenshot, setScreenshot] = useState<File | null>(null);
     const [success, setSuccess] = useState(false);
 
-    const isEthiopia = profile?.country === 'Ethiopia';
+    const isEthiopia = user?.country === 'Ethiopia';
     const currency = isEthiopia ? 'ETB' : 'USD';
     
     // Pricing
@@ -48,16 +48,16 @@ export default function UpgradePage() {
 
     const currentPrice = yearly ? yearlyPrice : monthlyPrice;
     
-    const canAffordWithXp = (profile?.xp || 0) >= 10000;
+    const canAffordWithXp = (user?.xp || 0) >= 10000;
 
     const handleXpUpgrade = async () => {
         if (!canAffordWithXp || !user) return;
         setUploading(true);
         try {
             await addDoc(collection(db, 'payments'), {
-                userId: user.uid,
+                userId: user.id,
                 userEmail: user.email,
-                userName: profile?.name || user.displayName,
+                userName: user?.name,
                 plan: 'xp_unlock',
                 amount: 10000,
                 currency: 'XP',
@@ -99,15 +99,15 @@ export default function UpgradePage() {
 
         try {
             // 1. Upload screenshot
-            const storageRef = ref(storage, `payment_proofs/${user.uid}_${Date.now()}`);
+            const storageRef = ref(storage, `payment_proofs/${user.id}_${Date.now()}`);
             await uploadBytes(storageRef, screenshot);
             const proofURL = await getDownloadURL(storageRef);
 
             // 2. Create payment request
             await addDoc(collection(db, 'payments'), {
-                userId: user.uid,
+                userId: user.id,
                 userEmail: user.email,
-                userName: profile?.name || user.displayName,
+                userName: user?.name,
                 plan: yearly ? 'yearly' : 'monthly',
                 amount: currentPrice,
                 currency,
@@ -119,7 +119,7 @@ export default function UpgradePage() {
 
             // 3. Send Notification to User
             await addDoc(collection(db, 'notifications'), {
-                userId: user.uid,
+                userId: user.id,
                 title: 'Payment Processing',
                 message: `We've received your payment proof for the ${yearly ? 'Yearly' : 'Monthly'} Pro plan. Our team is verifying it now.`,
                 type: 'system',
@@ -248,12 +248,12 @@ export default function UpgradePage() {
                                         Unlock with 10,000 XP
                                     </div>
                                     <span className="text-[10px] font-bold uppercase opacity-60">
-                                        Your Balance: {profile?.xp || 0} XP
+                                        Your Balance: {user?.xp || 0} XP
                                     </span>
                                 </button>
                                 {!canAffordWithXp && (
                                     <p className="text-[10px] text-center text-white/20 font-bold uppercase tracking-widest mt-2">
-                                        Need {(10000 - (profile?.xp || 0)).toLocaleString()} more XP
+                                        Need {(10000 - (user?.xp || 0)).toLocaleString()} more XP
                                     </p>
                                 )}
                             </div>

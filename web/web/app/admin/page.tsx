@@ -11,7 +11,7 @@ export default function AdminLoginPage() {
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
-    const { login } = useAuth(); // assuming login is exported or we can just use signInWithEmailAndPassword
+    useAuth(); // assuming we can just use signInWithEmailAndPassword
 
     // Wait, the AuthContext in web does not export login. Let's just use Firebase Auth directly.
     const handleLogin = async (e: React.FormEvent) => {

@@ -1,10 +1,22 @@
+import { BorderRadius, FontSize, FontWeight, Spacing } from '@/constants/theme';
+import { useTheme } from '@/store/theme';
+import { Ionicons } from '@expo/vector-icons';
+import { ResizeMode, Video } from 'expo-av';
+import { useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Animated, Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+const { width, height } = Dimensions.get('window');
+
 // ─── Live Counter Component (Mobile) ───
 const LiveCounter = ({ target, label, suffix = '' }: { target: number, label: string, suffix?: string }) => {
     const [count, setCount] = useState(0);
     useEffect(() => {
         let start = 0;
         const duration = 2000;
-        const increment = target / (duration / 16);
+        const increment = Math.max(1, target / (duration / 16));
         const timer = setInterval(() => {
             start += increment;
             if (start >= target) {
@@ -33,224 +45,137 @@ const LiveCounter = ({ target, label, suffix = '' }: { target: number, label: st
 
 export default function WelcomeScreen() {
     const router = useRouter();
-    const [showIntro, setShowIntro] = useState(true);
+    const { colors } = useTheme();
     const videoRef = useRef<Video>(null);
 
     // Animations
-    const contentOpacity = useRef(new Animated.Value(0)).current;
-    const contentTranslateY = useRef(new Animated.Value(40)).current;
-    const logoScale = useRef(new Animated.Value(0)).current;
-    const featureAnims = useRef([0, 1, 2, 3].map(() => new Animated.Value(0))).current;
-    const buttonsAnim = useRef(new Animated.Value(0)).current;
-
-    const features = [
-        { emoji: '✨', label: 'Walia AI', desc: 'GPT-4, Gemini & Claude help' },
-        { emoji: '💬', label: 'Social', desc: 'Connect with study groups' },
-        { emoji: '🛠️', label: 'Tools', desc: 'Summaries & Flashcards' },
-        { emoji: '📅', label: 'Calendar', desc: 'Smart study schedules' },
-    ];
-
-    const animateWelcomeContent = useCallback(() => {
-        Animated.sequence([
-            Animated.spring(logoScale, { toValue: 1, tension: 50, friction: 5, useNativeDriver: true }),
-            Animated.parallel([
-                Animated.timing(contentOpacity, { toValue: 1, duration: 400, useNativeDriver: true }),
-                Animated.timing(contentTranslateY, { toValue: 0, duration: 400, useNativeDriver: true }),
-            ]),
-            Animated.stagger(100, featureAnims.map(anim =>
-                Animated.spring(anim, { toValue: 1, tension: 60, friction: 6, useNativeDriver: true })
-            )),
-            Animated.spring(buttonsAnim, { toValue: 1, tension: 50, friction: 7, useNativeDriver: true }),
-        ]).start();
-    }, []);
-
-    const onVideoEnd = useCallback((status: AVPlaybackStatus) => {
-        if (status.isLoaded && status.didJustFinish) {
-            setShowIntro(false);
-            animateWelcomeContent();
-        }
-    }, [animateWelcomeContent]);
+    const fadeAnim = useRef(new Animated.Value(0)).current;
+    const slideAnim = useRef(new Animated.Value(30)).current;
 
     useEffect(() => {
-        const timer = setTimeout(() => {
-            if (showIntro) {
-                setShowIntro(false);
-                animateWelcomeContent();
-            }
-        }, 8000);
-        return () => clearTimeout(timer);
+        Animated.parallel([
+            Animated.timing(fadeAnim, { toValue: 1, duration: 1000, useNativeDriver: true }),
+            Animated.timing(slideAnim, { toValue: 0, duration: 1000, useNativeDriver: true }),
+        ]).start();
     }, []);
-
-    if (showIntro) {
-        return (
-            <View style={styles.introContainer}>
-                <StatusBar style="light" />
-                <Video
-                    ref={videoRef}
-                    source={require('../../assets/images/3d-logo.mp4')}
-                    style={styles.introVideo}
-                    resizeMode={ResizeMode.COVER}
-                    shouldPlay
-                    isMuted={false}
-                    volume={1.0}
-                    onPlaybackStatusUpdate={onVideoEnd}
-                />
-                <SafeAreaView edges={['top']} style={styles.skipContainer}>
-                    <TouchableOpacity style={styles.skipBtn} onPress={() => { setShowIntro(false); animateWelcomeContent(); }}>
-                        <Text style={styles.skipText}>Skip →</Text>
-                    </TouchableOpacity>
-                </SafeAreaView>
-            </View>
-        );
-    }
 
     return (
         <View style={styles.container}>
             <StatusBar style="light" />
-            <View style={StyleSheet.absoluteFill}>
-                <View style={styles.bgBase} />
-                <View style={styles.bgGlowTop} />
-                <View style={styles.bgGlowBottom} />
-            </View>
+            
+            {/* ━━━━━━━━━━ FULL-SCREEN BACKGROUND VIDEO ━━━━━━━━━━ */}
+            <Video
+                ref={videoRef}
+                source={require('../../assets/videos/welcome-bg.mp4')}
+                style={StyleSheet.absoluteFill}
+                resizeMode={ResizeMode.COVER}
+                shouldPlay
+                isLooping
+                isMuted={true}
+            />
 
-            <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+            {/* ── Dark Overlays (matching website) ── */}
+            <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.55)' }]} />
+            
+            <Animated.View style={[styles.content, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
                 <SafeAreaView style={styles.safeArea}>
-                    {/* Top section - Logo */}
-                    <View style={styles.topSection}>
+                    
+                    {/* ━━━━━━━━━━ BOTTOM-LEFT ANCHORED CONTENT ━━━━━━━━━━ */}
+                    <View style={styles.bottomContent}>
+                        
+                        {/* Version Badge */}
                         <View style={styles.badge}>
                             <View style={[styles.liveDot, { backgroundColor: '#4ADE80' }]} />
-                            <Text style={styles.badgeText}>v1.0 — OUT NOW</Text>
+                            <Text style={styles.badgeText}>v1.0 — NOW ON ANDROID</Text>
                         </View>
-                        <Animated.View style={[styles.logoOuter, { transform: [{ scale: logoScale }] }]}>
-                            <View style={styles.logoInner}>
-                                <Image
-                                    source={require('../../assets/images/walia-logo.png')}
-                                    style={styles.logoImage}
-                                    resizeMode="contain"
-                                />
-                            </View>
-                        </Animated.View>
-                        <Animated.View style={{ opacity: contentOpacity, transform: [{ translateY: contentTranslateY }] }}>
-                            <Text style={styles.appName}>Walia</Text>
+
+                        {/* Origin Line */}
+                        <Text style={styles.originLine}>FROM THE MOUNTAINS OF ETHIOPIA</Text>
+
+                        {/* App Title */}
+                        <Text style={styles.title}>Walia</Text>
+
+                        {/* Tagline */}
+                        <View style={styles.taglineRow}>
+                            <View style={styles.taglineLine} />
                             <Text style={styles.tagline}>Climb Higher. Think Smarter.</Text>
-                        </Animated.View>
-                    </View>
+                        </View>
 
-                    {/* Feature cards */}
-                    <View style={styles.featuresGrid}>
-                        {features.map((f, i) => (
-                            <Animated.View
-                                key={i}
-                                style={[
-                                    styles.featureCard,
-                                    {
-                                        opacity: featureAnims[i],
-                                        transform: [{
-                                            translateY: featureAnims[i].interpolate({
-                                                inputRange: [0, 1],
-                                                outputRange: [30, 0],
-                                            })
-                                        }],
-                                    }
-                                ]}
+                        {/* CTAs */}
+                        <View style={styles.buttonGroup}>
+                            <TouchableOpacity 
+                                style={styles.primaryBtn} 
+                                onPress={() => router.push('/(auth)/signup')}
+                                activeOpacity={0.8}
                             >
-                                <Text style={styles.featureEmoji}>{f.emoji}</Text>
-                                <Text style={styles.featureLabel}>{f.label}</Text>
-                                <Text style={styles.featureDesc}>{f.desc}</Text>
-                            </Animated.View>
-                        ))}
-                    </View>
+                                <Text style={styles.primaryBtnText}>Get Started Free</Text>
+                                <Ionicons name="arrow-forward" size={20} color="#000" />
+                            </TouchableOpacity>
 
-                    {/* Stats Section */}
-                    <View style={styles.statsSection}>
-                        <LiveCounter target={12450} label="Students" suffix="+" />
-                        <LiveCounter target={1200500} label="AI Messages" suffix="+" />
-                    </View>
+                            <TouchableOpacity 
+                                style={styles.secondaryBtn} 
+                                onPress={() => {}} // Download logic
+                                activeOpacity={0.8}
+                            >
+                                <Ionicons name="download-outline" size={20} color="#fff" />
+                                <Text style={styles.secondaryBtnText}>Download APK</Text>
+                            </TouchableOpacity>
+                        </View>
 
-                    {/* Buttons */}
-                    <Animated.View style={[styles.buttonsSection, {
-                        opacity: buttonsAnim,
-                        transform: [{ translateY: buttonsAnim.interpolate({ inputRange: [0, 1], outputRange: [30, 0] }) }],
-                    }]}>
-                        <TouchableOpacity style={styles.getStartedBtn} onPress={() => router.push('/(auth)/signup')}>
-                            <Text style={styles.getStartedText}>Get Started Free →</Text>
+                        {/* Sign In Link */}
+                        <TouchableOpacity 
+                            onPress={() => router.push('/(auth)/login')}
+                            style={styles.signInLink}
+                        >
+                            <Text style={styles.signInText}>
+                                Already a member? <Text style={styles.signInTextBold}>Sign In</Text>
+                            </Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.loginBtn} onPress={() => router.push('/(auth)/login')}>
-                            <Text style={styles.loginText}>Already a member? </Text>
-                            <Text style={styles.loginTextBold}>Sign In</Text>
-                        </TouchableOpacity>
-                    </Animated.View>
+
+                        {/* Stats Row (floating bottom right-ish on web, here just above buttons or below?) */}
+                        <View style={styles.statsRow}>
+                            <LiveCounter target={12450} label="Students" suffix="+" />
+                            <LiveCounter target={1200500} label="AI Messages" suffix="+" />
+                        </View>
+                    </View>
                 </SafeAreaView>
-            </ScrollView>
+            </Animated.View>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    introContainer: { flex: 1, backgroundColor: '#000' },
-    introVideo: { width, height, position: 'absolute', top: 0, left: 0 },
-    skipContainer: { position: 'absolute', top: 0, right: 0, paddingHorizontal: Spacing.xl, paddingTop: Spacing.md },
-    skipBtn: {
-        backgroundColor: 'rgba(255,255,255,0.1)',
-        paddingHorizontal: 20, paddingVertical: 10,
-        borderRadius: BorderRadius.pill,
-        borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)',
-    },
-    skipText: { color: '#fff', fontSize: FontSize.sm, fontWeight: FontWeight.semiBold },
-
-    container: { flex: 1 },
-    bgBase: { ...StyleSheet.absoluteFillObject, backgroundColor: '#000' },
-    bgGlowTop: { position: 'absolute', width: width * 1.5, height: width * 1.5, borderRadius: width, backgroundColor: '#fff', opacity: 0.03, top: -width * 0.8, left: -width * 0.25 },
-    bgGlowBottom: { position: 'absolute', width: width * 1.2, height: width * 1.2, borderRadius: width, backgroundColor: '#fff', opacity: 0.02, bottom: -width * 0.6, right: -width * 0.2 },
+    container: { flex: 1, backgroundColor: '#000' },
+    content: { flex: 1 },
+    safeArea: { flex: 1 },
+    bottomContent: { flex: 1, justifyContent: 'flex-end', paddingHorizontal: Spacing.xl * 1.5, paddingBottom: Spacing.xxxl },
     
-    scrollContent: { flexGrow: 1 },
-    safeArea: { flex: 1, paddingHorizontal: Spacing.xxl, paddingBottom: Spacing.xl },
+    badge: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.1)', paddingHorizontal: 16, paddingVertical: 8, borderRadius: BorderRadius.pill, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)', alignSelf: 'flex-start', marginBottom: 20 },
+    badgeText: { color: '#fff', fontSize: 10, fontWeight: FontWeight.black, letterSpacing: 1 },
     
-    topSection: { alignItems: 'center', paddingTop: Spacing.xl, marginBottom: Spacing.xl },
-    badge: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.08)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: BorderRadius.pill, borderVertical: 1, borderColor: 'rgba(255,255,255,0.15)', marginBottom: 24 },
-    badgeText: { color: 'rgba(255,255,255,0.7)', fontSize: 10, fontWeight: '900', letterSpacing: 1.5 },
+    originLine: { fontSize: 11, fontWeight: FontWeight.black, color: 'rgba(255,255,255,0.5)', letterSpacing: 4, marginBottom: 12 },
     
-    logoOuter: {
-        width: 100, height: 100, borderRadius: 50,
-        borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.2)',
-        alignItems: 'center', justifyContent: 'center',
-        padding: 4, marginBottom: Spacing.lg,
-    },
-    logoInner: {
-        width: 88, height: 88, borderRadius: 44,
-        backgroundColor: '#000', overflow: 'hidden',
-        alignItems: 'center', justifyContent: 'center',
-    },
-    logoImage: { width: 88, height: 88 },
-    appName: { fontSize: 48, fontWeight: '900', color: '#FFFFFF', letterSpacing: -1, marginBottom: 4, textAlign: 'center' },
-    tagline: { fontSize: FontSize.md, color: 'rgba(255,255,255,0.5)', fontWeight: '600', textAlign: 'center' },
-
-    featuresGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.md, marginBottom: Spacing.xxl },
-    featureCard: {
-        width: (width - Spacing.xxl * 2 - Spacing.md) / 2,
-        backgroundColor: 'rgba(255,255,255,0.05)',
-        borderRadius: BorderRadius.xl, padding: Spacing.lg,
-        borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
-    },
-    featureEmoji: { fontSize: 24, marginBottom: 8 },
-    featureLabel: { fontSize: FontSize.md, fontWeight: '800', color: '#fff', marginBottom: 4 },
-    featureDesc: { fontSize: 11, color: 'rgba(255,255,255,0.4)', lineHeight: 15, fontWeight: '500' },
-
-    statsSection: { flexDirection: 'row', justifyContent: 'space-around', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: BorderRadius.xl, paddingVertical: 20, marginBottom: Spacing.xxl, borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
+    title: { fontSize: 90, fontWeight: FontWeight.black, color: '#fff', letterSpacing: -4, lineHeight: 85, marginBottom: 12 },
+    
+    taglineRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 40 },
+    taglineLine: { height: 2, width: 30, backgroundColor: 'rgba(255,255,255,0.4)', borderRadius: 1 },
+    tagline: { fontSize: 18, color: 'rgba(255,255,255,0.8)', fontWeight: FontWeight.bold },
+    
+    buttonGroup: { gap: 12, marginBottom: 20 },
+    primaryBtn: { backgroundColor: '#fff', height: 64, borderRadius: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
+    primaryBtnText: { fontSize: 16, fontWeight: FontWeight.black, color: '#000' },
+    
+    secondaryBtn: { backgroundColor: 'rgba(255,255,255,0.1)', height: 64, borderRadius: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.25)' },
+    secondaryBtnText: { fontSize: 16, fontWeight: FontWeight.bold, color: '#fff' },
+    
+    signInLink: { alignItems: 'center', marginTop: 10 },
+    signInText: { fontSize: 15, color: 'rgba(255,255,255,0.6)', fontWeight: FontWeight.medium },
+    signInTextBold: { color: '#fff', fontWeight: FontWeight.black },
+    
+    statsRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 20, marginTop: 20, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.1)' },
     statItem: { alignItems: 'center' },
     statValueRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
     liveDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#4ADE80' },
-    statValue: { fontSize: 18, fontWeight: '900', color: '#fff' },
-    statLabel: { fontSize: 9, fontWeight: '800', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: 1, marginTop: 2 },
-
-    buttonsSection: { gap: Spacing.md },
-    getStartedBtn: {
-        backgroundColor: '#fff',
-        borderRadius: BorderRadius.pill, paddingVertical: 18,
-        alignItems: 'center', shadowColor: '#fff', shadowOpacity: 0.1, shadowRadius: 10,
-    },
-    getStartedText: { color: '#000', fontSize: FontSize.lg, fontWeight: '900' },
-    loginBtn: { flexDirection: 'row', justifyContent: 'center', paddingVertical: Spacing.sm },
-    loginText: { fontSize: FontSize.md, color: 'rgba(255,255,255,0.5)', fontWeight: '600' },
-    loginTextBold: { fontSize: FontSize.md, color: '#fff', fontWeight: '900' },
+    statValue: { fontSize: 20, fontWeight: FontWeight.black, color: '#fff' },
+    statLabel: { fontSize: 10, fontWeight: FontWeight.black, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: 1.5, marginTop: 4 },
 });

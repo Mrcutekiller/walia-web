@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, query, limit, getDocs, doc, updateDoc, increment, orderBy, where } from 'firebase/firestore';
-import { Search, ShieldAlert, Star, Coin, UserMinus, Loader2, CheckCircle2 } from 'lucide-react';
+import { Search, ShieldAlert, Star, UserMinus, Loader2, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import UserBadge from '@/components/UserBadge';
 
@@ -147,7 +147,7 @@ export default function AdminUsers() {
                                                 <div>
                                                     <p className="text-sm font-black text-black dark:text-white flex items-center gap-2">
                                                         {u.name} 
-                                                        {u.isAdmin && <ShieldAlert className="w-3 h-3 text-amber-500" title="Admin User" />}
+                                                        {u.isAdmin && <ShieldAlert className="w-3 h-3 text-amber-500" />}
                                                     </p>
                                                     <p className="text-xs font-bold text-gray-400 truncate w-32 md:w-48">{u.email}</p>
                                                     <p className="text-[9px] font-mono text-gray-300 dark:text-gray-600 mt-1">ID: {u.id}</p>

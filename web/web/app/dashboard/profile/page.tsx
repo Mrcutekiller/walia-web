@@ -2,10 +2,10 @@
 
 import UserBadge from '@/components/UserBadge';
 import { useAuth } from '@/context/AuthContext';
-import { db, storage } from '@/lib/firebase';
+import { auth, db, storage } from '@/lib/firebase';
 import { deleteAccount } from '@/lib/user';
 import { cn, formatTimeAgo } from '@/lib/utils';
-import { updateProfile } from 'firebase/auth';
+import { updateProfile as updateFirebaseProfile } from 'firebase/auth';
 import {
     arrayRemove,
     arrayUnion,
@@ -51,9 +51,9 @@ interface Post {
 }
 
 /* ── Premium White ID Card ── */
-function WaliaIDCard({ user, profile, formData, waliaId, isFlipped, setIsFlipped, fileInputRef, isEditing, uploading, handleAvatarUpload }: any) {
-    const memberSince = profile?.createdAt?.toDate
-        ? profile.createdAt.toDate().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+function WaliaIDCard({ user, formData, waliaId, isFlipped, setIsFlipped, fileInputRef, isEditing, uploading, handleAvatarUpload }: any) {
+    const memberSince = user?.createdAt?.toDate
+        ? user.createdAt.toDate().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
         : '2026';
 
     return (
@@ -129,13 +129,13 @@ function WaliaIDCard({ user, profile, formData, waliaId, isFlipped, setIsFlipped
                                 {/* Name / info */}
                                 <div className="flex-1 min-w-0">
                                     <h3 className="text-base font-black text-black dark:text-white truncate leading-tight">{formData.name || 'Set your name'}</h3>
-                                    <p className="text-gray-400 dark:text-gray-500 text-[10px] font-bold uppercase tracking-wider truncate mt-0.5">@{profile?.username || 'member'}</p>
+                                    <p className="text-gray-400 dark:text-gray-500 text-[10px] font-bold uppercase tracking-wider truncate mt-0.5">@{user?.username || 'member'}</p>
                                     <div className="flex items-center gap-1.5 mt-2">
                                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
                                             <CheckCircle2 className="w-2.5 h-2.5" /> Verified
                                         </span>
                                         <span className="inline-flex px-2 py-0.5 rounded-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-[9px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                            {profile?.plan || 'Free'}
+                                            {user?.plan || 'Free'}
                                         </span>
                                     </div>
                                 </div>
@@ -188,7 +188,7 @@ function WaliaIDCard({ user, profile, formData, waliaId, isFlipped, setIsFlipped
 
 /* ── Main Profile Page ── */
 export default function ProfilePage() {
-    const { user, profile } = useAuth();
+    const { user, logout, updateProfile } = useAuth();
     const router = useRouter();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -204,33 +204,33 @@ export default function ProfilePage() {
     });
 
     useEffect(() => {
-        if (profile && user) {
+        if (user) {
             setFormData({
-                name: profile.name || profile.displayName || user.displayName || '',
-                username: profile.username || '',
+                name: user.name || user.displayName || '',
+                username: user.username || '',
                 email: user.email || '',
-                bio: profile.bio || '',
-                age: profile.age || '',
-                gender: profile.gender || '',
-                school: profile.school || '',
-                schoolLevel: profile.schoolLevel || '',
+                bio: user.bio || '',
+                age: user.age || '',
+                gender: user.gender || '',
+                school: user.school || '',
+                schoolLevel: user.schoolLevel || '',
             });
         }
-    }, [profile, user]);
+    }, [user]);
 
     useEffect(() => {
         if (!user) return;
-        const q = query(collection(db, 'posts'), where('authorId', '==', user.uid), orderBy('createdAt', 'desc'), limit(20));
+        const q = query(collection(db, 'posts'), where('authorId', '==', user.id), orderBy('createdAt', 'desc'), limit(20));
         const unsub = onSnapshot(q, snap => setPosts(snap.docs.map(d => ({ id: d.id, ...d.data() } as Post))));
         return () => unsub();
     }, [user]);
 
     const handleSave = async () => {
-        if (!user) return;
+        if (!user || !auth.currentUser) return;
         setLoading(true);
         try {
-            await updateDoc(doc(db, 'users', user.uid), { bio: formData.bio, name: formData.name });
-            await updateProfile(user, { displayName: formData.name });
+            await updateDoc(doc(db, 'users', user.id), { bio: formData.bio, name: formData.name });
+            await updateFirebaseProfile(auth.currentUser, { displayName: formData.name });
             setIsEditing(false);
         } catch (error) { console.error(error); }
         finally { setLoading(false); }
@@ -241,11 +241,11 @@ export default function ProfilePage() {
         if (!file || !user) return;
         setUploading(true);
         try {
-            const storageRef = ref(storage, `avatars/${user.uid}`);
+            const storageRef = ref(storage, `avatars/${user.id}`);
             await uploadBytes(storageRef, file);
             const url = await getDownloadURL(storageRef);
-            await updateDoc(doc(db, 'users', user.uid), { photoURL: url });
-            await updateProfile(user, { photoURL: url });
+            await updateDoc(doc(db, 'users', user.id), { photoURL: url });
+            await updateProfile({ photoURL: url });
         } catch (error) { console.error(error); }
         finally { setUploading(false); }
     };
@@ -253,8 +253,8 @@ export default function ProfilePage() {
     const handleLike = async (post: Post) => {
         if (!user) return;
         const postRef = doc(db, 'posts', post.id);
-        const isLiked = post.likes?.includes(user.uid);
-        await updateDoc(postRef, { likes: isLiked ? arrayRemove(user.uid) : arrayUnion(user.uid) });
+        const isLiked = post.likes?.includes(user.id);
+        await updateDoc(postRef, { likes: isLiked ? arrayRemove(user.id) : arrayUnion(user.id) });
     };
 
     const handleDeletePost = async (postId: string) => {
@@ -270,7 +270,7 @@ export default function ProfilePage() {
     };
 
     if (!user) return null;
-    const waliaId = `WAL-${user.uid.slice(0, 8).toUpperCase()}`;
+    const waliaId = `WAL-${user.id.slice(0, 8).toUpperCase()}`;
 
     return (
         <div className="min-h-full bg-[#FAFAFA] dark:bg-[#0A101D] text-black dark:text-white pb-24">
@@ -348,7 +348,7 @@ export default function ProfilePage() {
                             ) : (
                                 <div className="animate-in fade-in">
                                     <h1 className="text-xl font-black text-black dark:text-white tracking-tight">{formData.name || 'Set your name'}</h1>
-                                    <p className="text-sm font-bold text-gray-400 dark:text-gray-500 mt-0.5">@{profile?.username || `user_${user.uid.slice(0, 5)}`}</p>
+                                    <p className="text-sm font-bold text-gray-400 dark:text-gray-500 mt-0.5">@{user?.username || `user_${user.id.slice(0, 5)}`}</p>
                                     <p className="text-[14px] font-medium text-gray-600 dark:text-gray-300 leading-relaxed mt-3 mb-5">
                                         {formData.bio || 'No bio yet. Click Edit to add one.'}
                                     </p>
@@ -361,12 +361,12 @@ export default function ProfilePage() {
                                         </div>
                                         <div className="w-px bg-gray-100 dark:bg-white/10" />
                                         <div className="text-center">
-                                            <p className="text-lg font-black text-black dark:text-white">{profile?.followersCount || 0}</p>
+                                            <p className="text-lg font-black text-black dark:text-white">{user?.followers?.length || 0}</p>
                                             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Followers</p>
                                         </div>
                                         <div className="w-px bg-gray-100 dark:bg-white/10" />
                                         <div className="text-center">
-                                            <p className="text-lg font-black text-black dark:text-white">{profile?.followingCount || 0}</p>
+                                            <p className="text-lg font-black text-black dark:text-white">{user?.following?.length || 0}</p>
                                             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Following</p>
                                         </div>
                                     </div>
@@ -381,7 +381,6 @@ export default function ProfilePage() {
                     <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150">
                         <WaliaIDCard
                             user={user}
-                            profile={profile}
                             formData={formData}
                             waliaId={waliaId}
                             isFlipped={isFlipped}
@@ -411,7 +410,7 @@ export default function ProfilePage() {
                                 </div>
                             ) : (
                                 posts.map(post => {
-                                    const isLiked = post.likes?.includes(user?.uid || '');
+                                    const isLiked = post.likes?.includes(user?.id || '');
                                     return (
                                         <div key={post.id} className="p-6 rounded-[2.5rem] bg-white dark:bg-[#162032] border border-gray-200 dark:border-white/5 shadow-sm hover:shadow-xl hover:shadow-black/5 dark:hover:shadow-white/5 transition-all">
                                             <div className="flex items-center justify-between mb-5">

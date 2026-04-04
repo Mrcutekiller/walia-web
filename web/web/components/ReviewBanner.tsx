@@ -27,7 +27,7 @@ export default function ReviewBanner() {
         if (!user) return;
 
         // Check if user has already reviewed
-        const q = query(collection(db, 'reviews'), where('userId', '==', user.uid));
+        const q = query(collection(db, 'reviews'), where('userId', '==', user.id));
         const unsub = onSnapshot(q, (snapshot) => {
             if (snapshot.empty) {
                 // Only show if no review exists
@@ -50,8 +50,8 @@ export default function ReviewBanner() {
 
         try {
             const reviewData = {
-                userId: user.uid,
-                userName: user.displayName || user.email?.split('@')[0] || 'Anonymous',
+                userId: user.id,
+                userName: user.name || user.email?.split('@')[0] || 'Anonymous',
                 userPhoto: user.photoURL || '',
                 rating,
                 comment,

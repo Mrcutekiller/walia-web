@@ -1,9 +1,10 @@
 import { AuthProvider } from '@/context/AuthContext';
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Inter, Manrope } from 'next/font/google';
 import './globals.css';
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+const manrope = Manrope({ subsets: ['latin'], variable: '--font-manrope' });
 
 export const metadata: Metadata = {
   title: 'Walia - Your AI Study Companion',
@@ -22,7 +23,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body suppressHydrationWarning className={`${inter.className} bg-white dark:bg-[#0A0A18] text-black dark:text-white antialiased transition-colors duration-300`}>
+      <body suppressHydrationWarning className={`${inter.variable} ${manrope.variable} font-sans antialiased transition-colors duration-300`}>
         <AuthProvider>
           <NotificationProvider>
             <ThemeProvider>

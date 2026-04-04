@@ -183,15 +183,23 @@ export function SocialProvider({ children }: { children: ReactNode }) {
 
     // ── Real-time Sync ──
     useEffect(() => {
+        const fallbackTimer = setTimeout(() => {
+            console.warn('SocialProvider Firestore sync timeout, continuing with local data');
+        }, 5000);
+
         // 1. Sync Posts
         const postsQuery = query(collection(db, 'posts'), orderBy('createdAt', 'desc'), firestoreLimit(50));
         const unsubscribePosts = onSnapshot(postsQuery, (snap: any) => {
+            clearTimeout(fallbackTimer);
             const postsData = snap.docs.map((doc: any) => ({ id: doc.id, ...doc.data() })) as SocialPost[];
             // For authenticated users, we only show real posts. For guests, we show DEFAULT_POSTS if empty.
             setState(prev => ({
                 ...prev,
                 posts: postsData
             }));
+        }, (error) => {
+            clearTimeout(fallbackTimer);
+            console.warn('Posts sync error, using defaults:', error);
         });
 
         // 2. Sync User Stats
@@ -218,6 +226,7 @@ export function SocialProvider({ children }: { children: ReactNode }) {
         }
 
         return () => {
+            clearTimeout(fallbackTimer);
             unsubscribePosts();
             unsubscribeStats();
         };

@@ -12,6 +12,7 @@
     "vercel-build": "npm run build --prefix web/web"
   },
   "dependencies": {
+    "@expo-google-fonts/inter": "^0.4.2",
     "@expo/vector-icons": "^15.0.3",
     "@genkit-ai/firebase": "^1.29.0",
     "@genkit-ai/googleai": "^1.28.0",
@@ -24,6 +25,7 @@
     "expo": "~54.0.33",
     "expo-auth-session": "~7.0.10",
     "expo-av": "~16.0.8",
+    "expo-build-properties": "~1.0.10",
     "expo-constants": "~18.0.13",
     "expo-crypto": "~15.0.8",
     "expo-file-system": "~19.0.21",
@@ -34,6 +36,7 @@
     "expo-linear-gradient": "~15.0.8",
     "expo-linking": "~8.0.11",
     "expo-media-library": "~18.2.1",
+    "expo-modules-autolinking": "3.0.24",
     "expo-router": "~6.0.23",
     "expo-splash-screen": "~31.0.13",
     "expo-status-bar": "~3.0.9",

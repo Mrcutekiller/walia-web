@@ -31,7 +31,7 @@ export default function NotificationPanel() {
 
         const q = query(
             collection(db, 'notifications'),
-            where('userId', '==', user.uid),
+            where('userId', '==', user.id),
             orderBy('createdAt', 'desc')
         );
 
@@ -52,7 +52,7 @@ export default function NotificationPanel() {
         
         let notifiedEvents = new Set<string>();
         
-        const q = query(collection(db, 'users', user.uid, 'events'));
+        const q = query(collection(db, 'users', user.id, 'events'));
         const unsubscribe = onSnapshot(q, (snapshot) => {
             const events = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as any }));
             
@@ -68,7 +68,7 @@ export default function NotificationPanel() {
                         // Trigger real-time notification
                         try {
                             await addDoc(collection(db, 'notifications'), {
-                                userId: user.uid,
+                                userId: user.id,
                                 title: 'Task Reminder',
                                 message: `It's time for: ${event.title}`,
                                 type: 'system',

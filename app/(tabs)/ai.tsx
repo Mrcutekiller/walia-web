@@ -23,6 +23,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
 
+const MODES = [
+    { id: 'Study', label: 'Study Helper', icon: 'brain', desc: 'Academic & tutoring mode' },
+    { id: 'Work', label: 'Work Assistant', icon: 'sparkles', desc: 'Professional & productive' },
+    { id: 'Debate', label: 'Debate AI', icon: 'chatbubbles', desc: 'Critical thinking & logic' },
+    { id: 'Fun', label: 'Fun Mode', icon: 'happy', desc: 'Witty & entertaining' },
+];
+
 type ChatMessage = { id: string; role: 'user' | 'ai'; text: string; imageUri?: string; timestamp: string; provider?: AIProvider; onShare?: () => void };
 
 function AnimatedBubble({ message, colors }: { message: ChatMessage; colors: any }) {
@@ -102,6 +109,8 @@ export default function AITabScreen() {
     const [message, setMessage] = useState('');
     const [preferredProvider, setPreferredProvider] = useState<AIProvider>('auto');
     const [showModels, setShowModels] = useState(false);
+    const [activeMode, setActiveMode] = useState(MODES[0]);
+    const [showModes, setShowModes] = useState(false);
     const [sessions, setSessions] = useState<{ id: string, title: string, lastText: string, updatedAt: any }[]>([]);
     const [activeSession, setActiveSession] = useState<string | null>(null);
     const scrollRef = useRef<ScrollView>(null);
@@ -230,7 +239,8 @@ export default function AITabScreen() {
                 updatedAt: serverTimestamp()
             });
 
-            const { text: aiText, provider } = await askAI(content, buildHistory(chatMessages), preferredProvider);
+            const systemPrompt = `You are in ${activeMode.id} mode. ${activeMode.desc}.`;
+            const { text: aiText, provider } = await askAI(content, buildHistory(chatMessages), preferredProvider, systemPrompt);
 
             // Save AI message to Firestore
             await addDoc(collection(db, 'users', user!.id, 'ai_sessions', sessionId, 'messages'), {
@@ -279,23 +289,31 @@ export default function AITabScreen() {
 
     return (
         <View style={[styles.container, { backgroundColor: colors.background }]}>
-            {/* Gradient Header */}
+            {/* Gradient Header - Mirroring Website Header */}
             <LinearGradient
-                colors={isDark ? ['#000000', '#121212'] : ['#F9FAFB', '#FFFFFF']}
-                style={styles.headerGradient}
+                colors={isDark ? ['#000000', '#121212'] : ['#FFFFFF', '#F9FAFB']}
+                style={[styles.headerGradient, { borderBottomColor: colors.divider, borderBottomWidth: 1 }]}
             >
                 <SafeAreaView edges={['top']} style={styles.headerInner}>
                     <View style={styles.headerRow}>
                         <View style={styles.headerLeft}>
-                            <View style={styles.logoCircle}>
-                                <Image source={require('../../assets/images/walia-logo.png')} style={{ width: 44, height: 44 }} resizeMode="contain" />
-                            </View>
+                            <TouchableOpacity 
+                                onPress={() => setShowModes(true)}
+                                style={[styles.menuBtn, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}
+                            >
+                                <Ionicons name="menu-outline" size={20} color={colors.text} />
+                            </TouchableOpacity>
                             <View>
-                                <Text style={[styles.headerTitle, { color: colors.text }]}>Walia AI</Text>
-                                <View style={styles.statusRow}>
-                                    <View style={[styles.statusDot, { backgroundColor: isLoading ? '#FFA502' : '#2ED573' }]} />
-                                    <Text style={[styles.statusText, { color: colors.textSecondary }]}>{isLoading ? 'Thinking...' : `${providerObj.name} · Online`}</Text>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                                    <View style={styles.logoTiny}>
+                                        <Image source={require('../../assets/images/walia-logo.png')} style={{ width: 14, height: 14 }} resizeMode="contain" />
+                                    </View>
+                                    <Text style={[styles.headerTitle, { color: colors.text }]}>Walia AI</Text>
+                                    <View style={styles.activeBadge}>
+                                        <Text style={styles.activeBadgeText}>ACTIVE</Text>
+                                    </View>
                                 </View>
+                                <Text style={[styles.modeLabel, { color: colors.textTertiary }]}>{activeMode.label} Mode</Text>
                             </View>
                         </View>
                         <View style={styles.headerRight}>
@@ -303,28 +321,46 @@ export default function AITabScreen() {
                                 <Text style={{ fontSize: 12 }}>🪙</Text>
                                 <Text style={[styles.tokenText, { color: isPro ? '#6C63FF' : colors.text }]}>{tokenDisplay}</Text>
                             </View>
-                            <TouchableOpacity onPress={() => router.push('/ai/' as any)} style={[styles.historyBtn, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}>
-                                <Ionicons name="time-outline" size={16} color={colors.text} />
-                            </TouchableOpacity>
                         </View>
                     </View>
-
-                    {/* Stats bar */}
-                    {sessions.length > 0 && !activeSession && (
-                        <View style={[styles.statsBar, { borderTopColor: colors.divider }]}>
-                            <Text style={[styles.statsText, { color: colors.textSecondary }]}>{sessions.length} total sessions</Text>
-                        </View>
-                    )}
-
-                    {activeSession && (
-                        <View style={[styles.statsBar, { borderTopColor: colors.divider }]}>
-                            <TouchableOpacity onPress={() => setActiveSession(null)}>
-                                <Text style={[styles.clearBtn, { color: colors.primary }]}>← Back to Home / New Chat</Text>
-                            </TouchableOpacity>
-                        </View>
-                    )}
                 </SafeAreaView>
             </LinearGradient>
+
+            {/* Persona Selection Modal (Mirroring Website Sidebar) */}
+            {showModes && (
+                <View style={styles.modalOverlay}>
+                    <TouchableOpacity style={styles.modalBlur} onPress={() => setShowModes(false)} />
+                    <Animated.View style={[styles.personaModal, { backgroundColor: colors.surface }]}>
+                        <View style={styles.modalHeader}>
+                            <Text style={[styles.modalTitle, { color: colors.text }]}>AI PERSONAS</Text>
+                            <TouchableOpacity onPress={() => setShowModes(false)}>
+                                <Ionicons name="close" size={24} color={colors.textTertiary} />
+                            </TouchableOpacity>
+                        </View>
+                        <ScrollView style={styles.personaList}>
+                            {MODES.map((m) => {
+                                const active = m.id === activeMode.id;
+                                return (
+                                    <TouchableOpacity 
+                                        key={m.id}
+                                        onPress={() => { setActiveMode(m); setShowModes(false); }}
+                                        style={[styles.personaItem, { backgroundColor: active ? colors.surfaceAlt : 'transparent', borderColor: active ? colors.divider : 'transparent' }]}
+                                    >
+                                        <View style={[styles.personaIconBox, { backgroundColor: active ? colors.primary : colors.surfaceAlt }]}>
+                                            <Ionicons name={m.icon as any} size={18} color={active ? colors.textInverse : colors.textSecondary} />
+                                        </View>
+                                        <View style={{ flex: 1 }}>
+                                            <Text style={[styles.personaLabel, { color: active ? colors.text : colors.textSecondary }]}>{m.label}</Text>
+                                            <Text style={[styles.personaDesc, { color: colors.textTertiary }]}>{m.desc}</Text>
+                                        </View>
+                                        {active && <Ionicons name="checkmark-circle" size={20} color={colors.primary} />}
+                                    </TouchableOpacity>
+                                );
+                            })}
+                        </ScrollView>
+                    </Animated.View>
+                </View>
+            )}
 
             {/* Model Selector Dropdown */}
             {showModels && (
@@ -501,7 +537,7 @@ const styles = StyleSheet.create({
     headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: Spacing.sm },
     headerLeft: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md },
     logoCircle: { width: 46, height: 46, borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: '#eee', backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' },
-    headerTitle: { fontSize: FontSize.lg, fontWeight: FontWeight.heavy },
+    headerTitle: { fontSize: FontSize.lg, fontWeight: FontWeight.black },
     statusRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 2 },
     statusDot: { width: 6, height: 6, borderRadius: 3 },
     statusText: { fontSize: FontSize.xs },
@@ -520,12 +556,12 @@ const styles = StyleSheet.create({
     messages: { flex: 1 },
     emptyState: { alignItems: 'center', paddingTop: Spacing.xxl },
     emptyLogoRing: { width: 88, height: 88, borderRadius: 24, alignItems: 'center', justifyContent: 'center', marginBottom: Spacing.xl },
-    emptyTitle: { fontSize: FontSize.xxl, fontWeight: FontWeight.heavy, marginBottom: Spacing.sm, textAlign: 'center' },
+    emptyTitle: { fontSize: FontSize.xxl, fontWeight: FontWeight.black, marginBottom: Spacing.sm, textAlign: 'center' },
     emptyDesc: { fontSize: FontSize.md, textAlign: 'center', lineHeight: 22, paddingHorizontal: Spacing.xxl, marginBottom: Spacing.xxl },
     suggestGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm, alignSelf: 'stretch', marginBottom: Spacing.xxl },
     suggestChip: { borderRadius: 12, paddingHorizontal: Spacing.lg, paddingVertical: Spacing.sm + 2, borderWidth: 1 },
     suggestChipText: { fontSize: FontSize.sm, fontWeight: FontWeight.bold },
-    recentLabel: { alignSelf: 'flex-start', fontSize: FontSize.sm, fontWeight: FontWeight.heavy, marginBottom: Spacing.md },
+    recentLabel: { alignSelf: 'flex-start', fontSize: FontSize.sm, fontWeight: FontWeight.black, marginBottom: Spacing.md },
     recentCard: { alignSelf: 'stretch', flexDirection: 'row', alignItems: 'center', borderRadius: 16, padding: Spacing.lg, marginBottom: Spacing.sm, gap: Spacing.md, borderWidth: 1 },
     recentIcon: { width: 36, height: 36, borderRadius: 10, backgroundColor: '#f5f5f5', overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
     recentTitle: { fontSize: FontSize.sm, fontWeight: FontWeight.bold },
@@ -556,11 +592,28 @@ const styles = StyleSheet.create({
     sendGradient: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
     headerRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
     tokenPill: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 20, borderWidth: 1 },
-    tokenText: { fontSize: 11, fontWeight: FontWeight.heavy, letterSpacing: 0.5 },
+    tokenText: { fontSize: 11, fontWeight: FontWeight.black, letterSpacing: 0.5 },
     chatText: { fontSize: FontSize.md, lineHeight: 22, fontWeight: FontWeight.medium },
     aiBubbleInner: { padding: Spacing.lg },
     providerTag: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 8, alignSelf: 'flex-start', marginBottom: 6 },
     providerName: { fontSize: 10, fontWeight: FontWeight.bold },
     bubbleFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: Spacing.lg, paddingBottom: Spacing.sm },
     shareBtn: { width: 26, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
+    
+    // Website Modal Styles
+    modalOverlay: { ...StyleSheet.absoluteFillObject, zIndex: 1000, justifyContent: 'flex-end' },
+    modalBlur: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.5)' },
+    personaModal: { width: '100%', borderTopLeftRadius: 32, borderTopRightRadius: 32, paddingBottom: 40, maxHeight: '80%' },
+    modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 24, borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.05)' },
+    modalTitle: { fontSize: 12, fontWeight: FontWeight.black, letterSpacing: 1.5 },
+    personaList: { padding: 16 },
+    personaItem: { flexDirection: 'row', alignItems: 'center', padding: 16, borderRadius: 20, marginBottom: 8, gap: 16, borderWidth: 1 },
+    personaIconBox: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+    personaLabel: { fontSize: 14, fontWeight: FontWeight.bold },
+    personaDesc: { fontSize: 12, marginTop: 2 },
+    logoTiny: { width: 22, height: 22, borderRadius: 6, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', borderWidth: 0.5, borderColor: '#eee' },
+    activeBadge: { backgroundColor: '#10B981', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
+    activeBadgeText: { color: '#fff', fontSize: 8, fontWeight: FontWeight.black },
+    modeLabel: { fontSize: 10, fontWeight: FontWeight.bold, textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 1 },
+    menuBtn: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1 }
 } as any);

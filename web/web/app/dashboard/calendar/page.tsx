@@ -114,7 +114,7 @@ export default function CalendarPage() {
     useEffect(() => {
         if (!user) return;
         const q = query(
-            collection(db, 'users', user.uid, 'plans'),
+            collection(db, 'users', user.id, 'plans'),
             where('dateKey', '==', selectedDate)
         );
         const unsub = onSnapshot(q, snap => {
@@ -129,7 +129,7 @@ export default function CalendarPage() {
         const startKey = makeDateKey(viewYear, viewMonth, 1);
         const endKey = makeDateKey(viewYear, viewMonth, daysInMonth);
         const q = query(
-            collection(db, 'users', user.uid, 'plans'),
+            collection(db, 'users', user.id, 'plans'),
             where('dateKey', '>=', startKey),
             where('dateKey', '<=', endKey)
         );
@@ -165,7 +165,7 @@ export default function CalendarPage() {
         if (!user || !form.title.trim()) return;
         setSaving(true);
         try {
-            await addDoc(collection(db, 'users', user.uid, 'plans'), {
+            await addDoc(collection(db, 'users', user.id, 'plans'), {
                 title: form.title.trim(),
                 description: form.description.trim(),
                 status: form.status,
@@ -181,14 +181,14 @@ export default function CalendarPage() {
 
     const handleDelete = async (planId: string) => {
         if (!user) return;
-        await deleteDoc(doc(db, 'users', user.uid, 'plans', planId));
+        await deleteDoc(doc(db, 'users', user.id, 'plans', planId));
     };
 
     const cycleStatus = async (plan: Plan) => {
         if (!user) return;
         const cycle: PlanStatus[] = ['not-done', 'ongoing', 'done'];
         const next = cycle[(cycle.indexOf(plan.status) + 1) % 3];
-        await updateDoc(doc(db, 'users', user.uid, 'plans', plan.id), { status: next });
+        await updateDoc(doc(db, 'users', user.id, 'plans', plan.id), { status: next });
     };
 
     const plansByStatus = (status: PlanStatus) => plans.filter(p => p.status === status);

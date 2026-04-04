@@ -53,8 +53,8 @@ export default function ReviewPopup() {
 
         try {
             const reviewData = {
-                userId: user.uid,
-                userName: user.displayName || user.email?.split('@')[0] || 'Anonymous',
+                userId: user.id,
+                userName: user.name || user.email?.split('@')[0] || 'Anonymous',
                 userPhoto: user.photoURL || '',
                 rating,
                 comment: text.trim(),

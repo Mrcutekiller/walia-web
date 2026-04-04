@@ -1,32 +1,36 @@
 export const Colors = {
   primary: '#000000',
   primaryLight: '#1A1A1A',
-  primaryDark: '#000000',
+  primaryDark: '#0A0A0A',
   secondary: '#FF6B6B',
   accent: '#6C63FF',
+  accentLight: '#8B85FF',
   success: '#2ED573',
   warning: '#FFA502',
   error: '#FF4757',
 
   background: '#FFFFFF',
-  surface: '#FFFFFF',
-  surfaceAlt: '#F9FAFB',
+  backgroundAlt: '#F5F5F5',
+  surface: '#EEEEEE',
+  surfaceAlt: '#E5E5E5',
+  darkSurface: '#141414',
   card: '#FFFFFF',
 
-  text: '#1A1A2E',
-  textSecondary: '#6B7280',
-  textTertiary: '#9CA3AF',
+  text: '#0A0A0A',
+  textSecondary: '#444444',
+  textTertiary: '#888888',
   textInverse: '#FFFFFF',
 
-  border: '#E5E7EB',
-  borderLight: '#F3F4F6',
+  border: '#E0E0E0',
+  borderDark: '#2D2D2D',
+  borderLight: '#F5F5F5',
   divider: '#F0F0F5',
 
   sent: '#000000',
-  received: '#F0F0F5',
+  received: '#F5F5F5',
 
-  overlay: 'rgba(0,0,0,0.5)',
-  shadow: 'rgba(0,0,0,0.08)',
+  overlay: 'rgba(0,0,0,0.55)',
+  shadow: 'rgba(0,0,0,0.06)',
 };
 
 export const Spacing = {
@@ -38,6 +42,7 @@ export const Spacing = {
   xxl: 24,
   xxxl: 32,
   huge: 48,
+  gutter: 16,
 };
 
 export const BorderRadius = {
@@ -46,6 +51,7 @@ export const BorderRadius = {
   lg: 16,
   xl: 20,
   xxl: 24,
+  xxxl: 32,
   pill: 999,
 };
 
@@ -61,11 +67,14 @@ export const FontSize = {
 };
 
 export const FontWeight = {
+  light: '300' as const,
   regular: '400' as const,
   medium: '500' as const,
   semibold: '600' as const,
   bold: '700' as const,
-  heavy: '800' as const,
+  extraBold: '800' as const,
+  heavy: '900' as const,
+  black: '900' as const,
 };
 
 export const Shadow = {

@@ -12,6 +12,7 @@ import {
 import { doc, onSnapshot, setDoc, updateDoc } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const getFriendlyErrorMessage = (errorCode: string) => {
     switch (errorCode) {
@@ -53,6 +54,10 @@ interface User {
     country?: string;
     level?: string;
     goal?: string;
+    referralSource?: string;
+    subjects?: string[];
+    studyStyle?: string;
+    studyHours?: string;
     createdAt?: any;
     plan?: string;
     isAdmin?: boolean;
@@ -99,63 +104,121 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         let profileUnsubscribe: (() => void) | null = null;
+        let authUnsubscribe: (() => void) | null = null;
+        let fallbackTimer: ReturnType<typeof setTimeout> | null = null;
 
-        // Fallback: If Firebase hangs for more than 3 seconds, forcefully end the loading state
-        const fallbackTimer = setTimeout(() => {
-            if (isLoading) {
-                console.warn('Firebase auth check timed out, forcing app to load.');
+        let isResolved = false;
+        const completeLoading = () => {
+            if (!isResolved) {
+                isResolved = true;
+                clearNetworkTimeout();
                 setIsLoading(false);
             }
-        }, 3000);
+        };
 
-        const authUnsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
-            clearTimeout(fallbackTimer);
+        const checkFirstTime = async () => {
+            try {
+                const hasOpened = await AsyncStorage.getItem('has_opened_before');
+                if (!hasOpened) {
+                    await AsyncStorage.setItem('has_opened_before', 'true');
+                    completeLoading();
+                }
+            } catch (e) {
+                // Ignore storage errors
+            }
+        };
+        
+        checkFirstTime();
+
+        fallbackTimer = setTimeout(() => {
+            console.warn('Auth check taking too long (2.5s max). Forcing app to load.');
+            completeLoading();
+        }, 2500);
+
+        const networkTimeout = setTimeout(() => {
+            console.warn('Network check timeout. Proceeding without Firebase.');
+            completeLoading();
+        }, 5000);
+        const clearNetworkTimeout = () => clearTimeout(networkTimeout);
+
+        authUnsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
             try {
                 if (profileUnsubscribe) {
                     profileUnsubscribe();
                     profileUnsubscribe = null;
                 }
 
+                if (fallbackTimer) {
+                    clearTimeout(fallbackTimer);
+                    fallbackTimer = null;
+                }
+
                 if (firebaseUser) {
                     const userDocRef = doc(db, 'users', firebaseUser.uid);
 
-                    // Listen for real-time profile updates immediately
                     profileUnsubscribe = onSnapshot(userDocRef, async (snap: any) => {
-                        if (snap.exists()) {
-                            setUser(snap.data() as User);
-                            setIsLoading(false);
-                        } else {
-                            // If user exists in Auth but not Firestore (e.g. Google login for first time)
-                            if (!firebaseUser.providerData.some(p => p.providerId === 'password')) {
-                                const newUser: User = {
-                                    ...DEFAULT_USER,
-                                    id: firebaseUser.uid,
-                                    email: firebaseUser.email || '',
-                                    name: firebaseUser.displayName || 'User',
-                                    username: firebaseUser.email?.split('@')[0] || `user_${firebaseUser.uid.slice(0, 5)}`,
-                                    photoURL: firebaseUser.photoURL || '/avatars/avatar1.jpg',
-                                    createdAt: new Date().toISOString(),
-                                };
-                                await setDoc(userDocRef, newUser);
-                                setUser(newUser);
+                        let snapshotResolved = false;
+                        const snapshotTimeout = setTimeout(() => {
+                            if (!snapshotResolved) {
+                                console.warn('Firestore snapshot timeout, completing with partial data');
+                                if (snap.exists()) {
+                                    const userData = snap.data();
+                                    setUser({ ...userData, id: userData.id || firebaseUser.uid } as User);
+                                }
+                                completeLoading();
                             }
-                            setIsLoading(false);
+                        }, 3000);
+
+                        try {
+                            if (snap.exists()) {
+                                const userData = snap.data();
+                                setUser({ ...userData, id: userData.id || firebaseUser.uid } as User);
+                                snapshotResolved = true;
+                                clearTimeout(snapshotTimeout);
+                                completeLoading();
+                            } else {
+                                if (!firebaseUser.providerData.some(p => p.providerId === 'password')) {
+                                    const newUser: User = {
+                                        ...DEFAULT_USER,
+                                        id: firebaseUser.uid,
+                                        email: firebaseUser.email || '',
+                                        name: firebaseUser.displayName || 'User',
+                                        username: firebaseUser.email?.split('@')[0] || `user_${firebaseUser.uid.slice(0, 5)}`,
+                                        photoURL: firebaseUser.photoURL || '/avatars/avatar1.jpg',
+                                        createdAt: new Date().toISOString(),
+                                    };
+                                    await setDoc(userDocRef, newUser);
+                                    setUser(newUser);
+                                }
+                                snapshotResolved = true;
+                                clearTimeout(snapshotTimeout);
+                                completeLoading();
+                            }
+                        } catch (error) {
+                            console.error('Profile snapshot error:', error);
+                            snapshotResolved = true;
+                            clearTimeout(snapshotTimeout);
+                            completeLoading();
                         }
+                    }, (error) => {
+                        console.error('Firestore snapshot error:', error);
+                        completeLoading();
                     });
                 } else {
                     setUser(null);
-                    setIsLoading(false);
+                    completeLoading();
                 }
             } catch (error) {
                 console.error('Auth state change error:', error);
                 setUser(null);
-                setIsLoading(false);
+                completeLoading();
             }
         });
 
         return () => {
-            authUnsubscribe();
+            if (authUnsubscribe) authUnsubscribe();
             if (profileUnsubscribe) profileUnsubscribe();
+            if (fallbackTimer) clearTimeout(fallbackTimer);
         };
     }, []);
 

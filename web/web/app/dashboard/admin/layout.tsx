@@ -18,19 +18,19 @@ const ADMIN_NAV = [
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-    const { user, profile, loading } = useAuth();
+    const { user, loading } = useAuth();
     const router = useRouter();
     const pathname = usePathname();
 
     useEffect(() => {
         if (!loading) {
-            if (!user || user.email?.toLowerCase() !== 'admin@walia.com' || !profile?.isAdmin) {
+            if (!user || user.email?.toLowerCase() !== 'admin@walia.com' || !user?.isAdmin) {
                 router.replace('/dashboard');
             }
         }
-    }, [user, profile, loading, router]);
+    }, [user, loading, router]);
 
-    if (loading || !user || !profile?.isAdmin) {
+    if (loading || !user || !user?.isAdmin) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-[#FAFAFA] dark:bg-[#0A101D]">
                 <div className="w-8 h-8 rounded-full border-2 border-black border-t-transparent animate-spin" />

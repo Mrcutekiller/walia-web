@@ -1,47 +1,134 @@
 'use client';
 
 import { auth, db } from '@/lib/firebase';
-import { onAuthStateChanged, User } from 'firebase/auth';
+import { onAuthStateChanged } from 'firebase/auth';
 import { doc, onSnapshot } from 'firebase/firestore';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-interface AuthContextType {
-    user: User | null;
-    profile: { isAdmin?: boolean; [key: string]: any } | null;
-    loading: boolean;
+interface User {
+    id: string;
+    name: string;
+    username: string;
+    email: string;
+    photoURL?: string;
+    gender?: string;
+    age?: string;
+    schoolLevel?: string;
+    school?: string;
+    bio?: string;
+    phone?: string;
+    country?: string;
+    level?: string;
+    goal?: string;
+    referralSource?: string;
+    subjects?: string[];
+    studyStyle?: string;
+    plan?: string;
+    isAdmin?: boolean;
+    xp?: number;
+    isPro?: boolean;
+    followers?: string[];
+    following?: string[];
+    createdAt?: any;
+    [key: string]: any;
 }
 
-const AuthContext = createContext<AuthContextType>({ user: null, profile: null, loading: true });
+interface AuthContextType {
+    user: User | null;
+    loading: boolean;
+    isAuthenticated: boolean;
+    logout: () => Promise<void>;
+    updateProfile: (data: Partial<User>) => Promise<void>;
+    refreshUser: () => void;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+const DEFAULT_USER: User = {
+    id: '',
+    name: 'User',
+    username: 'user',
+    email: '',
+    photoURL: '/avatars/avatar1.jpg',
+    plan: 'free',
+};
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
-    const [profile, setProfile] = useState<any | null>(null);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, async (user) => {
-            setUser(user);
-            if (user) {
-                const unsubProfile = onSnapshot(doc(db, 'users', user.uid), (snap: any) => {
-                    if (snap.exists()) setProfile(snap.data());
-                    else setProfile(null);
-                    setLoading(false);
-                });
-                return () => unsubProfile();
+    const fetchUserProfile = (uid: string) => {
+        const userDocRef = doc(db, 'users', uid);
+        return onSnapshot(userDocRef, (snap: any) => {
+            if (snap.exists()) {
+                setUser({ id: uid, ...snap.data() } as User);
             } else {
-                setProfile(null);
+                setUser(null);
+            }
+            setLoading(false);
+        }, (error) => {
+            console.error('Error fetching user profile:', error);
+            setLoading(false);
+        });
+    };
+
+    useEffect(() => {
+        let unsubscribeProfile: (() => void) | null = null;
+
+        const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+            if (unsubscribeProfile) {
+                unsubscribeProfile();
+                unsubscribeProfile = null;
+            }
+
+            if (firebaseUser) {
+                unsubscribeProfile = fetchUserProfile(firebaseUser.uid);
+            } else {
+                setUser(null);
                 setLoading(false);
             }
         });
 
-        return () => unsubscribe();
+        return () => {
+            unsubscribe();
+            if (unsubscribeProfile) unsubscribeProfile();
+        };
     }, []);
 
+    const logout = async () => {
+        const { signOut: firebaseSignOut } = await import('firebase/auth');
+        await firebaseSignOut(auth);
+        setUser(null);
+    };
+
+    const updateProfile = async (data: Partial<User>) => {
+        if (!auth.currentUser) return;
+        const { updateDoc } = await import('firebase/firestore');
+        await updateDoc(doc(db, 'users', auth.currentUser.uid), data);
+    };
+
+    const refreshUser = () => {
+        if (auth.currentUser) {
+            fetchUserProfile(auth.currentUser.uid);
+        }
+    };
+
     return (
-        <AuthContext.Provider value={{ user, profile, loading }}>
-            {!loading && children}
+        <AuthContext.Provider value={{ 
+            user, 
+            loading, 
+            isAuthenticated: !!user,
+            logout,
+            updateProfile,
+            refreshUser
+        }}>
+            {children}
         </AuthContext.Provider>
     );
 }
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+    const ctx = useContext(AuthContext);
+    if (!ctx) throw new Error('useAuth must be used within AuthProvider');
+    return ctx;
+};

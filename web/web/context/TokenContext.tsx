@@ -53,28 +53,28 @@ const TokenCtx = createContext<TokenContextType>({
 
 // ─── Provider ─────────────────────────────────────────────────────────────────
 export function TokenProvider({ children }: { children: React.ReactNode }) {
-    const { user, profile } = useAuth();
+    const { user } = useAuth();
     const [tokensUsed, setTokensUsed] = useState(0);
 
-    const isPro = profile?.isPro || false;
+    const isPro = user?.isPro || false;
 
-    // Sync tokens from profile (already live via AuthContext onSnapshot)
+    // Sync tokens from user (already live via AuthContext onSnapshot)
     useEffect(() => {
-        if (!profile || !user) return;
+        if (!user) return;
         const today = new Date().toISOString().slice(0, 10);
-        const savedDate = profile.lastTokenResetDate || '';
+        const savedDate = user.lastTokenResetDate || '';
 
         if (savedDate !== today) {
             // Reset for new day
             setTokensUsed(0);
-            updateDoc(doc(db, 'users', user.uid), {
+            updateDoc(doc(db, 'users', user.id), {
                 tokensUsed: 0,
                 lastTokenResetDate: today,
             }).catch(() => { });
         } else {
-            setTokensUsed(profile.tokensUsed || 0);
+            setTokensUsed(user.tokensUsed || 0);
         }
-    }, [profile, user]);
+    }, [user]);
 
     const dailyLimit = isPro ? PRO_DAILY_TOKENS : FREE_DAILY_TOKENS;
     const tokensRemaining = Math.max(0, dailyLimit - tokensUsed);
@@ -96,7 +96,7 @@ export function TokenProvider({ children }: { children: React.ReactNode }) {
         if (!isPro && user) {
             const newUsed = tokensUsed + cost;
             setTokensUsed(newUsed);
-            updateDoc(doc(db, 'users', user.uid), {
+            updateDoc(doc(db, 'users', user.id), {
                 tokensUsed: increment(cost),
             }).catch(() => { });
         }
@@ -108,10 +108,9 @@ export function TokenProvider({ children }: { children: React.ReactNode }) {
         if (!user || isPro) return;
         const newUsed = Math.max(0, tokensUsed - amount);
         setTokensUsed(newUsed);
-        updateDoc(doc(db, 'users', user.uid), {
+        updateDoc(doc(db, 'users', user.id), {
             tokensUsed: increment(-amount),
         }).catch(() => { });
-        // Bonus notification could be dispatched here
     }, [isPro, tokensUsed, user]);
 
     const value = useMemo(() => ({

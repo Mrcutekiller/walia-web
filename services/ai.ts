@@ -53,7 +53,7 @@ export const PROVIDERS: AIProviderInfo[] = [
 export const AI_PROVIDERS = PROVIDERS; // legacy alias
 
 // ─── Gemini ───────────────────────────────────────────────────────────────────
-async function askGemini(userMessage: string, history: AIMessage[]): Promise<string> {
+async function askGemini(userMessage: string, history: AIMessage[], systemPrompt: string = SYSTEM_PROMPT): Promise<string> {
     const MODELS = [
         'gemini-2.5-flash',
         'gemini-2.5-pro',
@@ -66,12 +66,12 @@ async function askGemini(userMessage: string, history: AIMessage[]): Promise<str
     const contents: any[] = [];
     if (history.length > 0) {
         contents.push(
-            { role: 'user', parts: [{ text: SYSTEM_PROMPT }] },
+            { role: 'user', parts: [{ text: systemPrompt }] },
             { role: 'model', parts: [{ text: "Understood." }] },
             ...history.map(m => ({ role: m.role, parts: m.parts }))
         );
     } else {
-        contents.push({ role: 'user', parts: [{ text: SYSTEM_PROMPT + '\n\n' + userMessage }] });
+        contents.push({ role: 'user', parts: [{ text: systemPrompt + '\n\n' + userMessage }] });
     }
     if (history.length > 0) {
         contents.push({ role: 'user', parts: [{ text: userMessage }] });
@@ -95,10 +95,10 @@ async function askGemini(userMessage: string, history: AIMessage[]): Promise<str
 }
 
 // ─── ChatGPT ──────────────────────────────────────────────────────────────────
-async function askChatGPT(userMessage: string, history: AIMessage[]): Promise<string> {
+async function askChatGPT(userMessage: string, history: AIMessage[], systemPrompt: string = SYSTEM_PROMPT): Promise<string> {
     // Convert from Gemini format to OpenAI format
     const messages = [
-        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'system', content: systemPrompt },
         ...history.map(m => ({ role: m.role === 'model' ? 'assistant' : 'user', content: m.parts[0]?.text || '' })),
         { role: 'user', content: userMessage },
     ];
@@ -121,9 +121,9 @@ async function askChatGPT(userMessage: string, history: AIMessage[]): Promise<st
 }
 
 // ─── DeepSeek ─────────────────────────────────────────────────────────────────
-async function askDeepSeek(userMessage: string, history: AIMessage[]): Promise<string> {
+async function askDeepSeek(userMessage: string, history: AIMessage[], systemPrompt: string = SYSTEM_PROMPT): Promise<string> {
     const messages = [
-        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'system', content: systemPrompt },
         ...history.map(m => ({ role: m.role === 'model' ? 'assistant' : 'user', content: m.parts[0]?.text || '' })),
         { role: 'user', content: userMessage },
     ];
@@ -149,7 +149,8 @@ async function askDeepSeek(userMessage: string, history: AIMessage[]): Promise<s
 export async function askAI(
     userMessage: string,
     history: AIMessage[] = [],
-    preferredProvider: AIProvider = 'auto'
+    preferredProvider: AIProvider = 'auto',
+    systemPrompt: string = SYSTEM_PROMPT
 ): Promise<{ text: string; provider: AIProvider }> {
 
     // Provider priority chain
@@ -164,9 +165,9 @@ export async function askAI(
     for (const provider of chain) {
         try {
             let text: string;
-            if (provider === 'gemini') text = await askGemini(userMessage, history);
-            else if (provider === 'chatgpt') text = await askChatGPT(userMessage, history);
-            else text = await askDeepSeek(userMessage, history);
+            if (provider === 'gemini') text = await askGemini(userMessage, history, systemPrompt);
+            else if (provider === 'chatgpt') text = await askChatGPT(userMessage, history, systemPrompt);
+            else text = await askDeepSeek(userMessage, history, systemPrompt);
 
             console.log(`✅ Responded via ${provider}`);
             return { text, provider };

@@ -1,50 +1,9 @@
 'use client';
 
-import React, { createContext, useContext, useState } from 'react';
-
-// Mock Notifications Data (moved from page.tsx to global state)
-const MOCK_NOTIFICATIONS = [
-    {
-        id: '1',
-        title: 'New AI Features Added',
-        description: 'Try out the new Flashcard Generator and Session Planner in the Tools section.',
-        time: '2 hours ago',
-        read: false,
-        type: 'feature',
-        icon: 'Sparkles',
-        link: '/dashboard/tools'
-    },
-    {
-        id: '2',
-        title: 'Community Milestone',
-        description: 'The Walia community just reached 10,000 active learners! Thank you for being part of the journey.',
-        time: '1 day ago',
-        read: true,
-        type: 'milestone',
-        icon: 'Users',
-        link: '/dashboard/community'
-    },
-    {
-        id: '3',
-        title: 'Security Alert',
-        description: 'We noticed a new login from a Mac device in Addis Ababa. If this was you, you can ignore this message.',
-        time: '2 days ago',
-        read: true,
-        type: 'security',
-        icon: 'ShieldAlert',
-        link: '/dashboard/settings'
-    },
-    {
-        id: '4',
-        title: 'Weekly Summary',
-        description: 'You completed 5 study sessions and generated 20 AI notes this week. Keep up the great work!',
-        time: '5 days ago',
-        read: true,
-        type: 'summary',
-        icon: 'BarChart3',
-        link: '/dashboard'
-    }
-];
+import { auth, db } from '@/lib/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+import { collection, deleteDoc, doc, onSnapshot, orderBy, query, updateDoc, writeBatch } from 'firebase/firestore';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
 export interface Notification {
     id: string;
@@ -55,6 +14,7 @@ export interface Notification {
     type: string;
     icon: string;
     link: string;
+    createdAt?: any;
 }
 
 interface NotificationContextType {
@@ -63,25 +23,62 @@ interface NotificationContextType {
     markAsRead: (id: string) => void;
     markAllAsRead: () => void;
     deleteNotification: (id: string) => void;
+    loading: boolean;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
 export function NotificationProvider({ children }: { children: React.ReactNode }) {
-    const [notifications, setNotifications] = useState<Notification[]>(MOCK_NOTIFICATIONS);
+    const [notifications, setNotifications] = useState<Notification[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            if (user) {
+                const q = query(
+                    collection(db, 'users', user.uid, 'notifications'),
+                    orderBy('createdAt', 'desc')
+                );
+                const unsub = onSnapshot(q, (snap) => {
+                    const notifs = snap.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data(),
+                        read: doc.data().read || false,
+                    })) as Notification[];
+                    setNotifications(notifs);
+                    setLoading(false);
+                });
+                return () => unsub();
+            } else {
+                setNotifications([]);
+                setLoading(false);
+            }
+        });
+
+        return () => unsubscribe();
+    }, []);
 
     const unreadCount = notifications.filter(n => !n.read).length;
 
-    const markAsRead = (id: string) => {
-        setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+    const markAsRead = async (id: string) => {
+        if (!auth.currentUser) return;
+        await updateDoc(doc(db, 'users', auth.currentUser.uid, 'notifications', id), { read: true });
     };
 
-    const markAllAsRead = () => {
-        setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    const markAllAsRead = async () => {
+        if (!auth.currentUser) return;
+        const batch = writeBatch(db);
+        notifications.forEach(n => {
+            if (!n.read) {
+                batch.update(doc(db, 'users', auth.currentUser!.uid, 'notifications', n.id), { read: true });
+            }
+        });
+        await batch.commit();
     };
 
-    const deleteNotification = (id: string) => {
-        setNotifications(prev => prev.filter(n => n.id !== id));
+    const deleteNotification = async (id: string) => {
+        if (!auth.currentUser) return;
+        await deleteDoc(doc(db, 'users', auth.currentUser.uid, 'notifications', id));
     };
 
     return (
@@ -90,7 +87,8 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
             unreadCount,
             markAsRead,
             markAllAsRead,
-            deleteNotification
+            deleteNotification,
+            loading
         }}>
             {children}
         </NotificationContext.Provider>

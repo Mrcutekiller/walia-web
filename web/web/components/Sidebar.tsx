@@ -29,7 +29,7 @@ const sidebarLinks = [
 ];
 
 export default function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
-    const { user, profile } = useAuth();
+    const { user } = useAuth();
     const pathname = usePathname();
     const { tokenDisplay, isPro } = useTokens();
 
@@ -46,7 +46,7 @@ export default function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose:
             {/* Sidebar */}
             <aside
                 className={cn(
-                    "fixed top-0 left-0 bottom-0 w-72 bg-black border-r border-white/5 z-50 transition-all duration-300 transform lg:translate-x-0",
+                    "fixed top-0 left-0 bottom-0 w-72 bg-[var(--color-surface-container-low)] z-50 transition-all duration-300 transform lg:translate-x-0",
                     isOpen ? "translate-x-0" : "-translate-x-full"
                 )}
             >
@@ -57,16 +57,16 @@ export default function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose:
                             <div className="w-10 h-10 rounded-full bg-black border border-walia-primary/30 flex items-center justify-center overflow-hidden transition-all group-hover:scale-110">
                                 <Image src="/walia-logo.png" alt="Walia" width={32} height={32} unoptimized />
                             </div>
-                            <span className="text-2xl font-black text-white tracking-tighter uppercase">Walia</span>
+                            <span className="text-2xl font-black text-[var(--color-on-surface)] tracking-tighter uppercase">Walia</span>
                         </Link>
-                        <button className="lg:hidden p-2 text-white/40 hover:text-white" onClick={onClose}>
+                        <button className="lg:hidden p-2 text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)]" onClick={onClose}>
                             <X className="w-6 h-6" />
                         </button>
                     </div>
 
                     {/* Navigation */}
                     <nav className="flex-1 px-4 py-4 space-y-2 overflow-y-auto custom-scrollbar">
-                        <p className="px-4 text-[10px] font-black text-white/20 uppercase tracking-[0.2em] mb-4">Main Menu</p>
+                        <p className="px-4 text-[10px] font-black text-[var(--color-outline)] uppercase tracking-[0.2em] mb-4">Main Menu</p>
                         {sidebarLinks.map((link) => {
                             const isActive = pathname === link.href;
                             return (
@@ -77,23 +77,23 @@ export default function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose:
                                     className={cn(
                                         "flex items-center px-4 py-4 rounded-2xl transition-all group",
                                         isActive
-                                            ? "bg-walia-primary/10 text-walia-primary shadow-sm"
-                                            : "text-white/40 hover:text-white hover:bg-white/5"
+                                            ? "bg-[var(--color-surface-container)] text-[var(--color-on-surface)] shadow-sm"
+                                            : "text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)] hover:bg-[var(--color-surface-container)]"
                                     )}
                                 >
                                     <link.icon className={cn(
                                         "w-5 h-5 mr-4 transition-transform group-hover:scale-110",
-                                        isActive ? "text-walia-primary" : "text-white/30 group-hover:text-white"
+                                        isActive ? "text-[var(--color-primary)]" : "text-[var(--color-outline-variant)] group-hover:text-[var(--color-on-surface)]"
                                     )} />
                                     <span className="font-bold text-sm">{link.name}</span>
                                     {isActive && (
-                                        <div className="ml-auto w-1.5 h-1.5 rounded-full bg-walia-primary shadow-[0_0_10px_rgba(108,99,255,0.6)]" />
+                                        <div className="ml-auto w-1.5 h-1.5 rounded-full bg-[var(--color-primary)]" />
                                     )}
                                 </Link>
                             );
                         })}
 
-                        {profile?.isAdmin && (
+                        {user?.isAdmin && (
                             <>
                                 <p className="px-4 text-[10px] font-black text-amber-500/50 uppercase tracking-[0.2em] mb-4 mt-8">Admin Panel</p>
                                 <Link
@@ -109,7 +109,7 @@ export default function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose:
                     </nav>
 
                     {/* Bottom Card */}
-                    <div className="p-4 border-t border-white/5">
+                    <div className="p-4 border-t border-[var(--color-surface-container-highest)]">
                         <Link
                             href="/dashboard/upgrade"
                             className="block p-6 rounded-3xl bg-gradient-to-br from-walia-primary to-walia-secondary group relative overflow-hidden transition-all hover:scale-[1.02]"
@@ -135,22 +135,22 @@ export default function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose:
                     {/* User Section */}
                     <div className="p-4 pb-8 space-y-4">
                         {/* XP Progress Bar */}
-                        <div className="px-4 py-3 rounded-2xl bg-white/5 border border-white/5">
+                        <div className="px-4 py-3 rounded-2xl bg-[var(--color-surface-container)] border border-[var(--color-surface-container-highest)]">
                             <div className="flex items-center justify-between mb-2">
-                                <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Level {profile?.level || 1}</span>
-                                <span className="text-[10px] font-black text-walia-primary uppercase tracking-widest">{profile?.xp || 0} XP</span>
+                                <span className="text-[10px] font-black text-[var(--color-on-surface-variant)] uppercase tracking-widest">Level {user?.level || 1}</span>
+                                <span className="text-[10px] font-black text-[var(--color-primary)] uppercase tracking-widest">{user?.xp || 0} XP</span>
                             </div>
-                            <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                            <div className="h-1.5 w-full bg-[var(--color-surface-container-highest)] rounded-full overflow-hidden">
                                 <div 
-                                    className="h-full bg-walia-primary rounded-full transition-all duration-1000"
-                                    style={{ width: `${Math.min(100, ((profile?.xp || 0) % 1000) / 10)}%` }}
+                                    className="h-full bg-[var(--color-primary)] rounded-full transition-all duration-1000"
+                                    style={{ width: `${Math.min(100, ((user?.xp || 0) % 1000) / 10)}%` }}
                                 />
                             </div>
                         </div>
 
                         {/* Token Badge */}
-                        <div className="flex items-center justify-between px-4 py-3 rounded-2xl bg-white/5 border border-white/5">
-                            <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Daily Tokens</span>
+                        <div className="flex items-center justify-between px-4 py-3 rounded-2xl bg-[var(--color-surface-container)] border border-[var(--color-surface-container-highest)]">
+                            <span className="text-[10px] font-black text-[var(--color-on-surface-variant)] uppercase tracking-widest">Daily Tokens</span>
                             <div className="flex items-center gap-1.5">
                                 <span className="text-sm">🪙</span>
                                 <span className={cn(
@@ -162,16 +162,16 @@ export default function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose:
                             </div>
                         </div>
 
-                        <div className="flex items-center p-4 rounded-2xl bg-white/5 border border-white/5 border-transparent hover:border-white/10 transition-all">
+                        <div className="flex items-center p-4 rounded-2xl bg-[var(--color-surface-container)] border border-[var(--color-surface-container-highest)] hover:border-[var(--color-outline-variant)] transition-all">
                             <div className="w-10 h-10 rounded-full bg-walia-primary/20 border border-walia-primary/30 flex items-center justify-center mr-4">
                                 <User className="w-5 h-5 text-walia-primary" />
                             </div>
                             <div className="flex-1 overflow-hidden">
-                                <p className="text-sm font-bold text-white truncate">{profile?.displayName || user?.displayName || 'User'}</p>
-                                <p className="text-[10px] text-white/30 truncate">@{profile?.username || user?.email?.split('@')[0] || 'member'}</p>
+                                <p className="text-sm font-bold text-[var(--color-on-surface)] truncate">{user?.name || 'User'}</p>
+                                <p className="text-[10px] text-[var(--color-on-surface-variant)] truncate">@{user?.username || user?.email?.split('@')[0] || 'member'}</p>
                             </div>
                             <Link href="/dashboard/settings">
-                                <Settings className="w-5 h-5 text-white/20 hover:text-white transition-colors" />
+                                <Settings className="w-5 h-5 text-[var(--color-on-surface-variant)] hover:text-[var(--color-on-surface)] transition-colors" />
                             </Link>
                         </div>
                     </div>
