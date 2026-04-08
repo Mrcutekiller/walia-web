@@ -114,9 +114,9 @@ export default function SignupPage() {
                 plan: 'free',
                 createdAt: serverTimestamp(),
             });
-            window.location.href = '/dashboard';
+            window.location.href = '/dashboard/ai';
         } catch {
-            window.location.href = '/dashboard';
+            window.location.href = '/dashboard/ai';
         }
     };
 
@@ -126,10 +126,11 @@ export default function SignupPage() {
             const result = await signInWithPopup(auth, googleProvider);
             const user = result.user;
             const userDoc = await getDoc(doc(db, 'users', user.uid));
-            if (userDoc.exists()) { router.replace('/dashboard'); return; }
+            if (userDoc.exists()) { router.replace('/dashboard/ai'); return; }
             await saveProfileAndRedirect(user.uid, user.displayName || user.email?.split('@')[0] || 'User', user.photoURL || undefined);
         } catch (err: any) {
-            if (err?.code !== 'auth/popup-closed-by-user') setError('Google sign-in failed. Please try again.');
+            console.error('Google Sign-in Error:', err);
+            if (err?.code !== 'auth/popup-closed-by-user') setError(`Google sign-in failed: ${err.message}`);
         } finally { setGoogleLoading(false); }
     };
 
@@ -140,7 +141,8 @@ export default function SignupPage() {
             try { await updateProfile(cred.user, { displayName: name, photoURL: avatar }); } catch { /* ignore */ }
             await saveProfileAndRedirect(cred.user.uid, name, avatar);
         } catch (err: any) {
-            setError(err.message?.replace('Firebase: ', '') || 'Failed to create account.');
+            console.error('Final Submit Error:', err);
+            setError(err.message || 'Failed to create account.');
             setLoading(false);
         }
     };

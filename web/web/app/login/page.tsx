@@ -43,10 +43,10 @@ function LoginContent() {
             const cred = await signInWithEmailAndPassword(auth, email, password);
             const redirect = searchParams.get('redirect');
             if (cred.user.email === 'admin@walia.com') router.replace('/admin');
-            else if (redirect === 'review') router.replace('/dashboard/ai');
-            else router.replace('/dashboard');
-        } catch {
-            setError('Invalid email or password. Please try again.');
+            else router.replace('/dashboard/ai');
+        } catch (err: any) {
+            console.error('Login Error:', err);
+            setError(err.message || 'Invalid email or password. Please try again.');
         } finally { setLoading(false); }
     };
 
@@ -67,11 +67,11 @@ function LoginContent() {
                 });
             }
             await new Promise(r => setTimeout(r, 500));
-            const redirect = searchParams.get('redirect');
-            router.replace(redirect === 'review' ? '/dashboard/ai' : '/dashboard');
+            router.replace('/dashboard/ai');
         } catch (err: any) {
+            console.error('Google Sign-in Error:', err);
             if (err?.code !== 'auth/popup-closed-by-user') {
-                setError('Google sign-in failed. Please try again.');
+                setError(`Google sign-in failed: ${err.message}`);
             }
         } finally { setGoogleLoading(false); }
     };
