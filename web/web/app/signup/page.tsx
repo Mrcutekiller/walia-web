@@ -62,9 +62,9 @@ const USE_CASES = [
     { label: 'Group Study & Collaboration', emoji: '🤝' },
 ];
 
-function GoogleIcon({ size = 5 }: { size?: number }) {
+function GoogleIcon({ className = "w-5 h-5" }: { className?: string }) {
     return (
-        <svg className={`w-${size} h-${size} shrink-0`} viewBox="0 0 24 24">
+        <svg className={`${className} shrink-0`} viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
             <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
@@ -82,6 +82,7 @@ export default function SignupPage() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [googleLoading, setGoogleLoading] = useState(false);
+    const [googleUser, setGoogleUser] = useState<any>(null);
 
     const [name, setName] = useState('');
     const [username, setUsername] = useState('');
@@ -127,7 +128,12 @@ export default function SignupPage() {
             const user = result.user;
             const userDoc = await getDoc(doc(db, 'users', user.uid));
             if (userDoc.exists()) { router.replace('/dashboard/ai'); return; }
-            await saveProfileAndRedirect(user.uid, user.displayName || user.email?.split('@')[0] || 'User', user.photoURL || undefined);
+            setGoogleUser(user);
+            setName(user.displayName || user.email?.split('@')[0] || 'User');
+            setUsername(user.email?.split('@')[0]?.toLowerCase().replace(/[^a-z0-9]/g, '') || `user${Math.floor(Math.random() * 10000)}`);
+            setEmail(user.email || '');
+            if (user.photoURL) setAvatar(user.photoURL);
+            setStep(1);
         } catch (err: any) {
             console.error('Google Sign-in Error:', err);
             if (err?.code !== 'auth/popup-closed-by-user') setError(`Google sign-in failed: ${err.message}`);
@@ -137,9 +143,15 @@ export default function SignupPage() {
     const handleFinalSubmit = async () => {
         setError(''); setLoading(true);
         try {
-            const cred = await createUserWithEmailAndPassword(auth, email, password);
-            try { await updateProfile(cred.user, { displayName: name, photoURL: avatar }); } catch { /* ignore */ }
-            await saveProfileAndRedirect(cred.user.uid, name, avatar);
+            let finalUid = googleUser?.uid;
+            if (!googleUser) {
+                const cred = await createUserWithEmailAndPassword(auth, email, password);
+                finalUid = cred.user.uid;
+                try { await updateProfile(cred.user, { displayName: name, photoURL: avatar }); } catch { /* ignore */ }
+            } else {
+                try { await updateProfile(googleUser, { displayName: name, photoURL: avatar }); } catch { /* ignore */ }
+            }
+            await saveProfileAndRedirect(finalUid, name, avatar);
         } catch (err: any) {
             console.error('Final Submit Error:', err);
             setError(err.message || 'Failed to create account.');
@@ -272,7 +284,7 @@ export default function SignupPage() {
                             <button onClick={handleGoogle} disabled={googleLoading}
                                 className="w-full flex items-center justify-center gap-3 py-3 rounded-2xl bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 hover:bg-gray-50 dark:hover:bg-white/10 transition-all font-bold text-gray-700 dark:text-white text-sm disabled:opacity-50 shadow-sm"
                             >
-                                {googleLoading ? <div className="w-4 h-4 border-2 border-gray-300 border-t-black dark:border-t-white rounded-full animate-spin" /> : <GoogleIcon size={4} />}
+                                {googleLoading ? <div className="w-4 h-4 border-2 border-gray-300 border-t-black dark:border-t-white rounded-full animate-spin" /> : <GoogleIcon className="w-4 h-4" />}
                                 <span>Sign up with Google</span>
                             </button>
                             <div className="flex items-center gap-3 py-1">

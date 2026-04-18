@@ -161,9 +161,15 @@ export default function Home() {
               </p>
 
               {/* Big title */}
-              <h1 className="text-7xl md:text-9xl font-black text-white tracking-tighter leading-[0.85] mb-6">
-                Walia
-              </h1>
+              <div className="flex items-center gap-6 mb-6">
+                 <div className="w-24 h-24 md:w-32 md:h-32 rounded-[32px] bg-white border border-white/20 flex flex-col items-center justify-center shadow-2xl p-2 shrink-0 relative overflow-hidden group">
+                     <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent" />
+                     <img src="/walia-logo.png" alt="Walia Logo" className="w-[80%] h-[80%] object-contain group-hover:scale-110 transition-transform duration-500 relative z-10" />
+                 </div>
+                 <h1 className="text-7xl md:text-9xl font-black text-white tracking-tighter leading-[0.85]">
+                   Walia
+                 </h1>
+              </div>
 
               {/* Tagline */}
               <div className="flex items-center gap-4 mb-8">
