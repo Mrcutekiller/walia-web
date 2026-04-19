@@ -32,6 +32,11 @@ const getFriendlyErrorMessage = (errorCode: string) => {
             return 'This account has been disabled. Please contact support.';
         case 'auth/too-many-requests':
             return 'Too many failed attempts. Please try again later.';
+        case 'auth/network-request-failed':
+            return 'No internet connection. Please check your network and try again.';
+        case 'FIRESTORE':
+        case 'client-offline':
+            return 'Cannot connect to server. Please check your internet connection.';
         default:
             return 'Something went wrong. Please try again.';
     }
@@ -281,8 +286,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     const loginWithGoogle = async () => {
-        // This will be implemented with expo-auth-session
-        console.log('Google login requested');
+        try {
+            setIsLoading(true);
+            // Placeholder - Google OAuth requires additional setup in Firebase Console
+            // For now, show a message to use email sign-in
+            throw new Error('Google sign-in is not yet available. Please use email sign-in.');
+        } catch (e: any) {
+            setIsLoading(false);
+            throw e;
+        }
     };
 
     const resetPassword = async (email: string) => {

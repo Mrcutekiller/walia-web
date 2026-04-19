@@ -4,12 +4,13 @@ import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
-    apiKey: "AIzaSyBMb5Ez-VgIvSxIkTEKm3opn_O2M0fnPfU",
+    apiKey: "AIzaSyDM64dydNEEZq4eSRWX-oecelpdcnFvPuY",
     authDomain: "walia-b8584.firebaseapp.com",
     projectId: "walia-b8584",
     storageBucket: "walia-b8584.firebasestorage.app",
     messagingSenderId: "962189431750",
-    appId: "1:962189431750:android:ea0cb44553b056b59818c7"
+    appId: "1:962189431750:web:7e4e8c19ae757cc59818c7",
+    measurementId: "G-R6447RSCNT"
 };
 
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);

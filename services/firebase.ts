@@ -9,7 +9,8 @@ const firebaseConfig = {
     projectId: "walia-b8584",
     storageBucket: "walia-b8584.firebasestorage.app",
     messagingSenderId: "962189431750",
-    appId: "1:962189431750:android:ea0cb44553b056b59818c7"
+    appId: "1:962189431750:android:ea0cb44553b056b59818c7",
+    measurementId: "G-R6447RSCNT"
 };
 
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
