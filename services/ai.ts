@@ -1,15 +1,10 @@
 /**
- * Walia AI — Multi-provider service
- * Providers in order: Gemini → ChatGPT → DeepSeek
- * Automatically falls back to the next provider on any failure.
+ * Walia AI — Modal GLM-5.1-FP8 Endpoint Integration
+ * Replaces existing providers for the time being as requested by user.
  */
 
-// ─── API keys ─────────────────────────────────────────────────────────────────
-const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY || '';
-const OPENAI_API_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY || process.env.NEXT_PUBLIC_OPENAI_API_KEY || process.env.OPENAI_API_KEY || '';
-const DEEPSEEK_API_KEY = process.env.EXPO_PUBLIC_DEEPSEEK_API_KEY || process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY || process.env.DEEPSEEK_API_KEY || '';
+const MODAL_API_KEY = "modalresearch_gc3ZzKac6rUxekZyMs4JvzZDBsH85WVNn2lnUywaRYU";
 
-// ─── System prompt ────────────────────────────────────────────────────────────
 const SYSTEM_PROMPT = `You are Walia AI, an intelligent and friendly AI study companion built into the Walia app for Ethiopian students.
 You help students with:
 - Explaining complex academic topics clearly and simply
@@ -26,13 +21,12 @@ Guidelines:
 - Keep responses focused and useful
 - Respond in the same language the student uses`;
 
-// ─── Types ────────────────────────────────────────────────────────────────────
 export interface AIMessage {
     role: 'user' | 'model';
     parts: { text: string }[];
 }
 
-export type AIProvider = 'gemini' | 'chatgpt' | 'deepseek' | 'auto';
+export type AIProvider = 'modal_glm';
 
 export interface AIProviderInfo {
     id: AIProvider;
@@ -44,146 +38,49 @@ export interface AIProviderInfo {
 }
 
 export const PROVIDERS: AIProviderInfo[] = [
-    { id: 'auto', name: 'Auto', icon: '⚡', color: '#6C63FF', desc: 'Best available provider' },
-    { id: 'gemini', name: 'Gemini', icon: '✨', color: '#4285F4', desc: 'Google Gemini 1.5 Flash' },
-    { id: 'chatgpt', name: 'ChatGPT', icon: '🤖', color: '#10A37F', desc: 'OpenAI GPT-4o Mini', pro: true },
-    { id: 'deepseek', name: 'DeepSeek', icon: '🌊', color: '#2196F3', desc: 'DeepSeek Chat', pro: true },
+    { id: 'modal_glm', name: 'Walia AI', icon: '⚡', color: '#6C63FF', desc: 'GLM 5.1 FP8 via Modal' }
 ];
 
-export const AI_PROVIDERS = PROVIDERS; // legacy alias
+export const AI_PROVIDERS = PROVIDERS;
 
-// ─── Gemini ───────────────────────────────────────────────────────────────────
-async function askGemini(userMessage: string, history: AIMessage[], systemPrompt: string = SYSTEM_PROMPT): Promise<string> {
-    const MODELS = [
-        'gemini-2.5-flash',
-        'gemini-2.5-pro',
-        'gemini-2.0-flash',
-        'gemini-1.5-flash',
-        'gemini-1.5-pro',
-        'gemini-pro'
-    ];
-
-    const contents: any[] = [];
-    if (history.length > 0) {
-        contents.push(
-            { role: 'user', parts: [{ text: systemPrompt }] },
-            { role: 'model', parts: [{ text: "Understood." }] },
-            ...history.map(m => ({ role: m.role, parts: m.parts }))
-        );
-    } else {
-        contents.push({ role: 'user', parts: [{ text: systemPrompt + '\n\n' + userMessage }] });
-    }
-    if (history.length > 0) {
-        contents.push({ role: 'user', parts: [{ text: userMessage }] });
-    }
-
-    const body = JSON.stringify({ contents });
-
-    for (const model of MODELS) {
-        try {
-            const res = await fetch(
-                `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
-                { method: 'POST', headers: { 'Content-Type': 'application/json' }, body }
-            );
-            if (!res.ok) { const t = await res.text(); console.warn(`Gemini ${model} failed ${res.status}:`, t); continue; }
-            const data = await res.json();
-            const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (text) return text;
-        } catch (e: any) { console.warn(`Gemini ${model} error:`, e.message); }
-    }
-    throw new Error('Gemini: all models failed');
-}
-
-// ─── ChatGPT ──────────────────────────────────────────────────────────────────
-async function askChatGPT(userMessage: string, history: AIMessage[], systemPrompt: string = SYSTEM_PROMPT): Promise<string> {
-    // Convert from Gemini format to OpenAI format
+async function askModalGLM(userMessage: string, history: AIMessage[], systemPrompt: string = SYSTEM_PROMPT): Promise<string> {
     const messages = [
         { role: 'system', content: systemPrompt },
         ...history.map(m => ({ role: m.role === 'model' ? 'assistant' : 'user', content: m.parts[0]?.text || '' })),
         { role: 'user', content: userMessage },
     ];
 
-    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    const res = await fetch('https://api.us-west-2.modal.direct/v1/chat/completions', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENAI_API_KEY}` },
-        body: JSON.stringify({ model: 'gpt-4o-mini', messages, temperature: 0.7, max_completion_tokens: 1536 }),
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${MODAL_API_KEY}` },
+        body: JSON.stringify({ model: 'zai-org/GLM-5.1-FP8', messages, max_tokens: 1536 }),
     });
 
     if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(`ChatGPT API error ${res.status}: ${errData?.error?.message || res.statusText}`);
+        const errData = await res.text();
+        throw new Error(`Modal GLM API error ${res.status}: ${errData}`);
     }
 
     const data = await res.json();
     const text = data?.choices?.[0]?.message?.content;
-    if (!text) throw new Error('ChatGPT: no text in response');
+    if (!text) throw new Error('Modal API: no text in response');
     return text;
 }
 
-// ─── DeepSeek ─────────────────────────────────────────────────────────────────
-async function askDeepSeek(userMessage: string, history: AIMessage[], systemPrompt: string = SYSTEM_PROMPT): Promise<string> {
-    const messages = [
-        { role: 'system', content: systemPrompt },
-        ...history.map(m => ({ role: m.role === 'model' ? 'assistant' : 'user', content: m.parts[0]?.text || '' })),
-        { role: 'user', content: userMessage },
-    ];
-
-    const res = await fetch('https://api.deepseek.com/chat/completions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${DEEPSEEK_API_KEY}` },
-        body: JSON.stringify({ model: 'deepseek-chat', messages, temperature: 0.7, max_tokens: 1536 }),
-    });
-
-    if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(`DeepSeek API error ${res.status}: ${errData?.error?.message || res.statusText}`);
-    }
-
-    const data = await res.json();
-    const text = data?.choices?.[0]?.message?.content;
-    if (!text) throw new Error('DeepSeek: no text in response');
-    return text;
-}
-
-// ─── Main entry: askAI (auto-fallback) ────────────────────────────────────────
 export async function askAI(
     userMessage: string,
     history: AIMessage[] = [],
-    preferredProvider: AIProvider = 'auto',
+    preferredProvider: any = 'auto',
     systemPrompt: string = SYSTEM_PROMPT
 ): Promise<{ text: string; provider: AIProvider }> {
-
-    // Provider priority chain
-    let chain: AIProvider[];
-    if (preferredProvider === 'gemini') chain = ['gemini', 'deepseek', 'chatgpt'];
-    else if (preferredProvider === 'chatgpt') chain = ['chatgpt', 'gemini', 'deepseek'];
-    else if (preferredProvider === 'deepseek') chain = ['deepseek', 'gemini', 'chatgpt'];
-    else chain = ['gemini', 'deepseek', 'chatgpt']; // auto
-
-    const errors: string[] = [];
-
-    for (const provider of chain) {
-        try {
-            let text: string;
-            if (provider === 'gemini') text = await askGemini(userMessage, history, systemPrompt);
-            else if (provider === 'chatgpt') text = await askChatGPT(userMessage, history, systemPrompt);
-            else text = await askDeepSeek(userMessage, history, systemPrompt);
-
-            console.log(`✅ Responded via ${provider}`);
-            return { text, provider };
-        } catch (e: any) {
-            console.warn(`❌ ${provider} failed:`, e.message);
-            // Add user friendly hints for common errors
-            let reason = e.message;
-            if (reason.includes('429') && provider === 'chatgpt') reason += ' (Quota Exceeded)';
-            if (reason.includes('402') && provider === 'deepseek') reason += ' (Insufficient Balance)';
-            if (reason.includes('404') && provider === 'gemini') reason += ' (Model Not Found for this API Key)';
-
-            errors.push(`${provider.toUpperCase()}: ${reason}`);
-        }
+    try {
+        const text = await askModalGLM(userMessage, history, systemPrompt);
+        console.log(`✅ Responded via Modal GLM`);
+        return { text, provider: 'modal_glm' };
+    } catch (e: any) {
+        console.warn(`❌ Modal GLM failed:`, e.message);
+        throw new Error(`AI Provider failed.\n\nModal: ${e.message}`);
     }
-
-    throw new Error(`All AI providers failed.\n\n${errors.join('\n\n')}`);
 }
 
 // Legacy compat

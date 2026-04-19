@@ -105,7 +105,7 @@ export default function SignupScreen() {
         name.trim().length > 0,                                  // 0
         email.trim() && username.trim() && password.length >= 6, // 1
         age.trim() && gender !== '',                             // 2
-        country !== '' && phone.trim().length >= 10,             // 3
+        country !== '' && phone.trim().length >= 5,              // 3
         level !== '',                                            // 4
         goal !== '',                                             // 5
         subjects.length > 0,                                     // 6
