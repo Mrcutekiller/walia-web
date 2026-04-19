@@ -81,9 +81,9 @@ export default function Home() {
 
   // ─── Real-Time Global Stats ───
   const [globalStats, setGlobalStats] = useState({
-    students: 12452,
-    messages: 1200502,
-    downloads: 1450,
+    students: 0,
+    messages: 0,
+    downloads: 0,
   });
 
   useEffect(() => {
@@ -141,15 +141,15 @@ export default function Home() {
     }, [target]);
 
     return (
-      <div className="flex flex-col relative items-start bg-black/40 backdrop-blur-xl border border-white/10 p-6 rounded-3xl hover:bg-white/5 transition-all duration-500 transform hover:-translate-y-2 hover:border-white/20 shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)]">
+      <div className="flex flex-col relative items-start bg-white/5 backdrop-blur-2xl border border-white/10 p-6 rounded-3xl hover:bg-white/10 transition-all duration-500 transform hover:-translate-y-2 shadow-2xl">
         <div className="flex items-center gap-3 mb-3">
-           <div className="p-2.5 bg-white/10 rounded-xl shadow-inner">
-             <Icon className="w-5 h-5 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
+           <div className="p-2.5 bg-white/10 rounded-xl shadow-inner border border-white/5">
+             <Icon className="w-5 h-5 text-white drop-shadow-md" />
            </div>
            <span className="w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse shadow-[0_0_12px_rgba(74,222,128,0.9)]" />
         </div>
-        <p className="text-3xl font-black text-white tracking-tight">{prefix}{display.toLocaleString()}{suffix}</p>
-        <p className="text-xs text-white/50 font-bold uppercase tracking-widest mt-1.5">{label}</p>
+        <p className="text-4xl font-black text-white tracking-tight">{prefix}{display.toLocaleString()}{suffix}</p>
+        <p className="text-xs text-white/60 font-bold uppercase tracking-widest mt-2">{label}</p>
       </div>
     );
   };
@@ -241,15 +241,15 @@ export default function Home() {
               <LiveCounter target={globalStats.messages} label="AI Messages" icon={MessageSquare} suffix="+" />
               <LiveCounter target={globalStats.downloads} label="Downloads" icon={Download} suffix="+" />
               
-              <div className="flex flex-col relative items-start bg-black/40 backdrop-blur-xl border border-white/10 p-6 rounded-3xl hover:bg-white/5 transition-all duration-500 transform hover:-translate-y-2 hover:border-white/20 shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)]">
+              <div className="flex flex-col relative items-start bg-white/5 backdrop-blur-2xl border border-white/10 p-6 rounded-3xl hover:bg-white/10 transition-all duration-500 transform hover:-translate-y-2 shadow-2xl">
                 <div className="flex items-center gap-3 mb-3">
-                   <div className="p-2.5 bg-white/10 rounded-xl shadow-inner">
-                     <Zap className="w-5 h-5 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
+                   <div className="p-2.5 bg-white/10 rounded-xl shadow-inner border border-white/5">
+                     <Zap className="w-5 h-5 text-white drop-shadow-md" />
                    </div>
                    <span className="w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse shadow-[0_0_12px_rgba(74,222,128,0.9)]" />
                 </div>
-                <p className="text-3xl font-black text-white tracking-tight">99.9%</p>
-                <p className="text-xs text-white/50 font-bold uppercase tracking-widest mt-1.5">Uptime</p>
+                <p className="text-4xl font-black text-white tracking-tight">99.9%</p>
+                <p className="text-xs text-white/60 font-bold uppercase tracking-widest mt-2">Uptime</p>
               </div>
             </div>
           </div>
