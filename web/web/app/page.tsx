@@ -4,7 +4,7 @@ import Footer from '@/components/Footer';
 import Navbar from '@/components/Navbar';
 import { db } from '@/lib/firebase';
 import { formatTimeAgo } from '@/lib/utils';
-import { collection, onSnapshot, orderBy, query, Timestamp } from 'firebase/firestore';
+import { collection, onSnapshot, orderBy, query, Timestamp, doc, setDoc, updateDoc, increment } from 'firebase/firestore';
 import { ArrowRight, Brain, Calendar, ChevronRight, Download, MessageSquare, Sparkles, Star, Users, Wrench, Zap, Camera, FileText } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -79,42 +79,77 @@ export default function Home() {
     return () => unsub();
   }, []);
 
-  // ─── Live Counter Component ───
-  const LiveCounter = ({ target, label, prefix = '', suffix = '' }: { target: number, label: string, prefix?: string, suffix?: string }) => {
-    const [count, setCount] = useState(0);
+  // ─── Real-Time Global Stats ───
+  const [globalStats, setGlobalStats] = useState({
+    students: 12452,
+    messages: 1200502,
+    downloads: 1450,
+  });
+
+  useEffect(() => {
+    const statsRef = doc(db, 'stats', 'global');
+    // Ensure the document exists so it can be incremented
+    setDoc(statsRef, {
+      students: globalStats.students,
+      messages: globalStats.messages,
+      downloads: globalStats.downloads
+    }, { merge: true }).catch(console.error);
+
+    const unsub = onSnapshot(statsRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setGlobalStats(prev => ({
+          students: data.students || prev.students,
+          messages: data.messages || prev.messages,
+          downloads: data.downloads || prev.downloads,
+        }));
+      }
+    });
+
+    return () => unsub();
+  }, []);
+
+  const handleDownload = async () => {
+    try {
+      const statsRef = doc(db, 'stats', 'global');
+      await updateDoc(statsRef, { downloads: increment(1) });
+    } catch (error) {
+      console.error("Failed to update download stat", error);
+    }
+  };
+
+  const LiveCounter = ({ target, label, icon: Icon, prefix = '', suffix = '' }: any) => {
+    const [display, setDisplay] = useState(0);
+    
     useEffect(() => {
-      let start = 0;
-      const duration = 2000; // 2 seconds
-      const increment = target / (duration / 16); // 60fps
-      
+      let start = display;
+      if (start === target) return;
+      const duration = 1000;
+      const steps = 30;
+      const step = (target - start) / steps;
+      let current = start;
       const timer = setInterval(() => {
-        start += increment;
-        if (start >= target) {
-          setCount(target);
+        current += step;
+        if ((step > 0 && current >= target) || (step < 0 && current <= target)) {
+          setDisplay(target);
           clearInterval(timer);
         } else {
-          setCount(Math.floor(start));
+          setDisplay(Math.floor(current));
         }
-      }, 16);
-      
-      // Randomly increment every 5-10s to simulate live activity
-      const liveTimer = setInterval(() => {
-        setCount(prev => prev + Math.floor(Math.random() * 2) + 1);
-      }, 7000 + Math.random() * 3000);
-
-      return () => {
-        clearInterval(timer);
-        clearInterval(liveTimer);
-      };
+      }, duration / steps);
+      return () => clearInterval(timer);
     }, [target]);
 
     return (
-      <div className="text-center">
-        <div className="flex items-center justify-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-          <p className="text-2xl font-black text-white">{prefix}{count.toLocaleString()}{suffix}</p>
+      <div className="flex flex-col relative items-start bg-black/40 backdrop-blur-xl border border-white/10 p-6 rounded-3xl hover:bg-white/5 transition-all duration-500 transform hover:-translate-y-2 hover:border-white/20 shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)]">
+        <div className="flex items-center gap-3 mb-3">
+           <div className="p-2.5 bg-white/10 rounded-xl shadow-inner">
+             <Icon className="w-5 h-5 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
+           </div>
+           <span className="w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse shadow-[0_0_12px_rgba(74,222,128,0.9)]" />
         </div>
-        <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest mt-1">{label}</p>
+        <p className="text-3xl font-black text-white tracking-tight">{prefix}{display.toLocaleString()}{suffix}</p>
+        <p className="text-xs text-white/50 font-bold uppercase tracking-widest mt-1.5">{label}</p>
       </div>
     );
   };
@@ -191,6 +226,7 @@ export default function Home() {
                 <a
                   href="/app-release.apk"
                   download="Walia-Release.apk"
+                  onClick={handleDownload}
                   className="group inline-flex items-center justify-center px-8 py-4 font-bold text-white bg-white/10 border border-white/25 rounded-2xl hover:bg-white/20 hover:-translate-y-1 transition-all duration-300 text-base backdrop-blur-sm"
                 >
                   <Download className="w-5 h-5 mr-3" />
@@ -199,14 +235,21 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Stats: bottom-right corner */}
-            <div className="absolute bottom-16 right-10 md:right-16 hidden lg:grid grid-cols-4 gap-8 text-right">
-              <LiveCounter target={12450} label="Students" suffix="+" />
-              <LiveCounter target={1200500} label="AI Messages" suffix="+" />
-              <LiveCounter target={54} label="Tools" />
-              <div className="text-center">
-                <p className="text-2xl font-black text-white">99.9%</p>
-                <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest mt-1">Uptime</p>
+            {/* Stats: floating gracefully */}
+            <div className="absolute bottom-10 right-10 hidden lg:flex gap-5 z-20">
+              <LiveCounter target={globalStats.students} label="Students" icon={Users} suffix="+" />
+              <LiveCounter target={globalStats.messages} label="AI Messages" icon={MessageSquare} suffix="+" />
+              <LiveCounter target={globalStats.downloads} label="Downloads" icon={Download} suffix="+" />
+              
+              <div className="flex flex-col relative items-start bg-black/40 backdrop-blur-xl border border-white/10 p-6 rounded-3xl hover:bg-white/5 transition-all duration-500 transform hover:-translate-y-2 hover:border-white/20 shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)]">
+                <div className="flex items-center gap-3 mb-3">
+                   <div className="p-2.5 bg-white/10 rounded-xl shadow-inner">
+                     <Zap className="w-5 h-5 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
+                   </div>
+                   <span className="w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse shadow-[0_0_12px_rgba(74,222,128,0.9)]" />
+                </div>
+                <p className="text-3xl font-black text-white tracking-tight">99.9%</p>
+                <p className="text-xs text-white/50 font-bold uppercase tracking-widest mt-1.5">Uptime</p>
               </div>
             </div>
           </div>
@@ -471,7 +514,7 @@ export default function Home() {
                   <Link href="/signup" className="px-10 py-5 rounded-2xl bg-white text-black font-black text-lg hover:bg-white/90 transition-all shadow-xl hover:-translate-y-1">
                     Start Free Today
                   </Link>
-                  <a href="/app-release.apk" download="Walia-Release.apk" className="px-10 py-5 rounded-2xl bg-white/10 border border-white/15 text-white font-bold text-lg hover:bg-white/20 transition-all flex items-center">
+                  <a href="/app-release.apk" download="Walia-Release.apk" onClick={handleDownload} className="px-10 py-5 rounded-2xl bg-white/10 border border-white/15 text-white font-bold text-lg hover:bg-white/20 transition-all flex items-center">
                     <Download className="w-5 h-5 mr-3" /> Download APK
                   </a>
                 </div>

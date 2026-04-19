@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
-import { collection, query, getDocs, doc, getDoc, setDoc } from 'firebase/firestore';
-import { Users, DollarSign, FileText, Hash, Loader2, RefreshCw } from 'lucide-react';
+import { collection, query, onSnapshot, doc, getDoc, setDoc, getDocs } from 'firebase/firestore';
+import { Users, DollarSign, FileText, Hash, Loader2, RefreshCw, Download } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function AdminOverview() {
@@ -17,33 +17,97 @@ export default function AdminOverview() {
         revenueUsd: 0,
         totalPosts: 0,
         totalHashtags: 0,
+        downloads: 0,
     });
 
-    const loadStats = async () => {
-        setLoading(true);
-        try {
-            const statsDoc = await getDoc(doc(db, 'platform_stats', 'main'));
-            if (statsDoc.exists()) {
-                setStats(statsDoc.data() as any);
-            } else {
-                // Initialize if missing
-                await syncStats();
+    // Real-time listener for stats
+    useEffect(() => {
+        const unsubscribe = onSnapshot(doc(db, 'platform_stats', 'main'), (docSnap) => {
+            if (docSnap.exists()) {
+                setStats(docSnap.data() as any);
+                setLoading(false);
             }
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setLoading(false);
-        }
-    };
+        });
+
+        return () => unsubscribe();
+    }, []);
+
+    // Also listen to users collection for real-time user count updates
+    useEffect(() => {
+        const usersUnsubscribe = onSnapshot(query(collection(db, 'users')), (snap) => {
+            setStats(prev => ({
+                ...prev,
+                totalUsers: snap.size,
+                lastUpdated: new Date().toISOString()
+            }));
+        });
+
+        return () => usersUnsubscribe();
+    }, []);
+
+    // Real-time listener for posts
+    useEffect(() => {
+        const postsUnsubscribe = onSnapshot(query(collection(db, 'posts')), (snap) => {
+            let totalTags = 0;
+            snap.forEach(d => {
+                if (d.data().tags) totalTags += d.data().tags.length;
+            });
+            setStats(prev => ({
+                ...prev,
+                totalPosts: snap.size,
+                totalHashtags: totalTags
+            }));
+        });
+
+        return () => postsUnsubscribe();
+    }, []);
+
+    // Real-time listener for payments/revenue
+    useEffect(() => {
+        const paymentsUnsubscribe = onSnapshot(query(collection(db, 'payments')), (snap) => {
+            let revEtb = 0;
+            let revUsd = 0;
+            let proUsers = 0;
+            let freeUsers = 0;
+            snap.forEach(d => {
+                const data = d.data();
+                if (data.status === 'approved') {
+                    if (data.currency === 'ETB') revEtb += data.amount;
+                    else revUsd += data.amount;
+                }
+            });
+            setStats(prev => ({
+                ...prev,
+                revenueEtb: revEtb,
+                revenueUsd: revUsd
+            }));
+        });
+
+        return () => paymentsUnsubscribe();
+    }, []);
+
+    // Real-time listener for downloads
+    useEffect(() => {
+        const downloadsUnsubscribe = onSnapshot(doc(db, 'stats', 'global'), (docSnap) => {
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                setStats(prev => ({
+                    ...prev,
+                    downloads: data.downloads || 0
+                }));
+            }
+        });
+
+        return () => downloadsUnsubscribe();
+    }, []);
 
     const syncStats = async () => {
         if (calculating) return;
         setCalculating(true);
         try {
-            // Expensive operation: Fetching all to calculate
-            const usersSnap = await getDocs(collection(db, 'users'));
-            const postsSnap = await getDocs(collection(db, 'posts'));
-            const paymentsSnap = await getDocs(collection(db, 'payments'));
+            const usersSnap = await getDocs(query(collection(db, 'users')));
+            const postsSnap = await getDocs(query(collection(db, 'posts')));
+            const paymentsSnap = await getDocs(query(collection(db, 'payments')));
             
             let proUsers = 0;
             let freeUsers = 0;
@@ -88,10 +152,6 @@ export default function AdminOverview() {
         }
     };
 
-    useEffect(() => {
-        loadStats();
-    }, []);
-
     const CARDS = [
         { label: 'Total Users', value: stats.totalUsers, icon: Users, color: 'text-blue-500', bg: 'bg-blue-500/10' },
         { label: 'Pro Members', value: stats.proUsers, icon: Users, color: 'text-amber-500', bg: 'bg-amber-500/10' },
@@ -99,6 +159,7 @@ export default function AdminOverview() {
         { label: 'Revenue (USD)', value: `$${stats.revenueUsd.toLocaleString()}`, icon: DollarSign, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
         { label: 'Total Posts', value: stats.totalPosts, icon: FileText, color: 'text-indigo-500', bg: 'bg-indigo-500/10' },
         { label: 'Hashtags Used', value: stats.totalHashtags, icon: Hash, color: 'text-purple-500', bg: 'bg-purple-500/10' },
+        { label: 'APK Downloads', value: stats.downloads, icon: Download, color: 'text-red-500', bg: 'bg-red-500/10' },
     ];
 
     if (loading) {
