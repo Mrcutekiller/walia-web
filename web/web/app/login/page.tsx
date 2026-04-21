@@ -1,7 +1,7 @@
 'use client';
 
 import { auth, db, googleProvider } from '@/lib/firebase';
-import { signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
+import { sendPasswordResetEmail, signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { AlertCircle, ArrowRight, Brain, Eye, EyeOff, Lock, Mail, Sparkles, Users } from 'lucide-react';
 import Image from 'next/image';
@@ -33,6 +33,7 @@ function LoginContent() {
     const [loading, setLoading] = useState(false);
     const [googleLoading, setGoogleLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [forgotSuccess, setForgotSuccess] = useState(false);
     const router = useRouter();
     const searchParams = useSearchParams();
 
@@ -47,6 +48,17 @@ function LoginContent() {
         } catch (err: any) {
             console.error('Login Error:', err);
             setError(err.message || 'Invalid email or password. Please try again.');
+        } finally { setLoading(false); }
+    };
+
+    const handleForgotPassword = async () => {
+        if (!email.trim()) { setError('Enter your email above first, then click Forgot password.'); return; }
+        setError(''); setLoading(true);
+        try {
+            await sendPasswordResetEmail(auth, email.trim());
+            setForgotSuccess(true);
+        } catch (err: any) {
+            setError(err.message || 'Failed to send reset email.');
         } finally { setLoading(false); }
     };
 
@@ -144,6 +156,11 @@ function LoginContent() {
                             <span className="font-medium">{error}</span>
                         </div>
                     )}
+                    {forgotSuccess && (
+                        <div className="mb-5 p-3.5 rounded-2xl bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/20 text-green-700 dark:text-green-400 text-xs font-medium">
+                            ✅ Password reset email sent! Check your inbox.
+                        </div>
+                    )}
 
                     {/* Google */}
                     <button
@@ -179,7 +196,7 @@ function LoginContent() {
                         <div className="space-y-1.5">
                             <div className="flex justify-between ml-1">
                                 <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">Password</label>
-                                <button type="button" className="text-[10px] font-bold text-black dark:text-white/60 hover:text-black dark:hover:text-white transition-colors">Forgot password?</button>
+                                <button type="button" onClick={handleForgotPassword} className="text-[10px] font-bold text-black dark:text-white/60 hover:text-black dark:hover:text-white transition-colors">Forgot password?</button>
                             </div>
                             <div className="relative group">
                                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-black dark:group-focus-within:text-white transition-colors" />

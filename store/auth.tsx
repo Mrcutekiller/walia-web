@@ -288,9 +288,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const loginWithGoogle = async () => {
         try {
             setIsLoading(true);
-            // Placeholder - Google OAuth requires additional setup in Firebase Console
-            // For now, show a message to use email sign-in
-            throw new Error('Google sign-in is not yet available. Please use email sign-in.');
+            // Google sign-in on native (Expo) requires expo-google-sign-in or @react-native-google-signin/google-signin.
+            // Since those native modules are not configured here, we surface a clear message.
+            // The web version (Next.js) supports Google sign-in via signInWithPopup correctly.
+            throw new Error('Google sign-in is only available on the web version. Please use email sign-in, or try the Walia web app.');
         } catch (e: any) {
             setIsLoading(false);
             throw e;
