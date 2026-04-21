@@ -7,7 +7,8 @@ import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { Check, Crown, X, Zap, ArrowRight, Upload, Info, Loader2, CreditCard } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useState, Suspense } from 'react';
 
 const FREE_FEATURES = [
     { text: '5 AI messages per day', included: true },
@@ -30,8 +31,10 @@ const PRO_FEATURES = [
     'Early Access to New Features',
 ];
 
-export default function UpgradePage() {
+function UpgradeContent() {
     const { user } = useAuth();
+    const searchParams = useSearchParams();
+    const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
     const [step, setStep] = useState(1); // 1: Pricing, 2: Payment Method, 3: Proof
     const [yearly, setYearly] = useState(false);
     const [selectedMethod, setSelectedMethod] = useState('');
@@ -75,8 +78,8 @@ export default function UpgradePage() {
     };
 
     const ethMethods = [
-        { id: 'telebirr', name: 'Telebirr', details: 'Phone: 0911223344 (Username: Walia AI)' },
-        { id: 'cbe', name: 'CBE (Commercial Bank)', details: 'Account: 1000123456789 (Name: Walia Trading)' }
+        { id: 'telebirr', name: 'Telebirr', details: 'Phone: 0980140287 (Account Name: Biruk)' },
+        { id: 'cbe', name: 'CBE (Commercial Bank)', details: 'Account: 1000724852177 (Account Name: Biruk)' }
     ];
 
     const intlMethods = [
@@ -148,8 +151,8 @@ export default function UpgradePage() {
                         Thank you for upgrading. Your payment proof has been sent to our admin team for verification. 
                         You will receive a notification once your Pro plan is activated (usually within 1-2 hours).
                     </p>
-                    <Link href="/dashboard" className="inline-block px-8 py-4 rounded-2xl bg-white text-black font-black hover:scale-[1.02] transition-transform">
-                        Back to Dashboard
+                    <Link href={callbackUrl} className="inline-block px-8 py-4 rounded-2xl bg-white text-black font-black hover:scale-[1.02] transition-transform">
+                        {callbackUrl.includes('/dashboard') ? 'Back to Dashboard' : 'Continue Preparation'}
                     </Link>
                 </div>
             </DashboardShell>
@@ -344,5 +347,13 @@ export default function UpgradePage() {
                 )}
             </div>
         </DashboardShell>
+    );
+}
+
+export default function UpgradePage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <UpgradeContent />
+        </Suspense>
     );
 }

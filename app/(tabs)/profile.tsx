@@ -12,18 +12,21 @@ import { Alert, Image, Linking, Modal, ScrollView, StyleSheet, Switch, Text, Tou
 
 const MENU_SECTIONS = [
     {
-        title: 'General',
+        title: 'Preparation',
         items: [
-            { icon: 'language', label: 'Language', desc: 'English', color: '#6C63FF' },
+            { icon: 'calendar', label: 'Daily Plan', desc: 'Tasks & study schedule', color: '#6C63FF' },
+            { icon: 'notifications', label: 'Notifications', desc: 'Inbox & payment alerts', color: '#FFA502' },
+            { icon: 'information-circle', label: 'About Walia', desc: 'Mission & History', color: '#9CA3AF' },
+            { icon: 'chatbubble-ellipses', label: 'Contact Us', desc: 'Telegram: @Mrcute_killer', color: '#6C63FF' },
+            { icon: 'cloud-download', label: 'Updates', desc: 'Download latest version', color: '#10B981' },
         ],
     },
     {
         title: 'Settings',
         items: [
-            { icon: 'notifications', label: 'Notifications', desc: 'Push & study alerts', color: '#FFA502' },
+            { icon: 'moon', label: 'Appearance', desc: 'Dark / Light mode', color: '#2F3542', isThemeToggle: true },
             { icon: 'shield-checkmark', label: 'Privacy Policy', desc: 'Personal data & ads', color: '#00D2D3' },
             { icon: 'document-text', label: 'Terms of Service', desc: 'App rules & safety', color: '#718096' },
-            { icon: 'moon', label: 'Appearance', desc: 'Dark / Light mode', color: '#2F3542', isThemeToggle: true },
         ],
     },
     {
@@ -82,6 +85,9 @@ export default function ProfileScreen() {
         if (label === 'Terms of Service') { router.push('/legal/terms' as any); return; }
         if (label === 'Contact Us') { Linking.openURL('https://t.me/Mrcute_killer'); return; }
         if (label === 'Help Centre') { router.push('/(tabs)/ai'); return; }
+        if (label === 'Notifications') { router.push('/notifications' as any); return; }
+        if (label === 'Daily Plan') { router.push('/plan' as any); return; }
+        if (label === 'Language') { handleMenuPress('LanguagePopup'); return; }
 
         const msgs: Record<string, [string, string, string, string]> = {
             'Language': ['🌐 Language', 'Select your preferred language:\n\n• Amharic 🇪🇹\n• Oromo 🇪🇹\n• Tigrinya 🇪🇹\n• English 🇺🇸', 'language', '#6C63FF'],
@@ -225,9 +231,7 @@ export default function ProfileScreen() {
                                             {item.isThemeToggle ? (isDark ? 'Dark mode is on' : 'Light mode is on') : item.desc}
                                         </Text>
                                     </View>
-                                    {item.label === 'Notifications' ? (
-                                        <Switch value={notifsEnabled} onValueChange={setNotifsEnabled} trackColor={{ false: '#E2E8F0', true: '#10B981' }} thumbColor="#fff" />
-                                    ) : item.isThemeToggle ? (
+                                    {item.isThemeToggle ? (
                                         <Switch value={isDark} onValueChange={toggleTheme} trackColor={{ false: '#E2E8F0', true: '#000' }} thumbColor="#fff" />
                                     ) : (
                                         <Ionicons name="chevron-forward" size={14} color="#CBD5E0" />
@@ -293,7 +297,7 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#FAFAFA' },
+    container: { flex: 1 },
     topSection: { marginBottom: 12 },
     banner: { height: 140, justifyContent: 'center', alignItems: 'center' },
     bannerDecoration: { position: 'absolute', right: -30, top: -30, opacity: 0.1 },

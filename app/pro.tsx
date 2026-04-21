@@ -29,7 +29,10 @@ export default function ProScreen() {
     const canAfford = xp >= PRO_PLAN_XP_COST;
 
     const handleBuyWithMoney = () => {
-        Alert.alert('💳 Buy Pro Plan', `$12 / month (approx. 1,350 ETB)\n\nPayment integration coming soon!\n\nFor now, keep earning XP to unlock Pro for free.`);
+        router.push({
+            pathname: '/payment',
+            params: { callbackUrl: '/(tabs)/profile' }
+        });
     };
 
     return (

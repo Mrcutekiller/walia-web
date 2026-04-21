@@ -3,158 +3,147 @@
 import { useAuth } from '@/context/AuthContext';
 import { db } from '@/lib/firebase';
 import { formatTimeAgo } from '@/lib/utils';
-import { collection, doc, onSnapshot, orderBy, query, updateDoc, where, deleteDoc, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, onSnapshot, orderBy, query, updateDoc, where, doc, deleteDoc } from 'firebase/firestore';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Bell, Info, MessageSquare, ShieldAlert, Users, X, Calendar as CalendarIcon, Check } from 'lucide-react';
+import {
+    Bell, Check, CreditCard, Info, MessageSquare, ShieldAlert, Users, X, BellOff, Trash2
+} from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
-export interface AppNotification {
-    id?: string;
-    userId: string;
-    title: string;
-    message: string;
-    type: 'message' | 'invite' | 'community' | 'system';
-    read: boolean;
-    createdAt: any;
-    link?: string;
+const TYPE_CONFIG: Record<string, { icon: any; color: string; bg: string; dot: string }> = {
+    message:   { icon: MessageSquare, color: 'text-blue-500',    bg: 'bg-blue-500/10',    dot: 'bg-blue-500' },
+    invite:    { icon: Users,         color: 'text-violet-500',  bg: 'bg-violet-500/10',  dot: 'bg-violet-500' },
+    community: { icon: Users,         color: 'text-indigo-500',  bg: 'bg-indigo-500/10',  dot: 'bg-indigo-500' },
+    system:    { icon: ShieldAlert,   color: 'text-rose-500',    bg: 'bg-rose-500/10',    dot: 'bg-rose-500' },
+    payment:   { icon: CreditCard,    color: 'text-emerald-500', bg: 'bg-emerald-500/10', dot: 'bg-emerald-500' },
+    default:   { icon: Info,          color: 'text-gray-400',    bg: 'bg-gray-100',        dot: 'bg-gray-400' },
+};
+
+function groupNotifications(notifs: any[]) {
+    const now = new Date();
+    const today: any[] = [];
+    const earlier: any[] = [];
+
+    notifs.forEach(n => {
+        const date = n.createdAt?.toDate ? n.createdAt.toDate() : new Date(n.createdAt?.seconds * 1000 || Date.now());
+        const diffHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
+        if (diffHours < 24) today.push(n);
+        else earlier.push(n);
+    });
+
+    return { today, earlier };
 }
 
 export default function NotificationPanel() {
     const { user } = useAuth();
-    const [notifications, setNotifications] = useState<AppNotification[]>([]);
+    const [notifications, setNotifications] = useState<any[]>([]);
     const [isOpen, setIsOpen] = useState(false);
     const panelRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (!user) return;
-
         const q = query(
             collection(db, 'notifications'),
             where('userId', '==', user.id),
             orderBy('createdAt', 'desc')
         );
-
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            const notifs = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            })) as AppNotification[];
-            setNotifications(notifs);
+        const unsubscribe = onSnapshot(q, snapshot => {
+            setNotifications(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
         });
-
         return () => unsubscribe();
     }, [user]);
 
-    // Real-time task/event checker
     useEffect(() => {
-        if (!user) return;
-        
-        let notifiedEvents = new Set<string>();
-        
-        const q = query(collection(db, 'users', user.id, 'events'));
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            const events = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as any }));
-            
-            const checkEvents = setInterval(() => {
-                const now = new Date();
-                const currentDate = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
-                const currentTime = now.toTimeString().substring(0, 5); // HH:MM
-                
-                events.forEach(async event => {
-                    const eventKey = `${event.id}-${currentDate}-${currentTime}`;
-                    if (event.date === currentDate && event.time === currentTime && !notifiedEvents.has(eventKey)) {
-                        notifiedEvents.add(eventKey);
-                        // Trigger real-time notification
-                        try {
-                            await addDoc(collection(db, 'notifications'), {
-                                userId: user.id,
-                                title: 'Task Reminder',
-                                message: `It's time for: ${event.title}`,
-                                type: 'system',
-                                read: false,
-                                createdAt: serverTimestamp(),
-                                link: '/dashboard/calendar'
-                            });
-                        } catch (e) {
-                            console.error('Failed to create event notification:', e);
-                        }
-                    }
-                });
-            }, 60000); // Check every minute
-            
-            return () => clearInterval(checkEvents);
-        });
-
-        return () => unsubscribe();
-    }, [user]);
-
-    // Close on outside click
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (panelRef.current && !panelRef.current.contains(event.target as Node)) {
-                setIsOpen(false);
-            }
+        const handleClickOutside = (e: MouseEvent) => {
+            if (panelRef.current && !panelRef.current.contains(e.target as Node)) setIsOpen(false);
         };
         if (isOpen) document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [isOpen]);
 
     const unreadCount = notifications.filter(n => !n.read).length;
+    const { today, earlier } = groupNotifications(notifications);
 
     const markAsRead = async (id: string) => {
-        if (!id) return;
-        try {
-            await updateDoc(doc(db, 'notifications', id), { read: true });
-        } catch (error) {
-            console.error('Error marking as read:', error);
-        }
+        try { await updateDoc(doc(db, 'notifications', id), { read: true }); } catch { }
     };
 
-    const deleteNotification = async (id: string | undefined) => {
-        if (!id) return;
-        try {
-            await deleteDoc(doc(db, 'notifications', id));
-        } catch (error) {
-            console.error('Error deleting notification:', error);
-        }
+    const deleteNotification = async (id: string) => {
+        try { await deleteDoc(doc(db, 'notifications', id)); } catch { }
     };
 
-    const markAllAsRead = async () => {
-        const unread = notifications.filter(n => !n.read);
-        for (const notif of unread) {
-            if (notif.id) await markAsRead(notif.id);
-        }
-    };
+    const NotifItem = ({ notif }: { notif: any }) => {
+        const cfg = TYPE_CONFIG[notif.type] ?? TYPE_CONFIG.default;
+        const Icon = cfg.icon;
 
-    const clearAll = async () => {
-        const confirmClear = window.confirm('Are you sure you want to delete all notifications?');
-        if (!confirmClear) return;
-        
-        for (const notif of notifications) {
-            if (notif.id) await deleteNotification(notif.id);
-        }
-    };
+        return (
+            <motion.div
+                layout
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                onClick={() => { if (!notif.read) markAsRead(notif.id); }}
+                className={`relative flex gap-3 p-4 rounded-2xl cursor-pointer transition-all group border ${
+                    !notif.read
+                        ? 'bg-[var(--color-surface-container-low)] border-[var(--color-outline-variant)]/20 shadow-sm'
+                        : 'bg-transparent border-transparent hover:bg-[var(--color-surface-container-low)]'
+                }`}
+            >
+                {/* Unread dot */}
+                {!notif.read && (
+                    <div className={`absolute left-0 top-4 bottom-4 w-1 rounded-full ${cfg.dot}`} />
+                )}
 
-    const getTypeIcon = (type: string) => {
-        switch (type) {
-            case 'message': return <MessageSquare className="w-4 h-4 text-blue-500" />;
-            case 'invite': return <Users className="w-4 h-4 text-emerald-500" />;
-            case 'community': return <Users className="w-4 h-4 text-indigo-500" />;
-            case 'system': return <ShieldAlert className="w-4 h-4 text-rose-500" />;
-            default: return <Info className="w-4 h-4 text-gray-500" />;
-        }
+                <div className={`shrink-0 w-10 h-10 rounded-xl flex items-center justify-center ${cfg.bg}`}>
+                    <Icon className={`w-5 h-5 ${cfg.color}`} />
+                </div>
+
+                <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2">
+                        <p className={`text-sm leading-tight truncate ${!notif.read ? 'font-black text-[var(--color-on-surface)]' : 'font-semibold text-[var(--color-on-surface-variant)]'}`}>
+                            {notif.title}
+                        </p>
+                        <button
+                            onClick={e => { e.stopPropagation(); deleteNotification(notif.id); }}
+                            className="opacity-0 group-hover:opacity-100 p-1 hover:text-rose-500 transition-all"
+                        >
+                            <X className="w-3.5 h-3.5" />
+                        </button>
+                    </div>
+                    <p className="text-xs text-[var(--color-on-surface-variant)] mt-1 line-clamp-2 leading-relaxed">
+                        {notif.message}
+                    </p>
+                    <div className="flex items-center justify-between mt-2">
+                        <span className="text-[10px] text-[var(--color-outline)] font-bold uppercase tracking-wider">
+                            {formatTimeAgo(notif.createdAt)}
+                        </span>
+                        {notif.link && (
+                            <Link
+                                href={notif.link}
+                                onClick={e => e.stopPropagation()}
+                                className="text-[10px] font-black uppercase text-[var(--color-primary)] hover:underline"
+                            >
+                                View Details
+                            </Link>
+                        )}
+                    </div>
+                </div>
+            </motion.div>
+        );
     };
 
     return (
-        <div className="relative z-50 font-sans" ref={panelRef}>
+        <div className="relative z-50" ref={panelRef}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="relative p-2 rounded-full text-black/50 hover:bg-black/5 hover:text-black transition-all flex items-center justify-center transform active:scale-95"
+                className="relative p-2.5 rounded-xl text-[var(--color-on-surface-variant)] hover:bg-[var(--color-surface-container)] hover:text-[var(--color-on-surface)] transition-all"
             >
-                <Bell className="w-5 h-5" />
+                <Bell className="w-5.5 h-5.5" />
                 {unreadCount > 0 && (
-                    <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-rose-500 border-2 border-white rounded-full animate-pulse" />
+                    <span className="absolute top-1.5 right-1.5 w-4.5 h-4.5 bg-rose-500 text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-[var(--color-surface)]">
+                        {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
                 )}
             </button>
 
@@ -164,89 +153,54 @@ export default function NotificationPanel() {
                         initial={{ opacity: 0, y: 10, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                        transition={{ duration: 0.15, ease: "easeOut" }}
-                        className="absolute bottom-[calc(100%+12px)] left-0 lg:left-auto lg:right-0 w-[340px] max-h-[480px] flex flex-col bg-white border border-gray-100 rounded-[28px] shadow-[0_20px_60px_rgba(0,0,0,0.12)] overflow-hidden"
+                        className="absolute top-full right-0 mt-4 w-[380px] max-h-[500px] flex flex-col bg-[var(--color-surface-container-lowest)] border border-[var(--color-outline-variant)]/20 rounded-[2rem] shadow-2xl overflow-hidden"
                     >
-                        <div className="flex items-center justify-between p-5 border-b border-gray-50 bg-gray-50/30 shrink-0">
-                            <h3 className="font-black text-[10px] text-black uppercase tracking-[0.2em] opacity-40">Live Notifications</h3>
-                            <button
-                                onClick={() => setIsOpen(false)}
-                                className="p-2 rounded-full text-black/20 hover:bg-black/5 hover:text-black transition-all"
-                            >
-                                <X className="w-4 h-4" />
-                            </button>
-                        </div>
-
-                        <div className="flex-1 overflow-y-auto w-full custom-scrollbar">
-                            {notifications.length === 0 ? (
-                                <div className="p-10 text-center text-gray-300">
-                                    <Bell className="w-10 h-10 mx-auto mb-3 opacity-10" />
-                                    <p className="text-xs font-black uppercase tracking-widest">Inbox Empty</p>
-                                </div>
-                            ) : (
-                                <div className="divide-y divide-gray-50">
-                                    {notifications.map((notif) => (
-                                        <div
-                                            key={notif.id}
-                                            onClick={() => {
-                                                if (!notif.read && notif.id) markAsRead(notif.id);
-                                            }}
-                                            className={`flex gap-4 p-5 transition-all cursor-pointer hover:bg-gray-50 group ${!notif.read ? 'bg-indigo-50/30' : ''}`}
-                                        >
-                                            <div className="mt-1 shrink-0 bg-white p-2.5 rounded-2xl border border-gray-100 shadow-sm h-min group-hover:scale-110 transition-transform">
-                                                {getTypeIcon(notif.type)}
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-start justify-between gap-2">
-                                                    <p className={`text-[13px] leading-tight ${!notif.read ? 'font-black text-black' : 'font-bold text-gray-500'}`}>
-                                                        {notif.title}
-                                                    </p>
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-[9px] text-gray-300 whitespace-nowrap font-black uppercase tracking-tighter">
-                                                            {formatTimeAgo(notif.createdAt)}
-                                                        </span>
-                                                        <button 
-                                                            onClick={(e) => { e.stopPropagation(); deleteNotification(notif.id); }}
-                                                            className="p-1.5 rounded-full bg-rose-500/10 text-rose-500 opacity-0 group-hover:opacity-100 hover:bg-rose-500 hover:text-white transition-all"
-                                                        >
-                                                            <X className="w-3 h-3" />
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                                <p className="text-xs text-gray-400 mt-1 line-clamp-2 leading-relaxed font-medium">
-                                                    {notif.message}
-                                                </p>
-                                                {notif.link && (
-                                                    <Link
-                                                        href={notif.link}
-                                                        className="inline-flex items-center gap-1.5 mt-3 text-[9px] font-black uppercase tracking-[0.15em] text-indigo-500 hover:text-indigo-600 transition-colors"
-                                                    >
-                                                        Review Now <Check className="w-3 h-3" />
-                                                    </Link>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-
-                        {notifications.length > 0 && (
-                            <div className="p-4 border-t border-gray-100 bg-white flex gap-3 shrink-0">
+                        {/* Header */}
+                        <div className="p-6 border-b border-[var(--color-outline-variant)]/10 flex items-center justify-between">
+                            <div>
+                                <h3 className="font-black text-lg text-[var(--color-on-surface)]">Notifications</h3>
+                                <p className="text-xs text-[var(--color-outline)] font-bold">{unreadCount} unread today</p>
+                            </div>
+                            <div className="flex gap-2">
                                 <button
-                                    onClick={markAllAsRead}
-                                    className="flex-1 py-3 rounded-2xl text-[9px] font-black uppercase tracking-widest text-gray-400 hover:bg-gray-50 hover:text-black transition-all border border-gray-50"
+                                    onClick={() => setNotifications([])}
+                                    className="p-2 rounded-xl border border-[var(--color-outline-variant)]/20 text-[var(--color-outline)] hover:text-rose-500 transition-all"
                                 >
-                                    Mark as Read
+                                    <Trash2 className="w-4 h-4" />
                                 </button>
                                 <button
-                                    onClick={clearAll}
-                                    className="px-6 py-3 rounded-2xl text-[9px] font-black uppercase tracking-widest text-rose-500 hover:bg-rose-50 transition-all border border-rose-100"
+                                    onClick={() => setIsOpen(false)}
+                                    className="p-2 rounded-xl border border-[var(--color-outline-variant)]/20 text-[var(--color-outline)] hover:text-[var(--color-on-surface)] transition-all"
                                 >
-                                    Clear
+                                    <X className="w-4 h-4" />
                                 </button>
                             </div>
-                        )}
+                        </div>
+
+                        {/* Body */}
+                        <div className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar">
+                            {notifications.length === 0 ? (
+                                <div className="py-20 flex flex-col items-center gap-4 text-[var(--color-outline)] opacity-40">
+                                    <BellOff className="w-12 h-12" />
+                                    <p className="text-sm font-black uppercase tracking-widest">No notifications</p>
+                                </div>
+                            ) : (
+                                <>
+                                    {today.length > 0 && (
+                                        <div className="space-y-2">
+                                            <p className="text-[10px] font-black text-[var(--color-outline)] uppercase tracking-[0.2em] px-2">Today</p>
+                                            {today.map(n => <NotifItem key={n.id} notif={n} />)}
+                                        </div>
+                                    )}
+                                    {earlier.length > 0 && (
+                                        <div className="space-y-2 mt-4">
+                                            <p className="text-[10px] font-black text-[var(--color-outline)] uppercase tracking-[0.2em] px-2">Earlier</p>
+                                            {earlier.map(n => <NotifItem key={n.id} notif={n} />)}
+                                        </div>
+                                    )}
+                                </>
+                            )}
+                        </div>
                     </motion.div>
                 )}
             </AnimatePresence>

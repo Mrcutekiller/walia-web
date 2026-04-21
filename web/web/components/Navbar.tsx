@@ -48,20 +48,20 @@ export default function Navbar() {
                 <div className="max-w-7xl mx-auto px-5 md:px-8 h-16 flex items-center justify-between">
 
                     {/* ── Logo ── */}
-                    <Link href="/" className="flex items-center gap-2.5 group shrink-0">
-                        {/* Always white bg so the black logo is always visible */}
-                        <div className="w-9 h-9 rounded-[10px] bg-white border border-black/10 flex items-center justify-center overflow-hidden shadow-sm group-hover:scale-105 group-hover:shadow-md transition-all duration-300">
+                    <Link href="/" className="flex items-center gap-3 group shrink-0">
+                        {/* Enlarged container to prevent logo clipping */}
+                        <div className="w-11 h-11 rounded-2xl bg-white/5 dark:bg-white/10 flex items-center justify-center overflow-hidden transition-all duration-300 group-hover:scale-110">
                             <Image
                                 src="/walia-logo.png"
                                 alt="Walia"
-                                width={28}
-                                height={28}
+                                width={32}
+                                height={32}
                                 unoptimized
-                                className="object-contain w-[22px] h-[22px]"
+                                className="object-contain w-[26px] h-[26px]"
                             />
                         </div>
                         <span className={cn(
-                            "text-xl font-black tracking-widest uppercase transition-colors duration-300",
+                            "text-2xl font-black tracking-tight transition-colors duration-300",
                             scrolled || !isDarkHeroPage ? 'text-black dark:text-white' : 'text-white'
                         )}>
                             Walia

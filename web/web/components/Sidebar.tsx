@@ -11,8 +11,11 @@ import {
     Wrench,
     X,
     Zap,
-    ShieldCheck
+    ShieldCheck,
+    LayoutList,
+    Crown
 } from 'lucide-react';
+import ThemeToggle from './ThemeToggle';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
@@ -22,6 +25,7 @@ import { useTokens } from '@/context/TokenContext';
 const sidebarLinks = [
     { name: 'AI Hub', href: '/dashboard/ai', icon: Sparkles },
     { name: 'Messages', href: '/dashboard/messages', icon: MessageSquare },
+    { name: 'Daily Plan', href: '/dashboard/plan', icon: LayoutList },
     { name: 'Tools', href: '/dashboard/tools', icon: Wrench },
     { name: 'Community', href: '/dashboard/community', icon: Users },
     { name: 'Calendar', href: '/dashboard/calendar', icon: CalendarIcon },
@@ -54,8 +58,8 @@ export default function Sidebar({ isOpen, onClose }: { isOpen: boolean, onClose:
                     {/* Header */}
                     <div className="p-8 flex items-center justify-between">
                         <Link href="/" className="flex items-center space-x-3 group">
-                            <div className="w-10 h-10 rounded-full bg-black border border-walia-primary/30 flex items-center justify-center overflow-hidden transition-all group-hover:scale-110">
-                                <Image src="/walia-logo.png" alt="Walia" width={32} height={32} unoptimized />
+                            <div className="w-12 h-12 flex items-center justify-center transition-all group-hover:scale-105">
+                                <Image src="/walia-logo.png" alt="Walia" width={48} height={48} className="object-contain" unoptimized />
                             </div>
                             <span className="text-2xl font-black text-[var(--color-on-surface)] tracking-tighter uppercase">Walia</span>
                         </Link>

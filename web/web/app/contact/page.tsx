@@ -2,7 +2,8 @@
 
 import Footer from '@/components/Footer';
 import Navbar from '@/components/Navbar';
-import { AlertCircle, CheckCircle, Mail, MapPin, MessageSquare, Phone, Send } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { AlertCircle, CheckCircle, Mail, MapPin, MessageSquare, Phone, Send, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 
 const contactInfo = [
@@ -12,22 +13,35 @@ const contactInfo = [
         value: 'support@walia.com',
         sub: 'We reply within 24 hours',
         href: 'mailto:support@walia.com',
+        color: 'rose'
     },
     {
         icon: Phone,
         title: 'Phone',
-        value: '+251 900 000 000',
+        value: '+251 980 140 287',
         sub: 'Mon – Fri, 9am – 6pm EAT',
-        href: 'tel:+251900000000',
+        href: 'tel:+251980140287',
+        color: 'indigo'
     },
     {
-        icon: MapPin,
-        title: 'Headquarters',
-        value: 'Addis Ababa, Ethiopia',
-        sub: 'East Africa Hub',
-        href: 'https://maps.google.com/?q=Addis+Ababa',
+        icon: MessageSquare,
+        title: 'Telegram',
+        value: '@Mrcute_killer',
+        sub: 'Quick instant support',
+        href: 'https://t.me/Mrcute_killer',
+        color: 'sky'
     },
 ];
+
+const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+};
+
+const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } }
+};
 
 export default function ContactPage() {
     const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
@@ -40,8 +54,7 @@ export default function ContactPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setStatus('sending');
-        // Simulate sending
-        await new Promise(r => setTimeout(r, 1500));
+        await new Promise(r => setTimeout(r, 2000));
         setStatus('sent');
         setTimeout(() => {
             setStatus('idle');
@@ -54,168 +67,171 @@ export default function ContactPage() {
             <Navbar />
 
             {/* ── HERO ── */}
-            <section className="relative bg-[#07070F] pt-32 pb-20 overflow-hidden">
+            <section className="relative bg-black pt-40 pb-24 overflow-hidden">
                 <div className="absolute inset-0">
-                    <div className="absolute top-0 left-1/3 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-rose-600/15 to-pink-900/10 blur-[120px]" />
-                    <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] rounded-full bg-gradient-to-tl from-violet-600/10 to-indigo-900/5 blur-[100px]" />
-                    <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.5) 1px, transparent 1px)', backgroundSize: '50px 50px' }} />
+                    <div className="absolute top-0 left-1/3 w-[50%] h-[50%] rounded-full bg-rose-600/10 blur-[120px]" />
+                    <div className="absolute bottom-0 right-1/4 w-[40%] h-[40%] rounded-full bg-violet-600/10 blur-[100px]" />
+                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10" />
                 </div>
 
                 <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/8 border border-white/12 text-white/55 text-xs font-black uppercase tracking-widest mb-8">
-                        <MessageSquare className="w-3.5 h-3.5" />
-                        Get in Touch
-                    </div>
-                    <h1 className="text-[clamp(3rem,9vw,7rem)] font-black leading-[0.9] tracking-tighter text-white mb-6">
-                        Let's Start a{' '}
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 via-pink-300 to-violet-400">
-                            Conversation
-                        </span>
-                    </h1>
-                    <p className="text-white/40 text-xl font-medium leading-relaxed max-w-xl mx-auto">
-                        Have a question, feedback, or just want to say hello? We'd love to hear from you.
-                    </p>
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                    >
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-white/50 text-[10px] font-black uppercase tracking-[0.3em] mb-8">
+                            <MessageSquare className="w-3.5 h-3.5" />
+                            Connect with us
+                        </div>
+                        <h1 className="text-[clamp(3rem,9vw,6.5rem)] font-black leading-[0.9] tracking-tighter text-white mb-8">
+                            Let's Start a<br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 via-pink-300 to-violet-400">
+                                Conversation.
+                            </span>
+                        </h1>
+                        <p className="text-white/40 text-xl font-medium leading-relaxed max-w-xl mx-auto">
+                            Questions, collaboration, or just a virtual coffee? Our team is always ready to talk about the future.
+                        </p>
+                    </motion.div>
                 </div>
             </section>
 
-            {/* ── CONTACT BODY ── */}
-            <section className="py-24 bg-white dark:bg-[#07070F]">
-                <div className="max-w-6xl mx-auto px-6">
-                    <div className="grid lg:grid-cols-5 gap-10 lg:gap-16">
+            {/* ── BODY ── */}
+            <section className="py-32 bg-white dark:bg-[#07070F]">
+                <div className="max-w-7xl mx-auto px-6">
+                    <div className="grid lg:grid-cols-12 gap-16">
 
-                        {/* LEFT: Contact cards */}
-                        <div className="lg:col-span-2 space-y-4">
-                            <h2 className="text-2xl font-black text-black dark:text-white mb-6">Contact Info</h2>
+                        {/* LEFT: Cards */}
+                        <motion.div 
+                            variants={containerVariants}
+                            initial="hidden"
+                            whileInView="visible"
+                            viewport={{ once: true }}
+                            className="lg:col-span-4 space-y-6"
+                        >
+                            <h2 className="text-2xl font-black mb-8 tracking-tight">Contact Channels</h2>
 
                             {contactInfo.map((info, i) => (
-                                <a
+                                <motion.a
                                     key={i}
                                     href={info.href}
-                                    target={info.href.startsWith('http') ? '_blank' : undefined}
-                                    rel="noreferrer"
-                                    className="flex items-center gap-5 p-6 rounded-3xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/25 hover:shadow-lg dark:hover:shadow-white/5 transition-all duration-300 group hover:-translate-y-0.5 block"
+                                    variants={itemVariants}
+                                    className="flex items-center gap-6 p-6 rounded-[2rem] bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 hover:border-black/10 dark:hover:border-white/20 hover:shadow-2xl transition-all duration-500 group"
                                 >
-                                    <div className="w-14 h-14 rounded-2xl bg-black dark:bg-white flex items-center justify-center shrink-0 text-white dark:text-black shadow-lg group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300">
+                                    <div className="w-14 h-14 rounded-2xl bg-black dark:bg-white flex items-center justify-center shrink-0 text-white dark:text-black shadow-lg group-hover:scale-110 group-hover:rotate-6 transition-transform">
                                         <info.icon className="w-6 h-6" />
                                     </div>
                                     <div>
-                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-0.5">{info.title}</p>
-                                        <p className="text-base font-bold text-black dark:text-white">{info.value}</p>
-                                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{info.sub}</p>
+                                        <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{info.title}</div>
+                                        <div className="text-base font-black truncate max-w-[200px]">{info.value}</div>
+                                        <div className="text-xs text-gray-400 mt-1">{info.sub}</div>
                                     </div>
-                                </a>
+                                </motion.a>
                             ))}
-
-                            {/* Response time badge */}
-                            <div className="p-5 rounded-3xl border border-emerald-200 dark:border-emerald-500/20 bg-emerald-50 dark:bg-emerald-500/8">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                                    <span className="text-xs font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-widest">We're Active</span>
-                                </div>
-                                <p className="text-sm text-emerald-800 dark:text-emerald-300 font-medium leading-relaxed">
-                                    Average response time: <strong>under 4 hours</strong> during business hours.
-                                </p>
-                            </div>
-                        </div>
+                        </motion.div>
 
                         {/* RIGHT: Form */}
-                        <div className="lg:col-span-3">
-                            <div className="relative rounded-[32px] bg-[#0A0A1A] dark:bg-[#0D0D20] border border-white/10 p-8 md:p-10 overflow-hidden shadow-2xl">
-                                {/* Decor */}
-                                <div className="absolute top-0 right-0 w-56 h-56 bg-gradient-to-bl from-rose-500/15 to-transparent rounded-full blur-[60px] pointer-events-none" />
-                                <div className="absolute bottom-0 left-0 w-40 h-40 bg-gradient-to-tr from-violet-500/10 to-transparent rounded-full blur-[50px] pointer-events-none" />
+                        <motion.div 
+                            initial={{ opacity: 0, x: 20 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true }}
+                            className="lg:col-span-8"
+                        >
+                            <div className="relative rounded-[3rem] bg-black p-8 md:p-14 border border-white/10 overflow-hidden shadow-2xl">
+                                <div className="absolute top-0 right-0 w-64 h-64 bg-rose-500/10 blur-[80px] pointer-events-none" />
+                                
+                                <h2 className="text-3xl font-black text-white mb-10 tracking-tight">Drop us a line</h2>
 
-                                <h2 className="text-2xl font-black text-white mb-8 relative z-10">Send a Message</h2>
+                                <AnimatePresence mode="wait">
+                                    {status === 'sent' ? (
+                                        <motion.div 
+                                            initial={{ opacity: 0, scale: 0.95 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            exit={{ opacity: 0, scale: 0.95 }}
+                                            className="h-[400px] flex flex-col items-center justify-center text-center space-y-6"
+                                        >
+                                            <div className="w-20 h-20 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                                                <CheckCircle className="w-10 h-10 text-emerald-500" />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-2xl font-black text-white mb-2">Message Received!</h3>
+                                                <p className="text-white/40">We'll get back to you faster than a neural network.</p>
+                                            </div>
+                                        </motion.div>
+                                    ) : (
+                                        <motion.form 
+                                            key="form"
+                                            initial={{ opacity: 1 }}
+                                            exit={{ opacity: 0 }}
+                                            onSubmit={handleSubmit} 
+                                            className="space-y-6 relative z-10"
+                                        >
+                                            <div className="grid md:grid-cols-2 gap-6">
+                                                {['name', 'email'].map((f) => (
+                                                    <div key={f} className="space-y-2">
+                                                        <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] ml-2">{f}</label>
+                                                        <input
+                                                            required
+                                                            name={f}
+                                                            type={f === 'email' ? 'email' : 'text'}
+                                                            placeholder={f === 'name' ? 'Biruk Fikru' : 'biruk@example.com'}
+                                                            value={(form as any)[f]}
+                                                            onChange={handleChange}
+                                                            className="w-full px-6 py-4 rounded-2xl bg-white/5 border border-white/10 focus:border-white/40 outline-none text-white transition-all text-sm font-bold"
+                                                        />
+                                                    </div>
+                                                ))}
+                                            </div>
 
-                                {status === 'sent' && (
-                                    <div className="mb-6 p-4 rounded-2xl bg-emerald-500/15 border border-emerald-500/25 flex items-center gap-3 text-emerald-400 text-sm font-bold relative z-10">
-                                        <CheckCircle className="w-5 h-5 shrink-0" />
-                                        Message sent! We'll get back to you shortly.
-                                    </div>
-                                )}
-
-                                {status === 'error' && (
-                                    <div className="mb-6 p-4 rounded-2xl bg-red-500/15 border border-red-500/25 flex items-center gap-3 text-red-400 text-sm font-bold relative z-10">
-                                        <AlertCircle className="w-5 h-5 shrink-0" />
-                                        Something went wrong. Please try again.
-                                    </div>
-                                )}
-
-                                <form onSubmit={handleSubmit} className="space-y-5 relative z-10">
-                                    <div className="grid sm:grid-cols-2 gap-4">
-                                        {[
-                                            { label: 'Name', name: 'name', type: 'text', ph: 'Your full name' },
-                                            { label: 'Email', name: 'email', type: 'email', ph: 'you@example.com' },
-                                        ].map(f => (
-                                            <div key={f.name} className="space-y-1.5 group">
-                                                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest group-focus-within:text-white transition-colors">{f.label}</label>
-                                                <input
-                                                    required
-                                                    type={f.type}
-                                                    name={f.name}
-                                                    value={(form as any)[f.name]}
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] ml-2">Subject</label>
+                                                <select
+                                                    name="subject"
+                                                    value={form.subject}
                                                     onChange={handleChange}
-                                                    placeholder={f.ph}
-                                                    className="w-full px-5 py-3.5 rounded-2xl bg-white/8 border border-white/12 focus:border-white/40 focus:bg-white/12 outline-none text-sm font-medium text-white placeholder:text-gray-600 transition-all"
+                                                    required
+                                                    className="w-full px-6 py-4 rounded-2xl bg-white/5 border border-white/10 focus:border-white/40 outline-none text-white transition-all text-sm font-bold appearance-none cursor-pointer"
+                                                >
+                                                    <option value="" disabled className="bg-black">Select purpose…</option>
+                                                    {['General Inquiry', 'Technical Support', 'Payment Issue', 'Partnership', 'Feedback'].map(s => (
+                                                        <option key={s} value={s} className="bg-black">{s}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] ml-2">Message</label>
+                                                <textarea
+                                                    required
+                                                    name="message"
+                                                    rows={6}
+                                                    placeholder="How can we help you?"
+                                                    value={form.message}
+                                                    onChange={handleChange}
+                                                    className="w-full px-6 py-4 rounded-2xl bg-white/5 border border-white/10 focus:border-white/40 outline-none text-white transition-all text-sm font-bold resize-none"
                                                 />
                                             </div>
-                                        ))}
-                                    </div>
 
-                                    <div className="space-y-1.5 group">
-                                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest group-focus-within:text-white transition-colors">Subject</label>
-                                        <select
-                                            name="subject"
-                                            value={form.subject}
-                                            onChange={handleChange}
-                                            required
-                                            className="w-full px-5 py-3.5 rounded-2xl bg-white/8 border border-white/12 focus:border-white/40 outline-none text-sm font-medium text-white transition-all appearance-none cursor-pointer"
-                                        >
-                                            <option value="" disabled className="bg-[#0A0A1A]">Choose a topic…</option>
-                                            {['General Question', 'Bug Report', 'Feature Request', 'Partnership', 'Billing', 'Other'].map(s => (
-                                                <option key={s} value={s} className="bg-[#0A0A1A]">{s}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-
-                                    <div className="space-y-1.5 group">
-                                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest group-focus-within:text-white transition-colors">Message</label>
-                                        <textarea
-                                            required
-                                            name="message"
-                                            rows={5}
-                                            value={form.message}
-                                            onChange={handleChange}
-                                            placeholder="Tell us how we can help…"
-                                            className="w-full px-5 py-3.5 rounded-2xl bg-white/8 border border-white/12 focus:border-white/40 focus:bg-white/12 outline-none text-sm font-medium text-white placeholder:text-gray-600 transition-all resize-none"
-                                        />
-                                    </div>
-
-                                    <button
-                                        type="submit"
-                                        disabled={status === 'sending' || status === 'sent'}
-                                        className="w-full py-4 rounded-2xl bg-white text-black font-black text-sm flex items-center justify-center gap-2.5 hover:bg-white/92 active:scale-[0.98] disabled:opacity-60 transition-all duration-200 shadow-lg"
-                                    >
-                                        {status === 'sending' ? (
-                                            <>
-                                                <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
-                                                Sending…
-                                            </>
-                                        ) : status === 'sent' ? (
-                                            <>
-                                                <CheckCircle className="w-4 h-4 text-emerald-600" />
-                                                Sent!
-                                            </>
-                                        ) : (
-                                            <>
-                                                Send Message
-                                                <Send className="w-4 h-4" />
-                                            </>
-                                        )}
-                                    </button>
-                                </form>
+                                            <button
+                                                type="submit"
+                                                disabled={status === 'sending'}
+                                                className="w-full py-5 rounded-2xl bg-white text-black font-black text-base flex items-center justify-center gap-3 hover:bg-white/90 active:scale-[0.99] transition-all disabled:opacity-50"
+                                            >
+                                                {status === 'sending' ? (
+                                                    <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                                                ) : (
+                                                    <>
+                                                        Send Message
+                                                        <Send className="w-4 h-4" />
+                                                    </>
+                                                )}
+                                            </button>
+                                        </motion.form>
+                                    )}
+                                </AnimatePresence>
                             </div>
-                        </div>
+                        </motion.div>
                     </div>
                 </div>
             </section>

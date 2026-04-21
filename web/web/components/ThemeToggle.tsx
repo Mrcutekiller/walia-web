@@ -1,32 +1,52 @@
 'use client';
 
 import { useTheme } from '@/context/ThemeContext';
-import { Moon, Sun } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Moon, Sun, Monitor } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 export default function ThemeToggle() {
-    const { theme, toggleTheme } = useTheme();
+    const { theme, setTheme } = useTheme();
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => setMounted(true), []);
+
+    if (!mounted) return null;
+
+    const options = [
+        { id: 'light', icon: Sun, label: 'Light' },
+        { id: 'dark', icon: Moon, label: 'Dark' }
+    ];
 
     return (
-        <button
-            onClick={toggleTheme}
-            className="flex items-center gap-3 p-4 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 hover:border-black/10 dark:hover:border-white/10 transition-all w-full group"
-            title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-        >
-            <div className="w-8 h-8 rounded-xl bg-white dark:bg-black flex items-center justify-center shadow-sm transition-transform group-hover:scale-110">
-                {theme === 'light' ? (
-                    <Sun className="w-4 h-4 text-amber-500" />
-                ) : (
-                    <Moon className="w-4 h-4 text-indigo-400" />
-                )}
-            </div>
-            <div className="text-left flex-1">
-                <p className="text-xs font-bold text-black dark:text-white uppercase tracking-wider">
-                    {theme === 'light' ? 'Light Mode' : 'Dark Mode'}
-                </p>
-                <p className="text-[9px] text-black/30 dark:text-white/30 font-medium whitespace-nowrap">
-                    Switch to {theme === 'light' ? 'dark' : 'light'}
-                </p>
-            </div>
-        </button>
+        <div className="flex p-1 bg-[var(--color-surface-container)] rounded-full border border-[var(--color-outline-variant)]/10 shadow-inner">
+            {options.map((opt) => {
+                const Icon = opt.icon;
+                const isActive = theme === opt.id;
+
+                return (
+                    <button
+                        key={opt.id}
+                        onClick={() => setTheme(opt.id as 'light' | 'dark')}
+                        className={`relative flex items-center justify-center p-2 rounded-full transition-all group`}
+                    >
+                        {isActive && (
+                            <motion.div
+                                layoutId="active-theme"
+                                className="absolute inset-0 bg-[var(--color-surface-container-highest)] rounded-full shadow-lg border border-[var(--color-outline-variant)]/20"
+                                transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+                            />
+                        )}
+                        <Icon 
+                            className={`relative w-4 h-4 z-10 transition-colors ${
+                                isActive 
+                                ? 'text-[var(--color-primary)]' 
+                                : 'text-[var(--color-outline)] group-hover:text-[var(--color-on-surface)]'
+                            }`} 
+                        />
+                    </button>
+                );
+            })}
+        </div>
     );
 }
