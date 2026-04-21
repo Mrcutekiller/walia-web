@@ -1,14 +1,23 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Share, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Share } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useTheme } from '@/store/theme';
-import { BlurView } from 'expo-blur';
 
 export default function DownloadScreen() {
   const router = useRouter();
-  const { colors, isDark } = useTheme();
+  
+  // Black/white theme colors - consistent with Home page
+  const theme = {
+    background: '#FFFFFF',
+    text: '#000000',
+    textSecondary: '#444444',
+    textTertiary: '#888888',
+    surface: '#F5F5F5',
+    surfaceAlt: '#EEEEEE',
+    primary: '#000000',
+    border: '#E0E0E0',
+  };
 
   const handleShare = async () => {
     try {
@@ -21,69 +30,69 @@ export default function DownloadScreen() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
       <SafeAreaView style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={[styles.backBtn, { backgroundColor: colors.surfaceAlt }]}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
+        <TouchableOpacity onPress={() => router.back()} style={[styles.backBtn, { backgroundColor: theme.surfaceAlt }]}>
+          <Ionicons name="arrow-back" size={24} color={theme.text} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Settings & Updates</Text>
+        <Text style={[styles.headerTitle, { color: theme.text }]}>Settings & Updates</Text>
         <View style={{ width: 44 }} />
       </SafeAreaView>
 
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.hero}>
-          <View style={[styles.iconContainer, { backgroundColor: colors.primary }]}>
+          <View style={[styles.iconContainer, { backgroundColor: theme.primary }]}>
             <Ionicons name="cloud-download" size={40} color="#fff" />
           </View>
-          <Text style={[styles.title, { color: colors.text }]}>Walia for Mobile</Text>
-          <Text style={[styles.version, { color: colors.textTertiary }]}>v1.0.4 - Official Build</Text>
+          <Text style={[styles.title, { color: theme.text }]}>Walia for Mobile</Text>
+          <Text style={[styles.version, { color: theme.textTertiary }]}>v1.0.4 - Official Build</Text>
         </View>
 
         <View style={styles.section}>
-          <Text style={[styles.sectionLabel, { color: colors.textTertiary }]}>CURRENT STATUS</Text>
-          <View style={[styles.infoCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <Text style={[styles.sectionLabel, { color: theme.textTertiary }]}>CURRENT STATUS</Text>
+          <View style={[styles.infoCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
             <View style={styles.infoRow}>
               <View style={[styles.dot, { backgroundColor: '#10B981' }]} />
-              <Text style={[styles.infoText, { color: colors.text }]}>System is up to date</Text>
+              <Text style={[styles.infoText, { color: theme.text }]}>System is up to date</Text>
             </View>
-            <Text style={[styles.infoSub, { color: colors.textTertiary }]}>You are using the latest stable version of Walia AI.</Text>
+            <Text style={[styles.infoSub, { color: theme.textTertiary }]}>You are using the latest stable version of Walia AI.</Text>
           </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={[styles.sectionLabel, { color: colors.textTertiary }]}>SHARE WALIA</Text>
-          <TouchableOpacity onPress={handleShare} style={[styles.actionBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <Text style={[styles.sectionLabel, { color: theme.textTertiary }]}>SHARE WALIA</Text>
+          <TouchableOpacity onPress={handleShare} style={[styles.actionBtn, { backgroundColor: theme.surface, borderColor: theme.border }]}>
             <View style={styles.actionLeft}>
-              <View style={[styles.actionIcon, { backgroundColor: colors.primary + '20' }]}>
-                <Ionicons name="share-social" size={20} color={colors.primary} />
+              <View style={[styles.actionIcon, { backgroundColor: theme.primary + '20' }]}>
+                <Ionicons name="share-social" size={20} color={theme.primary} />
               </View>
-              <Text style={[styles.actionTitle, { color: colors.text }]}>Share with friends</Text>
+              <Text style={[styles.actionTitle, { color: theme.text }]}>Share with friends</Text>
             </View>
-            <Ionicons name="chevron-forward" size={20} color={colors.textTertiary} />
+            <Ionicons name="chevron-forward" size={20} color={theme.textTertiary} />
           </TouchableOpacity>
         </View>
 
         <View style={styles.section}>
-          <Text style={[styles.sectionLabel, { color: colors.textTertiary }]}>LINKS</Text>
-          <View style={[styles.linksContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <Text style={[styles.sectionLabel, { color: theme.textTertiary }]}>LINKS</Text>
+          <View style={[styles.linksContainer, { backgroundColor: theme.surface, borderColor: theme.border }]}>
             <TouchableOpacity style={styles.linkItem}>
-              <Text style={[styles.linkText, { color: colors.text }]}>Website</Text>
-              <Ionicons name="open-outline" size={16} color={colors.textTertiary} />
+              <Text style={[styles.linkText, { color: theme.text }]}>Website</Text>
+              <Ionicons name="open-outline" size={16} color={theme.textTertiary} />
             </TouchableOpacity>
-            <View style={[styles.divider, { backgroundColor: colors.border }]} />
+            <View style={[styles.divider, { backgroundColor: theme.border }]} />
             <TouchableOpacity style={styles.linkItem}>
-              <Text style={[styles.linkText, { color: colors.text }]}>Terms of Service</Text>
-              <Ionicons name="chevron-forward" size={16} color={colors.textTertiary} />
+              <Text style={[styles.linkText, { color: theme.text }]}>Terms of Service</Text>
+              <Ionicons name="chevron-forward" size={16} color={theme.textTertiary} />
             </TouchableOpacity>
-            <View style={[styles.divider, { backgroundColor: colors.border }]} />
+            <View style={[styles.divider, { backgroundColor: theme.border }]} />
             <TouchableOpacity style={styles.linkItem}>
-              <Text style={[styles.linkText, { color: colors.text }]}>Privacy Policy</Text>
-              <Ionicons name="chevron-forward" size={16} color={colors.textTertiary} />
+              <Text style={[styles.linkText, { color: theme.text }]}>Privacy Policy</Text>
+              <Ionicons name="chevron-forward" size={16} color={theme.textTertiary} />
             </TouchableOpacity>
           </View>
         </View>
 
-        <Text style={[styles.footerText, { color: colors.textTertiary }]}>
+        <Text style={[styles.footerText, { color: theme.textTertiary }]}>
             Designed with ❤️ in Addis Ababa{'\n'}© 2024 Walia AI Technologies
         </Text>
       </ScrollView>

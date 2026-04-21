@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Alert,
     Image, KeyboardAvoidingView, Platform, ScrollView,
@@ -93,7 +93,20 @@ export default function SignupScreen() {
     const [referralSource, setReferralSource] = useState('');
     const [avatar, setAvatar] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
     const { uploadAvatar } = useAuth();
+
+    // Timeout fallback - prevent infinite loading
+    useEffect(() => {
+        let timeout: ReturnType<typeof setTimeout>;
+        if (loading) {
+            timeout = setTimeout(() => {
+                setLoading(false);
+                setError('Request timed out. Please try again.');
+            }, 20000);
+        }
+        return () => clearTimeout(timeout);
+    }, [loading]);
 
     const toggleSubject = (label: string) => {
         setSubjects(prev =>
@@ -117,6 +130,7 @@ export default function SignupScreen() {
     const handleNext = async () => {
         if (step < STEPS.length - 1) { setStep(step + 1); return; }
         setLoading(true);
+        setError('');
         try {
             await signup({
                 name, email, username, phone, level, goal, age, gender, country,
@@ -127,11 +141,12 @@ export default function SignupScreen() {
                     console.error('Avatar upload failed:', imgErr);
                 }
             }
-            // Go to pricing screen first, then features, then dashboard
-            router.replace('/(auth)/pricing' as any);
+            // Redirect to AI chat after successful signup
+            router.replace('/(tabs)/ai');
         } catch (e: any) {
-            Alert.alert('Signup Issue', e.message);
-        } finally { setLoading(false); }
+            setError(e.message || 'Signup failed. Please try again.');
+            setLoading(false);
+        }
     };
 
     const pickImage = async () => {
@@ -178,6 +193,13 @@ export default function SignupScreen() {
                         <Text style={styles.stepLabel}>Step {step + 1} of {STEPS.length}</Text>
                         <Text style={styles.title}>{STEPS[step].title}</Text>
                         <Text style={styles.subtitle}>{STEPS[step].subtitle}</Text>
+                        
+                        {error ? (
+                            <View style={styles.errorBox}>
+                                <Ionicons name="alert-circle" size={18} color="#FF6B6B" />
+                                <Text style={styles.errorText}>{error}</Text>
+                            </View>
+                        ) : null}
 
                         {/* ── Step 0: Name ── */}
                         {step === 0 && (
@@ -376,6 +398,18 @@ const styles = StyleSheet.create({
     progressDotCurrent: { backgroundColor: '#fff', width: 32 },
     content: { paddingHorizontal: Spacing.xxl, paddingBottom: Spacing.huge },
     stepLabel: { fontSize: FontSize.xs, color: 'rgba(255,255,255,0.4)', fontWeight: '700', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: Spacing.sm },
+    errorBox: { 
+        flexDirection: 'row', 
+        alignItems: 'center', 
+        gap: 8, 
+        backgroundColor: 'rgba(255,75,75,0.15)', 
+        borderRadius: 16, 
+        padding: 14, 
+        marginBottom: Spacing.md,
+        borderWidth: 1, 
+        borderColor: 'rgba(255,75,75,0.3)' 
+    },
+    errorText: { color: '#FF6B6B', fontSize: 13, fontWeight: '600', flex: 1 },
     title: { fontSize: 30, fontWeight: '800', color: '#fff', marginBottom: Spacing.sm, lineHeight: 36 },
     subtitle: { fontSize: FontSize.md, color: 'rgba(255,255,255,0.5)', marginBottom: Spacing.xxl, lineHeight: 22, fontWeight: '600' },
     fields: { gap: Spacing.md },

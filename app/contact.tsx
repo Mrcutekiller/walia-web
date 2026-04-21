@@ -3,14 +3,23 @@ import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Keyboa
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useTheme } from '@/store/theme';
-import { LinearGradient } from 'expo-linear-gradient';
 
 export default function ContactScreen() {
   const router = useRouter();
-  const { colors, isDark } = useTheme();
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+
+  // Black/white theme colors - consistent with Home page
+  const theme = {
+    background: '#FFFFFF',
+    text: '#000000',
+    textSecondary: '#444444',
+    textTertiary: '#888888',
+    surface: '#F5F5F5',
+    surfaceAlt: '#EEEEEE',
+    primary: '#000000',
+    border: '#E0E0E0',
+  };
 
   const [form, setForm] = useState({ name: '', email: '', message: '' });
 
@@ -27,52 +36,52 @@ export default function ContactScreen() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <SafeAreaView style={styles.header}>
-            <TouchableOpacity onPress={() => router.back()} style={[styles.backBtn, { backgroundColor: colors.surfaceAlt }]}>
-              <Ionicons name="arrow-back" size={24} color={colors.text} />
+            <TouchableOpacity onPress={() => router.back()} style={[styles.backBtn, { backgroundColor: theme.surfaceAlt }]}>
+              <Ionicons name="arrow-back" size={24} color={theme.text} />
             </TouchableOpacity>
-            <Text style={[styles.headerTitle, { color: colors.text }]}>Contact Us</Text>
+            <Text style={[styles.headerTitle, { color: theme.text }]}>Contact Us</Text>
             <View style={{ width: 44 }} />
           </SafeAreaView>
 
           <View style={styles.content}>
-            <Text style={[styles.heroText, { color: colors.text }]}>We'd love to hear from you.</Text>
-            <Text style={[styles.subText, { color: colors.textSecondary }]}>Whether you have a question about features, pricing, or anything else, our team is ready to answer.</Text>
+            <Text style={[styles.heroText, { color: theme.text }]}>We'd love to hear from you.</Text>
+            <Text style={[styles.subText, { color: theme.textSecondary }]}>Whether you have a question about features, pricing, or anything else, our team is ready to answer.</Text>
 
             {/* Quick Contact Chips */}
             <View style={styles.chips}>
-              <TouchableOpacity style={[styles.chip, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                <Ionicons name="mail" size={16} color={colors.primary} />
-                <Text style={[styles.chipText, { color: colors.text }]}>Email</Text>
+              <TouchableOpacity style={[styles.chip, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+                <Ionicons name="mail" size={16} color={theme.primary} />
+                <Text style={[styles.chipText, { color: theme.text }]}>Email</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.chip, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                <Ionicons name="logo-telegram" size={16} color="#0088CC" />
-                <Text style={[styles.chipText, { color: colors.text }]}>Telegram</Text>
+              <TouchableOpacity style={[styles.chip, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+                <Ionicons name="send" size={16} color={theme.primary} />
+                <Text style={[styles.chipText, { color: theme.text }]}>Telegram</Text>
               </TouchableOpacity>
             </View>
 
             {/* Form */}
             <View style={styles.form}>
               <View style={styles.inputGroup}>
-                <Text style={[styles.label, { color: colors.textTertiary }]}>FULL NAME</Text>
+                <Text style={[styles.label, { color: theme.textTertiary }]}>FULL NAME</Text>
                 <TextInput 
-                  style={[styles.input, { color: colors.text, backgroundColor: colors.surface, borderColor: colors.border }]}
+                  style={[styles.input, { color: theme.text, backgroundColor: theme.surface, borderColor: theme.border }]}
                   placeholder="Biruk Fikru"
-                  placeholderTextColor={colors.textTertiary}
+                  placeholderTextColor={theme.textTertiary}
                   value={form.name}
                   onChangeText={(t) => setForm(f => ({ ...f, name: t }))}
                 />
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={[styles.label, { color: colors.textTertiary }]}>EMAIL ADDRESS</Text>
+                <Text style={[styles.label, { color: theme.textTertiary }]}>EMAIL ADDRESS</Text>
                 <TextInput 
-                  style={[styles.input, { color: colors.text, backgroundColor: colors.surface, borderColor: colors.border }]}
+                  style={[styles.input, { color: theme.text, backgroundColor: theme.surface, borderColor: theme.border }]}
                   placeholder="biruk@walia.com"
-                  placeholderTextColor={colors.textTertiary}
+                  placeholderTextColor={theme.textTertiary}
                   keyboardType="email-address"
                   value={form.email}
                   onChangeText={(t) => setForm(f => ({ ...f, email: t }))}
@@ -80,11 +89,11 @@ export default function ContactScreen() {
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={[styles.label, { color: colors.textTertiary }]}>MESSAGE</Text>
+                <Text style={[styles.label, { color: theme.textTertiary }]}>MESSAGE</Text>
                 <TextInput 
-                  style={[styles.input, { color: colors.text, backgroundColor: colors.surface, borderColor: colors.border, height: 120, textAlignVertical: 'top' }]}
+                  style={[styles.input, { color: theme.text, backgroundColor: theme.surface, borderColor: theme.border, height: 120, textAlignVertical: 'top' }]}
                   placeholder="How can we help?"
-                  placeholderTextColor={colors.textTertiary}
+                  placeholderTextColor={theme.textTertiary}
                   multiline
                   value={form.message}
                   onChangeText={(t) => setForm(f => ({ ...f, message: t }))}
@@ -94,7 +103,7 @@ export default function ContactScreen() {
               <TouchableOpacity 
                 disabled={loading || sent}
                 onPress={handleSend}
-                style={[styles.sendBtn, { backgroundColor: sent ? '#10B981' : colors.primary }]}
+                style={[styles.sendBtn, { backgroundColor: sent ? '#10B981' : theme.primary }]}
               >
                 {loading ? (
                     <ActivityIndicator color="#fff" />

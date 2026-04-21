@@ -72,8 +72,8 @@ interface AuthContextType {
     user: User | null;
     isLoading: boolean;
     isAuthenticated: boolean;
-    login: (email: string, password: string) => Promise<void>;
-    signup: (userData: Partial<User>, password: string) => Promise<void>;
+    login: (email: string, password: string) => Promise<any>;
+    signup: (userData: Partial<User>, password: string) => Promise<any>;
     logout: () => Promise<void>;
     updateProfile: (data: Partial<User>) => Promise<void>;
     loginWithGoogle: () => Promise<void>;
@@ -230,7 +230,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const login = async (email: string, password: string) => {
         try {
             setIsLoading(true);
-            await signInWithEmailAndPassword(auth, email.trim(), password);
+            const result = await signInWithEmailAndPassword(auth, email.trim(), password);
+            // Login succeeded - the onAuthStateChanged listener will update the user state
+            // Don't set isLoading(false) here as it will be handled by the auth state listener
+            return result;
         } catch (e: any) {
             setIsLoading(false);
             throw new Error(getFriendlyErrorMessage(e.code));
@@ -266,6 +269,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             } catch (emailError) {
                 console.error("Emails failed, but signup succeeded", emailError);
             }
+            // Signup succeeded - don't set isLoading(false) here, let auth listener handle it
+            return { user: newUser, firebaseUser };
         } catch (e: any) {
             setIsLoading(false);
             throw new Error(getFriendlyErrorMessage(e.code));

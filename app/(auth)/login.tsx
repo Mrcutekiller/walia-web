@@ -3,31 +3,51 @@ import { useAuth } from '@/store/auth';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-    Alert,
-    Image, KeyboardAvoidingView, Platform, ScrollView,
+    ActivityIndicator, Alert, Image, KeyboardAvoidingView, Platform, ScrollView,
     StyleSheet, Text, TextInput, TouchableOpacity, View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function LoginScreen() {
     const router = useRouter();
-    const { login, loginWithGoogle, resetPassword } = useAuth();
+    const { login, loginWithGoogle, resetPassword, isAuthenticated, user } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
+    // Redirect to AI chat if user is already authenticated
+    useEffect(() => {
+        if (isAuthenticated && user) {
+            router.replace('/(tabs)/ai');
+        }
+    }, [isAuthenticated, user]);
+
+    // Timeout fallback - if login takes too long, re-enable button
+    useEffect(() => {
+        let timeout: ReturnType<typeof setTimeout>;
+        if (loading) {
+            timeout = setTimeout(() => {
+                setLoading(false);
+                setError('Request timed out. Please try again.');
+            }, 15000);
+        }
+        return () => clearTimeout(timeout);
+    }, [loading]);
+
     const handleLogin = async () => {
         if (!email.trim() || !password) { setError('Please fill all fields'); return; }
         setLoading(true); setError('');
         try {
             await login(email, password);
+            // Will be redirected by useEffect when user is set
         } catch (e: any) {
             setError(e.message);
-        } finally { setLoading(false); }
+            setLoading(false);
+        }
     };
 
     const handleForgotPassword = async () => {
@@ -35,13 +55,16 @@ export default function LoginScreen() {
             setError('Please enter your email first');
             return;
         }
+        setLoading(true);
         try {
             await resetPassword(email);
             Alert.alert('Success', 'Password reset email sent. Please check your inbox.');
         } catch (e: any) {
             setError(e.message || 'Failed to send reset email');
+        } finally {
+            setLoading(false);
         }
-    };
+};
 
     return (
         <View style={styles.container}>
@@ -127,7 +150,7 @@ export default function LoginScreen() {
 
                         {/* Sign Up Link */}
                         <TouchableOpacity style={styles.signupLink} onPress={() => router.push('/(auth)/signup')}>
-                            <Text style={styles.signupText}>Don't have an account? <Text style={styles.signupBold}>Sign Up</Text></Text>
+                            <Text style={styles.signupText}>Don&apos;t have an account? <Text style={styles.signupBold}>Sign Up</Text></Text>
                         </TouchableOpacity>
 
                         <View style={styles.socialButtons}>

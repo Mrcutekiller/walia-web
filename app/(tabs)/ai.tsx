@@ -107,7 +107,7 @@ export default function AITabScreen() {
     const [showAttach, setShowAttach] = useState(false);
     const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
     const [message, setMessage] = useState('');
-    const [preferredProvider, setPreferredProvider] = useState<AIProvider>('auto');
+    const [preferredProvider, setPreferredProvider] = useState<AIProvider>('modal_glm');
     const [showModels, setShowModels] = useState(false);
     const [activeMode, setActiveMode] = useState(MODES[0]);
     const [showModes, setShowModes] = useState(false);

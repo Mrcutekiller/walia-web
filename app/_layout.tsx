@@ -11,7 +11,7 @@ import {
 import { SplashScreen, Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
-import { View } from 'react-native';
+import { ActivityIndicator, Animated, View } from 'react-native';
 import 'react-native-reanimated';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -87,7 +87,13 @@ function RootNavigator() {
     return () => clearTimeout(timer);
   }, []);
 
-  if (!fontsReady) return null;
+  if (!fontsReady) {
+    return (
+      <View style={{ flex: 1, backgroundColor: '#000', justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#FFFFFF" />
+      </View>
+    );
+  }
 
   return (
     <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>

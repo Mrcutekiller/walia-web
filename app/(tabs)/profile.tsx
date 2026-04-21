@@ -14,28 +14,28 @@ const MENU_SECTIONS = [
     {
         title: 'Preparation',
         items: [
-            { icon: 'calendar', label: 'Daily Plan', desc: 'Tasks & study schedule', color: '#6C63FF' },
-            { icon: 'notifications', label: 'Notifications', desc: 'Inbox & payment alerts', color: '#FFA502' },
-            { icon: 'information-circle', label: 'About Walia', desc: 'Mission & History', color: '#9CA3AF' },
-            { icon: 'chatbubble-ellipses', label: 'Contact Us', desc: 'Telegram: @Mrcute_killer', color: '#6C63FF' },
-            { icon: 'cloud-download', label: 'Updates', desc: 'Download latest version', color: '#10B981' },
+            { icon: 'calendar', label: 'Daily Plan', desc: 'Tasks & study schedule', color: '#000000' },
+            { icon: 'notifications', label: 'Notifications', desc: 'Inbox & payment alerts', color: '#000000' },
+            { icon: 'information-circle', label: 'About Walia', desc: 'Mission & History', color: '#000000' },
+            { icon: 'chatbubble-ellipses', label: 'Contact Us', desc: 'Get in touch', color: '#000000' },
+            { icon: 'cloud-download', label: 'Updates', desc: 'Download latest version', color: '#000000' },
         ],
     },
     {
         title: 'Settings',
         items: [
-            { icon: 'moon', label: 'Appearance', desc: 'Dark / Light mode', color: '#2F3542', isThemeToggle: true },
-            { icon: 'shield-checkmark', label: 'Privacy Policy', desc: 'Personal data & ads', color: '#00D2D3' },
-            { icon: 'document-text', label: 'Terms of Service', desc: 'App rules & safety', color: '#718096' },
+            { icon: 'moon', label: 'Appearance', desc: 'Dark / Light mode', color: '#000000', isThemeToggle: true },
+            { icon: 'shield-checkmark', label: 'Privacy Policy', desc: 'Personal data & ads', color: '#000000' },
+            { icon: 'document-text', label: 'Terms of Service', desc: 'App rules & safety', color: '#000000' },
         ],
     },
     {
         title: 'Support',
         items: [
-            { icon: 'help-circle', label: 'Help Centre', desc: 'AI Support Chat', color: '#10B981' },
-            { icon: 'chatbubble-ellipses', label: 'Contact Us', desc: 'Telegram: @Mrcute_killer', color: '#6C63FF' },
-            { icon: 'star', label: 'Rate Walia', desc: 'Leave a review ⭐', color: '#FF9F43' },
-            { icon: 'information-circle', label: 'About', desc: 'Mission & History', color: '#9CA3AF' },
+            { icon: 'help-circle', label: 'Help Centre', desc: 'AI Support Chat', color: '#000000' },
+            { icon: 'chatbubble-ellipses', label: 'Contact Us', desc: 'Get in touch', color: '#000000' },
+            { icon: 'star', label: 'Rate Walia', desc: 'Leave a review', color: '#000000' },
+            { icon: 'information-circle', label: 'About', desc: 'Mission & History', color: '#000000' },
         ],
     },
 ];
@@ -63,7 +63,7 @@ export default function ProfileScreen() {
         title: '', 
         msg: '', 
         icon: '', 
-        color: '#6C63FF' 
+        color: '#000000' 
     });
 
     const showModal = (title: string, msg: string, icon: string, color: string, onConfirm?: () => void) => {
@@ -83,16 +83,16 @@ export default function ProfileScreen() {
     const handleMenuPress = (label: string) => {
         if (label === 'Privacy Policy') { router.push('/legal/privacy' as any); return; }
         if (label === 'Terms of Service') { router.push('/legal/terms' as any); return; }
-        if (label === 'Contact Us') { Linking.openURL('https://t.me/Mrcute_killer'); return; }
+        if (label === 'Contact Us') { router.push('/contact' as any); return; }
         if (label === 'Help Centre') { router.push('/(tabs)/ai'); return; }
         if (label === 'Notifications') { router.push('/notifications' as any); return; }
         if (label === 'Daily Plan') { router.push('/plan' as any); return; }
         if (label === 'Language') { handleMenuPress('LanguagePopup'); return; }
 
         const msgs: Record<string, [string, string, string, string]> = {
-            'Language': ['🌐 Language', 'Select your preferred language:\n\n• Amharic 🇪🇹\n• Oromo 🇪🇹\n• Tigrinya 🇪🇹\n• English 🇺🇸', 'language', '#6C63FF'],
-            'About': ['ℹ️ About Walia', 'Walia was created in 2024 to empower students with localized AI study tools and a collaborative community.', 'information-circle', '#9CA3AF'],
-            'Rate Walia': ['⭐ Rate Walia', 'Your feedback helps us improve the app for everyone! (App Store link coming soon)', 'star', '#FF9F43'],
+            'Language': ['🌐 Language', 'Select your preferred language:\n\n• Amharic 🇪🇹\n• Oromo 🇪🇹\n• Tigrinya 🇪🇹\n• English 🇺🇸', 'language', '#000000'],
+            'About': ['ℹ️ About Walia', 'Walia was created in 2024 to empower students with localized AI study tools and a collaborative community.', 'information-circle', '#000000'],
+            'Rate Walia': ['⭐ Rate Walia', 'Your feedback helps us improve the app for everyone! (App Store link coming soon)', 'star', '#000000'],
         };
 
         const m = msgs[label];
