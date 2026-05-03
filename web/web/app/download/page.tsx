@@ -1,203 +1,138 @@
 'use client';
 
-import Footer from '@/components/Footer';
 import Navbar from '@/components/Navbar';
-import { motion, useScroll, useTransform } from 'framer-motion';
-import { CheckCircle, ChevronRight, Download, Shield, Smartphone, Star, Zap, Apple } from 'lucide-react';
-import Image from 'next/image';
-import { useRef, useState } from 'react';
-
-const features = [
-    { icon: Zap, title: 'AI-Powered', desc: 'Study with advanced AI at your fingertips', color: 'emerald' },
-    { icon: Shield, title: 'Secure & Private', desc: 'End-to-end encrypted, your data stays yours', color: 'indigo' },
-    { icon: Star, title: '4.9★ Rated', desc: 'Loved by 50K+ students worldwide', color: 'amber' },
-];
-
-const steps = [
-    { step: '01', title: 'Download the APK', desc: 'Click the button below to download the latest Walia APK file directly to your Android device.' },
-    { step: '02', title: 'Enable Unknown Sources', desc: 'Go to Settings → Security → enable "Install from Unknown Sources" on your device.' },
-    { step: '03', title: 'Install & Launch', desc: 'Open the downloaded APK file, follow the installer, then launch Walia and sign in.' },
-];
-
-const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-        opacity: 1,
-        transition: { staggerChildren: 0.1 }
-    }
-};
-
-const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } }
-};
+import Footer from '@/components/Footer';
+import { Download, Smartphone, Apple, Globe, ShieldCheck, Zap, ArrowRight, Star } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function DownloadPage() {
-    const [downloaded, setDownloaded] = useState(false);
-    const phoneRef = useRef<HTMLDivElement>(null);
-
     return (
-        <main className="min-h-screen bg-white dark:bg-[#07070F] overflow-hidden text-black dark:text-white">
+        <div className="bg-white dark:bg-[#07070F] min-h-screen flex flex-col">
             <Navbar />
-
-            {/* ── HERO SECTION ── */}
-            <section className="relative min-h-[95vh] bg-black flex items-center overflow-hidden">
-                {/* Background Effects */}
-                <div className="absolute inset-0 z-0">
-                    <div className="absolute top-1/4 left-1/4 w-[60%] h-[60%] rounded-full bg-emerald-600/10 blur-[120px]" />
-                    <div className="absolute bottom-1/4 right-1/4 w-[50%] h-[50%] rounded-full bg-violet-600/10 blur-[100px]" />
-                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10" />
-                </div>
-
-                <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 pt-24 pb-20 flex flex-col lg:flex-row items-center gap-16 lg:gap-24 w-full">
-                    
-                    {/* LEFT: Copy */}
-                    <div className="flex-1 space-y-8 text-center lg:text-left">
-                        <motion.div
+            
+            <main className="flex-1 flex flex-col">
+                {/* ── Hero ── */}
+                <section className="relative pt-32 pb-20 overflow-hidden">
+                    <div className="absolute inset-0 bg-black dark:bg-white/[0.02] -z-10" />
+                    <div className="container mx-auto px-6 text-center">
+                        <motion.div 
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.8 }}
+                            className="max-w-3xl mx-auto"
                         >
-                            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-white/50 text-[10px] font-black uppercase tracking-[0.3em] mb-8">
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                                Available for Android
+                            <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm mb-8">
+                                <span className="w-2 h-2 rounded-full bg-green-400 mr-3 animate-pulse" />
+                                <span className="text-[10px] font-black text-white uppercase tracking-widest">v1.0.4 - Latest Release</span>
                             </div>
-
-                            <h1 className="text-[clamp(3rem,8vw,6rem)] font-black leading-[0.9] tracking-tighter text-white">
-                                Take Walia<br />
-                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400">
-                                    Everywhere.
-                                </span>
+                            <h1 className="text-5xl md:text-7xl font-black text-white tracking-tighter leading-tight mb-8 uppercase">
+                                Walia in your<br /><span className="text-white/30">pocket.</span>
                             </h1>
-
-                            <p className="text-white/40 text-xl font-medium leading-relaxed max-w-lg mx-auto lg:mx-0 mt-8">
-                                Experience the future of learning in your pocket. Analyze texts, generate quizzes, and manage your tasks on the go.
+                            <p className="text-lg text-white/50 mb-12 max-w-xl mx-auto font-medium">
+                                Take the power of Walia AI, Community, and Trading tools wherever you go. Experience the world's most premium AI platform on mobile.
                             </p>
                         </motion.div>
-
-                        {/* Feature Pills */}
-                        <motion.div 
-                            variants={containerVariants}
-                            initial="hidden"
-                            animate="visible"
-                            className="flex flex-wrap gap-3 justify-center lg:justify-start"
-                        >
-                            {features.map((f, i) => (
-                                <motion.div key={i} variants={itemVariants} className="flex items-center gap-3 px-4 py-2.5 rounded-[1.25rem] bg-white/5 border border-white/10 text-xs font-bold text-white/70">
-                                    <f.icon className="w-4 h-4 text-emerald-400" />
-                                    {f.title}
-                                </motion.div>
-                            ))}
-                        </motion.div>
-
-                        {/* CTA */}
-                        <motion.div 
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: 0.5, duration: 0.5 }}
-                            className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
-                        >
-                            <a
-                                href="/app-release.apk"
-                                download="Walia-Release.apk"
-                                onClick={() => setDownloaded(true)}
-                                className="group relative px-8 py-5 rounded-2xl bg-white text-black font-black text-lg shadow-2xl hover:bg-white/90 active:scale-[0.98] transition-all flex items-center justify-center gap-3 overflow-hidden"
-                            >
-                                {downloaded ? <CheckCircle className="w-6 h-6 text-emerald-500" /> : <Download className="w-6 h-6 group-hover:-translate-y-1 transition-transform" />}
-                                {downloaded ? 'Downloading…' : 'Download APK'}
-                            </a>
-                            <div className="flex flex-col justify-center text-white/30 text-[10px] font-black uppercase tracking-widest">
-                                Android 8.0+ · v1.0.4 · 42MB
-                            </div>
-                        </motion.div>
                     </div>
+                </section>
 
-                    {/* RIGHT: High-end Mockup */}
-                    <motion.div 
-                        initial={{ opacity: 0, x: 50, rotateY: -20 }}
-                        animate={{ opacity: 1, x: 0, rotateY: 0 }}
-                        transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-                        className="relative z-10"
-                    >
-                        <div className="relative w-[300px] h-[600px] rounded-[3.5rem] bg-gray-800 p-1.5 shadow-[0_50px_100px_rgba(0,0,0,0.8)] border border-white/20 overflow-hidden">
-                            <div className="absolute inset-0 bg-[#0A0A0F]" />
-                            {/* Screen Content Mockup */}
-                            <div className="relative h-full w-full rounded-[3rem] overflow-hidden flex flex-col p-6">
-                                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-8 bg-black rounded-full z-20" />
-                                
-                                <div className="mt-12 flex items-center gap-3">
-                                    <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center">
-                                        <Image src="/walia-logo.png" alt="" width={32} height={32} unoptimized className="w-8 h-8" />
-                                    </div>
-                                    <div>
-                                        <div className="text-white font-black text-lg">Walia AI</div>
-                                        <div className="text-white/30 text-[10px] uppercase">Active Session</div>
-                                    </div>
+                {/* ── Download Options ── */}
+                <section className="py-20">
+                    <div className="container mx-auto px-6">
+                        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                            {/* Android */}
+                            <motion.div 
+                                whileHover={{ y: -10 }}
+                                className="p-10 rounded-[3rem] bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 flex flex-col items-center text-center group"
+                            >
+                                <div className="w-20 h-20 rounded-3xl bg-black dark:bg-white text-white dark:text-black flex items-center justify-center mb-8 shadow-2xl group-hover:scale-110 transition-all">
+                                    <Smartphone className="w-10 h-10" />
                                 </div>
+                                <h3 className="text-2xl font-black text-black dark:text-white uppercase tracking-tighter mb-4">Android</h3>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mb-10">Optimized for speed</p>
+                                <a 
+                                    href="/app-release.apk" 
+                                    download 
+                                    className="w-full py-5 rounded-2xl bg-black dark:bg-white text-white dark:text-black font-black text-sm uppercase tracking-widest hover:opacity-90 active:scale-95 transition-all shadow-xl shadow-black/10 flex items-center justify-center gap-3"
+                                >
+                                    <Download className="w-5 h-5" /> Download APK
+                                </a>
+                                <p className="mt-6 text-[10px] text-gray-400 font-bold uppercase">Requires Android 8.0+</p>
+                            </motion.div>
 
-                                <div className="mt-10 space-y-4">
-                                    <div className="bg-white/5 border border-white/10 rounded-2xl p-4 text-white/50 text-xs leading-relaxed">
-                                        "Hey Biruk! I've analyzed your notes on 'Quantum Physics'. Ready for a quiz?"
-                                    </div>
-                                    <div className="flex justify-end">
-                                        <div className="bg-white rounded-2xl p-4 text-black text-xs font-bold w-[80%] shadow-lg">
-                                            Yes, simplify the first chapter please!
-                                        </div>
-                                    </div>
+                            {/* iOS (Coming Soon) */}
+                            <motion.div 
+                                whileHover={{ y: -10 }}
+                                className="p-10 rounded-[3rem] bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 flex flex-col items-center text-center relative overflow-hidden"
+                            >
+                                <div className="absolute top-6 right-6 px-3 py-1 rounded-full bg-black/5 dark:bg-white/10 text-[8px] font-black uppercase tracking-widest">
+                                    Coming Soon
                                 </div>
+                                <div className="w-20 h-20 rounded-3xl bg-gray-200 dark:bg-white/10 text-gray-400 dark:text-gray-600 flex items-center justify-center mb-8">
+                                    <Apple className="w-10 h-10" />
+                                </div>
+                                <h3 className="text-2xl font-black text-gray-400 dark:text-gray-600 uppercase tracking-tighter mb-4">iOS</h3>
+                                <p className="text-xs text-gray-400 dark:text-gray-600 font-bold uppercase tracking-widest mb-10">TestFlight Invite Only</p>
+                                <button disabled className="w-full py-5 rounded-2xl bg-gray-100 dark:bg-white/5 text-gray-400 dark:text-gray-600 font-black text-sm uppercase tracking-widest cursor-not-allowed">
+                                    Join Waitlist
+                                </button>
+                                <p className="mt-6 text-[10px] text-gray-400 font-bold uppercase">App Store release Q3 2026</p>
+                            </motion.div>
+                        </div>
+                    </div>
+                </section>
 
-                                <div className="mt-auto mb-4 bg-white/5 rounded-2xl p-4 flex items-center gap-3 border border-white/10">
-                                    <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                                    <span className="text-white/20 text-[10px] font-bold uppercase">AI is analyzing…</span>
+                {/* ── Features ── */}
+                <section className="py-32 bg-black">
+                    <div className="container mx-auto px-6">
+                        <div className="text-center mb-20">
+                            <h2 className="text-4xl font-black text-white uppercase tracking-tighter mb-4">Why mobile?</h2>
+                            <p className="text-white/30 text-xs font-black uppercase tracking-[0.3em]">Built for the move</p>
+                        </div>
+                        <div className="grid md:grid-cols-3 gap-12 max-w-5xl mx-auto">
+                            {[
+                                { title: 'Real-time Alerts', desc: 'Get notified of market shifts and community posts instantly.', icon: Zap },
+                                { title: 'Secure Access', desc: 'Biometric login and end-to-end encryption for your data.', icon: ShieldCheck },
+                                { title: 'Offline Mode', desc: 'Access your notes and calendar even without internet.', icon: Globe },
+                            ].map((f, i) => (
+                                <div key={i} className="text-center">
+                                    <div className="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center mx-auto mb-6">
+                                        <f.icon className="w-8 h-8 text-white" />
+                                    </div>
+                                    <h4 className="text-lg font-black text-white uppercase tracking-tight mb-3">{f.title}</h4>
+                                    <p className="text-xs text-white/40 leading-relaxed font-medium">{f.desc}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+
+                {/* ── Stats ── */}
+                <section className="py-32 bg-white dark:bg-[#07070F]">
+                    <div className="container mx-auto px-6 text-center">
+                        <div className="max-w-4xl mx-auto p-12 md:p-20 rounded-[4rem] bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 relative overflow-hidden">
+                            <div className="absolute -top-20 -left-20 w-64 h-64 bg-black/5 dark:bg-white/5 rounded-full blur-3xl" />
+                            <div className="relative z-10">
+                                <h2 className="text-5xl md:text-7xl font-black text-black dark:text-white tracking-tighter mb-8 uppercase">10,000+</h2>
+                                <p className="text-xs font-black uppercase tracking-[0.4em] text-gray-400 dark:text-gray-500 mb-12">Active mobile users already onboard</p>
+                                <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+                                    <div className="flex -space-x-3">
+                                        {[1,2,3,4,5].map(i => (
+                                            <div key={i} className="w-10 h-10 rounded-full bg-black dark:bg-white border-4 border-gray-50 dark:border-[#0D0D1A] flex items-center justify-center text-white dark:text-black text-[10px] font-black uppercase shadow-xl">
+                                                {String.fromCharCode(64 + i)}
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                        {[1,2,3,4,5].map(i => <Star key={i} className="w-4 h-4 fill-black dark:fill-white text-black dark:text-white" />)}
+                                        <span className="ml-2 text-xs font-black text-black dark:text-white">4.9/5</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        {/* iOS Disclaimer */}
-                        <motion.div 
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 1 }}
-                            className="absolute -bottom-10 left-10 right-10 flex items-center justify-center gap-2 text-white/20 text-[10px] uppercase font-black tracking-widest"
-                        >
-                            <Apple className="w-3.5 h-3.5" /> iOS Version Coming Soon
-                        </motion.div>
-                    </motion.div>
-                </div>
-            </section>
-
-            {/* ── INSTALLATION STEPS SECTION ── */}
-            <section className="py-32 bg-white dark:bg-[#07070F] relative">
-                <div className="max-w-7xl mx-auto px-6">
-                    <motion.div 
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        className="text-center mb-20"
-                    >
-                        <span className="text-xs font-black text-emerald-500 uppercase tracking-[0.3em]">Quick Setup</span>
-                        <h2 className="text-5xl font-black tracking-tighter mt-4">Simple Installation</h2>
-                    </motion.div>
-
-                    <div className="grid md:grid-cols-3 gap-8">
-                        {steps.map((s, i) => (
-                            <motion.div 
-                                key={i}
-                                initial={{ opacity: 0, y: 30 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ delay: i * 0.15 }}
-                                className="group p-10 rounded-[2.5rem] bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 hover:border-emerald-500/30 transition-all duration-500"
-                            >
-                                <div className="text-6xl font-black text-emerald-500/20 group-hover:text-emerald-500 transition-colors mb-6 tabular-nums">{s.step}</div>
-                                <h3 className="text-2xl font-black mb-4">{s.title}</h3>
-                                <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">{s.desc}</p>
-                            </motion.div>
-                        ))}
                     </div>
-                </div>
-            </section>
+                </section>
+            </main>
 
             <Footer />
-        </main>
+        </div>
     );
 }

@@ -45,7 +45,7 @@ interface AuthContextType {
     isAuthenticated: boolean;
     logout: () => Promise<void>;
     login: (email: string, password: string) => Promise<any>;
-    signup: (email: string, password: string) => Promise<any>;
+    signup: (email: string, password: string, profile?: Partial<User>) => Promise<any>;
     loginWithGoogle: () => Promise<any>;
     updateProfile: (data: Partial<User>) => Promise<void>;
     refreshUser: () => void;
@@ -64,6 +64,7 @@ const DEFAULT_USER: User = {
     email: '',
     photoURL: '/avatars/avatar1.jpg',
     plan: 'free',
+    theme: 'light',
 };
 
 function generateId(): string {
@@ -179,6 +180,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 password: password,
                 createdAt: new Date().toISOString(),
                 plan: 'free',
+                theme: 'light',
             };
 
             users[normalizedEmail] = newUser;

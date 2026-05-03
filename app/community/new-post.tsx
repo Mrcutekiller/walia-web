@@ -1,12 +1,15 @@
 import { BorderRadius, FontSize, FontWeight, Spacing } from '@/constants/theme';
 import { useAuth } from '@/store/auth';
-import { useSocial } from '@/store/social';
+import { useSocial, XP_REWARDS } from '@/store/social';
+import { useTokens } from '@/store/tokens';
 import { useTheme } from '@/store/theme';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
     ActivityIndicator,
+    Animated,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
@@ -20,11 +23,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 type PostType = 'text' | 'quiz';
 
+const TRENDING_TAGS = ['#walia', '#studytips', '#AIchat', '#examprep', '#coding', '#science'];
+
 export default function NewPostScreen() {
     const router = useRouter();
     const { colors, isDark } = useTheme();
     const { user } = useAuth();
     const { addPost } = useSocial();
+    const { consumeTokens } = useTokens();
 
     const [type, setType] = useState<PostType>('text');
     const [title, setTitle] = useState('');
@@ -33,13 +39,19 @@ export default function NewPostScreen() {
     const [quizAnswer, setQuizAnswer] = useState(0);
     const [loading, setLoading] = useState(false);
     const [isAdminPost, setIsAdminPost] = useState(false);
+    const contentInputRef = useRef<TextInput>(null);
+
+    const hasWaliaTag = content.toLowerCase().includes('#walia');
+    const extractedTags = content.match(/#\w+/g) || [];
+    const isValid = type === 'text'
+        ? content.trim().length > 0
+        : (content.trim().length > 0 && quizOptions.every(o => o.trim().length > 0));
 
     const handlePost = async () => {
-        if (!content.trim()) return;
+        if (!isValid) return;
+        if (!consumeTokens('community_posts')) return;
         setLoading(true);
         try {
-            const extractedTags = content.match(/#\w+/g) || [];
-
             await addPost({
                 type: type === 'quiz' ? 'quiz' : 'text',
                 title: title.trim() || undefined,
@@ -63,95 +75,270 @@ export default function NewPostScreen() {
         setQuizOptions(next);
     };
 
-    const isValid = type === 'text' ? content.trim().length > 0 : (content.trim().length > 0 && quizOptions.every(o => o.trim().length > 0));
+    const appendTag = (tag: string) => {
+        const base = content.trim();
+        setContent(base ? `${base} ${tag} ` : `${tag} `);
+        contentInputRef.current?.focus();
+    };
+
+    const bg = isDark ? colors.background : '#F8FAFC';
+    const cardBg = isDark ? colors.surface : '#FFFFFF';
 
     return (
-        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-            <View style={[styles.header, { borderBottomColor: colors.divider }]}>
+        <SafeAreaView style={[styles.container, { backgroundColor: bg }]}>
+            {/* ── Header ── */}
+            <View style={[styles.header, { backgroundColor: cardBg, borderBottomColor: isDark ? '#1E293B' : '#F1F5F9' }]}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.closeBtn}>
-                    <Ionicons name="close" size={24} color={colors.text} />
+                    <Ionicons name="close" size={22} color={colors.text} />
                 </TouchableOpacity>
-                <Text style={[styles.headerTitle, { color: colors.text }]}>New {type === 'quiz' ? 'Quiz' : 'Post'}</Text>
-                <TouchableOpacity 
-                    onPress={handlePost} 
+                <View style={styles.headerCenter}>
+                    <Text style={[styles.headerTitle, { color: colors.text }]}>
+                        New {type === 'quiz' ? 'Quiz' : 'Post'}
+                    </Text>
+                    <View style={styles.pointsPreview}>
+                        <Text style={styles.pointsIcon}>⭐</Text>
+                        <Text style={[styles.pointsText, { color: '#6366F1' }]}>
+                            +{hasWaliaTag ? XP_REWARDS.post_created + XP_REWARDS.hashtag_walia : XP_REWARDS.post_created} pts
+                        </Text>
+                    </View>
+                </View>
+                <TouchableOpacity
+                    onPress={handlePost}
                     disabled={!isValid || loading}
-                    style={[styles.postBtn, { backgroundColor: isValid ? colors.primary : colors.surfaceAlt }]}
+                    style={[styles.postBtn, { opacity: isValid ? 1 : 0.4 }]}
                 >
-                    {loading ? <ActivityIndicator size="small" color="#fff" /> : <Text style={[styles.postBtnText, { color: isValid ? '#fff' : colors.textTertiary }]}>Post</Text>}
+                    <LinearGradient
+                        colors={['#6366F1', '#4F46E5']}
+                        style={styles.postBtnGradient}
+                        start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+                    >
+                        {loading
+                            ? <ActivityIndicator size="small" color="#FFF" />
+                            : <Text style={styles.postBtnText}>Post</Text>
+                        }
+                    </LinearGradient>
                 </TouchableOpacity>
             </View>
 
             <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-                <ScrollView contentContainerStyle={styles.scroll}>
-                    {/* Type Selector */}
-                    <View style={[styles.tabs, { backgroundColor: colors.surfaceAlt }]}>
-                        {(['text', 'quiz'] as PostType[]).map(t => (
-                            <TouchableOpacity 
-                                key={t} 
-                                onPress={() => setType(t)}
-                                style={[styles.tab, type === t && { backgroundColor: colors.surface, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 2 }]}
+                <ScrollView
+                    contentContainerStyle={styles.scroll}
+                    showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
+                >
+                    {/* #walia bonus banner */}
+                    {hasWaliaTag && (
+                        <View style={styles.waliaBonusBanner}>
+                            <LinearGradient
+                                colors={['#6366F1', '#8B5CF6']}
+                                style={styles.waliaBonusGradient}
+                                start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
                             >
-                                <Ionicons name={t === 'text' ? 'document-text' : 'help-circle'} size={18} color={type === t ? colors.primary : colors.textTertiary} />
-                                <Text style={[styles.tabText, { color: type === t ? colors.text : colors.textTertiary }]}>{t.toUpperCase()}</Text>
-                            </TouchableOpacity>
-                        ))}
+                                <Text style={styles.waliaBonusEmoji}>🌟</Text>
+                                <View style={{ flex: 1 }}>
+                                    <Text style={styles.waliaBonusTitle}>#walia Bonus Activated!</Text>
+                                    <Text style={styles.waliaBonusSub}>+{XP_REWARDS.hashtag_walia} extra Walia Points for using #walia</Text>
+                                </View>
+                            </LinearGradient>
+                        </View>
+                    )}
+
+                    {/* Post Type Selector */}
+                    <View style={[styles.typeSelector, { backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }]}>
+                        {(['text', 'quiz'] as PostType[]).map(t => {
+                            const active = type === t;
+                            return (
+                                <TouchableOpacity
+                                    key={t}
+                                    onPress={() => setType(t)}
+                                    style={[
+                                        styles.typeTab,
+                                        active && { backgroundColor: cardBg, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.08, shadowRadius: 4, elevation: 2 }
+                                    ]}
+                                >
+                                    <Ionicons
+                                        name={t === 'text' ? 'document-text' : 'help-circle'}
+                                        size={16}
+                                        color={active ? '#6366F1' : colors.textTertiary}
+                                    />
+                                    <Text style={[styles.typeTabText, { color: active ? colors.text : colors.textTertiary }]}>
+                                        {t === 'text' ? 'Post' : 'Quiz'}
+                                    </Text>
+                                </TouchableOpacity>
+                            );
+                        })}
                     </View>
 
+                    {/* Admin toggle */}
                     {user?.isAdmin && (
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             onPress={() => setIsAdminPost(!isAdminPost)}
-                            style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 16 }}
+                            style={[styles.adminRow, { backgroundColor: isAdminPost ? '#6366F110' : 'transparent' }]}
                         >
-                            <View style={{ width: 20, height: 20, borderRadius: 4, borderWidth: 2, borderColor: isAdminPost ? colors.primary : colors.textTertiary, backgroundColor: isAdminPost ? colors.primary : 'transparent', alignItems: 'center', justifyContent: 'center' }}>
-                                {isAdminPost && <Ionicons name="checkmark" size={14} color="#fff" />}
+                            <View style={[styles.checkbox, { borderColor: isAdminPost ? '#6366F1' : colors.textTertiary, backgroundColor: isAdminPost ? '#6366F1' : 'transparent' }]}>
+                                {isAdminPost && <Ionicons name="checkmark" size={12} color="#FFF" />}
                             </View>
-                            <Text style={{ fontSize: 12, fontWeight: 'bold', color: colors.textSecondary }}>Post as Official Admin</Text>
+                            <Text style={[styles.adminLabel, { color: colors.textSecondary }]}>Post as Official Admin</Text>
+                            <View style={styles.adminBadge}>
+                                <Text style={styles.adminBadgeText}>ADMIN</Text>
+                            </View>
                         </TouchableOpacity>
                     )}
 
-                    {/* Title (Optional for text, Required for Quiz) */}
+                    {/* Title */}
                     <TextInput
-                        placeholder={type === 'quiz' ? "Quiz Title (e.g. Biology Unit 1)" : "Add a title (optional)"}
+                        placeholder={type === 'quiz' ? 'Quiz title (e.g. Biology Unit 1)' : 'Add a title (optional)'}
                         value={title}
                         onChangeText={setTitle}
                         placeholderTextColor={colors.textTertiary}
-                        style={[styles.titleInput, { color: colors.text }]}
+                        style={[styles.titleInput, { color: colors.text, borderBottomColor: isDark ? '#1E293B' : '#F1F5F9' }]}
                     />
 
-                    {/* Content / Question */}
+                    {/* Content */}
                     <TextInput
-                        placeholder={type === 'quiz' ? "Ask your question..." : "What's on your mind?"}
+                        ref={contentInputRef}
+                        placeholder={
+                            type === 'quiz'
+                                ? 'Write your question here...'
+                                : "What's on your mind? Use # to add topics"
+                        }
                         value={content}
                         onChangeText={setContent}
                         multiline
                         placeholderTextColor={colors.textTertiary}
-                        style={[styles.contentInput, { color: colors.text, minHeight: type === 'text' ? 200 : 100 }]}
+                        style={[
+                            styles.contentInput,
+                            { color: colors.text, minHeight: type === 'text' ? 180 : 100 }
+                        ]}
                     />
 
-                    {/* Quiz specific fields */}
-                    {type === 'quiz' && (
-                        <View style={styles.quizFields}>
-                            <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>Options</Text>
-                            {quizOptions.map((opt, i) => (
-                                <View key={i} style={styles.optionRow}>
-                                    <TouchableOpacity 
-                                        onPress={() => setQuizAnswer(i)}
-                                        style={[styles.radio, { borderColor: quizAnswer === i ? colors.primary : colors.divider, backgroundColor: quizAnswer === i ? colors.primary : 'transparent' }]}
+                    {/* Character count & tag preview */}
+                    {content.length > 0 && (
+                        <View style={styles.contentMeta}>
+                            <Text style={[styles.charCount, { color: colors.textTertiary }]}>{content.length} chars</Text>
+                            {extractedTags.length > 0 && (
+                                <View style={styles.tagPreview}>
+                                    {extractedTags.map((tag, i) => (
+                                        <View key={i} style={[styles.tagPill, {
+                                            backgroundColor: tag.toLowerCase() === '#walia' ? '#6366F115' : (isDark ? '#1E293B' : '#F1F5F9'),
+                                            borderColor: tag.toLowerCase() === '#walia' ? '#6366F130' : 'transparent',
+                                            borderWidth: 1,
+                                        }]}>
+                                            <Text style={[styles.tagPillText, { color: tag.toLowerCase() === '#walia' ? '#6366F1' : colors.textTertiary }]}>
+                                                {tag}
+                                            </Text>
+                                        </View>
+                                    ))}
+                                </View>
+                            )}
+                        </View>
+                    )}
+
+                    {/* Trending Tags Picker */}
+                    <View style={styles.trendsSection}>
+                        <Text style={[styles.trendsLabel, { color: colors.textTertiary }]}>TRENDING TAGS</Text>
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tagsRow}>
+                            {TRENDING_TAGS.map((tag, i) => {
+                                const isWalia = tag === '#walia';
+                                const isAdded = content.includes(tag);
+                                return (
+                                    <TouchableOpacity
+                                        key={i}
+                                        onPress={() => !isAdded && appendTag(tag)}
+                                        activeOpacity={isAdded ? 1 : 0.7}
+                                        style={[
+                                            styles.trendTag,
+                                            {
+                                                backgroundColor: isAdded
+                                                    ? (isWalia ? '#6366F1' : (isDark ? '#334155' : '#E2E8F0'))
+                                                    : (isWalia ? '#6366F115' : (isDark ? '#1E293B' : '#F1F5F9')),
+                                                borderColor: isWalia
+                                                    ? (isAdded ? '#6366F1' : '#6366F130')
+                                                    : (isDark ? '#334155' : '#E2E8F0'),
+                                                borderWidth: 1,
+                                            }
+                                        ]}
                                     >
-                                        {quizAnswer === i && <Ionicons name="checkmark" size={12} color="#fff" />}
+                                        {isWalia && !isAdded && <Text style={styles.trendBonusStar}>⭐</Text>}
+                                        <Text style={[styles.trendTagText, {
+                                            color: isAdded
+                                                ? (isWalia ? '#FFF' : colors.textSecondary)
+                                                : (isWalia ? '#6366F1' : colors.textTertiary)
+                                        }]}>
+                                            {tag}
+                                        </Text>
+                                        {isWalia && !isAdded && (
+                                            <Text style={styles.trendBonusLabel}>+200 pts</Text>
+                                        )}
+                                        {isAdded && <Ionicons name="checkmark" size={12} color={isWalia ? '#FFF' : colors.textSecondary} />}
                                     </TouchableOpacity>
+                                );
+                            })}
+                        </ScrollView>
+                    </View>
+
+                    {/* Quiz Options */}
+                    {type === 'quiz' && (
+                        <View style={styles.quizSection}>
+                            <Text style={[styles.sectionLabel, { color: colors.textTertiary }]}>ANSWER OPTIONS</Text>
+                            {quizOptions.map((opt, i) => (
+                                <TouchableOpacity
+                                    key={i}
+                                    style={[
+                                        styles.optionCard,
+                                        {
+                                            backgroundColor: quizAnswer === i ? '#6366F110' : cardBg,
+                                            borderColor: quizAnswer === i ? '#6366F1' : (isDark ? '#1E293B' : '#F1F5F9'),
+                                        }
+                                    ]}
+                                    onPress={() => setQuizAnswer(i)}
+                                    activeOpacity={0.8}
+                                >
+                                    <View style={[styles.optionLetter, { backgroundColor: quizAnswer === i ? '#6366F1' : (isDark ? '#1E293B' : '#F1F5F9') }]}>
+                                        <Text style={[styles.optionLetterText, { color: quizAnswer === i ? '#FFF' : colors.textTertiary }]}>
+                                            {String.fromCharCode(65 + i)}
+                                        </Text>
+                                    </View>
                                     <TextInput
                                         placeholder={`Option ${String.fromCharCode(65 + i)}`}
                                         value={opt}
                                         onChangeText={(val) => updateQuizOption(val, i)}
                                         placeholderTextColor={colors.textTertiary}
-                                        style={[styles.optionInput, { color: colors.text, backgroundColor: colors.surfaceAlt }]}
+                                        style={[styles.optionInput, { color: colors.text }]}
                                     />
-                                </View>
+                                    {quizAnswer === i && (
+                                        <View style={styles.correctBadge}>
+                                            <Text style={styles.correctBadgeText}>✓ Correct</Text>
+                                        </View>
+                                    )}
+                                </TouchableOpacity>
                             ))}
-                            <Text style={styles.hint}>Tap the circle to mark the correct answer.</Text>
+                            <Text style={[styles.hint, { color: colors.textTertiary }]}>
+                                Tap an option card to mark it as the correct answer
+                            </Text>
                         </View>
                     )}
+
+                    {/* Points breakdown */}
+                    <View style={[styles.pointsBreakdown, { backgroundColor: cardBg, borderColor: isDark ? '#1E293B' : '#F1F5F9' }]}>
+                        <Text style={[styles.pointsBreakdownTitle, { color: colors.text }]}>⭐ Points you'll earn</Text>
+                        <View style={styles.pointsRow}>
+                            <Text style={[styles.pointsKey, { color: colors.textSecondary }]}>Post created</Text>
+                            <Text style={[styles.pointsVal, { color: '#6366F1' }]}>+{XP_REWARDS.post_created}</Text>
+                        </View>
+                        {hasWaliaTag && (
+                            <View style={styles.pointsRow}>
+                                <Text style={[styles.pointsKey, { color: colors.textSecondary }]}>#walia bonus</Text>
+                                <Text style={[styles.pointsVal, { color: '#8B5CF6' }]}>+{XP_REWARDS.hashtag_walia}</Text>
+                            </View>
+                        )}
+                        <View style={[styles.pointsTotal, { borderTopColor: isDark ? '#1E293B' : '#F1F5F9' }]}>
+                            <Text style={[styles.pointsTotalLabel, { color: colors.text }]}>Total</Text>
+                            <Text style={styles.pointsTotalVal}>
+                                +{hasWaliaTag ? XP_REWARDS.post_created + XP_REWARDS.hashtag_walia : XP_REWARDS.post_created} Walia Points
+                            </Text>
+                        </View>
+                    </View>
                 </ScrollView>
             </KeyboardAvoidingView>
         </SafeAreaView>
@@ -160,21 +347,199 @@ export default function NewPostScreen() {
 
 const styles = StyleSheet.create({
     container: { flex: 1 },
-    header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: Spacing.xl, paddingVertical: Spacing.md, borderBottomWidth: 1 },
-    closeBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-    headerTitle: { fontSize: FontSize.md, fontWeight: FontWeight.heavy },
-    postBtn: { paddingHorizontal: 20, paddingVertical: 8, borderRadius: BorderRadius.pill },
-    postBtnText: { fontSize: FontSize.sm, fontWeight: FontWeight.heavy },
-    scroll: { padding: Spacing.xl },
-    tabs: { flexDirection: 'row', borderRadius: 16, padding: 4, marginBottom: Spacing.xl },
-    tab: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 10, borderRadius: 12 },
-    tabText: { fontSize: 10, fontWeight: FontWeight.heavy, letterSpacing: 0.5 },
-    titleInput: { fontSize: FontSize.lg, fontWeight: FontWeight.heavy, marginBottom: Spacing.md },
-    contentInput: { fontSize: FontSize.md, textAlignVertical: 'top', lineHeight: 24 },
-    quizFields: { marginTop: Spacing.xl },
-    sectionLabel: { fontSize: 10, fontWeight: FontWeight.heavy, textTransform: 'uppercase', letterSpacing: 1, marginBottom: Spacing.lg },
-    optionRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md, marginBottom: Spacing.md },
-    radio: { width: 24, height: 24, borderRadius: 12, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
-    optionInput: { flex: 1, paddingHorizontal: 16, paddingVertical: 12, borderRadius: 12, fontSize: FontSize.sm, fontWeight: FontWeight.bold },
-    hint: { fontSize: 10, color: '#94a3b8', textAlign: 'center', marginTop: Spacing.md },
+
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingVertical: 14,
+        borderBottomWidth: 1,
+    },
+    closeBtn: {
+        width: 40,
+        height: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 12,
+    },
+    headerCenter: {
+        flex: 1,
+        alignItems: 'center',
+        gap: 4,
+    },
+    headerTitle: { fontSize: 17, fontWeight: '900' },
+    pointsPreview: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+    pointsIcon: { fontSize: 12 },
+    pointsText: { fontSize: 12, fontWeight: '800' },
+
+    postBtn: {},
+    postBtnGradient: {
+        paddingHorizontal: 20,
+        paddingVertical: 10,
+        borderRadius: 14,
+        alignItems: 'center',
+        justifyContent: 'center',
+        minWidth: 72,
+    },
+    postBtnText: { color: '#FFF', fontSize: 14, fontWeight: '900' },
+
+    scroll: { padding: 20, paddingBottom: 60 },
+
+    // Walia Bonus
+    waliaBonusBanner: { marginBottom: 20, borderRadius: 20, overflow: 'hidden' },
+    waliaBonusGradient: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 16,
+        gap: 12,
+    },
+    waliaBonusEmoji: { fontSize: 28 },
+    waliaBonusTitle: { color: '#FFF', fontSize: 14, fontWeight: '900' },
+    waliaBonusSub: { color: 'rgba(255,255,255,0.8)', fontSize: 12, fontWeight: '600', marginTop: 2 },
+
+    // Type selector
+    typeSelector: {
+        flexDirection: 'row',
+        borderRadius: 18,
+        padding: 4,
+        marginBottom: 24,
+    },
+    typeTab: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+        paddingVertical: 12,
+        borderRadius: 14,
+    },
+    typeTabText: { fontSize: 13, fontWeight: '800' },
+
+    // Admin
+    adminRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+        padding: 12,
+        borderRadius: 14,
+        marginBottom: 20,
+    },
+    checkbox: {
+        width: 22,
+        height: 22,
+        borderRadius: 6,
+        borderWidth: 2,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    adminLabel: { flex: 1, fontSize: 13, fontWeight: '700' },
+    adminBadge: { backgroundColor: '#EF4444', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 },
+    adminBadgeText: { color: '#FFF', fontSize: 9, fontWeight: '900', letterSpacing: 1 },
+
+    // Inputs
+    titleInput: {
+        fontSize: 22,
+        fontWeight: '900',
+        marginBottom: 20,
+        paddingBottom: 16,
+        borderBottomWidth: 1,
+        letterSpacing: -0.3,
+    },
+    contentInput: {
+        fontSize: 16,
+        fontWeight: '500',
+        textAlignVertical: 'top',
+        lineHeight: 26,
+        marginBottom: 12,
+    },
+
+    // Content meta
+    contentMeta: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 },
+    charCount: { fontSize: 11, fontWeight: '600' },
+    tagPreview: { flexDirection: 'row', gap: 6, flexWrap: 'wrap', flex: 1, justifyContent: 'flex-end' },
+    tagPill: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
+    tagPillText: { fontSize: 11, fontWeight: '800' },
+
+    // Trending Tags
+    trendsSection: { marginBottom: 28 },
+    trendsLabel: {
+        fontSize: 10,
+        fontWeight: '900',
+        letterSpacing: 1.5,
+        marginBottom: 12,
+        textTransform: 'uppercase',
+    },
+    tagsRow: { gap: 8 },
+    trendTag: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 5,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: 20,
+    },
+    trendBonusStar: { fontSize: 10 },
+    trendTagText: { fontSize: 13, fontWeight: '800' },
+    trendBonusLabel: {
+        fontSize: 9,
+        fontWeight: '900',
+        color: '#6366F1',
+        backgroundColor: '#6366F115',
+        paddingHorizontal: 5,
+        paddingVertical: 2,
+        borderRadius: 6,
+        marginLeft: 2,
+    },
+
+    // Quiz
+    quizSection: { marginBottom: 28 },
+    sectionLabel: {
+        fontSize: 10,
+        fontWeight: '900',
+        letterSpacing: 1.5,
+        textTransform: 'uppercase',
+        marginBottom: 14,
+    },
+    optionCard: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 14,
+        borderRadius: 18,
+        borderWidth: 1.5,
+        marginBottom: 10,
+        gap: 12,
+    },
+    optionLetter: {
+        width: 36,
+        height: 36,
+        borderRadius: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    optionLetterText: { fontSize: 14, fontWeight: '900' },
+    optionInput: { flex: 1, fontSize: 15, fontWeight: '600' },
+    correctBadge: {
+        backgroundColor: '#10B98115',
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 8,
+    },
+    correctBadgeText: { color: '#10B981', fontSize: 10, fontWeight: '800' },
+    hint: { fontSize: 11, textAlign: 'center', marginTop: 8, fontWeight: '500' },
+
+    // Points breakdown
+    pointsBreakdown: {
+        padding: 20,
+        borderRadius: 22,
+        borderWidth: 1,
+        marginTop: 8,
+    },
+    pointsBreakdownTitle: { fontSize: 15, fontWeight: '900', marginBottom: 14 },
+    pointsRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+    pointsKey: { fontSize: 14, fontWeight: '600' },
+    pointsVal: { fontSize: 14, fontWeight: '900' },
+    pointsTotal: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 12, borderTopWidth: 1, marginTop: 4 },
+    pointsTotalLabel: { fontSize: 15, fontWeight: '900' },
+    pointsTotalVal: { fontSize: 15, fontWeight: '900', color: '#6366F1' },
 });

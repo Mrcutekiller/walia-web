@@ -1,18 +1,16 @@
 import { BorderRadius, FontSize, FontWeight, Spacing } from '@/constants/theme';
 import { useAuth } from '@/store/auth';
-import { db } from '@/services/firebase';
+import { useSocial } from '@/store/social';
 import { useTheme } from '@/store/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { collection, onSnapshot, orderBy, query, updateDoc, where, doc, deleteDoc } from 'firebase/firestore';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import {
   FlatList,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
-  ActivityIndicator
+  View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -20,38 +18,10 @@ export default function NotificationsScreen() {
   const router = useRouter();
   const { colors, isDark } = useTheme();
   const { user } = useAuth();
-  const [notifications, setNotifications] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!user) return;
-    const q = query(
-      collection(db, 'notifications'),
-      where('userId', '==', user.id),
-      orderBy('createdAt', 'desc')
-    );
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setNotifications(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-      setLoading(false);
-    });
-    return () => unsubscribe();
-  }, [user]);
-
-  const markAsRead = async (id: string) => {
-    try {
-      await updateDoc(doc(db, 'notifications', id), { read: true });
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const deleteNotification = async (id: string) => {
-    try {
-      await deleteDoc(doc(db, 'notifications', id));
-    } catch (e) {
-      console.error(e);
-    }
-  };
+  const { notifications = [], markNotificationRead, deleteNotification } = useSocial();
+  
+  // Sort notifications by newest first
+  const sortedNotifications = [...notifications].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -79,7 +49,7 @@ export default function NotificationsScreen() {
           </View>
           <Text style={[styles.notifMessage, { color: colors.textSecondary }]}>{item.message}</Text>
           {!item.read && (
-             <TouchableOpacity onPress={() => markAsRead(item.id)} style={styles.markReadBtn}>
+             <TouchableOpacity onPress={() => markNotificationRead(item.id)} style={styles.markReadBtn}>
                 <Text style={[styles.markReadText, { color: colors.primary }]}>Mark as read</Text>
              </TouchableOpacity>
           )}
@@ -99,22 +69,18 @@ export default function NotificationsScreen() {
           <View style={{ width: 40 }} />
         </View>
 
-        {loading ? (
-          <ActivityIndicator style={{ marginTop: 40 }} color={colors.primary} />
-        ) : (
-          <FlatList
-            data={notifications}
-            renderItem={renderItem}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={styles.listContent}
-            ListEmptyComponent={
-              <View style={styles.emptyContainer}>
-                <Ionicons name="notifications-off-outline" size={60} color={colors.textTertiary} />
-                <Text style={[styles.emptyText, { color: colors.textSecondary }]}>All caught up!</Text>
-              </View>
-            }
-          />
-        )}
+        <FlatList
+          data={sortedNotifications}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.listContent}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Ionicons name="notifications-off-outline" size={60} color={colors.textTertiary} />
+              <Text style={[styles.emptyText, { color: colors.textSecondary }]}>All caught up!</Text>
+            </View>
+          }
+        />
       </SafeAreaView>
     </View>
   );

@@ -7,38 +7,14 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
-import { Alert, Image, Linking, Modal, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState, useRef } from 'react';
+import {
+    Alert, Animated, Image, Linking, Modal, ScrollView,
+    StyleSheet, Switch, Text, TouchableOpacity, View, Dimensions
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-const MENU_SECTIONS = [
-    {
-        title: 'Preparation',
-        items: [
-            { icon: 'calendar', label: 'Daily Plan', desc: 'Tasks & study schedule', color: '#000000' },
-            { icon: 'notifications', label: 'Notifications', desc: 'Inbox & payment alerts', color: '#000000' },
-            { icon: 'information-circle', label: 'About Walia', desc: 'Mission & History', color: '#000000' },
-            { icon: 'chatbubble-ellipses', label: 'Contact Us', desc: 'Get in touch', color: '#000000' },
-            { icon: 'cloud-download', label: 'Updates', desc: 'Download latest version', color: '#000000' },
-        ],
-    },
-    {
-        title: 'Settings',
-        items: [
-            { icon: 'moon', label: 'Appearance', desc: 'Dark / Light mode', color: '#000000', isThemeToggle: true },
-            { icon: 'shield-checkmark', label: 'Privacy Policy', desc: 'Personal data & ads', color: '#000000' },
-            { icon: 'document-text', label: 'Terms of Service', desc: 'App rules & safety', color: '#000000' },
-        ],
-    },
-    {
-        title: 'Support',
-        items: [
-            { icon: 'help-circle', label: 'Help Centre', desc: 'AI Support Chat', color: '#000000' },
-            { icon: 'chatbubble-ellipses', label: 'Contact Us', desc: 'Get in touch', color: '#000000' },
-            { icon: 'star', label: 'Rate Walia', desc: 'Leave a review', color: '#000000' },
-            { icon: 'information-circle', label: 'About', desc: 'Mission & History', color: '#000000' },
-        ],
-    },
-];
+const { width } = Dimensions.get('window');
 
 export default function ProfileScreen() {
     const router = useRouter();
@@ -49,7 +25,8 @@ export default function ProfileScreen() {
 
     const { xp, followers, following, posts, isPro } = social;
     const myPosts = posts.filter(p => p.authorId === user?.id);
-    const [notifsEnabled, setNotifsEnabled] = useState(true);
+
+    const scaleAnim = useRef(new Animated.Value(1)).current;
 
     const [modal, setModal] = useState<{
         visible: boolean;
@@ -58,12 +35,12 @@ export default function ProfileScreen() {
         icon: string;
         color: string;
         onConfirm?: () => void;
-    }>({ 
-        visible: false, 
-        title: '', 
-        msg: '', 
-        icon: '', 
-        color: '#000000' 
+    }>({
+        visible: false,
+        title: '',
+        msg: '',
+        icon: '',
+        color: '#6366F1'
     });
 
     const showModal = (title: string, msg: string, icon: string, color: string, onConfirm?: () => void) => {
@@ -71,220 +48,331 @@ export default function ProfileScreen() {
     };
 
     const handleLogout = () => {
-        showModal('Log Out', 'Are you sure you want to log out from Walia?', 'log-out', '#FF4757', () => logout());
+        showModal('Sign Out', 'Are you sure you want to sign out from Walia?', 'log-out-outline', '#EF4444', () => logout());
     };
 
     const handleDeleteAccount = () => {
-        showModal('⚠️ Delete Account', 'This action is permanent and cannot be undone. All your data will be lost.', 'trash', '#FF4757', () => {
+        showModal('Delete Account', 'This action is permanent. All your data will be lost forever.', 'trash-outline', '#EF4444', () => {
             setTimeout(() => logout(), 500);
         });
     };
 
-    const handleMenuPress = (label: string) => {
-        if (label === 'Privacy Policy') { router.push('/legal/privacy' as any); return; }
-        if (label === 'Terms of Service') { router.push('/legal/terms' as any); return; }
-        if (label === 'Contact Us') { router.push('/contact' as any); return; }
-        if (label === 'Help Centre') { router.push('/(tabs)/ai'); return; }
-        if (label === 'Notifications') { router.push('/notifications' as any); return; }
-        if (label === 'Daily Plan') { router.push('/plan' as any); return; }
-        if (label === 'Language') { handleMenuPress('LanguagePopup'); return; }
-
-        const msgs: Record<string, [string, string, string, string]> = {
-            'Language': ['🌐 Language', 'Select your preferred language:\n\n• Amharic 🇪🇹\n• Oromo 🇪🇹\n• Tigrinya 🇪🇹\n• English 🇺🇸', 'language', '#000000'],
-            'About': ['ℹ️ About Walia', 'Walia was created in 2024 to empower students with localized AI study tools and a collaborative community.', 'information-circle', '#000000'],
-            'Rate Walia': ['⭐ Rate Walia', 'Your feedback helps us improve the app for everyone! (App Store link coming soon)', 'star', '#000000'],
-        };
-
-        const m = msgs[label];
-        if (m) showModal(m[0], m[1], m[2], m[3]);
-    };
-
-    const handleUpdateAvatar = async () => {
-        const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ['images'],
-            allowsEditing: true,
-            aspect: [1, 1],
-            quality: 0.5,
-        });
-
-        if (!result.canceled) {
-            setUpdatingAvatar(true);
-            try {
-                await uploadAvatar(result.assets[0].uri);
-                Alert.alert('Success', 'Profile picture updated! ✨');
-            } catch (e: any) {
-                Alert.alert('Error', e.message || 'Failed to upload image');
-            } finally {
-                setUpdatingAvatar(false);
-            }
-        }
+    const handleEditProfile = () => {
+        router.push('/edit-profile');
     };
 
     const xpToProPct = Math.min(100, Math.round((xp / PRO_PLAN_XP_COST) * 100));
 
+    const MENU_ITEMS = [
+        { icon: 'moon-outline', label: 'Dark Mode', color: '#6366F1', toggle: true, value: isDark, action: toggleTheme },
+        { icon: 'notifications-outline', label: 'Notifications', color: '#F59E0B', action: () => router.push('/notifications') },
+        { icon: 'bookmark-outline', label: 'Saved Insights', color: '#10B981', action: () => { } },
+        { icon: 'help-circle-outline', label: 'Help & Support', color: '#8B5CF6', action: () => router.push('/contact') },
+        { icon: 'shield-checkmark-outline', label: 'Privacy Policy', color: '#EC4899', action: () => { } },
+        { icon: 'document-text-outline', label: 'Terms of Service', color: '#06B6D4', action: () => { } },
+    ];
+
+    const bg = isDark ? colors.background : '#F8FAFC';
+    const cardBg = isDark ? colors.surface : '#FFFFFF';
+
     return (
-        <View style={styles.container}>
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
-                {/* 1. Banner & Avatar */}
-                <View style={styles.topSection}>
-                    <LinearGradient colors={['#000', '#1A202C']} style={styles.banner} start={{x:0, y:0}} end={{x:1, y:1}}>
-                        <View style={styles.bannerDecoration}>
-                             <Image source={require('../../assets/images/walia-logo.png')} style={styles.bannerLogo} resizeMode="contain" />
+        <View style={[styles.container, { backgroundColor: bg }]}>
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 140 }}>
+
+                {/* ── Hero Banner ── */}
+                <LinearGradient
+                    colors={isDark ? ['#1E293B', '#0F172A'] : ['#6366F1', '#818CF8']}
+                    style={styles.heroBanner}
+                    start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+                >
+                    <SafeAreaView edges={['top']}>
+                        <View style={styles.bannerTop}>
+                            <Text style={styles.bannerLabel}>WALIA PROFILE</Text>
+                            <TouchableOpacity
+                                style={styles.settingsBtn}
+                                onPress={() => router.push('/notifications')}
+                            >
+                                <Ionicons name="notifications-outline" size={20} color="rgba(255,255,255,0.9)" />
+                            </TouchableOpacity>
                         </View>
-                    </LinearGradient>
-                    
-                    <View style={styles.profileHeader}>
-                        <View style={styles.avatarWrap}>
-                            <View style={styles.avatarRing}>
-                                {user?.photoURL ? (
-                                    <Image source={{ uri: user.photoURL }} style={styles.avatarImg} />
-                                ) : (
-                                    <View style={styles.avatarPlaceholder}>
-                                        <Text style={styles.avatarText}>{user?.name?.charAt(0) || '?'}</Text>
+                    </SafeAreaView>
+
+                    {/* Decorative circles */}
+                    <View style={styles.circleDecor1} />
+                    <View style={styles.circleDecor2} />
+                </LinearGradient>
+
+                {/* ── Avatar floated above banner ── */}
+                <View style={styles.profileCard}>
+                    <View style={[styles.profileCardInner, { backgroundColor: cardBg }]}>
+                        <View style={styles.avatarSection}>
+                            <TouchableOpacity onPress={handleEditProfile} activeOpacity={0.85}>
+                                <View style={[styles.avatarRing, { borderColor: isDark ? '#334155' : '#E2E8F0' }]}>
+                                    {user?.photoURL?.length && user.photoURL.length <= 2 ? (
+                                        <View style={[styles.avatarPlaceholder, { backgroundColor: isDark ? '#334155' : '#E2E8F0' }]}>
+                                            <Text style={styles.avatarEmoji}>{user.photoURL}</Text>
+                                        </View>
+                                    ) : user?.photoURL ? (
+                                        <Image source={{ uri: user.photoURL }} style={styles.avatarImage} />
+                                    ) : (
+                                        <LinearGradient
+                                            colors={['#6366F1', '#8B5CF6']}
+                                            style={styles.avatarPlaceholder}
+                                        >
+                                            <Text style={styles.avatarInitial}>
+                                                {user?.name?.charAt(0)?.toUpperCase() || '?'}
+                                            </Text>
+                                        </LinearGradient>
+                                    )}
+                                    <View style={[styles.cameraBtn, { backgroundColor: '#6366F1' }]}>
+                                        <Ionicons name="pencil" size={14} color="#FFF" />
+                                    </View>
+                                </View>
+                            </TouchableOpacity>
+
+                            <View style={styles.userInfo}>
+                                <Text style={[styles.userName, { color: colors.text }]}>
+                                    {user?.name || 'Explorer'}
+                                </Text>
+                                <Text style={[styles.userHandle, { color: colors.textTertiary }]}>
+                                    @{user?.username || 'walia_user'}
+                                </Text>
+                                {isPro && (
+                                    <View style={styles.proBadge}>
+                                        <Ionicons name="shield-checkmark" size={10} color="#FFF" />
+                                        <Text style={styles.proBadgeText}>PRO</Text>
                                     </View>
                                 )}
                             </View>
-                            <TouchableOpacity style={styles.cameraBtn} onPress={handleUpdateAvatar}>
-                                <Ionicons name="camera" size={16} color="#000" />
+                            
+                            <TouchableOpacity style={styles.editProfileBtn} onPress={handleEditProfile}>
+                                <Text style={styles.editProfileBtnText}>Edit</Text>
                             </TouchableOpacity>
                         </View>
 
-                        <View style={styles.actionRow}>
-                            <TouchableOpacity style={styles.editBtn} onPress={() => router.push('/profile/edit' as any)}>
-                                <Ionicons name="create-outline" size={16} color="#fff" />
-                                <Text style={styles.editBtnText}>Edit</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity style={styles.settingsBtn} onPress={() => router.push('/profile/settings' as any)}>
-                                <Ionicons name="settings-outline" size={20} color="#718096" />
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </View>
+                        {user?.bio ? (
+                            <Text style={[styles.userBio, { color: colors.textSecondary }]}>
+                                {user.bio}
+                            </Text>
+                        ) : (
+                            <Text style={[styles.userBio, { color: colors.textTertiary }]}>
+                                Building the future with Walia AI 🚀
+                            </Text>
+                        )}
 
-                {/* 2. User Info */}
-                <View style={styles.infoSection}>
-                    <Text style={styles.displayName}>{user?.name || 'Student Name'}</Text>
-                    <Text style={styles.handle}>@{user?.username || 'member'}</Text>
-                    <Text style={styles.bio}>{user?.bio || 'Study hard, dream big. 🎓 No bio yet.'}</Text>
-
-                    <View style={styles.statsRow}>
-                        <View style={styles.statBox}>
-                            <Text style={styles.statVal}>{myPosts.length}</Text>
-                            <Text style={styles.statLabel}>POSTS</Text>
-                        </View>
-                        <View style={styles.statDivider} />
-                        <View style={styles.statBox}>
-                            <Text style={styles.statVal}>{followers.length}</Text>
-                            <Text style={styles.statLabel}>FOLLOWERS</Text>
-                        </View>
-                        <View style={styles.statDivider} />
-                        <View style={styles.statBox}>
-                            <Text style={styles.statVal}>{following.length}</Text>
-                            <Text style={styles.statLabel}>FOLLOWING</Text>
-                        </View>
-                    </View>
-                </View>
-
-                {/* 3. Flippable ID Card */}
-                <View style={styles.idCardSection}>
-                    <MembershipCard
-                        name={user?.name || 'Student'}
-                        username={user?.username || 'student'}
-                        id={user?.id?.slice(0, 8).toUpperCase() || 'WALIA-ID'}
-                        isPro={isPro}
-                        memberSince="March 2024"
-                        avatar={user?.photoURL || '🧑‍🎓'}
-                    />
-                </View>
-
-                {/* 4. Pro CTA */}
-                {!isPro && (
-                    <TouchableOpacity style={styles.proCta} onPress={() => router.push('/pro' as any)}>
-                        <LinearGradient colors={['#101010', '#6C63FF']} style={styles.proCtaGrad} start={{x:0,y:0}} end={{x:1,y:0}}>
-                            <View style={styles.proCtaIcon}><Text style={{fontSize:22}}>✨</Text></View>
-                            <View style={{flex:1}}>
-                                <Text style={styles.proCtaTitle}>Unlock Walia Pro</Text>
-                                <Text style={styles.proCtaSub}>{xp.toLocaleString()} / 10,000 XP · {xpToProPct}% there</Text>
-                            </View>
-                            <Ionicons name="chevron-forward" size={18} color="#fff" />
-                        </LinearGradient>
-                    </TouchableOpacity>
-                )}
-
-                {/* 5. Menu Sections */}
-                {MENU_SECTIONS.map((section, idx) => (
-                    <View key={idx} style={styles.menuSection}>
-                        <Text style={styles.sectionTitle}>{section.title}</Text>
-                        <View style={styles.menuCard}>
-                            {section.items.map((item, i) => (
-                                <TouchableOpacity 
-                                    key={i} 
-                                    style={[styles.menuItem, { borderBottomWidth: i < section.items.length - 1 ? 1 : 0 }]}
-                                    onPress={() => item.isThemeToggle ? toggleTheme() : handleMenuPress(item.label)}
-                                >
-                                    <View style={[styles.menuIconContainer, { backgroundColor: `${item.color}10` }]}>
-                                        <Ionicons name={`${item.icon}-outline` as any} size={18} color={item.color} />
+                        {/* Stats Row */}
+                        <View style={[styles.statsRow, { borderTopColor: isDark ? '#1E293B' : '#F1F5F9' }]}>
+                            {[
+                                { val: myPosts.length, label: 'Posts' },
+                                { val: followers.length, label: 'Followers' },
+                                { val: following.length, label: 'Following' },
+                                { val: xp.toLocaleString(), label: '⭐ pts' },
+                            ].map((stat, i, arr) => (
+                                <React.Fragment key={stat.label}>
+                                    <View style={styles.statItem}>
+                                        <Text style={[styles.statValue, { color: colors.text }]}>{stat.val}</Text>
+                                        <Text style={[styles.statLabel, { color: colors.textTertiary }]}>{stat.label}</Text>
                                     </View>
-                                    <View style={{flex:1}}>
-                                        <Text style={styles.menuLabel}>{item.label}</Text>
-                                        <Text style={styles.menuDesc}>
-                                            {item.isThemeToggle ? (isDark ? 'Dark mode is on' : 'Light mode is on') : item.desc}
-                                        </Text>
-                                    </View>
-                                    {item.isThemeToggle ? (
-                                        <Switch value={isDark} onValueChange={toggleTheme} trackColor={{ false: '#E2E8F0', true: '#000' }} thumbColor="#fff" />
-                                    ) : (
-                                        <Ionicons name="chevron-forward" size={14} color="#CBD5E0" />
+                                    {i < arr.length - 1 && (
+                                        <View style={[styles.statDiv, { backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }]} />
                                     )}
-                                </TouchableOpacity>
+                                </React.Fragment>
                             ))}
                         </View>
                     </View>
-                ))}
+                </View>
 
-                {/* 6. My Feed */}
-                <View style={styles.feedSection}>
-                    <View style={styles.feedHeader}>
-                        <Text style={styles.feedTitle}>MY RECENT POSTS</Text>
-                        <View style={styles.feedLine} />
-                    </View>
-                    {myPosts.length > 0 ? (
-                        myPosts.map(p => <PostCard key={p.id} post={p} onLike={() => social.likePost(p.id)} />)
-                    ) : (
-                        <View style={styles.emptyFeed}>
-                            <Ionicons name="newspaper-outline" size={32} color="#CBD5E0" />
-                            <Text style={styles.emptyText}>You haven't posted anything yet.</Text>
+                {/* ── Membership Card ── */}
+                <View style={styles.section}>
+                    <Text style={[styles.sectionLabel, { color: colors.textTertiary }]}>MEMBERSHIP</Text>
+                    <TouchableOpacity
+                        onPress={() => router.push('/pro')}
+                        activeOpacity={0.92}
+                        style={styles.membershipCard}
+                    >
+                        <LinearGradient
+                            colors={isPro ? ['#6366F1', '#8B5CF6', '#A78BFA'] : ['#0F172A', '#1E293B']}
+                            style={styles.membershipGradient}
+                            start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+                        >
+                            <View style={styles.membershipRow}>
+                                <View style={styles.membershipIconBox}>
+                                    <Ionicons name={isPro ? 'shield-checkmark' : 'flash'} size={26} color="#FFF" />
+                                </View>
+                                <View style={{ flex: 1 }}>
+                                    <Text style={styles.membershipTitle}>
+                                        {isPro ? 'Walia Pro Member' : 'Unlock Pro Access'}
+                                    </Text>
+                                    <Text style={styles.membershipSub}>
+                                        {isPro
+                                            ? 'Full access to all AI models & features'
+                                            : `${xp.toLocaleString()} / 10,000 Walia Points to free Pro`}
+                                    </Text>
+                                </View>
+                                <View style={styles.membershipArrow}>
+                                    <Ionicons name="chevron-forward" size={18} color="rgba(255,255,255,0.6)" />
+                                </View>
+                            </View>
+
+                            {!isPro && (
+                                <View style={styles.progressBg}>
+                                    <View style={[styles.progressBar, { width: `${xpToProPct}%` }]} />
+                                </View>
+                            )}
+
+                            {/* Decorative circles */}
+                            <View style={styles.memberDecor1} />
+                            <View style={styles.memberDecor2} />
+                        </LinearGradient>
+                    </TouchableOpacity>
+                </View>
+
+                {/* ── Plan Details ── */}
+                <View style={styles.section}>
+                    <Text style={[styles.sectionLabel, { color: colors.textTertiary }]}>YOUR PLAN</Text>
+                    <View style={[styles.planCard, { backgroundColor: cardBg, borderColor: isDark ? '#1E293B' : '#F1F5F9' }]}>
+                        {/* Plan header */}
+                        <View style={styles.planHeader}>
+                            <View style={[styles.planBadge, { backgroundColor: isPro ? '#6366F115' : '#F1F5F9' }]}>
+                                <Text style={styles.planBadgeEmoji}>{isPro ? '👑' : '🌱'}</Text>
+                                <Text style={[styles.planBadgeText, { color: isPro ? '#6366F1' : colors.textSecondary }]}>
+                                    {isPro ? 'Pro Plan' : 'Free Plan'}
+                                </Text>
+                            </View>
+                            <TouchableOpacity
+                                onPress={() => router.push('/pro')}
+                                style={[styles.planUpgradeBtn, { backgroundColor: isPro ? '#10B98115' : '#6366F1' }]}
+                            >
+                                <Text style={[styles.planUpgradeBtnText, { color: isPro ? '#10B981' : '#FFF' }]}>
+                                    {isPro ? '✓ Active' : 'Upgrade'}
+                                </Text>
+                            </TouchableOpacity>
                         </View>
-                    )}
+
+                        {/* Limits grid */}
+                        <View style={styles.limitsGrid}>
+                            {[
+                                { icon: 'chatbubbles-outline', label: 'AI Chats / day', free: '20', pro: '∞' },
+                                { icon: 'calendar-outline', label: 'Study Plans', free: '5', pro: '∞' },
+                                { icon: 'grid-outline', label: 'Tool Uses / day', free: '10', pro: '∞' },
+                                { icon: 'image-outline', label: 'Uploads / day', free: '5', pro: '∞' },
+                            ].map((item, i) => (
+                                <View key={i} style={[styles.limitItem, { backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderColor: isDark ? '#334155' : '#F1F5F9' }]}>
+                                    <Ionicons name={item.icon as any} size={18} color={isPro ? '#6366F1' : colors.textTertiary} />
+                                    <Text style={[styles.limitLabel, { color: colors.textSecondary }]} numberOfLines={1}>{item.label}</Text>
+                                    <Text style={[styles.limitVal, { color: isPro ? '#6366F1' : colors.text }]}>
+                                        {isPro ? item.pro : item.free}
+                                    </Text>
+                                </View>
+                            ))}
+                        </View>
+
+                        {!isPro && (
+                            <View style={styles.planProgress}>
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
+                                    <Text style={[styles.planProgressLabel, { color: colors.textSecondary }]}>
+                                        Walia Points to Pro
+                                    </Text>
+                                    <Text style={[styles.planProgressVal, { color: '#6366F1' }]}>
+                                        {xp.toLocaleString()} / 10,000
+                                    </Text>
+                                </View>
+                                <View style={[styles.planProgressBg, { backgroundColor: isDark ? '#334155' : '#F1F5F9' }]}>
+                                    <LinearGradient
+                                        colors={['#6366F1', '#8B5CF6']}
+                                        style={[styles.planProgressFill, { width: `${Math.min(100, (xp / 10000) * 100)}%` as any }]}
+                                        start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                                    />
+                                </View>
+                            </View>
+                        )}
+                    </View>
                 </View>
 
-                {/* 7. Danger Area */}
-                <View style={styles.dangerSection}>
-                    <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
+                {/* ── Preferences ── */}
+                <View style={styles.section}>
+                    <Text style={[styles.sectionLabel, { color: colors.textTertiary }]}>PREFERENCES</Text>
+
+                    <View style={[styles.menuCard, { backgroundColor: cardBg, borderColor: isDark ? '#1E293B' : '#F1F5F9' }]}>
+                        {MENU_ITEMS.map((item, i) => (
+                            <TouchableOpacity
+                                key={item.label}
+                                style={[
+                                    styles.menuItem,
+                                    { borderBottomColor: isDark ? '#1E293B' : '#F8FAFC' },
+                                    i < MENU_ITEMS.length - 1 && { borderBottomWidth: 1 }
+                                ]}
+                                onPress={item.action}
+                                activeOpacity={0.7}
+                            >
+                                <View style={[styles.menuIconBox, { backgroundColor: `${item.color}15` }]}>
+                                    <Ionicons name={item.icon as any} size={20} color={item.color} />
+                                </View>
+                                <Text style={[styles.menuLabel, { color: colors.text }]}>{item.label}</Text>
+                                {item.toggle ? (
+                                    <Switch
+                                        value={item.value}
+                                        onValueChange={item.action}
+                                        trackColor={{ false: isDark ? '#334155' : '#E2E8F0', true: '#6366F1' }}
+                                        thumbColor="#FFF"
+                                        ios_backgroundColor={isDark ? '#334155' : '#E2E8F0'}
+                                    />
+                                ) : (
+                                    <Ionicons name="chevron-forward" size={16} color={colors.textTertiary} />
+                                )}
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                </View>
+
+                {/* ── Account Actions ── */}
+                <View style={[styles.section, { marginTop: 8 }]}>
+                    <Text style={[styles.sectionLabel, { color: colors.textTertiary }]}>ACCOUNT</Text>
+                    <TouchableOpacity
+                        style={[styles.signOutBtn, { backgroundColor: isDark ? '#1E293B' : '#FEF2F2', borderColor: '#FEE2E2' }]}
+                        onPress={handleLogout}
+                        activeOpacity={0.8}
+                    >
                         <Ionicons name="log-out-outline" size={20} color="#EF4444" />
-                        <Text style={styles.logoutText}>Log Out</Text>
+                        <Text style={styles.signOutText}>Sign Out</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.deleteBtn} onPress={handleDeleteAccount}>
-                        <Text style={styles.deleteText}>Delete Account</Text>
+                    <TouchableOpacity style={styles.deleteLink} onPress={handleDeleteAccount}>
+                        <Text style={[styles.deleteLinkText, { color: colors.textTertiary }]}>
+                            Delete Account Permanently
+                        </Text>
                     </TouchableOpacity>
                 </View>
+
+                <Text style={[styles.versionText, { color: colors.textTertiary }]}>
+                    Walia v2.0 • Made with ♥
+                </Text>
             </ScrollView>
 
+            {/* ── Confirmation Modal ── */}
             <Modal transparent visible={modal.visible} animationType="fade">
                 <View style={styles.modalOverlay}>
-                    <TouchableOpacity style={StyleSheet.absoluteFill} onPress={() => setModal({...modal, visible:false})} />
-                    <View style={styles.modalCard}>
-                        <View style={[styles.modalIcon, { backgroundColor: `${modal.color}15` }]}>
+                    <TouchableOpacity
+                        style={StyleSheet.absoluteFill}
+                        onPress={() => setModal({ ...modal, visible: false })}
+                    />
+                    <View style={[styles.modalCard, { backgroundColor: cardBg }]}>
+                        <View style={[styles.modalIconWrap, { backgroundColor: `${modal.color}15` }]}>
                             <Ionicons name={modal.icon as any} size={32} color={modal.color} />
                         </View>
-                        <Text style={styles.modalTitle}>{modal.title}</Text>
-                        <Text style={styles.modalMsg}>{modal.msg}</Text>
-                        <View style={styles.modalButtons}>
-                            <TouchableOpacity style={styles.modalBtnCancel} onPress={() => setModal({...modal, visible:false})}>
-                                <Text style={styles.modalBtnCancelText}>Cancel</Text>
+                        <Text style={[styles.modalTitle, { color: colors.text }]}>{modal.title}</Text>
+                        <Text style={[styles.modalMsg, { color: colors.textSecondary }]}>{modal.msg}</Text>
+                        <View style={styles.modalBtns}>
+                            <TouchableOpacity
+                                style={[styles.modalBtnCancel, { backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }]}
+                                onPress={() => setModal({ ...modal, visible: false })}
+                            >
+                                <Text style={[styles.modalBtnCancelText, { color: colors.textSecondary }]}>Cancel</Text>
                             </TouchableOpacity>
                             {modal.onConfirm && (
-                                <TouchableOpacity style={[styles.modalBtnConfirm, { backgroundColor: modal.color }]} onPress={() => { setModal({...modal, visible:false}); modal.onConfirm?.(); }}>
+                                <TouchableOpacity
+                                    style={[styles.modalBtnConfirm, { backgroundColor: modal.color }]}
+                                    onPress={() => { setModal({ ...modal, visible: false }); modal.onConfirm?.(); }}
+                                >
                                     <Text style={styles.modalBtnConfirmText}>Confirm</Text>
                                 </TouchableOpacity>
                             )}
@@ -298,62 +386,331 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
     container: { flex: 1 },
-    topSection: { marginBottom: 12 },
-    banner: { height: 140, justifyContent: 'center', alignItems: 'center' },
-    bannerDecoration: { position: 'absolute', right: -30, top: -30, opacity: 0.1 },
-    bannerLogo: { width: 160, height: 160, opacity: 0.05 },
-    profileHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', paddingHorizontal: 24, marginTop: -44 },
-    avatarWrap: { position: 'relative' },
-    avatarRing: { width: 92, height: 92, borderRadius: 32, backgroundColor: '#fff', padding: 4, elevation: 12, shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.1, shadowRadius: 10 },
-    avatarImg: { width: '100%', height: '100%', borderRadius: 28, backgroundColor: '#F8FAFC' },
-    avatarPlaceholder: { width: '100%', height: '100%', borderRadius: 28, backgroundColor: '#F1F5F9', alignItems: 'center', justifyContent: 'center' },
-    avatarText: { fontSize: 32, fontFamily: 'Inter_900Black', color: '#CBD5E0' },
-    cameraBtn: { position: 'absolute', bottom: -2, right: -2, width: 34, height: 34, borderRadius: 12, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', elevation: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, borderWidth: 1, borderColor: '#EDF2F7' },
-    actionRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 4 },
-    editBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#000', paddingHorizontal: 18, paddingVertical: 12, borderRadius: 22, elevation: 4 },
-    editBtnText: { color: '#fff', fontSize: 13, fontFamily: 'Inter_900Black', letterSpacing: 0.5 },
-    settingsBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#EDF2F7' },
-    infoSection: { paddingHorizontal: 24, marginBottom: 24 },
-    displayName: { fontSize: 26, fontFamily: 'Inter_900Black', color: '#000', letterSpacing: -1 },
-    handle: { fontSize: 15, fontFamily: 'Inter_700Bold', color: '#A0AEC0', marginTop: 2 },
-    bio: { fontSize: 15, fontFamily: 'Inter_500Medium', color: '#4A5568', lineHeight: 22, marginTop: 14 },
-    statsRow: { flexDirection: 'row', alignItems: 'center', gap: 24, marginTop: 24 },
-    statBox: { alignItems: 'flex-start' },
-    statVal: { fontSize: 18, fontFamily: 'Inter_900Black', color: '#000' },
-    statLabel: { fontSize: 10, fontFamily: 'Inter_800ExtraBold', color: '#CBD5E0', letterSpacing: 1 },
-    statDivider: { width: 1, height: 24, backgroundColor: '#EDF2F7' },
-    idCardSection: { paddingHorizontal: 24, marginBottom: 12 },
-    proCta: { marginHorizontal: 24, marginTop: 16, borderRadius: 24, overflow: 'hidden', elevation: 8, shadowColor: '#6C63FF', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.2, shadowRadius: 16 },
-    proCtaGrad: { flexDirection: 'row', alignItems: 'center', padding: 20, gap: 16 },
-    proCtaIcon: { width: 44, height: 44, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.1)', alignItems: 'center', justifyContent: 'center' },
-    proCtaTitle: { color: '#fff', fontFamily: 'Inter_900Black', fontSize: 16 },
-    proCtaSub: { color: 'rgba(255,255,255,0.7)', fontSize: 12, fontFamily: 'Inter_700Bold', marginTop: 2 },
-    menuSection: { paddingHorizontal: 24, marginTop: 36 },
-    sectionTitle: { fontSize: 11, fontFamily: 'Inter_800ExtraBold', color: '#CBD5E0', letterSpacing: 1.5, marginBottom: 14, marginLeft: 4 },
-    menuCard: { backgroundColor: '#fff', borderRadius: 24, overflow: 'hidden', borderWidth: 1, borderColor: '#F1F5F9' },
-    menuItem: { flexDirection: 'row', alignItems: 'center', padding: 18, gap: 16, borderColor: '#F8FAFC' },
-    menuIconContainer: { width: 42, height: 42, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-    menuLabel: { fontSize: 15, fontFamily: 'Inter_700Bold', color: '#000' },
-    menuDesc: { fontSize: 12, fontFamily: 'Inter_500Medium', color: '#A0AEC0', marginTop: 2 },
-    feedSection: { paddingHorizontal: 24, marginTop: 44 },
-    feedHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 24 },
-    feedTitle: { fontSize: 11, fontFamily: 'Inter_900Black', color: '#000', letterSpacing: 1.5 },
-    feedLine: { flex: 1, height: 2, backgroundColor: '#000' },
-    emptyFeed: { padding: 48, alignItems: 'center', backgroundColor: '#fff', borderRadius: 32, borderWidth: 1, borderColor: '#EDF2F7', borderStyle: 'dashed', gap: 12 },
-    emptyText: { fontSize: 14, fontFamily: 'Inter_600SemiBold', color: '#A0AEC0', textAlign: 'center' },
-    dangerSection: { paddingHorizontal: 24, marginTop: 48, gap: 16 },
-    logoutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, paddingVertical: 18, borderRadius: 24, backgroundColor: '#FEF2F2', borderWidth: 1, borderColor: '#FEE2E2' },
-    logoutText: { fontSize: 15, fontFamily: 'Inter_900Black', color: '#EF4444' },
-    deleteBtn: { alignItems: 'center', paddingVertical: 12 },
-    deleteText: { fontSize: 13, fontFamily: 'Inter_700Bold', color: '#CBD5E0', textDecorationLine: 'underline' },
-    modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 32 },
-    modalCard: { width: '100%', backgroundColor: '#fff', borderRadius: 36, padding: 32, alignItems: 'center' },
-    modalIcon: { width: 68, height: 68, borderRadius: 24, alignItems: 'center', justifyContent: 'center', marginBottom: 24 },
-    modalTitle: { fontSize: 22, fontFamily: 'Inter_900Black', color: '#000', marginBottom: 8, textAlign: 'center' },
-    modalMsg: { fontSize: 15, fontFamily: 'Inter_500Medium', color: '#718096', textAlign: 'center', lineHeight: 24, marginBottom: 32 },
-    modalButtons: { flexDirection: 'row', gap: 12, width: '100%' },
-    modalBtnCancel: { flex: 1, paddingVertical: 16, borderRadius: 18, backgroundColor: '#F7FAFC', alignItems: 'center' },
-    modalBtnCancelText: { fontSize: 15, fontFamily: 'Inter_700Bold', color: '#718096' },
-    modalBtnConfirm: { flex: 1, paddingVertical: 16, borderRadius: 18, alignItems: 'center' },
-    modalBtnConfirmText: { fontSize: 15, fontFamily: 'Inter_700Bold', color: '#fff' },
+
+    // Hero
+    heroBanner: {
+        height: 180,
+        borderBottomLeftRadius: 0,
+        borderBottomRightRadius: 0,
+        overflow: 'hidden',
+    },
+    bannerTop: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 24,
+        paddingTop: 8,
+    },
+    bannerLabel: {
+        color: 'rgba(255,255,255,0.8)',
+        fontSize: 12,
+        fontWeight: '900',
+        letterSpacing: 2,
+    },
+    settingsBtn: {
+        width: 40,
+        height: 40,
+        borderRadius: 12,
+        backgroundColor: 'rgba(255,255,255,0.15)',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    circleDecor1: {
+        position: 'absolute',
+        width: 200,
+        height: 200,
+        borderRadius: 100,
+        backgroundColor: 'rgba(255,255,255,0.05)',
+        right: -60,
+        top: -60,
+    },
+    circleDecor2: {
+        position: 'absolute',
+        width: 120,
+        height: 120,
+        borderRadius: 60,
+        backgroundColor: 'rgba(255,255,255,0.08)',
+        left: -30,
+        bottom: -30,
+    },
+
+    // Profile Card
+    profileCard: {
+        marginHorizontal: 20,
+        marginTop: -48,
+        marginBottom: 8,
+    },
+    profileCardInner: {
+        borderRadius: 28,
+        padding: 20,
+        shadowColor: '#6366F1',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.08,
+        shadowRadius: 20,
+        elevation: 8,
+    },
+    avatarSection: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 16,
+        marginBottom: 14,
+    },
+    avatarRing: {
+        width: 80,
+        height: 80,
+        borderRadius: 26,
+        borderWidth: 3,
+        overflow: 'visible',
+        position: 'relative',
+    },
+    avatarImage: {
+        width: 74,
+        height: 74,
+        borderRadius: 23,
+    },
+    avatarPlaceholder: {
+        width: 74,
+        height: 74,
+        borderRadius: 23,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    avatarInitial: {
+        fontSize: 28,
+        fontWeight: '900',
+        color: '#FFF',
+    },
+    avatarEmoji: {
+        fontSize: 36,
+    },
+    cameraBtn: {
+        position: 'absolute',
+        bottom: -4,
+        right: -4,
+        width: 28,
+        height: 28,
+        borderRadius: 9,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 2,
+        borderColor: '#FFF',
+    },
+    userInfo: { flex: 1 },
+    userName: { fontSize: 22, fontWeight: '900', letterSpacing: -0.5 },
+    userHandle: { fontSize: 14, fontWeight: '600', marginTop: 2 },
+    proBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        backgroundColor: '#6366F1',
+        paddingHorizontal: 8,
+        paddingVertical: 3,
+        borderRadius: 8,
+        alignSelf: 'flex-start',
+        marginTop: 6,
+    },
+    proBadgeText: { color: '#FFF', fontSize: 9, fontWeight: '900', letterSpacing: 1 },
+    userBio: { fontSize: 14, lineHeight: 20, marginBottom: 16 },
+    editProfileBtn: {
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 20,
+        backgroundColor: 'rgba(99,102,241,0.1)',
+        alignSelf: 'flex-start',
+    },
+    editProfileBtnText: {
+        color: '#6366F1',
+        fontWeight: '700',
+        fontSize: 12,
+    },
+
+    statsRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingTop: 16,
+        borderTopWidth: 1,
+    },
+    statItem: { flex: 1, alignItems: 'center' },
+    statValue: { fontSize: 20, fontWeight: '900' },
+    statLabel: { fontSize: 10, fontWeight: '700', letterSpacing: 0.5, textTransform: 'uppercase', marginTop: 2 },
+    statDiv: { width: 1, height: 32 },
+
+    // Sections
+    section: { paddingHorizontal: 20, marginTop: 28 },
+    sectionLabel: {
+        fontSize: 11,
+        fontWeight: '900',
+        letterSpacing: 1.5,
+        marginBottom: 14,
+        marginLeft: 4,
+        textTransform: 'uppercase',
+    },
+
+    // Membership
+    membershipCard: { borderRadius: 24, overflow: 'hidden' },
+    membershipGradient: { padding: 22, position: 'relative', overflow: 'hidden' },
+    membershipRow: { flexDirection: 'row', alignItems: 'center', gap: 16, position: 'relative', zIndex: 1 },
+    membershipIconBox: {
+        width: 52,
+        height: 52,
+        borderRadius: 18,
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    membershipTitle: { color: '#FFF', fontSize: 17, fontWeight: '900' },
+    membershipSub: { color: 'rgba(255,255,255,0.7)', fontSize: 12, fontWeight: '600', marginTop: 3 },
+    membershipArrow: {
+        width: 32,
+        height: 32,
+        borderRadius: 10,
+        backgroundColor: 'rgba(255,255,255,0.15)',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    progressBg: {
+        height: 6,
+        backgroundColor: 'rgba(0,0,0,0.2)',
+        borderRadius: 4,
+        marginTop: 16,
+        overflow: 'hidden',
+        position: 'relative',
+        zIndex: 1,
+    },
+    progressBar: { height: '100%', backgroundColor: '#FFF', borderRadius: 4 },
+    memberDecor1: {
+        position: 'absolute',
+        width: 160,
+        height: 160,
+        borderRadius: 80,
+        backgroundColor: 'rgba(255,255,255,0.05)',
+        right: -40,
+        top: -40,
+    },
+    memberDecor2: {
+        position: 'absolute',
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        backgroundColor: 'rgba(255,255,255,0.07)',
+        left: -20,
+        bottom: -20,
+    },
+
+    // Menu
+    menuCard: {
+        borderRadius: 24,
+        borderWidth: 1,
+        overflow: 'hidden',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.04,
+        shadowRadius: 8,
+        elevation: 2,
+    },
+    menuItem: { flexDirection: 'row', alignItems: 'center', padding: 16, gap: 14 },
+    menuIconBox: {
+        width: 40,
+        height: 40,
+        borderRadius: 13,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    menuLabel: { flex: 1, fontSize: 15, fontWeight: '700' },
+
+    // Plan card
+    planCard: {
+        borderRadius: 24,
+        borderWidth: 1,
+        padding: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.04,
+        shadowRadius: 8,
+        elevation: 2,
+    },
+    planHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+    planBadge: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20 },
+    planBadgeEmoji: { fontSize: 16 },
+    planBadgeText: { fontSize: 14, fontWeight: '900' },
+    planUpgradeBtn: { paddingHorizontal: 16, paddingVertical: 9, borderRadius: 14 },
+    planUpgradeBtnText: { fontSize: 13, fontWeight: '900' },
+    limitsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+    limitItem: {
+        width: '47%',
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        padding: 12,
+        borderRadius: 16,
+        borderWidth: 1,
+    },
+    limitLabel: { flex: 1, fontSize: 11, fontWeight: '600' },
+    limitVal: { fontSize: 14, fontWeight: '900' },
+    planProgress: { marginTop: 16 },
+    planProgressLabel: { fontSize: 12, fontWeight: '700' },
+    planProgressVal: { fontSize: 12, fontWeight: '900' },
+    planProgressBg: { height: 8, borderRadius: 4, overflow: 'hidden' },
+    planProgressFill: { height: '100%', borderRadius: 4 },
+
+
+    signOutBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 10,
+        paddingVertical: 18,
+        borderRadius: 20,
+        borderWidth: 1,
+    },
+    signOutText: { fontSize: 16, fontWeight: '800', color: '#EF4444' },
+    deleteLink: { alignItems: 'center', marginTop: 14, paddingVertical: 8 },
+    deleteLinkText: { fontSize: 13, fontWeight: '600', textDecorationLine: 'underline' },
+
+    versionText: { textAlign: 'center', fontSize: 12, fontWeight: '500', marginTop: 32, paddingBottom: 20 },
+
+    // Modal
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.55)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 28,
+    },
+    modalCard: {
+        width: '100%',
+        borderRadius: 32,
+        padding: 28,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 20 },
+        shadowOpacity: 0.15,
+        shadowRadius: 40,
+        elevation: 20,
+    },
+    modalIconWrap: {
+        width: 68,
+        height: 68,
+        borderRadius: 22,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 20,
+    },
+    modalTitle: { fontSize: 22, fontWeight: '900', marginBottom: 8, textAlign: 'center' },
+    modalMsg: { fontSize: 14, textAlign: 'center', lineHeight: 22, marginBottom: 28 },
+    modalBtns: { flexDirection: 'row', gap: 12, width: '100%' },
+    modalBtnCancel: {
+        flex: 1,
+        paddingVertical: 16,
+        borderRadius: 16,
+        alignItems: 'center',
+    },
+    modalBtnCancelText: { fontSize: 15, fontWeight: '700' },
+    modalBtnConfirm: {
+        flex: 1,
+        paddingVertical: 16,
+        borderRadius: 16,
+        alignItems: 'center',
+    },
+    modalBtnConfirmText: { fontSize: 15, fontWeight: '700', color: '#FFF' },
 });

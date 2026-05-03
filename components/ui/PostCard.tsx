@@ -14,12 +14,13 @@ interface PostCardProps {
     onLike?: () => void;
     onComment?: () => void;
     onShare?: () => void;
+    onOptions?: () => void;
     onPress?: () => void;
     onQuizAnswer?: (index: number) => void;
     quizAnswered?: number | null; // which index the user picked
 }
 
-export function PostCard({ post, onLike, onComment, onShare, onPress, onQuizAnswer, quizAnswered }: PostCardProps) {
+export function PostCard({ post, onLike, onComment, onShare, onOptions, onPress, onQuizAnswer, quizAnswered }: PostCardProps) {
     const { colors } = useTheme();
     const { user: currentUser } = useAuth();
     const router = useRouter();
@@ -93,9 +94,16 @@ export function PostCard({ post, onLike, onComment, onShare, onPress, onQuizAnsw
                         </Text>
                     </View>
                 </TouchableOpacity>
-                <View style={[styles.typeBadge, { backgroundColor: colors.surfaceAlt, borderColor: colors.divider }]}>
-                    <Text style={{ fontSize: 10 }}>{typeIcons[post.type]}</Text>
-                    <Text style={[styles.typeBadgeText, { color: colors.textSecondary }]}>{typeLabels[post.type]}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                    <View style={[styles.typeBadge, { backgroundColor: colors.surfaceAlt, borderColor: colors.divider }]}>
+                        <Text style={{ fontSize: 10 }}>{typeIcons[post.type]}</Text>
+                        <Text style={[styles.typeBadgeText, { color: colors.textSecondary }]}>{typeLabels[post.type]}</Text>
+                    </View>
+                    {onOptions && (
+                        <TouchableOpacity onPress={onOptions} hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}>
+                            <Ionicons name="ellipsis-horizontal" size={20} color={colors.textTertiary} />
+                        </TouchableOpacity>
+                    )}
                 </View>
             </View>
 

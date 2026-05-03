@@ -75,7 +75,8 @@ export default function WelcomeScreen() {
             />
 
             {/* ── Dark Overlays (matching website) ── */}
-            <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.55)' }]} />
+            <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.70)' }]} />
+            <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(99,102,241,0.08)' }]} />
             
             <Animated.View style={[styles.content, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
                 <SafeAreaView style={styles.safeArea}>
@@ -85,7 +86,7 @@ export default function WelcomeScreen() {
                         
                         {/* Version Badge */}
                         <View style={styles.badge}>
-                            <View style={[styles.liveDot, { backgroundColor: '#4ADE80' }]} />
+                            <View style={[styles.liveDot, { backgroundColor: '#4ADE80', shadowColor: '#4ADE80', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 8 }]} />
                             <Text style={styles.badgeText}>v1.0 — NOW ON ANDROID</Text>
                         </View>
 
@@ -150,32 +151,32 @@ const styles = StyleSheet.create({
     safeArea: { flex: 1 },
     bottomContent: { flex: 1, justifyContent: 'flex-end', paddingHorizontal: Spacing.xl * 1.5, paddingBottom: Spacing.xxxl },
     
-    badge: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.1)', paddingHorizontal: 16, paddingVertical: 8, borderRadius: BorderRadius.pill, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)', alignSelf: 'flex-start', marginBottom: 20 },
-    badgeText: { color: '#fff', fontSize: 10, fontWeight: FontWeight.black, letterSpacing: 1 },
+    badge: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.12)', paddingHorizontal: 20, paddingVertical: 10, borderRadius: BorderRadius.pill, borderWidth: 1, borderColor: 'rgba(255,255,255,0.25)', alignSelf: 'flex-start', marginBottom: 24, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12 },
+    badgeText: { color: '#fff', fontSize: 11, fontWeight: FontWeight.black, letterSpacing: 1.5 },
     
     originLine: { fontSize: 11, fontWeight: FontWeight.black, color: 'rgba(255,255,255,0.5)', letterSpacing: 4, marginBottom: 12 },
     
-    title: { fontSize: 90, fontWeight: FontWeight.black, color: '#fff', letterSpacing: -4, lineHeight: 85, marginBottom: 12 },
+    title: { fontSize: 100, fontWeight: FontWeight.black, color: '#fff', letterSpacing: -4, lineHeight: 90, marginBottom: 16 },
     
     taglineRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 40 },
     taglineLine: { height: 2, width: 30, backgroundColor: 'rgba(255,255,255,0.4)', borderRadius: 1 },
     tagline: { fontSize: 18, color: 'rgba(255,255,255,0.8)', fontWeight: FontWeight.bold },
     
-    buttonGroup: { gap: 12, marginBottom: 20 },
-    primaryBtn: { backgroundColor: '#fff', height: 64, borderRadius: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
-    primaryBtnText: { fontSize: 16, fontWeight: FontWeight.black, color: '#000' },
+    buttonGroup: { gap: 14, marginBottom: 24 },
+    primaryBtn: { backgroundColor: '#fff', height: 68, borderRadius: 24, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, shadowColor: '#fff', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.4, shadowRadius: 20 },
+    primaryBtnText: { fontSize: 17, fontWeight: FontWeight.black, color: '#000' },
     
-    secondaryBtn: { backgroundColor: 'rgba(255,255,255,0.1)', height: 64, borderRadius: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.25)' },
-    secondaryBtnText: { fontSize: 16, fontWeight: FontWeight.bold, color: '#fff' },
+    secondaryBtn: { backgroundColor: 'rgba(255,255,255,0.12)', height: 68, borderRadius: 24, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, borderWidth: 2, borderColor: 'rgba(255,255,255,0.3)' },
+    secondaryBtnText: { fontSize: 17, fontWeight: FontWeight.bold, color: '#fff' },
     
     signInLink: { alignItems: 'center', marginTop: 10 },
     signInText: { fontSize: 15, color: 'rgba(255,255,255,0.6)', fontWeight: FontWeight.medium },
     signInTextBold: { color: '#fff', fontWeight: FontWeight.black },
     
-    statsRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 20, marginTop: 20, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.1)' },
+    statsRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 24, marginTop: 24, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.15)' },
     statItem: { alignItems: 'center' },
-    statValueRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-    liveDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#4ADE80' },
-    statValue: { fontSize: 20, fontWeight: FontWeight.black, color: '#fff' },
-    statLabel: { fontSize: 10, fontWeight: FontWeight.black, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: 1.5, marginTop: 4 },
+    statValueRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    liveDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#4ADE80' },
+    statValue: { fontSize: 24, fontWeight: FontWeight.black, color: '#fff' },
+    statLabel: { fontSize: 11, fontWeight: FontWeight.black, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: 1.5, marginTop: 6 },
 });

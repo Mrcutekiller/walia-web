@@ -47,6 +47,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         if (savedTheme === 'dark' || savedTheme === 'light') {
             setThemeState(savedTheme);
             applyTheme(savedTheme);
+        } else {
+            applyTheme('light');
         }
     }, []);
 
@@ -85,9 +87,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             if (user) {
                 const unsub = onSnapshot(doc(db, 'users', user.uid), (snap: any) => {
-                    if (snap.exists() && snap.data().theme) {
-                        const userTheme = snap.data().theme as Theme;
-                        if (userTheme !== theme) {
+                    if (snap.exists()) {
+                        const userData = snap.data();
+                        // If user has no theme preference set, default to light
+                        if (!userData.theme) {
+                            setThemeState('light');
+                            localStorage.setItem('walia-theme', 'light');
+                            applyTheme('light');
+                        } else if (userData.theme !== theme) {
+                            const userTheme = userData.theme as Theme;
                             setThemeState(userTheme);
                             localStorage.setItem('walia-theme', userTheme);
                             applyTheme(userTheme);

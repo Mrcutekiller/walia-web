@@ -52,11 +52,11 @@ function LoginContent() {
     };
 
     return (
-        <main className="min-h-screen bg-white dark:bg-[#07070F] flex items-center justify-center p-6 overflow-hidden relative">
+        <main className="min-h-screen bg-[#F7F9FB] flex items-center justify-center p-6 overflow-hidden relative">
             {/* Background Decorations */}
-            <div className="absolute inset-0 z-0 opacity-10">
-                <div className="absolute top-1/4 left-1/4 w-[50%] h-[50%] bg-black dark:bg-white rounded-full blur-[150px]" />
-                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
+            <div className="absolute inset-0 z-0 opacity-20 pointer-events-none">
+                <div className="absolute top-0 left-1/2 w-[34rem] h-[34rem] bg-blue-100 rounded-full -translate-x-1/2 blur-[110px]" />
+                <div className="absolute bottom-0 right-0 w-[32rem] h-[32rem] bg-slate-100 rounded-full blur-[110px]" />
             </div>
 
             <div className="relative z-10 w-full max-w-md">
@@ -65,7 +65,7 @@ function LoginContent() {
                     <ArrowLeft className="w-4 h-4" /> Back to Home
                 </Link>
 
-                <div className="p-8 md:p-12 rounded-[2.5rem] bg-white/80 dark:bg-black/40 backdrop-blur-xl border border-gray-100 dark:border-white/10 shadow-2xl shadow-black/5">
+                <div className="p-8 md:p-12 rounded-[2.5rem] bg-white border border-gray-200 shadow-2xl shadow-slate-200/40">
                     <div className="text-center mb-10">
                         <Image src="/logo.png" alt="Walia" width={64} height={64} className="mx-auto mb-6" unoptimized />
                         <h1 className="text-3xl font-black tracking-tighter text-black dark:text-white mb-2 uppercase">Welcome Back</h1>
@@ -80,7 +80,7 @@ function LoginContent() {
 
                     <form onSubmit={handleSubmit} className="space-y-5">
                         <div className="space-y-1.5">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">Email</label>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-gray-800 dark:text-gray-200 ml-1">Email</label>
                             <div className="relative group">
                                 <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 group-focus-within:text-black dark:group-focus-within:text-white transition-colors" />
                                 <input 
@@ -129,7 +129,7 @@ function LoginContent() {
 
                     <button 
                         onClick={handleGoogleLogin} disabled={loading || googleLoading}
-                        className="w-full py-4 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 text-black dark:text-white font-bold text-sm flex items-center justify-center gap-3 hover:bg-gray-100 dark:hover:bg-white/10 transition-all disabled:opacity-50"
+                        className="w-full py-4 rounded-2xl bg-slate-100 border border-gray-200 text-slate-700 font-bold text-sm flex items-center justify-center gap-3 hover:bg-slate-200 transition-all disabled:opacity-50"
                     >
                         {googleLoading ? <div className="w-5 h-5 border-2 border-black/20 dark:border-white/20 border-t-black dark:border-t-white rounded-full animate-spin" /> : <><Chrome className="w-4 h-4" /> Google</>}
                     </button>

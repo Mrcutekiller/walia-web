@@ -25,6 +25,7 @@ const STEPS = [
     { title: 'How did you hear about us?', subtitle: 'Help us understand how you found Walia' },
     { title: 'Profile Picture', subtitle: 'How should other students see you?' },
 ];
+const AVATARS = ['👦', '👧', '👨', '👩', '🤖', '👽', '👾', '🦊', '🐼', '🦁', '🦉', '🐸'];
 
 const GENDERS = ['Male', 'Female', 'Other', 'Private'];
 const COUNTRIES = ['Ethiopia', 'USA', 'UK', 'Canada', 'Germany', 'UAE', 'Kenya', 'Other'];
@@ -149,14 +150,8 @@ export default function SignupScreen() {
         }
     };
 
-    const pickImage = async () => {
-        const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ['images'],
-            allowsEditing: true,
-            aspect: [1, 1],
-            quality: 0.5,
-        });
-        if (!result.canceled) setAvatar(result.assets[0].uri);
+    const handleAvatarSelect = (emoji: string) => {
+        setAvatar(emoji);
     };
 
     return (
@@ -344,20 +339,18 @@ export default function SignupScreen() {
                         {/* ── Step 9: Avatar ── */}
                         {step === 9 && (
                             <View style={styles.avatarPickerSection}>
-                                <TouchableOpacity style={styles.avatarMain} onPress={pickImage}>
-                                    {avatar ? (
-                                        <Image source={{ uri: avatar }} style={styles.avatarEdit} />
-                                    ) : (
-                                        <View style={styles.avatarPlaceholder}>
-                                            <Ionicons name="camera-outline" size={40} color="rgba(255,255,255,0.4)" />
-                                            <Text style={styles.avatarPlaceholderText}>Add Photo</Text>
-                                        </View>
-                                    )}
-                                    <View style={styles.editBadge}>
-                                        <Ionicons name="pencil" size={16} color="#fff" />
-                                    </View>
-                                </TouchableOpacity>
-                                <Text style={styles.avatarHint}>A profile picture helps you connect with other students in the community.</Text>
+                                <View style={styles.avatarGrid}>
+                                    {AVATARS.map((emoji) => (
+                                        <TouchableOpacity 
+                                            key={emoji} 
+                                            style={[styles.avatarOption, avatar === emoji && styles.avatarOptionActive]}
+                                            onPress={() => handleAvatarSelect(emoji)}
+                                        >
+                                            <Text style={styles.avatarEmoji}>{emoji}</Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
+                                <Text style={styles.avatarHint}>Pick an avatar that represents you in the community.</Text>
                             </View>
                         )}
                     </ScrollView>
@@ -442,12 +435,11 @@ const styles = StyleSheet.create({
     styleLabel: { fontSize: FontSize.md, color: 'rgba(255,255,255,0.7)', fontWeight: '700' },
     styleLabelActive: { color: '#fff' },
     styleDesc: { fontSize: FontSize.xs, color: 'rgba(255,255,255,0.35)', marginTop: 2, fontWeight: '500' },
-    avatarPickerSection: { alignItems: 'center', paddingTop: Spacing.xl },
-    avatarMain: { width: 140, height: 140, borderRadius: 70, backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 2, borderColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center', position: 'relative' },
-    avatarEdit: { width: 136, height: 136, borderRadius: 68 },
-    avatarPlaceholder: { alignItems: 'center', gap: Spacing.xs },
-    avatarPlaceholderText: { color: 'rgba(255,255,255,0.4)', fontSize: FontSize.sm, fontWeight: '700' },
-    editBadge: { position: 'absolute', bottom: 5, right: 5, width: 34, height: 34, borderRadius: 17, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', borderWidth: 3, borderColor: '#000' },
+    avatarPickerSection: { paddingTop: Spacing.xl },
+    avatarGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.lg, justifyContent: 'center' },
+    avatarOption: { width: 70, height: 70, borderRadius: 35, backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 2, borderColor: 'rgba(255,255,255,0.1)', alignItems: 'center', justifyContent: 'center' },
+    avatarOptionActive: { borderColor: '#fff', backgroundColor: 'rgba(255,255,255,0.2)' },
+    avatarEmoji: { fontSize: 36 },
     avatarHint: { fontSize: FontSize.sm, color: 'rgba(255,255,255,0.4)', textAlign: 'center', marginTop: Spacing.xxl, paddingHorizontal: Spacing.xl, lineHeight: 20, fontWeight: '500' },
     footer: { paddingHorizontal: Spacing.xxl, paddingBottom: Spacing.xl, gap: Spacing.md },
     nextBtn: { backgroundColor: '#fff', borderRadius: 999, paddingVertical: 18, alignItems: 'center', shadowColor: '#fff', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.1, shadowRadius: 10, elevation: 4 },

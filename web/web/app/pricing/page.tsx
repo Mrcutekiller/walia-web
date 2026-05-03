@@ -2,154 +2,149 @@
 
 import Footer from '@/components/Footer';
 import Navbar from '@/components/Navbar';
-import { Check, Rocket, Star, X } from 'lucide-react';
+import { Check, Download, Rocket, Star, X, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 
-const FREE_FEATURES = [
-    '5 AI Chat Messages / day',
-    'Basic Study Tools',
-    'Community Access',
-    '5 Image Uploads / day',
-];
-const FREE_MISSING = [
-    'Premium AI Models',
-    'Unlimited Uploads',
-    'Ad-free Experience',
-    'Advanced Study Analytics',
-];
-
-const PRO_FEATURES = [
-    'Unlimited AI Chat Messages',
-    'GPT-4, Gemini 2.0 & Claude',
-    'Unlimited Image Uploads',
-    'All 12+ Professional Tools',
-    'Smart Study Analytics & Reports',
-    'Ad-free Experience',
-    'Priority Support',
-    'Early Access to New Features',
+const plans = [
+  {
+    name: 'Free',
+    price: { monthly: 0, yearly: 0 },
+    desc: 'Perfect for getting started.',
+    icon: Rocket,
+    features: [
+      { label: '5 AI Messages / day', included: true },
+      { label: 'Community Access', included: true },
+      { label: 'Basic Notes & Tools', included: true },
+      { label: '5 Image Uploads / day', included: true },
+      { label: 'Premium AI Models', included: false },
+      { label: 'Unlimited Messages', included: false },
+      { label: 'Ad-free Experience', included: false },
+    ],
+    cta: 'Get Started Free',
+    href: '/signup',
+    highlight: false,
+  },
+  {
+    name: 'Pro',
+    price: { monthly: 12, yearly: 108 },
+    desc: 'For serious learners & power users.',
+    icon: Star,
+    features: [
+      { label: 'Unlimited AI Messages', included: true },
+      { label: 'GPT-4, Gemini & Claude', included: true },
+      { label: 'Unlimited Image Uploads', included: true },
+      { label: 'All 12+ Professional Tools', included: true },
+      { label: 'Smart Analytics & Reports', included: true },
+      { label: 'Ad-free Experience', included: true },
+      { label: 'Priority Support', included: true },
+    ],
+    cta: 'Upgrade to Pro',
+    href: '/signup',
+    highlight: true,
+  },
+  {
+    name: 'Team',
+    price: { monthly: 29, yearly: 261 },
+    desc: 'For study groups & organizations.',
+    icon: Zap,
+    features: [
+      { label: 'Everything in Pro', included: true },
+      { label: 'Up to 10 members', included: true },
+      { label: 'Shared workspace & notes', included: true },
+      { label: 'Team analytics dashboard', included: true },
+      { label: 'Custom AI personas', included: true },
+      { label: 'Dedicated account manager', included: true },
+      { label: 'SLA & guaranteed uptime', included: true },
+    ],
+    cta: 'Start Team Trial',
+    href: '/signup',
+    highlight: false,
+  },
 ];
 
 export default function PricingPage() {
-    const [yearly, setYearly] = useState(false);
+  const [yearly, setYearly] = useState(false);
 
-    const proMonthly = 12;
-    const proYearly = (proMonthly * 12 * 0.75).toFixed(0); // 25% off yearly
+  return (
+    <>
+      <Navbar />
+      <main className="min-h-screen bg-white pt-32 pb-20">
+        <div className="max-w-6xl mx-auto px-6">
 
-    return (
-        <>
-            <Navbar />
-            <main className="pt-32 pb-20 bg-white min-h-screen">
-                <div className="container mx-auto px-6 md:px-12">
+          {/* Header */}
+          <div className="text-center mb-16">
+            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-black/30 mb-4 block">Transparent Pricing</span>
+            <h1 className="text-6xl md:text-8xl font-black text-black tracking-tight mb-6">Simple Pricing</h1>
+            <p className="text-gray-500 text-xl">No hidden fees. Start free. Upgrade when ready.</p>
 
-                    {/* Header */}
-                    <div className="text-center max-w-2xl mx-auto mb-12">
-                        <p className="text-[11px] font-black uppercase tracking-[0.4em] text-gray-400 mb-4">Transparent Pricing</p>
-                        <h1 className="text-6xl md:text-8xl font-black text-black mb-4 tracking-tight">Simple Pricing</h1>
-                        <p className="text-xl text-gray-500">No hidden fees. Start free. Upgrade when ready.</p>
+            {/* Toggle */}
+            <div className="flex items-center justify-center gap-4 mt-10">
+              <span className={`text-sm font-bold transition-colors ${!yearly ? 'text-black' : 'text-gray-400'}`}>Monthly</span>
+              <button onClick={() => setYearly(v => !v)}
+                className={`relative w-14 h-7 rounded-full transition-all ${yearly ? 'bg-black' : 'bg-gray-200'}`}>
+                <div className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow transition-all ${yearly ? 'left-8' : 'left-1'}`} />
+              </button>
+              <span className={`text-sm font-bold transition-colors flex items-center gap-2 ${yearly ? 'text-black' : 'text-gray-400'}`}>
+                Yearly
+                <span className="text-[10px] font-black bg-black text-white px-2.5 py-1 rounded-full">Save 25%</span>
+              </span>
+            </div>
+          </div>
+
+          {/* Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+            {plans.map((plan, i) => {
+              const Icon = plan.icon;
+              const price = yearly ? plan.price.yearly : plan.price.monthly;
+              const period = yearly ? 'year' : 'month';
+              return (
+                <div key={i} className={`relative flex flex-col p-8 md:p-10 rounded-[36px] border transition-all duration-500 hover:-translate-y-2 ${plan.highlight ? 'bg-black border-black shadow-2xl shadow-black/20' : 'bg-gray-50 border-gray-200 hover:border-gray-300 hover:shadow-xl'}`}>
+                  {plan.highlight && (
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-5 py-1.5 rounded-full bg-white text-black text-[10px] font-black uppercase tracking-widest shadow-lg">
+                      Most Popular
                     </div>
-
-                    {/* Monthly / Yearly toggle */}
-                    <div className="flex items-center justify-center gap-4 mb-16">
-                        <span className={`text-sm font-bold transition-colors ${!yearly ? 'text-black' : 'text-gray-400'}`}>Monthly</span>
-                        <button
-                            onClick={() => setYearly(v => !v)}
-                            className={`relative w-14 h-7 rounded-full transition-all ${yearly ? 'bg-black' : 'bg-gray-200'}`}
-                        >
-                            <div className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow transition-all ${yearly ? 'left-8' : 'left-1'}`} />
-                        </button>
-                        <span className={`text-sm font-bold transition-colors flex items-center gap-2 ${yearly ? 'text-black' : 'text-gray-400'}`}>
-                            Yearly
-                            <span className="text-[10px] font-black uppercase tracking-widest text-white bg-black px-2.5 py-1 rounded-full">
-                                Save 25%
-                            </span>
-                        </span>
+                  )}
+                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 ${plan.highlight ? 'bg-white/10' : 'bg-gray-200'}`}>
+                    <Icon className={`w-7 h-7 ${plan.highlight ? 'text-white' : 'text-gray-600'}`} />
+                  </div>
+                  <h3 className={`text-2xl font-black mb-1 ${plan.highlight ? 'text-white' : 'text-black'}`}>{plan.name}</h3>
+                  <p className={`text-sm mb-6 ${plan.highlight ? 'text-white/40' : 'text-gray-400'}`}>{plan.desc}</p>
+                  <div className="mb-8">
+                    <div className="flex items-end gap-1">
+                      <span className={`text-5xl font-black ${plan.highlight ? 'text-white' : 'text-black'}`}>${price}</span>
+                      {price > 0 && <span className={`text-sm mb-1.5 ${plan.highlight ? 'text-white/40' : 'text-gray-400'}`}>/ {period}</span>}
+                      {price === 0 && <span className={`text-sm mb-1.5 ${plan.highlight ? 'text-white/40' : 'text-gray-400'}`}>/ forever</span>}
                     </div>
-
-                    {/* Two cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto mb-20">
-
-                        {/* Free */}
-                        <div className="p-8 md:p-10 rounded-[36px] bg-gray-50 border border-gray-200 hover:border-gray-300 hover:shadow-xl hover:-translate-y-1 transition-all">
-                            <div className="w-14 h-14 rounded-2xl bg-gray-200 flex items-center justify-center mb-6">
-                                <Rocket className="w-7 h-7 text-gray-500" />
-                            </div>
-                            <h3 className="text-2xl font-black text-black mb-1">Free</h3>
-                            <p className="text-gray-400 text-sm mb-6">Perfect for casual learners.</p>
-                            <div className="mb-8 flex items-end gap-1">
-                                <span className="text-5xl font-black text-black">$0</span>
-                                <span className="text-gray-400 text-sm mb-1.5">/ forever</span>
-                            </div>
-                            <ul className="space-y-3 mb-10">
-                                {FREE_FEATURES.map(f => (
-                                    <li key={f} className="flex items-center gap-3 text-sm">
-                                        <Check className="w-4 h-4 text-green-500 shrink-0" />
-                                        <span className="text-gray-600 font-medium">{f}</span>
-                                    </li>
-                                ))}
-                                {FREE_MISSING.map(f => (
-                                    <li key={f} className="flex items-center gap-3 text-sm opacity-40">
-                                        <X className="w-4 h-4 text-gray-400 shrink-0" />
-                                        <span className="text-gray-500 line-through font-medium">{f}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                            <Link href="/signup" className="block w-full py-4 rounded-2xl bg-gray-200 text-gray-700 font-black text-center hover:bg-gray-300 transition-all">
-                                Get Started Free
-                            </Link>
-                        </div>
-
-                        {/* Pro */}
-                        <div className="relative p-8 md:p-10 rounded-[36px] bg-black border border-black shadow-2xl shadow-black/20 hover:-translate-y-1 transition-all">
-                            <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-5 py-1.5 rounded-full bg-white text-black text-[10px] font-black uppercase tracking-widest shadow-lg">
-                                Most Popular
-                            </div>
-                            <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center mb-6">
-                                <Star className="w-7 h-7 text-white" />
-                            </div>
-                            <h3 className="text-2xl font-black text-white mb-1">Pro</h3>
-                            <p className="text-white/40 text-sm mb-6">For power users & researchers.</p>
-
-                            <div className="mb-8">
-                                {yearly ? (
-                                    <div className="flex items-end gap-1">
-                                        <span className="text-5xl font-black text-white">${proYearly}</span>
-                                        <span className="text-white/40 text-sm mb-1.5">/ year</span>
-                                    </div>
-                                ) : (
-                                    <div className="flex items-end gap-1">
-                                        <span className="text-5xl font-black text-white">${proMonthly}</span>
-                                        <span className="text-white/40 text-sm mb-1.5">/ month</span>
-                                    </div>
-                                )}
-                                {yearly && (
-                                    <p className="text-white/30 text-xs mt-1 font-bold line-through">
-                                        ${(proMonthly * 12).toFixed(0)} / year (billed monthly)
-                                    </p>
-                                )}
-                            </div>
-
-                            <ul className="space-y-3 mb-10">
-                                {PRO_FEATURES.map(f => (
-                                    <li key={f} className="flex items-center gap-3 text-sm">
-                                        <Check className="w-4 h-4 text-green-400 shrink-0" />
-                                        <span className="text-white/80 font-medium">{f}</span>
-                                    </li>
-                                ))}
-                            </ul>
-
-                            <Link href="/signup" className="block w-full py-4 rounded-2xl bg-white text-black font-black text-center hover:bg-white/90 transition-all hover:-translate-y-0.5 shadow-xl">
-                                Upgrade to Pro
-                            </Link>
-                        </div>
-                    </div>
-
-                    <p className="text-center text-gray-400 text-sm">
-                        All plans include a 14-day money-back guarantee. No questions asked.
-                    </p>
+                    {yearly && price > 0 && (
+                      <p className={`text-xs mt-1 font-bold line-through ${plan.highlight ? 'text-white/20' : 'text-gray-300'}`}>
+                        ${plan.price.monthly * 12} / year (monthly)
+                      </p>
+                    )}
+                  </div>
+                  <ul className="space-y-3 mb-10 flex-1">
+                    {plan.features.map((f, j) => (
+                      <li key={j} className={`flex items-center gap-3 text-sm ${!f.included ? 'opacity-40' : ''}`}>
+                        {f.included
+                          ? <Check className={`w-4 h-4 shrink-0 ${plan.highlight ? 'text-white' : 'text-black'}`} />
+                          : <X className="w-4 h-4 shrink-0 text-gray-400" />}
+                        <span className={`font-medium ${f.included ? (plan.highlight ? 'text-white/80' : 'text-gray-700') : (plan.highlight ? 'text-white/30 line-through' : 'text-gray-400 line-through')}`}>{f.label}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Link href={plan.href}
+                    className={`block w-full py-4 rounded-2xl font-black text-center text-sm transition-all hover:-translate-y-0.5 ${plan.highlight ? 'bg-white text-black hover:bg-white/90 shadow-xl' : 'bg-black text-white hover:bg-zinc-800'}`}>
+                    {plan.cta}
+                  </Link>
                 </div>
-            </main>
-            <Footer />
-        </>
-    );
+              );
+            })}
+          </div>
+
+          <p className="text-center text-gray-400 text-sm">All plans include a 14-day money-back guarantee. No questions asked.</p>
+        </div>
+      </main>
+      <Footer />
+    </>
+  );
 }

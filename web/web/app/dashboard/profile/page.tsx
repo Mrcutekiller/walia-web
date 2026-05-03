@@ -92,116 +92,143 @@ export default function ProfilePage() {
     if (!profile) return <div className="h-full flex items-center justify-center"><div className="w-8 h-8 border-4 border-gray-200 border-t-black dark:border-t-white rounded-full animate-spin" /></div>;
 
     return (
-        <div className="h-full bg-white dark:bg-[#0A0A18] overflow-y-auto custom-scrollbar">
+        <div className="h-full bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-[#0A0A18] dark:via-[#0D0D1A] dark:to-[#0A0A18] overflow-y-auto custom-scrollbar">
             {/* ── Banner ── */}
-            <div className="h-64 bg-black relative overflow-hidden">
-                <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(circle_at_center,_#333_0%,_transparent_80%)]" />
+            <motion.div 
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="h-80 bg-gradient-to-br from-black via-gray-800 to-black dark:from-white dark:via-gray-200 dark:to-white relative overflow-hidden"
+            >
+                <div className="absolute inset-0 opacity-15 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(circle_at_center,_rgba(255,255,255,0.1)_0%,_transparent_80%)]" />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(99,102,241,0.15)_0%,transparent_60%)]" />
                 <div className="absolute bottom-6 right-8">
-                    <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 backdrop-blur-md border border-white/10 text-white/60 hover:text-white transition-all text-xs font-bold uppercase tracking-widest">
+                    <button className="flex items-center gap-2 px-5 py-3 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white/60 hover:text-white hover:bg-white/20 transition-all duration-300 text-xs font-bold uppercase tracking-widest hover:shadow-xl">
                         <Camera className="w-4 h-4" /> Change Banner
                     </button>
                 </div>
-            </div>
+            </motion.div>
 
-            <div className="max-w-5xl mx-auto px-6 pb-20">
+            <div className="max-w-5xl mx-auto px-6 pb-24">
                 {/* ── User Header ── */}
-                <div className="relative -mt-20 mb-12 flex flex-col md:flex-row items-end gap-6">
+                <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2, duration: 0.5 }}
+                    className="relative -mt-28 mb-16 flex flex-col md:flex-row items-end gap-8"
+                >
                     <div className="relative group">
-                        <div className="w-40 h-40 rounded-[3rem] bg-black dark:bg-white border-8 border-white dark:border-[#0A0A18] flex items-center justify-center text-white dark:text-black font-black text-4xl uppercase shadow-2xl">
+                        <div className="w-48 h-48 rounded-[3.5rem] bg-gradient-to-br from-black to-gray-700 dark:from-white dark:to-gray-300 border-8 border-white dark:border-[#0A0A18] flex items-center justify-center text-white dark:text-black font-black text-5xl uppercase shadow-2xl hover:scale-105 transition-transform duration-300">
                             {profile.username.slice(0, 2)}
                         </div>
-                        <button className="absolute bottom-2 right-2 w-10 h-10 rounded-2xl bg-black dark:bg-white text-white dark:text-black flex items-center justify-center border-4 border-white dark:border-[#0A0A18] hover:scale-110 transition-all shadow-xl">
+                        <button className="absolute bottom-2 right-2 w-12 h-12 rounded-2xl bg-gradient-to-br from-black to-gray-700 dark:from-white dark:to-gray-300 text-white dark:text-black flex items-center justify-center border-4 border-white dark:border-[#0A0A18] hover:scale-110 transition-all duration-300 shadow-xl hover:shadow-2xl">
                             <Camera className="w-5 h-5" />
                         </button>
                     </div>
 
                     <div className="flex-1 pb-2">
-                        <div className="flex flex-wrap items-center gap-3 mb-2">
-                            <h1 className="text-4xl font-black text-black dark:text-white tracking-tighter uppercase">{profile.displayName || profile.username}</h1>
+                        <div className="flex flex-wrap items-center gap-3 mb-3">
+                            <h1 className="text-5xl font-black text-black dark:text-white tracking-tighter uppercase">{profile.displayName || profile.username}</h1>
                             {profile.isPro && (
-                                <div className="px-3 py-1 rounded-full bg-black dark:bg-white text-white dark:text-black text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 shadow-lg shadow-black/10">
+                                <motion.div 
+                                    initial={{ scale: 0 }}
+                                    animate={{ scale: 1 }}
+                                    transition={{ delay: 0.4, type: "spring" }}
+                                    className="px-4 py-2 rounded-full bg-gradient-to-r from-black to-gray-700 dark:from-white dark:to-gray-300 text-white dark:text-black text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 shadow-lg shadow-black/10"
+                                >
                                     <Sparkles className="w-3 h-3" /> Pro
-                                </div>
+                                </motion.div>
                             )}
-                            <div className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-[10px] font-black uppercase tracking-widest">
+                            <div className="px-4 py-2 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-[10px] font-black uppercase tracking-widest">
                                 Lvl {profile.level}
                             </div>
                         </div>
-                        <p className="text-gray-400 font-bold uppercase tracking-[0.2em] text-xs">@{profile.username}</p>
+                        <p className="text-gray-500 dark:text-gray-400 font-bold uppercase tracking-[0.2em] text-sm">@{profile.username}</p>
                     </div>
 
-                    <div className="flex gap-3 pb-2">
+                    <div className="flex gap-4 pb-2">
                         <button 
                             onClick={() => setIsEditing(true)}
-                            className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 text-black dark:text-white font-black text-xs uppercase tracking-widest hover:border-black dark:hover:border-white transition-all shadow-sm"
+                            className="flex items-center gap-2 px-8 py-4 rounded-2xl bg-white dark:bg-white/5 border border-gray-200/60 dark:border-white/10 text-black dark:text-white font-black text-xs uppercase tracking-widest hover:border-black dark:hover:border-white transition-all duration-300 shadow-sm hover:shadow-lg hover:-translate-y-0.5"
                         >
                             <Edit3 className="w-4 h-4" /> Edit Profile
                         </button>
-                        <button className="p-3 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 text-gray-400 hover:text-black dark:hover:text-white transition-all shadow-sm">
+                        <button className="p-4 rounded-2xl bg-white dark:bg-white/5 border border-gray-200/60 dark:border-white/10 text-gray-400 hover:text-black dark:hover:text-white transition-all duration-300 shadow-sm hover:shadow-lg hover:-translate-y-0.5">
                             <Settings className="w-5 h-5" />
                         </button>
                     </div>
-                </div>
+                </motion.div>
 
                 {/* ── Stats ── */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+                <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3, duration: 0.5 }}
+                    className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16"
+                >
                     {[
-                        { label: 'Followers', value: profile.followersCount || 0, icon: Users },
-                        { label: 'Following', value: profile.following?.length || 0, icon: UserPlus },
+                        { label: 'Followers', value: profile.followersCount, icon: Users },
+                        { label: 'Following', value: profile.following?.length || 0, icon: Heart },
                         { label: 'Posts', value: posts.length, icon: MessageCircle },
-                        { label: 'Rank', value: 'Silver', icon: Sparkles },
-                    ].map((s, i) => (
-                        <div key={i} className="p-6 rounded-[2.5rem] bg-gray-50/50 dark:bg-white/5 border border-gray-100 dark:border-white/5 text-center group hover:bg-black dark:hover:bg-white transition-all duration-500">
-                            <s.icon className="w-5 h-5 mx-auto mb-3 text-gray-400 group-hover:text-white/40 dark:group-hover:text-black/40 transition-colors" />
-                            <p className="text-2xl font-black text-black dark:text-white tracking-tighter group-hover:text-white dark:group-hover:text-black transition-colors">{s.value}</p>
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest group-hover:text-white/40 dark:group-hover:text-black/40 transition-colors">{s.label}</p>
-                        </div>
+                        { label: 'XP', value: profile.xp, icon: Sparkles },
+                    ].map((stat, i) => (
+                        <motion.div 
+                            key={i}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.4 + i * 0.1 }}
+                            className="p-6 rounded-3xl bg-white/70 dark:bg-white/5 border border-gray-200/60 dark:border-white/10 hover:border-black dark:hover:border-white transition-all duration-300 hover:shadow-xl hover:-translate-y-1 backdrop-blur-sm"
+                        >
+                            <stat.icon className="w-6 h-6 mb-3 text-gray-400" />
+                            <p className="text-3xl font-black text-black dark:text-white">{stat.value}</p>
+                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">{stat.label}</p>
+                        </motion.div>
                     ))}
-                </div>
+                </motion.div>
 
-                <div className="grid lg:grid-cols-3 gap-12">
+                <div className="grid lg:grid-cols-3 gap-16">
                     {/* Left: About */}
-                    <div className="lg:col-span-1 space-y-10">
+                    <div className="lg:col-span-1 space-y-12">
                         <div>
-                            <h2 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                            <h2 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-8 flex items-center gap-2">
                                 <Info className="w-4 h-4" /> About
                             </h2>
-                            <p className="text-sm font-medium text-gray-600 dark:text-gray-400 leading-relaxed mb-8">
+                            <p className="text-base font-medium text-gray-600 dark:text-gray-400 leading-relaxed mb-10">
                                 {profile.about || "No bio yet. Tell the community about yourself!"}
                             </p>
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-3 text-xs font-bold text-gray-500 dark:text-gray-400">
-                                    <MapPin className="w-4 h-4 text-black dark:text-white" /> {profile.country || 'Not specified'}
+                            <div className="space-y-5">
+                                <div className="flex items-center gap-3 text-sm font-bold text-gray-500 dark:text-gray-400">
+                                    <MapPin className="w-5 h-5 text-black dark:text-white" /> {profile.country || 'Not specified'}
                                 </div>
-                                <div className="flex items-center gap-3 text-xs font-bold text-gray-500 dark:text-gray-400">
-                                    <CalendarIcon className="w-4 h-4 text-black dark:text-white" /> Joined {profile.createdAt ? new Date(profile.createdAt).toLocaleDateString() : 'Recently'}
+                                <div className="flex items-center gap-3 text-sm font-bold text-gray-500 dark:text-gray-400">
+                                    <CalendarIcon className="w-5 h-5 text-black dark:text-white" /> Joined {profile.createdAt ? new Date(profile.createdAt).toLocaleDateString() : 'Recently'}
                                 </div>
-                                <div className="flex items-center gap-3 text-xs font-bold text-gray-500 dark:text-gray-400">
-                                    <Hash className="w-4 h-4 text-black dark:text-white" /> {profile.age || '—'} years old
+                                <div className="flex items-center gap-3 text-sm font-bold text-gray-500 dark:text-gray-400">
+                                    <Hash className="w-5 h-5 text-black dark:text-white" /> {profile.age || '—'} years old
                                 </div>
                             </div>
                         </div>
 
                         <div>
-                            <h2 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                            <h2 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-8 flex items-center gap-2">
                                 <Heart className="w-4 h-4" /> Interests
                             </h2>
-                            <div className="flex flex-wrap gap-2">
+                            <div className="flex flex-wrap gap-3">
                                 {profile.interests?.map(interest => (
-                                    <span key={interest} className="px-4 py-2 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 text-[10px] font-black text-black dark:text-white uppercase tracking-widest">
+                                    <span key={interest} className="px-5 py-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 text-[10px] font-black text-black dark:text-white uppercase tracking-widest hover:border-black dark:hover:border-white transition-all">
                                         {interest}
                                     </span>
                                 ))}
                                 {(!profile.interests || profile.interests.length === 0) && (
-                                    <p className="text-xs text-gray-400 font-medium">No interests selected</p>
+                                    <p className="text-sm text-gray-400 font-medium">No interests selected</p>
                                 )}
                             </div>
                         </div>
 
                         <button 
                             onClick={() => logout()}
-                            className="w-full py-4 rounded-2xl bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/20 text-red-500 font-black text-xs uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-red-500 hover:text-white transition-all shadow-sm"
+                            className="w-full py-5 rounded-2xl bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/20 text-red-500 font-black text-xs uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-red-500 hover:text-white transition-all shadow-sm hover:shadow-md"
                         >
                             <LogOut className="w-4 h-4" /> Log out
                         </button>
@@ -209,38 +236,38 @@ export default function ProfilePage() {
 
                     {/* Right: Posts Feed */}
                     <div className="lg:col-span-2">
-                        <h2 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-8 flex items-center gap-2">
+                        <h2 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-10 flex items-center gap-2">
                             <MessageCircle className="w-4 h-4" /> Recent Posts
                         </h2>
                         
                         {posts.length === 0 ? (
-                            <div className="text-center py-20 rounded-[3rem] border border-dashed border-gray-200 dark:border-white/10">
-                                <MessageCircle className="w-12 h-12 mx-auto mb-4 opacity-10" />
+                            <div className="text-center py-24 rounded-[3rem] border border-dashed border-gray-200 dark:border-white/10">
+                                <MessageCircle className="w-16 h-16 mx-auto mb-6 opacity-10" />
                                 <p className="text-sm font-black text-gray-300 uppercase tracking-widest">No posts yet</p>
                             </div>
                         ) : (
-                            <div className="space-y-6">
+                            <div className="space-y-8">
                                 {posts.map(post => (
-                                    <div key={post.id} className="p-8 rounded-[2.5rem] bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all group">
-                                        <div className="flex items-center justify-between mb-6">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-xl bg-black dark:bg-white text-white dark:text-black flex items-center justify-center font-black text-[10px] uppercase">
+                                    <div key={post.id} className="p-10 rounded-[2.5rem] bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group">
+                                        <div className="flex items-center justify-between mb-8">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-10 h-10 rounded-xl bg-black dark:bg-white text-white dark:text-black flex items-center justify-center font-black text-xs uppercase">
                                                     {profile.username.slice(0, 2)}
                                                 </div>
-                                                <span className="text-[10px] text-gray-400 font-black uppercase tracking-widest">
+                                                <span className="text-xs text-gray-400 font-black uppercase tracking-widest">
                                                     {post.createdAt?.toDate ? new Date(post.createdAt.toDate()).toLocaleDateString() : 'Just now'}
                                                 </span>
                                             </div>
-                                            <button className="text-gray-300 hover:text-black dark:hover:text-white transition-all"><MoreHorizontal className="w-4 h-4" /></button>
+                                            <button className="text-gray-300 hover:text-black dark:hover:text-white transition-all"><MoreHorizontal className="w-5 h-5" /></button>
                                         </div>
-                                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300 leading-relaxed mb-8">
+                                        <p className="text-base font-medium text-gray-700 dark:text-gray-300 leading-relaxed mb-10">
                                             {post.content}
                                         </p>
-                                        <div className="flex items-center gap-6 pt-6 border-t border-gray-50 dark:border-white/5">
-                                            <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400">
+                                        <div className="flex items-center gap-8 pt-8 border-t border-gray-50 dark:border-white/5">
+                                            <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-gray-400">
                                                 <Heart className="w-4 h-4" /> {post.likes?.length || 0}
                                             </div>
-                                            <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400">
+                                            <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-gray-400">
                                                 <MessageCircle className="w-4 h-4" /> {post.commentsCount || 0}
                                             </div>
                                         </div>

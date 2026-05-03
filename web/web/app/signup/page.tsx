@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import AvatarSelector from '@/components/AvatarSelector';
 import Image from 'next/image';
 
 const INTERESTS = [
@@ -46,6 +47,7 @@ export default function SignupPage() {
         password: '',
         confirmPassword: '',
         username: '',
+        avatar: '/avatars/avatar1.jpg',
         age: '',
         phone: '',
         country: 'Ethiopia',
@@ -74,6 +76,10 @@ export default function SignupPage() {
         }
         if (step === 2) {
             if (!formData.username) return setError('Username is required');
+            const ageValue = Number(formData.age);
+            if (!formData.age || Number.isNaN(ageValue) || ageValue < 13 || ageValue > 120) {
+                return setError('Please enter a valid age between 13 and 120.');
+            }
         }
         setStep(prev => prev + 1);
     };
@@ -84,7 +90,18 @@ export default function SignupPage() {
         setLoading(true);
         setError('');
         try {
-            await signup(formData.email, formData.password);
+            await signup(formData.email, formData.password, {
+                name: formData.username,
+                username: formData.username,
+                photoURL: formData.avatar,
+                age: formData.age,
+                phone: formData.phone,
+                country: formData.country,
+                about: formData.about,
+                interests: formData.interests,
+                referralSource: formData.source,
+                theme: 'light',
+            });
             router.push('/dashboard/ai');
         } catch (err: any) {
             setError(err.message || 'Failed to create account');
@@ -95,10 +112,10 @@ export default function SignupPage() {
     return (
         <main className="min-h-screen bg-white dark:bg-[#07070F] flex overflow-hidden">
             {/* Left: Decorative (Hidden on mobile) */}
-            <div className="hidden lg:flex w-1/2 bg-black relative items-center justify-center p-20 overflow-hidden">
-                <div className="absolute inset-0 opacity-20">
-                    <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,_#333_0%,_transparent_70%)]" />
-                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
+            <div className="hidden lg:flex w-1/2 bg-slate-50 relative items-center justify-center p-20 overflow-hidden">
+                <div className="absolute inset-0 opacity-80">
+                    <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,_rgba(99,102,241,0.18)_0%,_transparent_55%)]" />
+                    <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.95),rgba(241,245,249,0.95))]" />
                 </div>
                 
                 <motion.div 
@@ -132,7 +149,7 @@ export default function SignupPage() {
             </div>
 
             {/* Right: Form */}
-            <div className="flex-1 flex flex-col items-center justify-center p-6 md:p-12 lg:p-20 relative bg-white dark:bg-[#0A0A18]">
+            <div className="flex-1 flex flex-col items-center justify-center p-6 md:p-12 lg:p-20 relative bg-[#F7F9FB]">
                 <div className="absolute top-0 left-0 w-full h-1 bg-gray-100 dark:bg-white/5">
                     <motion.div 
                         className="h-full bg-black dark:bg-white"
@@ -170,7 +187,7 @@ export default function SignupPage() {
                         {step === 1 && (
                             <motion.div key="step1" variants={containerVariants} initial="hidden" animate="visible" exit="exit" className="space-y-4">
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">Email</label>
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-800 dark:text-gray-200 ml-1">Email</label>
                                     <div className="relative group">
                                         <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 group-focus-within:text-black dark:group-focus-within:text-white transition-colors" />
                                         <input 
@@ -181,7 +198,7 @@ export default function SignupPage() {
                                     </div>
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">Password</label>
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-800 dark:text-gray-200 ml-1">Password</label>
                                     <div className="relative group">
                                         <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 group-focus-within:text-black dark:group-focus-within:text-white transition-colors" />
                                         <input 
@@ -206,27 +223,43 @@ export default function SignupPage() {
                         )}
 
                         {step === 2 && (
-                            <motion.div key="step2" variants={containerVariants} initial="hidden" animate="visible" exit="exit" className="space-y-4">
+                            <motion.div key="step2" variants={containerVariants} initial="hidden" animate="visible" exit="exit" className="space-y-6">
+                                <div className="space-y-2">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <p className="text-[10px] font-black uppercase tracking-widest text-gray-500">Profile Identity</p>
+                                            <p className="text-sm font-medium text-gray-600">Choose your avatar and identity details to personalize Walia.</p>
+                                        </div>
+                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Professional & polished</span>
+                                    </div>
+
+                                    <AvatarSelector
+                                        selectedAvatar={formData.avatar}
+                                        onSelect={(path) => setFormData(prev => ({ ...prev, avatar: path }))}
+                                    />
+                                </div>
+
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">Username</label>
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Username</label>
                                     <div className="relative group">
-                                        <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 group-focus-within:text-black dark:group-focus-within:text-white transition-colors" />
+                                        <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 transition-colors" />
                                         <input 
                                             type="text" value={formData.username} onChange={e => setFormData({...formData, username: e.target.value})}
                                             placeholder="Unique username"
-                                            className="w-full pl-12 pr-12 py-4 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 focus:border-black dark:focus:border-white focus:bg-white dark:focus:bg-white/10 outline-none transition-all font-medium text-sm text-black dark:text-white"
+                                            className="w-full pl-12 pr-12 py-4 rounded-2xl bg-gray-50 border border-gray-200 focus:border-black focus:bg-white outline-none transition-all font-medium text-sm text-black"
                                         />
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">Age</label>
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Age</label>
                                         <div className="relative group">
                                             <Hash className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 transition-colors" />
                                             <input 
-                                                type="number" value={formData.age} onChange={e => setFormData({...formData, age: e.target.value})}
-                                                placeholder="Age"
-                                                className="w-full pl-11 pr-4 py-4 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 focus:border-black dark:focus:border-white outline-none transition-all font-medium text-sm text-black dark:text-white"
+                                                type="number" min={13} max={120} value={formData.age} onChange={e => setFormData({...formData, age: e.target.value})}
+                                                placeholder="Your age"
+                                                inputMode="numeric"
+                                                className="w-full pl-11 pr-4 py-4 rounded-2xl bg-gray-50 border border-gray-200 focus:border-black focus:bg-white outline-none transition-all font-medium text-sm text-black"
                                             />
                                         </div>
                                     </div>

@@ -1,499 +1,306 @@
 'use client';
 
-import { useAuth } from '@/context/AuthContext';
 import { db } from '@/lib/firebase';
-import { AnimatePresence, motion } from 'framer-motion';
-import {
-    addDoc,
-    collection,
-    deleteDoc,
-    doc,
-    onSnapshot,
-    query,
-    serverTimestamp,
-    updateDoc,
-    where,
-} from 'firebase/firestore';
-import {
-    CalendarDays,
-    Check,
-    ChevronLeft,
-    ChevronRight,
-    Circle,
-    Clock,
-    Plus,
-    Trash2,
-    X,
+import { useAuth } from '@/context/AuthContext';
+import { 
+    ChevronLeft, ChevronRight, Plus, Clock, Trash2, 
+    Calendar as CalendarIcon, CheckCircle2, Bell, X, Sparkles
 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { 
+    collection, onSnapshot, query, where, addDoc, 
+    serverTimestamp, deleteDoc, doc, updateDoc 
+} from 'firebase/firestore';
+import { motion, AnimatePresence } from 'framer-motion';
 
-/* ─────────────── helpers ─────────────── */
-const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const MONTHS = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December',
-];
-
-function makeDateKey(year: number, month: number, day: number) {
-    return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-}
-
-type PlanStatus = 'done' | 'ongoing' | 'not-done';
-
-interface Plan {
+interface Task {
     id: string;
     title: string;
-    description?: string;
-    status: PlanStatus;
-    dateKey: string;
-    createdAt: any;
+    date: string;
+    time: string;
+    completed: boolean;
+    uid: string;
 }
 
-const STATUS_CONFIG: Record<PlanStatus, { label: string; color: string; bg: string; border: string; dotColor: string }> = {
-    done: {
-        label: 'Done',
-        color: 'text-emerald-700',
-        bg: 'bg-emerald-50',
-        border: 'border-emerald-200',
-        dotColor: 'bg-emerald-500',
-    },
-    ongoing: {
-        label: 'Ongoing',
-        color: 'text-amber-700',
-        bg: 'bg-amber-50',
-        border: 'border-amber-200',
-        dotColor: 'bg-amber-400',
-    },
-    'not-done': {
-        label: 'Not Done',
-        color: 'text-red-700',
-        bg: 'bg-red-50',
-        border: 'border-red-200',
-        dotColor: 'bg-red-500',
-    },
-};
-
-/* ─────────────── Status Icon ─────────────── */
-function StatusIcon({ status }: { status: PlanStatus }) {
-    if (status === 'done') return <Check className="w-4 h-4 text-emerald-600" />;
-    if (status === 'ongoing') return <Clock className="w-4 h-4 text-amber-500" />;
-    return <Circle className="w-4 h-4 text-red-500" />;
-}
-
-/* ─────────────── Component ─────────────── */
 export default function CalendarPage() {
     const { user } = useAuth();
-    const today = new Date();
+    const [currentDate, setCurrentDate] = useState(new Date());
+    const [selectedDate, setSelectedDate] = useState(new Date());
+    const [tasks, setTasks] = useState<Task[]>([]);
+    const [showAddModal, setShowAddModal] = useState(false);
+    const [newTask, setNewTask] = useState({ title: '', time: '09:00' });
+    const [loading, setLoading] = useState(false);
 
-    const [viewYear, setViewYear] = useState(today.getFullYear());
-    const [viewMonth, setViewMonth] = useState(today.getMonth());
-    const [selectedDate, setSelectedDate] = useState<string>(
-        makeDateKey(today.getFullYear(), today.getMonth(), today.getDate())
-    );
-    const [plans, setPlans] = useState<Plan[]>([]);
-    const [allDatesWithPlans, setAllDatesWithPlans] = useState<Set<string>>(new Set());
-    const [showModal, setShowModal] = useState(false);
-    const [defaultStatus, setDefaultStatus] = useState<PlanStatus>('not-done');
-    const [form, setForm] = useState({ title: '', description: '', status: 'not-done' as PlanStatus });
-    const [saving, setSaving] = useState(false);
-
-    /* calendar grid computation */
-    const { firstDayOfWeek, daysInMonth } = useMemo(() => {
-        const first = new Date(viewYear, viewMonth, 1);
-        const days = new Date(viewYear, viewMonth + 1, 0).getDate();
-        return { firstDayOfWeek: first.getDay(), daysInMonth: days };
-    }, [viewYear, viewMonth]);
-
-    const cells = useMemo(() => {
-        const blanks: null[] = Array(firstDayOfWeek).fill(null);
-        const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-        return [...blanks, ...days];
-    }, [firstDayOfWeek, daysInMonth]);
-
-    /* load plans for selected date */
     useEffect(() => {
         if (!user) return;
-        const q = query(
-            collection(db, 'users', user.id, 'plans'),
-            where('dateKey', '==', selectedDate)
-        );
-        const unsub = onSnapshot(q, snap => {
-            setPlans(snap.docs.map(d => ({ id: d.id, ...d.data() } as Plan)));
+        const q = query(collection(db, 'tasks'), where('uid', '==', user.uid));
+        return onSnapshot(q, snap => {
+            setTasks(snap.docs.map(d => ({ id: d.id, ...d.data() } as Task)));
         });
-        return () => unsub();
-    }, [user, selectedDate]);
+    }, [user]);
 
-    /* load date markers for visible month */
-    useEffect(() => {
-        if (!user) return;
-        const startKey = makeDateKey(viewYear, viewMonth, 1);
-        const endKey = makeDateKey(viewYear, viewMonth, daysInMonth);
-        const q = query(
-            collection(db, 'users', user.id, 'plans'),
-            where('dateKey', '>=', startKey),
-            where('dateKey', '<=', endKey)
-        );
-        const unsub = onSnapshot(q, snap => {
-            setAllDatesWithPlans(new Set(snap.docs.map(d => (d.data() as Plan).dateKey)));
-        });
-        return () => unsub();
-    }, [user, viewYear, viewMonth, daysInMonth]);
+    const daysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
+    const firstDayOfMonth = (year: number, month: number) => new Date(year, month, 1).getDay();
 
-    /* navigation */
-    const prevMonth = () => {
-        if (viewMonth === 0) { setViewYear(y => y - 1); setViewMonth(11); }
-        else setViewMonth(m => m - 1);
-    };
-    const nextMonth = () => {
-        if (viewMonth === 11) { setViewYear(y => y + 1); setViewMonth(0); }
-        else setViewMonth(m => m + 1);
-    };
-    const goToToday = () => {
-        setViewYear(today.getFullYear());
-        setViewMonth(today.getMonth());
-        setSelectedDate(makeDateKey(today.getFullYear(), today.getMonth(), today.getDate()));
-    };
-
-    /* handlers */
-    const openModal = (status: PlanStatus = 'not-done') => {
-        setDefaultStatus(status);
-        setForm({ title: '', description: '', status });
-        setShowModal(true);
-    };
-
-    const handleAddPlan = async () => {
-        if (!user || !form.title.trim()) return;
-        setSaving(true);
-        try {
-            await addDoc(collection(db, 'users', user.id, 'plans'), {
-                title: form.title.trim(),
-                description: form.description.trim(),
-                status: form.status,
-                dateKey: selectedDate,
-                createdAt: serverTimestamp(),
-            });
-            setShowModal(false);
-            setForm({ title: '', description: '', status: 'not-done' });
-        } finally {
-            setSaving(false);
-        }
-    };
-
-    const handleDelete = async (planId: string) => {
-        if (!user) return;
-        await deleteDoc(doc(db, 'users', user.id, 'plans', planId));
-    };
-
-    const cycleStatus = async (plan: Plan) => {
-        if (!user) return;
-        const cycle: PlanStatus[] = ['not-done', 'ongoing', 'done'];
-        const next = cycle[(cycle.indexOf(plan.status) + 1) % 3];
-        await updateDoc(doc(db, 'users', user.id, 'plans', plan.id), { status: next });
-    };
-
-    const plansByStatus = (status: PlanStatus) => plans.filter(p => p.status === status);
-
-    const displayDateStr = (() => {
-        const [y, m, d] = selectedDate.split('-').map(Number);
-        return new Date(y, m - 1, d).toLocaleDateString('en-US', {
-            weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
-        });
-    })();
-
-    const todayKey = makeDateKey(today.getFullYear(), today.getMonth(), today.getDate());
-
-    return (
-        <div className="h-full flex flex-col lg:flex-row bg-gray-50 dark:bg-[#0a0a0a] overflow-hidden">
-
-            {/* ── LEFT: Calendar ── */}
-            <div className="w-full lg:w-[360px] shrink-0 bg-white dark:bg-[#0A101D] border-r border-gray-200 dark:border-white/5 flex flex-col">
-                {/* Month nav */}
-                <div className="px-6 pt-8 pb-2 flex items-center justify-between">
-                    <button
-                        onClick={prevMonth}
-                        className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition-colors text-gray-500 dark:text-gray-400"
+    const renderHeader = () => {
+        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        return (
+            <div className="flex items-center justify-between mb-10">
+                <div>
+                    <h1 className="text-3xl font-black text-black dark:text-white tracking-tighter uppercase">{monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}</h1>
+                    <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mt-1">Manage your schedule</p>
+                </div>
+                <div className="flex items-center gap-3">
+                    <button 
+                        onClick={() => setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() - 1)))}
+                        className="p-3 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 hover:bg-black dark:hover:bg-white hover:text-white dark:hover:text-black transition-all"
                     >
                         <ChevronLeft className="w-5 h-5" />
                     </button>
-                    <h2 className="text-base font-black text-black dark:text-white tracking-tight">
-                        {MONTHS[viewMonth]} {viewYear}
-                    </h2>
-                    <button
-                        onClick={nextMonth}
-                        className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition-colors text-gray-500 dark:text-gray-400"
+                    <button 
+                        onClick={() => setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() + 1)))}
+                        className="p-3 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 hover:bg-black dark:hover:bg-white hover:text-white dark:hover:text-black transition-all"
                     >
                         <ChevronRight className="w-5 h-5" />
                     </button>
                 </div>
-
-                {/* Day labels */}
-                <div className="px-4 grid grid-cols-7 mb-1">
-                    {DAYS.map(d => (
-                        <div key={d} className="text-center text-[9px] font-black text-gray-400 uppercase tracking-widest py-2">
-                            {d}
-                        </div>
-                    ))}
-                </div>
-
-                {/* Grid */}
-                <div className="px-4 pb-4 grid grid-cols-7 gap-1 flex-shrink-0">
-                    {cells.map((day, i) => {
-                        if (!day) return <div key={`blank-${i}`} />;
-                        const key = makeDateKey(viewYear, viewMonth, day);
-                        const isSelected = key === selectedDate;
-                        const isTodayCell = key === todayKey;
-                        const hasPlan = allDatesWithPlans.has(key);
-
-                        return (
-                            <button
-                                key={key}
-                                onClick={() => setSelectedDate(key)}
-                                className={[
-                                    'relative flex flex-col items-center justify-center rounded-2xl aspect-square text-sm font-bold transition-all',
-                                    isSelected
-                                        ? 'bg-black dark:bg-white text-white dark:text-black shadow-lg scale-105'
-                                        : isTodayCell
-                                            ? 'ring-2 ring-inset ring-black/30 dark:ring-white/30 text-black dark:text-white'
-                                            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10',
-                                ].join(' ')}
-                            >
-                                {day}
-                                {hasPlan && (
-                                    <span className={[
-                                        'absolute bottom-1 w-1.5 h-1.5 rounded-full',
-                                        isSelected ? 'bg-white/60 dark:bg-black/60' : 'bg-black dark:bg-[#4ade80]',
-                                    ].join(' ')} />
-                                )}
-                            </button>
-                        );
-                    })}
-                </div>
-
-                {/* Jump to today */}
-                <div className="px-5 pb-6 mt-auto">
-                    <button
-                        onClick={goToToday}
-                        className="w-full py-3 rounded-2xl border-2 border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400 font-black text-xs uppercase tracking-widest hover:border-black dark:hover:border-white hover:text-black dark:hover:text-white transition-all"
-                    >
-                        Today
-                    </button>
-                </div>
             </div>
+        );
+    };
 
-            {/* ── RIGHT: Plans ── */}
-            <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-                {/* Header */}
-                <div className="px-6 py-5 bg-white dark:bg-[#0A101D] border-b border-gray-200 dark:border-white/5 flex items-center justify-between shrink-0">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-2xl bg-black dark:bg-white flex items-center justify-center shadow-md">
-                            <CalendarDays className="w-5 h-5 text-white dark:text-black" />
-                        </div>
-                        <div>
-                            <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">{selectedDate === todayKey ? 'Today' : 'Selected'}</p>
-                            <h1 className="text-sm font-black text-black dark:text-white leading-tight">{displayDateStr}</h1>
-                        </div>
-                    </div>
-                    <button
-                        onClick={() => openModal()}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-black dark:bg-white text-white dark:text-black text-xs font-black hover:scale-105 active:scale-95 transition-all shadow-lg shadow-black/15"
-                    >
-                        <Plus className="w-4 h-4" />
-                        <span className="hidden sm:inline">Add Plan</span>
-                    </button>
-                </div>
+    const renderDays = () => {
+        const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        return (
+            <div className="grid grid-cols-7 mb-4">
+                {days.map(day => (
+                    <div key={day} className="text-center text-[10px] font-black text-gray-400 uppercase tracking-widest">{day}</div>
+                ))}
+            </div>
+        );
+    };
 
-                {/* Scrollable plan cards */}
-                <div className="flex-1 overflow-y-auto p-5 space-y-4">
-                    {(['done', 'ongoing', 'not-done'] as PlanStatus[]).map(status => {
-                        const cfg = STATUS_CONFIG[status];
-                        const items = plansByStatus(status);
-                        return (
-                            <div key={status} className={`rounded-3xl border-2 ${cfg.border} ${cfg.bg} dark:bg-white/5 dark:border-white/10 p-5`}>
-                                {/* Card header */}
-                                <div className="flex items-center gap-2 mb-4">
-                                    <div className={`w-2.5 h-2.5 rounded-full ${cfg.dotColor}`} />
-                                    <h3 className={`text-xs font-black ${cfg.color} dark:text-white/70 uppercase tracking-widest flex-1`}>
-                                        {cfg.label}
-                                    </h3>
-                                    <span className={`text-xs font-black ${cfg.color} dark:text-white/40 opacity-60`}>
-                                        {items.length}
-                                    </span>
+    const renderCells = () => {
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+        const days = [];
+        const totalDays = daysInMonth(year, month);
+        const firstDay = firstDayOfMonth(year, month);
+
+        for (let i = 0; i < firstDay; i++) {
+            days.push(<div key={`empty-${i}`} className="h-28 md:h-32 border border-transparent" />);
+        }
+
+        for (let i = 1; i <= totalDays; i++) {
+            const date = new Date(year, month, i);
+            const dateStr = date.toISOString().split('T')[0];
+            const isSelected = selectedDate.getDate() === i && selectedDate.getMonth() === month && selectedDate.getFullYear() === year;
+            const isToday = new Date().toDateString() === date.toDateString();
+            const dayTasks = tasks.filter(t => t.date === dateStr);
+
+            days.push(
+                <div 
+                    key={i} 
+                    onClick={() => setSelectedDate(date)}
+                    className={`h-28 md:h-32 p-3 border border-gray-100 dark:border-white/5 cursor-pointer transition-all relative ${
+                        isSelected 
+                        ? 'bg-black dark:bg-white text-white dark:text-black ring-1 ring-black dark:ring-white z-10 scale-[1.02] shadow-2xl rounded-2xl' 
+                        : 'bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10'
+                    }`}
+                >
+                    <span className={`text-xs font-black ${isToday && !isSelected ? 'text-black dark:text-white underline' : ''}`}>{i}</span>
+                    {dayTasks.length > 0 && (
+                        <div className="mt-2 space-y-1 overflow-hidden">
+                            {dayTasks.slice(0, 2).map(t => (
+                                <div key={t.id} className={`text-[8px] font-black uppercase truncate px-2 py-1 rounded-lg ${isSelected ? 'bg-white/20' : 'bg-black/5 dark:bg-white/5'}`}>
+                                    {t.title}
                                 </div>
-
-                                {/* Plan items */}
-                                <div className="space-y-2 mb-4">
-                                    <AnimatePresence initial={false}>
-                                        {items.map(plan => (
-                                            <motion.div
-                                                key={plan.id}
-                                                layout
-                                                initial={{ opacity: 0, y: 8 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                exit={{ opacity: 0, x: -30 }}
-                                                className="group bg-white dark:bg-white/5 rounded-2xl px-4 py-3 border border-white dark:border-white/10 shadow-sm hover:shadow-md transition-all flex items-start gap-3"
-                                            >
-                                                {/* Cycle button */}
-                                                <button
-                                                    onClick={() => cycleStatus(plan)}
-                                                    title="Cycle status"
-                                                    className={[
-                                                        'mt-0.5 w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all hover:scale-110',
-                                                        plan.status === 'done' ? 'bg-emerald-500 border-emerald-500' :
-                                                        plan.status === 'ongoing' ? 'bg-amber-400 border-amber-400' :
-                                                        'bg-transparent border-gray-300 dark:border-white/20',
-                                                    ].join(' ')}
-                                                >
-                                                    {plan.status !== 'not-done' && (
-                                                        <StatusIcon status={plan.status} />
-                                                    )}
-                                                </button>
-
-                                                <div className="flex-1 min-w-0">
-                                                    <p className={`text-sm font-bold text-black dark:text-white leading-snug ${plan.status === 'done' ? 'line-through opacity-40' : ''}`}>
-                                                        {plan.title}
-                                                    </p>
-                                                    {plan.description && (
-                                                        <p className="text-[11px] text-gray-400 mt-1 leading-relaxed">{plan.description}</p>
-                                                    )}
-                                                </div>
-
-                                                <button
-                                                    onClick={() => handleDelete(plan.id)}
-                                                    className="opacity-0 group-hover:opacity-100 p-1.5 rounded-xl text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all shrink-0"
-                                                >
-                                                    <Trash2 className="w-3.5 h-3.5" />
-                                                </button>
-                                            </motion.div>
-                                        ))}
-                                    </AnimatePresence>
-
-                                    {items.length === 0 && (
-                                        <p className={`text-center text-xs font-bold ${cfg.color} opacity-30 py-2`}>
-                                            No {cfg.label.toLowerCase()} plans
-                                        </p>
-                                    )}
-                                </div>
-
-                                {/* Add-to-section button */}
-                                <button
-                                    onClick={() => openModal(status)}
-                                    className={`w-full py-2.5 rounded-2xl border-2 ${cfg.border} ${cfg.color} text-[10px] font-black uppercase tracking-widest hover:bg-white dark:hover:bg-white/10 transition-all flex items-center justify-center gap-1.5`}
-                                >
-                                    <Plus className="w-3 h-3" />
-                                    Add to {cfg.label}
-                                </button>
-                            </div>
-                        );
-                    })}
-
-                    {plans.length === 0 && (
-                        <div className="text-center py-20 opacity-30">
-                            <CalendarDays className="w-10 h-10 mx-auto text-gray-400 mb-3" />
-                            <p className="text-sm font-black text-gray-400">No plans for this day</p>
-                            <p className="text-xs text-gray-400 mt-1">Tap &ldquo;Add Plan&rdquo; above</p>
+                            ))}
+                            {dayTasks.length > 2 && <div className="text-[8px] font-bold text-gray-400">+{dayTasks.length - 2} more</div>}
                         </div>
                     )}
                 </div>
+            );
+        }
+        return <div className="grid grid-cols-7 gap-px bg-gray-100 dark:bg-white/5 rounded-3xl overflow-hidden border border-gray-100 dark:border-white/5">{days}</div>;
+    };
+
+    const handleAddTask = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newTask.title || !user || loading) return;
+        setLoading(true);
+        try {
+            await addDoc(collection(db, 'tasks'), {
+                uid: user.uid,
+                title: newTask.title,
+                date: selectedDate.toISOString().split('T')[0],
+                time: newTask.time,
+                completed: false,
+                createdAt: serverTimestamp()
+            });
+            setNewTask({ title: '', time: '09:00' });
+            setShowAddModal(false);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const deleteTask = async (id: string) => {
+        await deleteDoc(doc(db, 'tasks', id));
+    };
+
+    const toggleTask = async (task: Task) => {
+        await updateDoc(doc(db, 'tasks', task.id), { completed: !task.completed });
+    };
+
+    const selectedDateStr = selectedDate.toISOString().split('T')[0];
+    const selectedTasks = tasks.filter(t => t.date === selectedDateStr).sort((a, b) => a.time.localeCompare(b.time));
+
+    return (
+        <div className="flex flex-col lg:flex-row h-full bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-[#0A0A18] dark:via-[#0D0D1A] dark:to-[#0A0A18] overflow-hidden">
+            {/* ── Left: Calendar ── */}
+            <div className="flex-1 overflow-y-auto p-6 md:p-10 custom-scrollbar">
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+                    {renderHeader()}
+                    {renderDays()}
+                    {renderCells()}
+                </motion.div>
             </div>
 
-            {/* ── MODAL ── */}
-            <AnimatePresence>
-                {showModal && (
-                    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setShowModal(false)}
-                            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-                        />
-                        <motion.div
-                            initial={{ y: 80, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                            exit={{ y: 80, opacity: 0 }}
-                            transition={{ type: 'spring', damping: 28, stiffness: 230 }}
-                            className="relative w-full max-w-md bg-white dark:bg-[#0A101D] rounded-t-[32px] sm:rounded-[32px] p-7 shadow-2xl z-10 border border-transparent dark:border-white/10"
+            {/* ── Right: Tasks Panel ── */}
+            <div className="w-full lg:w-[400px] border-l border-gray-200/60 dark:border-white/5 bg-white/70 dark:bg-black/30 backdrop-blur-xl p-8 overflow-y-auto custom-scrollbar">
+                <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2, duration: 0.5 }}>
+                    <div className="flex items-center justify-between mb-8">
+                        <div>
+                            <h2 className="text-xl font-black text-black dark:text-white tracking-tight uppercase">Daily Tasks</h2>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
+                                {selectedDate.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })}
+                            </p>
+                        </div>
+                        <button 
+                            onClick={() => setShowAddModal(true)}
+                            className="w-12 h-12 rounded-2xl bg-gradient-to-r from-black to-gray-700 dark:from-white dark:to-gray-300 text-white dark:text-black flex items-center justify-center hover:scale-105 active:scale-95 transition-all duration-300 shadow-xl shadow-black/10"
                         >
-                            <div className="w-10 h-1.5 bg-gray-200 dark:bg-white/10 rounded-full mx-auto mb-6 sm:hidden" />
+                            <Plus className="w-5 h-5" />
+                        </button>
+                    </div>
 
-                            <div className="flex items-center justify-between mb-6">
-                                <h2 className="text-xl font-black text-black dark:text-white">New Plan</h2>
-                                <button
-                                    onClick={() => setShowModal(false)}
-                                    className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-white/20 transition-colors"
-                                >
-                                    <X className="w-4 h-4 text-gray-500 dark:text-gray-300" />
-                                </button>
+                    <div className="space-y-4">
+                        {selectedTasks.length === 0 ? (
+                            <div className="text-center py-20 opacity-30">
+                                <CalendarIcon className="w-12 h-12 mx-auto mb-4" />
+                                <p className="text-xs font-black uppercase">No tasks for today</p>
                             </div>
-
-                            <div className="space-y-4">
-                                {/* Title */}
-                                <div>
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 block">Title *</label>
-                                    <input
-                                        type="text"
-                                        value={form.title}
-                                        onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-                                        onKeyDown={e => e.key === 'Enter' && handleAddPlan()}
-                                        placeholder="What do you plan to do?"
-                                        autoFocus
-                                        className="w-full border-2 border-gray-200 dark:border-white/10 focus:border-black dark:focus:border-white rounded-2xl px-4 py-3 text-sm font-medium text-black dark:text-white bg-transparent outline-none transition-all placeholder:text-gray-300 dark:placeholder:text-white/20"
-                                    />
-                                </div>
-
-                                {/* Description */}
-                                <div>
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 block">Notes</label>
-                                    <textarea
-                                        value={form.description}
-                                        onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-                                        placeholder="Optional details..."
-                                        rows={2}
-                                        className="w-full border-2 border-gray-200 dark:border-white/10 focus:border-black dark:focus:border-white rounded-2xl px-4 py-3 text-sm font-medium text-black dark:text-white bg-transparent outline-none resize-none transition-all placeholder:text-gray-300 dark:placeholder:text-white/20"
-                                    />
-                                </div>
-
-                                {/* Status */}
-                                <div>
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block">Status</label>
-                                    <div className="grid grid-cols-3 gap-2">
-                                        {(['not-done', 'ongoing', 'done'] as PlanStatus[]).map(s => {
-                                            const cfg = STATUS_CONFIG[s];
-                                            const isActive = form.status === s;
-                                            return (
-                                                <button
-                                                    key={s}
-                                                    onClick={() => setForm(f => ({ ...f, status: s }))}
-                                                    className={[
-                                                        'flex flex-col items-center py-3 rounded-2xl border-2 text-[10px] font-black uppercase tracking-wider transition-all gap-1',
-                                                        isActive
-                                                            ? `${cfg.border} ${cfg.bg} ${cfg.color} scale-[1.03] shadow-sm`
-                                                            : 'border-gray-200 dark:border-white/10 text-gray-400 dark:text-white/30 hover:border-gray-300',
-                                                    ].join(' ')}
-                                                >
-                                                    <StatusIcon status={s} />
-                                                    {cfg.label}
-                                                </button>
-                                            );
-                                        })}
+                        ) : selectedTasks.map((task, index) => (
+                            <motion.div 
+                                key={task.id}
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.3 + index * 0.05 }}
+                                className={`group p-6 rounded-[2rem] border transition-all duration-300 flex items-center gap-4 ${
+                                    task.completed 
+                                    ? 'bg-emerald-50 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-900/20' 
+                                    : 'bg-white/70 dark:bg-white/5 border-gray-200/60 dark:border-white/10 hover:shadow-xl hover:-translate-y-0.5 backdrop-blur-sm'
+                                }`}
+                            >
+                                <button 
+                                    onClick={() => toggleTask(task)}
+                                    className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${
+                                        task.completed 
+                                        ? 'bg-emerald-500 border-emerald-500 text-white' 
+                                        : 'border-gray-200 dark:border-white/20'
+                                    }`}
+                                >
+                                    {task.completed && <CheckCircle2 className="w-4 h-4" />}
+                                </button>
+                                <div className="flex-1 min-w-0">
+                                    <p className={`text-sm font-bold uppercase tracking-tight truncate ${task.completed ? 'text-emerald-900/50 dark:text-emerald-400/50 line-through' : 'text-black dark:text-white'}`}>
+                                        {task.title}
+                                    </p>
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <Clock className="w-3 h-3 text-gray-400" />
+                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{task.time}</span>
                                     </div>
                                 </div>
-
-                                {/* Date display */}
-                                <div className="flex items-center gap-2 p-3 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10">
-                                    <CalendarDays className="w-4 h-4 text-gray-400 shrink-0" />
-                                    <span className="text-xs font-bold text-gray-500 dark:text-gray-400">{displayDateStr}</span>
-                                </div>
-
-                                {/* Submit */}
-                                <button
-                                    onClick={handleAddPlan}
-                                    disabled={!form.title.trim() || saving}
-                                    className="w-full py-4 rounded-2xl bg-black dark:bg-white text-white dark:text-black text-sm font-black uppercase tracking-widest hover:bg-zinc-800 dark:hover:bg-gray-100 transition-all shadow-lg active:scale-95 disabled:opacity-30 disabled:active:scale-100"
+                                <button 
+                                    onClick={() => deleteTask(task.id)}
+                                    className="opacity-0 group-hover:opacity-100 p-2 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-300 hover:text-red-500 transition-all"
                                 >
-                                    {saving ? 'Saving...' : '+ Add Plan'}
+                                    <Trash2 className="w-4 h-4" />
+                                </button>
+                            </motion.div>
+                        ))}
+                    </div>
+
+                    <div className="mt-12 p-6 rounded-3xl bg-gradient-to-r from-black to-gray-700 dark:from-white dark:to-gray-300 text-white dark:text-black relative overflow-hidden shadow-xl">
+                        <div className="absolute top-0 right-0 p-4 opacity-20">
+                            <Bell className="w-12 h-12" />
+                        </div>
+                        <h3 className="text-sm font-black uppercase tracking-widest mb-2 flex items-center gap-2">
+                            <Sparkles className="w-4 h-4" /> Notifications
+                        </h3>
+                        <p className="text-[10px] font-medium text-white/60 dark:text-black/60 leading-relaxed">
+                            Stay on top of your schedule. Walia will remind you about your tasks 15 minutes before they start.
+                        </p>
+                    </div>
+                </motion.div>
+            </div>
+
+            {/* ── Add Task Modal ── */}
+            <AnimatePresence>
+                {showAddModal && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+                        <motion.div 
+                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                            onClick={() => setShowAddModal(false)}
+                        />
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className="relative w-full max-w-md bg-white/90 dark:bg-[#0A0A18]/90 backdrop-blur-xl rounded-[2.5rem] p-8 border border-gray-200/60 dark:border-white/10 shadow-2xl"
+                        >
+                            <div className="flex items-center justify-between mb-8">
+                                <h3 className="text-xl font-black text-black dark:text-white uppercase tracking-tighter">Add Task</h3>
+                                <button onClick={() => setShowAddModal(false)} className="p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 transition-all">
+                                    <X className="w-5 h-5" />
                                 </button>
                             </div>
+
+                            <form onSubmit={handleAddTask} className="space-y-6">
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">Title</label>
+                                    <input 
+                                        type="text" required value={newTask.title} onChange={e => setNewTask({...newTask, title: e.target.value})}
+                                        placeholder="What needs to be done?"
+                                        className="w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 focus:border-black dark:focus:border-white outline-none transition-all font-medium text-sm text-black dark:text-white"
+                                    />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">Date</label>
+                                        <input 
+                                            type="date" disabled value={selectedDateStr}
+                                            className="w-full px-5 py-4 rounded-2xl bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-400 outline-none cursor-not-allowed text-xs"
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 ml-1">Time</label>
+                                        <input 
+                                            type="time" required value={newTask.time} onChange={e => setNewTask({...newTask, time: e.target.value})}
+                                            className="w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 focus:border-black dark:focus:border-white outline-none transition-all font-medium text-sm text-black dark:text-white"
+                                        />
+                                    </div>
+                                </div>
+                                <button 
+                                    type="submit" disabled={loading}
+                                    className="w-full py-4 rounded-2xl bg-gradient-to-r from-black to-gray-700 dark:from-white dark:to-gray-300 text-white dark:text-black font-black text-sm uppercase tracking-widest hover:opacity-90 active:scale-95 transition-all duration-300 shadow-xl shadow-black/10"
+                                >
+                                    {loading ? "Adding..." : "Add Task"}
+                                </button>
+                            </form>
                         </motion.div>
                     </div>
                 )}

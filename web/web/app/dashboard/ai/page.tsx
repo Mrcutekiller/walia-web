@@ -31,13 +31,16 @@ interface Chat {
 }
 
 const AVAILABLE_MODELS = [
-    { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet', provider: 'Anthropic' },
-    { id: 'openai/gpt-4o', name: 'GPT-4o', provider: 'OpenAI' },
-    { id: 'openai/gpt-4o-mini', name: 'GPT-4o Mini', provider: 'OpenAI' },
-    { id: 'google/gemini-pro-1.5', name: 'Gemini Pro 1.5', provider: 'Google' },
-    { id: 'meta-llama/llama-3.1-405b-instruct', name: 'Llama 3.1 405B', provider: 'Meta' },
-    { id: 'meta-llama/llama-3.1-70b-instruct', name: 'Llama 3.1 70B', provider: 'Meta' },
-    { id: 'mistralai/mistral-7b-instruct', name: 'Mistral 7B', provider: 'Mistral' },
+    { id: 'gpt-4o-mini', name: 'GPT-4o Mini', provider: 'OpenRouter', category: 'general' },
+    { id: 'mistralai/mistral-7b-instruct', name: 'Mistral 7B Instruct', provider: 'OpenRouter', category: 'general' },
+    { id: 'google/gemma-7b-it:free', name: 'Gemma 7B IT', provider: 'OpenRouter', category: 'coding' },
+    { id: 'meta-llama/llama-3.2-3b-instruct:free', name: 'Llama 3.2 3B Instruct', provider: 'OpenRouter', category: 'general' },
+    { id: 'microsoft/wizardlm-2-8x22b:free', name: 'WizardLM 2 8x22B', provider: 'OpenRouter', category: 'general' },
+    { id: 'anthropic/claude-3-haiku:free', name: 'Claude 3 Haiku', provider: 'OpenRouter', category: 'coding' },
+    { id: 'nvidia/llama-3.1-nemotron-70b-instruct:free', name: 'Llama 3.1 Nemotron 70B', provider: 'OpenRouter', category: 'coding' },
+    { id: 'qwen/qwen-2.5-7b-instruct:free', name: 'Qwen 2.5 7B Instruct', provider: 'OpenRouter', category: 'general' },
+    { id: 'meta-llama/llama-3.1-8b-instruct:free', name: 'Llama 3.1 8B Instruct', provider: 'OpenRouter', category: 'coding' },
+    { id: 'google/gemma-2-9b-it:free', name: 'Gemma 2 9B IT', provider: 'OpenRouter', category: 'general' },
 ];
 
 function AIChatContent() {
@@ -50,9 +53,25 @@ function AIChatContent() {
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
     const [showWelcome, setShowWelcome] = useState(false);
-    const [selectedModel, setSelectedModel] = useState('anthropic/claude-3.5-sonnet');
+    const [selectedModel, setSelectedModel] = useState('gpt-4o-mini');
     const [showModelSelector, setShowModelSelector] = useState(false);
     const [apiError, setApiError] = useState<string | null>(null);
+    const [modelFilter, setModelFilter] = useState<'all' | 'coding' | 'general'>('all');
+    const [showFilterSelector, setShowFilterSelector] = useState(false);
+
+    const filteredModels = AVAILABLE_MODELS.filter(m => modelFilter === 'all' || m.category === modelFilter).sort((a, b) => {
+        if (modelFilter === 'coding') {
+            // Prioritize certain models for coding
+            const priority = ['anthropic/claude-3-haiku:free', 'nvidia/llama-3.1-nemotron-70b-instruct:free', 'meta-llama/llama-3.1-8b-instruct:free', 'google/gemma-7b-it:free'];
+            const aIndex = priority.indexOf(a.id);
+            const bIndex = priority.indexOf(b.id);
+            if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
+            if (aIndex !== -1) return -1;
+            if (bIndex !== -1) return 1;
+            return 0;
+        }
+        return 0;
+    });
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     // Check for welcome query
@@ -166,11 +185,12 @@ function AIChatContent() {
                 throw new Error('AI service did not return a response.');
             }
 
-            const aiReply = data.reply;
+            const aiMessage = {
                 role: 'assistant',
-                content: aiReply,
+                content: data.reply,
                 createdAt: serverTimestamp()
-            });
+            };
+            await addDoc(collection(db, 'chats', chatId, 'messages'), aiMessage);
 
             // 4. Update chat title if it's the first message
             if (messages.length === 0) {
@@ -199,13 +219,13 @@ function AIChatContent() {
     };
 
     return (
-        <div className="flex h-full bg-white dark:bg-[#0A0A18] overflow-hidden">
+        <div className="flex h-full bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-[#0A0A18] dark:via-[#0D0D1A] dark:to-[#0A0A18] overflow-hidden">
             {/* ── Left Panel: Chat History ── */}
-            <div className="w-80 border-r border-gray-100 dark:border-white/5 flex flex-col bg-gray-50/50 dark:bg-black/20">
+            <div className="w-80 border-r border-gray-200/60 dark:border-white/5 flex flex-col bg-white/70 dark:bg-black/30 backdrop-blur-xl">
                 <div className="p-6">
                     <button 
                         onClick={startNewChat}
-                        className="w-full py-4 rounded-2xl bg-black dark:bg-white text-white dark:text-black font-black text-sm flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-xl shadow-black/10 active:scale-[0.98]"
+                        className="w-full py-4 rounded-2xl bg-gradient-to-r from-black to-gray-800 dark:from-white dark:to-gray-200 text-white dark:text-black font-black text-sm flex items-center justify-center gap-2 hover:shadow-2xl hover:-translate-y-0.5 transition-all duration-300 shadow-lg"
                     >
                         <Plus className="w-4 h-4" /> New Chat
                     </button>
@@ -214,21 +234,24 @@ function AIChatContent() {
                 <div className="flex-1 overflow-y-auto px-4 space-y-2 custom-scrollbar">
                     <p className="px-3 text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-4">Recent Conversations</p>
                     {chats.length === 0 ? (
-                        <div className="text-center py-10 opacity-20">
+                        <div className="text-center py-10 opacity-30">
                             <History className="w-10 h-10 mx-auto mb-2" />
                             <p className="text-xs font-bold">No history</p>
                         </div>
-                    ) : chats.map(chat => (
-                        <div 
+                    ) : chats.map((chat, index) => (
+                        <motion.div 
                             key={chat.id}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: index * 0.05 }}
                             onClick={() => setActiveChat(chat.id)}
-                            className={`group flex items-center gap-3 p-4 rounded-2xl cursor-pointer transition-all border ${
+                            className={`group flex items-center gap-3 p-4 rounded-2xl cursor-pointer transition-all duration-300 border ${
                                 activeChat === chat.id 
-                                ? 'bg-black dark:bg-white text-white dark:text-black border-black dark:border-white shadow-lg' 
-                                : 'bg-white dark:bg-white/5 border-transparent hover:border-gray-200 dark:hover:border-white/10'
+                                ? 'bg-gradient-to-r from-black to-gray-800 dark:from-white dark:to-gray-200 text-white dark:text-black border-transparent shadow-xl' 
+                                : 'bg-white/50 dark:bg-white/5 border-gray-200/60 dark:border-white/10 hover:border-black/30 dark:hover:border-white/30 hover:shadow-lg'
                             }`}
                         >
-                            <MessageSquare className={`w-4 h-4 shrink-0 ${activeChat === chat.id ? 'text-white dark:text-black' : 'text-gray-400'}`} />
+                            <MessageSquare className={`w-4 h-4 shrink-0 ${activeChat === chat.id ? 'text-white dark:text-black' : 'text-gray-400 dark:text-gray-500'}`} />
                             <span className="flex-1 text-xs font-bold truncate">{chat.title}</span>
                             <button 
                                 onClick={(e) => deleteChat(chat.id, e)}
@@ -238,14 +261,14 @@ function AIChatContent() {
                             >
                                 <Trash2 className="w-3.5 h-3.5" />
                             </button>
-                        </div>
+                        </motion.div>
                     ))}
                 </div>
 
                 {/* Profile Peek */}
-                <div className="p-6 border-t border-gray-100 dark:border-white/5">
+                <div className="p-6 border-t border-gray-200/60 dark:border-white/5">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-black dark:bg-white flex items-center justify-center text-white dark:text-black font-black text-xs uppercase">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-black to-gray-700 dark:from-white dark:to-gray-300 flex items-center justify-center text-white dark:text-black font-black text-xs uppercase shadow-lg">
                             {user?.username?.slice(0, 2) || 'U'}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -259,39 +282,55 @@ function AIChatContent() {
             {/* ── Main Chat Area ── */}
             <div className="flex-1 flex flex-col relative">
                 {!activeChat && messages.length === 0 ? (
-                    <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
-                        <div className="w-24 h-24 rounded-[2rem] bg-black dark:bg-white flex items-center justify-center mb-8 shadow-2xl shadow-black/20">
-                            <Sparkles className="w-12 h-12 text-white dark:text-black" />
+                    <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className="flex-1 flex flex-col items-center justify-center p-6 text-center"
+                    >
+                        <div className="w-32 h-32 rounded-[2.5rem] bg-gradient-to-br from-black to-gray-700 dark:from-white dark:to-gray-300 flex items-center justify-center mb-10 shadow-2xl shadow-black/20 hover:scale-105 transition-transform duration-500">
+                            <Sparkles className="w-16 h-16 text-white dark:text-black" />
                         </div>
-                        <h2 className="text-4xl font-black text-black dark:text-white tracking-tighter mb-4 uppercase">How can I help you, {user?.username?.split(' ')[0]}?</h2>
-                        <p className="text-gray-400 dark:text-gray-500 max-w-md text-sm font-medium leading-relaxed">
+                        <h2 className="text-5xl font-black text-black dark:text-white tracking-tighter mb-6 uppercase">How can I help you, {user?.username?.split(' ')[0]}?</h2>
+                        <p className="text-gray-500 dark:text-gray-400 max-w-md text-base font-medium leading-relaxed">
                             I'm personalized based on your profile. Ask me about trading, school, or anything else you're interested in.
                         </p>
                         
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-12 w-full max-w-2xl">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-16 w-full max-w-2xl">
                             {[
                                 { title: 'XAUUSD Analysis', desc: 'Get latest market insights', icon: Zap },
                                 { title: 'Study Aid', desc: 'Summarize your complex notes', icon: BookOpen },
                                 { title: 'Business Ideas', desc: 'Brainstorm your next venture', icon: Rocket },
                                 { title: 'Code Assistant', desc: 'Debug or write clean code', icon: Code2 },
                             ].map((s, i) => (
-                                <button key={i} onClick={() => setInput(s.title)} className="p-6 rounded-3xl border border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/5 text-left hover:border-black dark:hover:border-white transition-all group">
-                                    <s.icon className="w-6 h-6 mb-3 text-gray-400 group-hover:text-black dark:group-hover:text-white transition-colors" />
-                                    <h3 className="text-sm font-black text-black dark:text-white uppercase tracking-tight">{s.title}</h3>
-                                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{s.desc}</p>
-                                </button>
+                                <motion.button 
+                                    key={i} 
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: i * 0.1 }}
+                                    onClick={() => setInput(s.title)} 
+                                    className="p-8 rounded-[2rem] border border-gray-200/60 dark:border-white/10 bg-white/70 dark:bg-white/5 text-left hover:border-black dark:hover:border-white transition-all duration-300 group hover:-translate-y-1 hover:shadow-2xl backdrop-blur-sm"
+                                >
+                                    <s.icon className="w-7 h-7 mb-4 text-gray-400 group-hover:text-black dark:group-hover:text-white transition-colors" />
+                                    <h3 className="text-base font-black text-black dark:text-white uppercase tracking-tight">{s.title}</h3>
+                                    <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">{s.desc}</p>
+                                </motion.button>
                             ))}
                         </div>
-                    </div>
+                    </motion.div>
                 ) : (
                     <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
                         <div className="max-w-4xl mx-auto space-y-8">
                             {messages.map((m, i) => (
                                 <div key={m.id} className={`flex gap-4 ${m.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 shadow-sm ${
-                                        m.role === 'user' ? 'bg-black text-white' : 'bg-gray-100 dark:bg-white/10 text-black dark:text-white'
+                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ring-2 ring-indigo-200 ${
+                                        m.role === 'user' ? 'bg-indigo-600 text-white' : 'bg-white border border-gray-200'
                                     }`}>
-                                        {m.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
+                                        {m.role === 'user' ? (
+                                            <Image src={user?.photoURL || '/avatars/avatar1.jpg'} alt={user?.username || 'User'} width={24} height={24} className="rounded-full" />
+                                        ) : (
+                                            <Bot className="w-5 h-5 text-indigo-600" />
+                                        )}
                                     </div>
                                     <div className={`flex flex-col gap-2 max-w-[80%] ${m.role === 'user' ? 'items-end' : ''}`}>
                                         <div className={`p-5 rounded-[2rem] text-sm font-medium leading-relaxed shadow-sm ${
@@ -331,10 +370,57 @@ function AIChatContent() {
                 )}
 
                 {/* ── Input Area ── */}
-                <div className="p-6 border-t border-gray-100 dark:border-white/5">
+                <div className="p-8 border-t border-gray-200/60 dark:border-white/5 bg-white/50 dark:bg-black/30 backdrop-blur-xl">
                     <form onSubmit={handleSend} className="max-w-4xl mx-auto relative group">
                         {/* Model Selector */}
-                        <div className="flex items-center gap-3 mb-4">
+                        <div className="flex items-center gap-3 mb-5">
+                            {/* Filter Selector */}
+                            <div className="relative">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowFilterSelector(!showFilterSelector)}
+                                    className="flex items-center gap-2 px-5 py-3 rounded-xl bg-white dark:bg-white/5 border border-gray-200/60 dark:border-white/10 hover:border-black dark:hover:border-white transition-all duration-300 text-sm font-medium text-black dark:text-white hover:shadow-lg"
+                                >
+                                    <span className="text-xs font-bold uppercase tracking-widest">
+                                        {modelFilter === 'all' ? 'All Models' : modelFilter === 'coding' ? 'Coding' : 'General'}
+                                    </span>
+                                    <ChevronDown className={`w-4 h-4 transition-transform ${showFilterSelector ? 'rotate-180' : ''}`} />
+                                </button>
+                                
+                                {showFilterSelector && (
+                                    <div className="absolute bottom-full left-0 mb-2 w-48 bg-white dark:bg-[#0A0A18] border border-gray-100 dark:border-white/10 rounded-2xl shadow-xl z-50">
+                                        {[
+                                            { value: 'all', label: 'All Models' },
+                                            { value: 'coding', label: 'Coding' },
+                                            { value: 'general', label: 'General' }
+                                        ].map(filter => (
+                                            <button
+                                                key={filter.value}
+                                                type="button"
+                                                onClick={() => {
+                                                    setModelFilter(filter.value as 'all' | 'coding' | 'general');
+                                                    setShowFilterSelector(false);
+                                                    // If current selected model is not in the new filter, select the first available
+                                                    const newFiltered = AVAILABLE_MODELS.filter(m => filter.value === 'all' || m.category === filter.value);
+                                                    if (!newFiltered.find(m => m.id === selectedModel)) {
+                                                        setSelectedModel(newFiltered[0]?.id || 'gpt-4o-mini');
+                                                    }
+                                                }}
+                                                className={`w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-white/5 transition-colors first:rounded-t-2xl last:rounded-b-2xl ${
+                                                    modelFilter === filter.value ? 'bg-black dark:bg-white text-white dark:text-black' : 'text-black dark:text-white'
+                                                }`}
+                                            >
+                                                <div className="flex items-center justify-between">
+                                                    <div className="text-sm font-bold">{filter.label}</div>
+                                                    {modelFilter === filter.value && (
+                                                        <CheckCircle2 className="w-4 h-4 text-white dark:text-black" />
+                                                    )}
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                             <div className="relative">
                                 <button
                                     type="button"
@@ -349,7 +435,7 @@ function AIChatContent() {
                                 
                                 {showModelSelector && (
                                     <div className="absolute bottom-full left-0 mb-2 w-64 bg-white dark:bg-[#0A0A18] border border-gray-100 dark:border-white/10 rounded-2xl shadow-xl z-50">
-                                        {AVAILABLE_MODELS.map(model => (
+                                        {filteredModels.map(model => (
                                             <button
                                                 key={model.id}
                                                 type="button"
@@ -381,11 +467,11 @@ function AIChatContent() {
                         <input 
                             type="text" value={input} onChange={e => setInput(e.target.value)}
                             placeholder="Message Walia AI..."
-                            className="w-full pl-6 pr-16 py-5 rounded-[2rem] bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 focus:border-black dark:focus:border-white focus:bg-white dark:focus:bg-white/10 outline-none transition-all font-medium text-sm text-black dark:text-white shadow-inner"
+                            className="w-full pl-6 pr-16 py-5 rounded-[2rem] bg-white dark:bg-white/5 border border-gray-200/60 dark:border-white/10 focus:border-black dark:focus:border-white focus:bg-white dark:focus:bg-white/10 outline-none transition-all duration-300 font-medium text-base text-black dark:text-white shadow-inner hover:shadow-xl"
                         />
                         <button 
                             type="submit" disabled={!input.trim() || loading}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-black dark:bg-white text-white dark:text-black flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xl shadow-black/10 disabled:opacity-30 disabled:scale-100"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-gradient-to-r from-black to-gray-700 dark:from-white dark:to-gray-300 text-white dark:text-black flex items-center justify-center hover:scale-105 active:scale-95 transition-all duration-300 shadow-xl shadow-black/10 disabled:opacity-30 disabled:scale-100 hover:shadow-2xl"
                         >
                             <Send className="w-5 h-5" />
                         </button>

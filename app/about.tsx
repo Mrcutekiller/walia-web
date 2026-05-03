@@ -4,7 +4,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/store/theme';
-import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const { width } = Dimensions.get('window');
@@ -34,9 +33,9 @@ export default function AboutScreen() {
           />
           <SafeAreaView style={styles.headerNav}>
             <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-              <BlurView intensity={30} tint={isDark ? 'dark' : 'light'} style={styles.blurBtn}>
+              <View style={[styles.blurBtn, { backgroundColor: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.5)' }]}>
                 <Ionicons name="arrow-back" size={24} color={isDark ? '#fff' : '#000'} />
-              </BlurView>
+              </View>
             </TouchableOpacity>
           </SafeAreaView>
           

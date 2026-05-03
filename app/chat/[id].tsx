@@ -1,21 +1,11 @@
 import { Avatar } from '@/components/ui/Avatar';
 import { BorderRadius, FontSize, FontWeight, Spacing } from '@/constants/theme';
-import { auth, db, storage } from '@/services/firebase';
 import { useTheme } from '@/store/theme';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import {
-    addDoc,
-    collection,
-    doc,
-    onSnapshot,
-    orderBy,
-    query,
-    serverTimestamp,
-    updateDoc
-} from 'firebase/firestore';
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { useAuth } from '@/store/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
@@ -41,44 +31,60 @@ export default function ChatDetailScreen() {
     const [sending, setSending] = useState(false);
     const flatListRef = useRef<FlatList>(null);
 
+    const { user } = useAuth();
+    
     useEffect(() => {
-        if (!id) return;
-        const chatRef = doc(db, 'chats', id as string);
-        const unsubChat = onSnapshot(chatRef, (snap) => {
-            if (snap.exists()) setChat({ id: snap.id, ...snap.data() });
-        });
+        if (!id || !user) return;
+        
+        const loadChat = async () => {
+            try {
+                // Find chat in list
+                const data = await AsyncStorage.getItem(`walia_chats_${user.id}`);
+                const parsed = data ? JSON.parse(data) : [];
+                const foundChat = parsed.find((c: any) => c.id === id);
+                if (foundChat) setChat(foundChat);
+                else setChat({ id, name: 'Chat', type: 'private' });
 
-        const msgsRef = collection(db, 'chats', id as string, 'messages');
-        const q = query(msgsRef, orderBy('createdAt', 'desc'));
-        const unsubMsgs = onSnapshot(q, (snap) => {
-            setMessages(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-        });
-
-        return () => {
-            unsubChat();
-            unsubMsgs();
+                // Load msgs
+                const msgData = await AsyncStorage.getItem(`walia_msgs_${id}`);
+                const msgs = msgData ? JSON.parse(msgData) : [];
+                setMessages(msgs);
+            } catch (e) {
+                console.error(e);
+            }
         };
-    }, [id]);
+        loadChat();
+    }, [id, user]);
 
     const sendMessage = async (imageUrl?: string) => {
         if (!text.trim() && !imageUrl) return;
-        if (!auth.currentUser || !id) return;
+        if (!user || !id) return;
 
         setSending(true);
         try {
-            const chatRef = doc(db, 'chats', id as string);
-            const msgData = {
+            const newMsg = {
+                id: Date.now().toString(),
                 text: text.trim(),
-                senderId: auth.currentUser.uid,
-                createdAt: serverTimestamp(),
+                senderId: user.id,
+                createdAt: new Date().toISOString(),
                 image: imageUrl || null,
             };
 
-            await addDoc(collection(db, 'chats', id as string, 'messages'), msgData);
-            await updateDoc(chatRef, {
-                lastMessage: imageUrl ? 'Sent an image 🖼️' : text.trim(),
-                updatedAt: serverTimestamp(),
-            });
+            const updatedMsgs = [newMsg, ...messages];
+            setMessages(updatedMsgs);
+            
+            await AsyncStorage.setItem(`walia_msgs_${id}`, JSON.stringify(updatedMsgs));
+            
+            // update chat lastMessage
+            const data = await AsyncStorage.getItem(`walia_chats_${user.id}`);
+            if (data) {
+                const parsed = JSON.parse(data);
+                const updatedChats = parsed.map((c: any) => 
+                    c.id === id ? { ...c, lastMessage: imageUrl ? 'Sent an image 🖼️' : text.trim(), updatedAt: new Date().toISOString() } : c
+                );
+                await AsyncStorage.setItem(`walia_chats_${user.id}`, JSON.stringify(updatedChats));
+            }
+
             setText('');
         } finally {
             setSending(false);
@@ -98,18 +104,16 @@ export default function ChatDetailScreen() {
     };
 
     const uploadImage = async (uri: string) => {
-        if (!auth.currentUser || !id) return;
+        if (!user || !id) return;
         setSending(true);
         try {
-            const response = await fetch(uri);
-            const blob = await response.blob();
-            const imageRef = ref(storage, `chats/${id}/${Date.now()}`);
-            await uploadBytes(imageRef, blob);
-            const url = await getDownloadURL(imageRef);
-            await sendMessage(url);
+            // Mocking upload for local version
+            setTimeout(() => {
+                sendMessage(uri);
+                setSending(false);
+            }, 1000);
         } catch (e) {
             console.error(e);
-        } finally {
             setSending(false);
         }
     };
@@ -148,7 +152,7 @@ export default function ChatDetailScreen() {
                     keyExtractor={item => item.id}
                     contentContainerStyle={styles.messageList}
                     renderItem={({ item }) => {
-                        const isMe = item.senderId === auth.currentUser?.uid;
+                        const isMe = item.senderId === user?.id;
                         return (
                             <View style={[styles.messageRow, isMe ? styles.myMessageRow : styles.theirMessageRow]}>
                                 <View style={[
@@ -162,7 +166,7 @@ export default function ChatDetailScreen() {
                                         <Text style={[styles.messageText, { color: isMe ? '#fff' : colors.text }]}>{item.text}</Text>
                                     )}
                                     <Text style={[styles.messageTime, { color: isMe ? 'rgba(255,255,255,0.6)' : colors.textTertiary }]}>
-                                        {item.createdAt?.seconds ? new Date(item.createdAt.seconds * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '...'}
+                                        {item.createdAt ? new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '...'}
                                     </Text>
                                 </View>
                             </View>

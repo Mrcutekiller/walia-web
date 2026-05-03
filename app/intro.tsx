@@ -54,16 +54,8 @@ export default function IntroScreen() {
         <View style={styles.container}>
             <StatusBar style="light" />
             
-            <Video
-                source={require('../../assets/videos/welcome-bg.mp4')}
-                style={StyleSheet.absoluteFill}
-                resizeMode={ResizeMode.COVER}
-                shouldPlay
-                isLooping
-                isMuted={true}
-            />
-            
-            <View style={StyleSheet.absoluteFill} />
+            <View style={[StyleSheet.absoluteFill, { backgroundColor: '#000' }]} />
+            <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(99,102,241,0.05)' }]} />
             
             <SafeAreaView style={styles.content}>
                 <Animated.View 
@@ -85,7 +77,7 @@ export default function IntroScreen() {
                 <Animated.View style={[styles.features, { opacity: fadeAnim }]}>
                     <View style={styles.featureItem}>
                         <View style={styles.featureIcon}>
-                            <Ionicons name="sparkles" size={20} color="#fff" />
+                            <Ionicons name="sparkles" size={22} color="#fff" />
                         </View>
                         <View style={styles.featureText}>
                             <Text style={styles.featureTitle}>Smart AI Tutor</Text>
@@ -95,7 +87,7 @@ export default function IntroScreen() {
                     
                     <View style={styles.featureItem}>
                         <View style={styles.featureIcon}>
-                            <Ionicons name="people" size={20} color="#fff" />
+                            <Ionicons name="people" size={22} color="#fff" />
                         </View>
                         <View style={styles.featureText}>
                             <Text style={styles.featureTitle}>Community</Text>
@@ -105,7 +97,7 @@ export default function IntroScreen() {
                     
                     <View style={styles.featureItem}>
                         <View style={styles.featureIcon}>
-                            <Ionicons name="calendar" size={20} color="#fff" />
+                            <Ionicons name="calendar" size={22} color="#fff" />
                         </View>
                         <View style={styles.featureText}>
                             <Text style={styles.featureTitle}>Study Tools</Text>
@@ -122,7 +114,7 @@ export default function IntroScreen() {
                                 onPress={handleNext}
                             >
                                 <Text style={styles.nextBtnText}>Get Started</Text>
-                                <Ionicons name="arrow-forward" size={20} color="#000" />
+                                <Ionicons name="arrow-forward" size={22} color="#000" />
                             </TouchableOpacity>
                         )}
                     </Animated.View>
@@ -137,26 +129,26 @@ const styles = StyleSheet.create({
     content: { flex: 1, justifyContent: 'space-between', paddingVertical: Spacing.xxxl },
     logoContainer: { alignItems: 'center', paddingTop: Spacing.huge },
     logoCircle: { 
-        width: 120, height: 120, 
-        borderRadius: 40, 
+        width: 130, height: 130, 
+        borderRadius: 44, 
         backgroundColor: '#fff', 
         alignItems: 'center', 
         justifyContent: 'center',
         marginBottom: Spacing.xl,
         shadowColor: '#fff',
-        shadowOffset: { width: 0, height: 20 },
-        shadowOpacity: 0.3,
-        shadowRadius: 30,
+        shadowOffset: { width: 0, height: 25 },
+        shadowOpacity: 0.4,
+        shadowRadius: 35,
     },
-    logoInner: { width: 80, height: 80, borderRadius: 24, backgroundColor: '#000', alignItems: 'center', justifyContent: 'center' },
-    logoEmoji: { fontSize: 40 },
-    title: { fontSize: 48, fontWeight: FontWeight.black, color: '#fff', letterSpacing: 8, marginBottom: Spacing.sm },
+    logoInner: { width: 90, height: 90, borderRadius: 28, backgroundColor: '#000', alignItems: 'center', justifyContent: 'center' },
+    logoEmoji: { fontSize: 44 },
+    title: { fontSize: 52, fontWeight: FontWeight.black, color: '#fff', letterSpacing: 10, marginBottom: Spacing.sm },
     tagline: { fontSize: FontSize.lg, color: 'rgba(255,255,255,0.6)', fontWeight: FontWeight.medium },
     features: { paddingHorizontal: Spacing.xxl },
     featureItem: { flexDirection: 'row', alignItems: 'center', marginBottom: Spacing.xl },
     featureIcon: { 
-        width: 48, height: 48, 
-        borderRadius: 16, 
+        width: 52, height: 52, 
+        borderRadius: 18, 
         backgroundColor: 'rgba(255,255,255,0.15)', 
         alignItems: 'center', 
         justifyContent: 'center',
@@ -175,9 +167,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         gap: Spacing.sm,
         shadowColor: '#fff',
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.3,
-        shadowRadius: 20,
+        shadowOffset: { width: 0, height: 12 },
+        shadowOpacity: 0.4,
+        shadowRadius: 25,
     },
     nextBtnText: { fontSize: FontSize.lg, fontWeight: FontWeight.black, color: '#000' },
 });

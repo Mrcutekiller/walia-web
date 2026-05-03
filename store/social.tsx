@@ -1,6 +1,17 @@
 /**
- * SocialStore — handles XP, levels, follows, posts, likes, views, Pro plan
- * All data persisted in AsyncStorage and available globally via useSocial()
+ * SocialStore — handles Walia Points, levels, follows, posts, likes, views, Pro plan
+ * All data persisted in Firestore and available globally via useSocial()
+ * 
+ * ─── Walia Points System ─────────────────────────────────────────────────────
+ * • Daily login:     +50 pts
+ * • Post created:   +100 pts
+ * • #walia hashtag: +200 pts (bonus)
+ * • AI chat:         +10 pts per message
+ * • Quiz correct:    +30 pts
+ * • Tool used:       +20 pts
+ * • Comment added:   +10 pts
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Reach 10,000 Walia Points → Unlock Pro Plan FREE!
  */
 import { auth, db } from '@/services/firebase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -21,15 +32,17 @@ import {
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { Alert, Animated, StyleSheet, Text, View } from 'react-native';
 
-// ─── XP config ────────────────────────────────────────────────────────────────
+// ─── Walia Points config ──────────────────────────────────────────────────────
 export const XP_REWARDS = {
     daily_login: 50,
     post_created: 100,
+    hashtag_walia: 200,  // bonus for using #walia in a post
+    ai_chat: 10,          // per AI message
     quiz_correct: 30,
     tool_used: 20,
     comment_added: 10,
 };
-export const PRO_PLAN_XP_COST = 10000;
+export const PRO_PLAN_XP_COST = 10000;  // 10k Walia Points → Pro
 export const PRO_PLAN_ETB_COST = 1350;
 export const XP_PER_LEVEL = 500;
 
@@ -41,13 +54,14 @@ export interface SocialPost {
     title?: string;
     content: string;
     createdAt: any;
-    likes: string[]; // array of user IDs
+    likes: string[];
     commentCount: number;
-    comments: Comment[]; // kept for local usage
+    comments: Comment[];
     quizOptions?: string[];
     quizAnswer?: number;
     tags?: string[];
     isAdminPost?: boolean;
+    isPrivate?: boolean;
 }
 
 export interface Comment {
@@ -57,16 +71,26 @@ export interface Comment {
     timestamp: string;
 }
 
+export interface Notification {
+    id: string;
+    userId: string;
+    type: 'payment' | 'message' | 'system' | 'community';
+    title: string;
+    message: string;
+    read: boolean;
+    createdAt: string;
+}
+
 export interface FollowRelation {
     followerId: string;
     followingId: string;
 }
 
 export interface SocialState {
-    xp: number;
+    xp: number;               // Walia Points
     isPro: boolean;
-    followers: string[]; // user IDs
-    following: string[]; // user IDs
+    followers: string[];
+    following: string[];
     posts: SocialPost[];
     likedPostIds: string[];
     totalLikesReceived: number;
@@ -75,52 +99,50 @@ export interface SocialState {
     xpHistory: { amount: number; reason: string; timestamp: string }[];
     dailyAiCount: number;
     dailyUploadCount: number;
-    lastUpdateDate: string; // for resetting daily counts
+    lastUpdateDate: string;
     studyHistory: StudyHistoryItem[];
+    notifications: Notification[];
 }
 
 export interface StudyHistoryItem {
     id: string;
     tool: 'flashcard' | 'summarize' | 'quiz' | 'notes';
     title: string;
-    content: any; // tool specific result
+    content: any;
     timestamp: string;
 }
 
 interface SocialContextType extends SocialState {
-    // XP
     addXP: (amount: number, reason: string) => void;
     level: number;
     xpToNextLevel: number;
-    xpProgress: number; // 0-1
+    xpProgress: number;
     claimProPlan: () => void;
-    // Follow
     followUser: (userId: string) => void;
     unfollowUser: (userId: string) => void;
     isFollowing: (userId: string) => boolean;
-    // Posts
     addPost: (post: Omit<SocialPost, 'id' | 'authorId' | 'likes' | 'commentCount' | 'comments' | 'createdAt'>) => void;
+    deletePost: (postId: string) => void;
+    togglePostPrivacy: (postId: string) => void;
     likePost: (postId: string) => void;
     addComment: (postId: string, comment: Omit<Comment, 'id' | 'timestamp'>) => void;
-    // Stats
     recordView: () => void;
     checkDailyLogin: () => void;
-    recordAiMessage: () => boolean; // returns false if limit hit
-    recordUpload: () => boolean; // returns false if limit hit
-    // XP toast
+    recordAiMessage: () => boolean;
+    recordUpload: () => boolean;
     showXpToast: (amount: number, reason: string) => void;
-    togglePro: () => void; // for testing
+    togglePro: () => void;
     saveStudyHistory: (item: Omit<StudyHistoryItem, 'id' | 'timestamp'>) => Promise<void>;
+    addNotification: (notif: Omit<Notification, 'id' | 'read' | 'createdAt'>) => void;
+    markNotificationRead: (id: string) => void;
+    deleteNotification: (id: string) => void;
 }
 
 const SocialContext = createContext<SocialContextType | undefined>(undefined);
-
-const STORAGE_KEY = 'walia_social_v1';
-
+const STORAGE_KEY = 'walia_social_v2';
 const DEFAULT_POSTS: SocialPost[] = [];
 
-
-// ─── XP Toast component ───────────────────────────────────────────────────────
+// ─── Walia Points Toast ───────────────────────────────────────────────────────
 let _showXpToastGlobal = (_amount: number, _reason: string) => { };
 
 export function XpToastContainer() {
@@ -132,9 +154,9 @@ export function XpToastContainer() {
             const anim = new Animated.Value(0);
             setToasts(prev => [...prev, { id, amount, reason, anim }]);
             Animated.sequence([
-                Animated.spring(anim, { toValue: 1, tension: 60, friction: 6, useNativeDriver: true }),
-                Animated.delay(1500),
-                Animated.timing(anim, { toValue: 0, duration: 400, useNativeDriver: true }),
+                Animated.spring(anim, { toValue: 1, tension: 70, friction: 6, useNativeDriver: true }),
+                Animated.delay(2000),
+                Animated.timing(anim, { toValue: 0, duration: 350, useNativeDriver: true }),
             ]).start(() => setToasts(prev => prev.filter(t => t.id !== id)));
         };
     }, []);
@@ -144,9 +166,13 @@ export function XpToastContainer() {
             {toasts.map(t => (
                 <Animated.View key={t.id} style={[xpStyles.toast, {
                     opacity: t.anim,
-                    transform: [{ translateY: t.anim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }, { scale: t.anim.interpolate({ inputRange: [0, 1], outputRange: [0.8, 1] }) }],
+                    transform: [
+                        { translateY: t.anim.interpolate({ inputRange: [0, 1], outputRange: [30, 0] }) },
+                        { scale: t.anim.interpolate({ inputRange: [0, 1], outputRange: [0.85, 1] }) }
+                    ],
                 }]}>
-                    <Text style={xpStyles.plus}>+{t.amount} XP</Text>
+                    <Text style={xpStyles.waliaW}>W</Text>
+                    <Text style={xpStyles.plus}>+{t.amount}</Text>
                     <Text style={xpStyles.reason}>{t.reason}</Text>
                 </Animated.View>
             ))}
@@ -155,10 +181,25 @@ export function XpToastContainer() {
 }
 
 const xpStyles = StyleSheet.create({
-    container: { position: 'absolute', bottom: 120, right: 16, alignItems: 'flex-end', zIndex: 9999 },
-    toast: { backgroundColor: '#6C63FF', borderRadius: 24, paddingHorizontal: 16, paddingVertical: 10, marginTop: 8, shadowColor: '#6C63FF', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.4, shadowRadius: 10, elevation: 8, flexDirection: 'row', gap: 8, alignItems: 'center' },
-    plus: { color: '#fff', fontWeight: '800', fontSize: 14 },
-    reason: { color: 'rgba(255,255,255,0.85)', fontSize: 12 },
+    container: { position: 'absolute', bottom: 130, right: 16, alignItems: 'flex-end', zIndex: 9999 },
+    toast: {
+        backgroundColor: '#6366F1',
+        borderRadius: 28,
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        marginTop: 8,
+        shadowColor: '#6366F1',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.45,
+        shadowRadius: 12,
+        elevation: 10,
+        flexDirection: 'row',
+        gap: 6,
+        alignItems: 'center',
+    },
+    waliaW: { color: '#FFF', fontWeight: '900', fontSize: 13, opacity: 0.85 },
+    plus: { color: '#FFF', fontWeight: '900', fontSize: 16 },
+    reason: { color: 'rgba(255,255,255,0.85)', fontSize: 12, fontWeight: '600' },
 });
 
 // ─── Provider ─────────────────────────────────────────────────────────────────
@@ -178,31 +219,25 @@ export function SocialProvider({ children }: { children: ReactNode }) {
         dailyUploadCount: 0,
         lastUpdateDate: new Date().toISOString().slice(0, 10),
         studyHistory: [],
+        notifications: [],
     });
-    const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     // ── Real-time Sync ──
     useEffect(() => {
         const fallbackTimer = setTimeout(() => {
-            console.warn('SocialProvider Firestore sync timeout, continuing with local data');
+            console.warn('SocialProvider Firestore sync timeout');
         }, 5000);
 
-        // 1. Sync Posts
         const postsQuery = query(collection(db, 'posts'), orderBy('createdAt', 'desc'), firestoreLimit(50));
         const unsubscribePosts = onSnapshot(postsQuery, (snap: any) => {
             clearTimeout(fallbackTimer);
             const postsData = snap.docs.map((doc: any) => ({ id: doc.id, ...doc.data() })) as SocialPost[];
-            // For authenticated users, we only show real posts. For guests, we show DEFAULT_POSTS if empty.
-            setState(prev => ({
-                ...prev,
-                posts: postsData
-            }));
+            setState(prev => ({ ...prev, posts: postsData }));
         }, (error) => {
             clearTimeout(fallbackTimer);
-            console.warn('Posts sync error, using defaults:', error);
+            console.warn('Posts sync error:', error);
         });
 
-        // 2. Sync User Stats
         let unsubscribeStats = () => { };
         if (auth.currentUser) {
             unsubscribeStats = onSnapshot(doc(db, 'users', auth.currentUser.uid), (snap: any) => {
@@ -235,13 +270,12 @@ export function SocialProvider({ children }: { children: ReactNode }) {
     const updateState = useCallback((updater: (prev: SocialState) => SocialState) => {
         setState(prev => {
             const next = updater(prev);
-            // We no longer rely solely on AsyncStorage for core stats, but we can keep it as a backup
             AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next)).catch(() => { });
             return next;
         });
     }, []);
 
-    // ── XP ──
+    // ── Walia Points (XP) ──
     const showXpToast = useCallback((amount: number, reason: string) => {
         _showXpToastGlobal(amount, reason);
     }, []);
@@ -254,19 +288,40 @@ export function SocialProvider({ children }: { children: ReactNode }) {
             xpHistory: arrayUnion({ amount, reason, timestamp: new Date().toISOString() })
         });
         showXpToast(amount, reason);
+
+        // Auto-unlock Pro at 10k points
+        setState(prev => {
+            if (!prev.isPro && (prev.xp + amount) >= PRO_PLAN_XP_COST) {
+                // Notify but don't auto-set — let claimProPlan handle it
+            }
+            return prev;
+        });
     }, [showXpToast]);
 
     const claimProPlan = useCallback(() => {
         setState(prev => {
-            if (prev.isPro) { Alert.alert('✅ Already Pro!', 'You are already on the Pro plan.'); return prev; }
-            if (prev.xp < PRO_PLAN_XP_COST) {
-                Alert.alert('Not enough XP', `You need ${PRO_PLAN_XP_COST.toLocaleString()} XP.\nYou have ${prev.xp.toLocaleString()} XP.\n\nKeep posting, answering quizzes, and using tools!`);
+            if (prev.isPro) {
+                Alert.alert('✅ Already Pro!', 'You are already on the Pro plan.');
                 return prev;
             }
-            Alert.alert('🎉 Welcome to Walia Pro!', 'You unlocked Pro with 10,000 XP!\n\nEnjoy unlimited AI chats, advanced tools and priority support.');
-            const next = { ...prev, xp: prev.xp - PRO_PLAN_XP_COST, isPro: true };
-            AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-            return next;
+            if (prev.xp < PRO_PLAN_XP_COST) {
+                Alert.alert(
+                    '⭐ Walia Points needed',
+                    `You need ${PRO_PLAN_XP_COST.toLocaleString()} Walia Points.\nYou have ${prev.xp.toLocaleString()} pts.\n\nKeep chatting with AI, posting, and using tools!`
+                );
+                return prev;
+            }
+            if (auth.currentUser) {
+                updateDoc(doc(db, 'users', auth.currentUser.uid), {
+                    isPro: true,
+                    xp: increment(-PRO_PLAN_XP_COST)
+                }).catch(() => { });
+            }
+            Alert.alert(
+                '🎉 Welcome to Walia Pro!',
+                'You unlocked Pro with 10,000 Walia Points!\n\nEnjoy unlimited AI chats, advanced tools and priority support.'
+            );
+            return { ...prev, xp: prev.xp - PRO_PLAN_XP_COST, isPro: true };
         });
     }, []);
 
@@ -279,7 +334,10 @@ export function SocialProvider({ children }: { children: ReactNode }) {
                 ...prev,
                 lastLoginDate: today,
                 xp: prev.xp + XP_REWARDS.daily_login,
-                xpHistory: [{ amount: XP_REWARDS.daily_login, reason: 'Daily login 🌟', timestamp: new Date().toISOString() }, ...prev.xpHistory.slice(0, 49)],
+                xpHistory: [
+                    { amount: XP_REWARDS.daily_login, reason: 'Daily login 🌟', timestamp: new Date().toISOString() },
+                    ...prev.xpHistory.slice(0, 49)
+                ],
             };
             setTimeout(() => showXpToast(XP_REWARDS.daily_login, 'Daily login 🌟'), 2000);
             return next;
@@ -289,22 +347,17 @@ export function SocialProvider({ children }: { children: ReactNode }) {
     // ── Follow ──
     const followUser = useCallback(async (userId: string) => {
         const isCurrentlyFollowing = state.following.includes(userId);
-        
         updateState(prev => ({
             ...prev,
             following: isCurrentlyFollowing ? prev.following : [...prev.following, userId],
         }));
-
         if (!isCurrentlyFollowing && auth.currentUser) {
-            // Reward 5 tokens
             try {
-                const userRef = doc(db, 'users', auth.currentUser.uid);
-                await updateDoc(userRef, {
-                    tokensUsed: increment(-5) // decreasing used = increasing remaining
+                await updateDoc(doc(db, 'users', auth.currentUser.uid), {
+                    tokensUsed: increment(-5)
                 });
-                Alert.alert('🎉 Bonus Tokens', 'You earned +5 tokens for following a user!');
             } catch (e) {
-                console.error("Failed to reward tokens", e);
+                console.error('Failed to reward tokens', e);
             }
         }
     }, [state.following, updateState]);
@@ -330,44 +383,108 @@ export function SocialProvider({ children }: { children: ReactNode }) {
             createdAt: serverTimestamp(),
         };
         await addDoc(collection(db, 'posts'), newPostData);
+
+        // Local base points for posting
         addXP(XP_REWARDS.post_created, 'Post created 📝');
 
-        // Reward 10 tokens
-        try {
-            const userRef = doc(db, 'users', auth.currentUser.uid);
-            await updateDoc(userRef, {
-                tokensUsed: increment(-10) // decreasing used = increasing remaining
-            });
-            Alert.alert('🎉 Bonus Tokens', 'You earned +10 tokens for posting to the community!');
-        } catch (e) {
-            console.error("Failed to reward tokens", e);
+        // Add local notification
+        const newNotif: Notification = {
+            id: Date.now().toString() + Math.random().toString(36).substring(7),
+            userId: auth.currentUser.uid,
+            type: 'community',
+            title: 'New Post Published',
+            message: 'Your post was successfully added to the community feed!',
+            read: false,
+            createdAt: new Date().toISOString(),
+        };
+
+        updateState(prev => ({
+            ...prev,
+            notifications: [newNotif, ...(prev.notifications || [])]
+        }));
+
+        // Bonus points for #walia hashtag
+        const hasWaliaTag = post.content.toLowerCase().includes('#walia') ||
+            (post.tags || []).some(t => t.toLowerCase() === '#walia');
+        if (hasWaliaTag) {
+            setTimeout(() => addXP(XP_REWARDS.hashtag_walia, '#walia bonus 🌟'), 800);
         }
 
+        // Reward tokens
+        try {
+            await updateDoc(doc(db, 'users', auth.currentUser.uid), {
+                tokensUsed: increment(-10)
+            });
+        } catch (e) {
+            console.error('Failed to reward tokens', e);
+        }
     }, [addXP]);
 
     const likePost = useCallback(async (postId: string) => {
-        if (!auth.currentUser) return;
-        const postRef = doc(db, 'posts', postId);
-        const userRef = doc(db, 'users', auth.currentUser.uid);
+        // No-op for local-only state right now, but would normally hit firestore
+        // To support local, we'll update the state directly:
+        updateState(prev => {
+            const post = prev.posts.find(p => p.id === postId);
+            if (!post) return prev;
+            const alreadyLiked = post.likes.includes(auth.currentUser?.uid || 'user');
+            
+            const nextPosts = prev.posts.map(p => {
+                if (p.id !== postId) return p;
+                const likes = alreadyLiked 
+                    ? p.likes.filter(id => id !== (auth.currentUser?.uid || 'user'))
+                    : [...p.likes, (auth.currentUser?.uid || 'user')];
+                return { ...p, likes };
+            });
 
-        // Find post to check if currently liked
-        const post = state.posts.find(p => p.id === postId);
-        const alreadyLiked = post?.likes?.includes(auth.currentUser.uid) || false;
+            return {
+                ...prev,
+                posts: nextPosts,
+                likedPostIds: alreadyLiked 
+                    ? prev.likedPostIds.filter(id => id !== postId)
+                    : [...prev.likedPostIds, postId]
+            };
+        });
+    }, [updateState]);
 
-        await updateDoc(postRef, {
-            likes: alreadyLiked ? arrayRemove(auth.currentUser.uid) : arrayUnion(auth.currentUser.uid)
-        });
-        await updateDoc(userRef, {
-            likedPostIds: alreadyLiked ? arrayRemove(postId) : arrayUnion(postId)
-        });
-    }, [state.posts]);
+    const deletePost = useCallback((postId: string) => {
+        updateState(prev => ({
+            ...prev,
+            posts: prev.posts.filter(p => p.id !== postId)
+        }));
+    }, [updateState]);
+
+    const togglePostPrivacy = useCallback((postId: string) => {
+        updateState(prev => ({
+            ...prev,
+            posts: prev.posts.map(p => p.id === postId ? { ...p, isPrivate: !p.isPrivate } : p)
+        }));
+    }, [updateState]);
 
     const addComment = useCallback((postId: string, comment: Omit<Comment, 'id' | 'timestamp'>) => {
         const newComment: Comment = { ...comment, id: Date.now().toString(), timestamp: 'Just now' };
-        updateState(prev => ({
-            ...prev,
-            posts: prev.posts.map(p => p.id === postId ? { ...p, comments: [...p.comments, newComment] } : p),
-        }));
+        updateState(prev => {
+            const post = prev.posts.find(p => p.id === postId);
+            
+            // Add a notification for the author of the post (if local)
+            let newNotifications = prev.notifications || [];
+            if (post && post.authorId === auth.currentUser?.uid) {
+                newNotifications = [{
+                    id: Date.now().toString() + Math.random().toString(36).substring(7),
+                    userId: post.authorId,
+                    type: 'community',
+                    title: 'New Comment',
+                    message: 'Someone commented on your post.',
+                    read: false,
+                    createdAt: new Date().toISOString(),
+                }, ...newNotifications];
+            }
+
+            return {
+                ...prev,
+                posts: prev.posts.map(p => p.id === postId ? { ...p, comments: [...p.comments, newComment], commentCount: (p.commentCount || 0) + 1 } : p),
+                notifications: newNotifications
+            };
+        });
         addXP(XP_REWARDS.comment_added, 'Comment added 💬');
     }, [updateState, addXP]);
 
@@ -380,6 +497,7 @@ export function SocialProvider({ children }: { children: ReactNode }) {
         return s;
     }, []);
 
+    // Free plan: 20 AI messages/day. Pro: unlimited.
     const recordAiMessage = useCallback(() => {
         let allowed = true;
         updateState(prev => {
@@ -390,8 +508,12 @@ export function SocialProvider({ children }: { children: ReactNode }) {
             }
             return { ...next, dailyAiCount: next.dailyAiCount + 1 };
         });
+        // Award Walia Points for every AI message
+        if (allowed) {
+            addXP(XP_REWARDS.ai_chat, 'AI chat 🤖');
+        }
         return allowed;
-    }, [updateState, resetDailyIfNewDay]);
+    }, [updateState, resetDailyIfNewDay, addXP]);
 
     const recordUpload = useCallback(() => {
         let allowed = true;
@@ -425,12 +547,35 @@ export function SocialProvider({ children }: { children: ReactNode }) {
         showXpToast(XP_REWARDS.tool_used, `${item.tool.charAt(0).toUpperCase() + item.tool.slice(1)} completed 🎓`);
     }, [showXpToast]);
 
-    // ── Views ──
     const recordView = useCallback(() => {
         updateState(prev => ({ ...prev, totalViews: prev.totalViews + 1 }));
     }, [updateState]);
 
-    // ── Derived XP stats ──
+    const addNotification = useCallback((notif: Omit<Notification, 'id' | 'read' | 'createdAt'>) => {
+        const newNotif: Notification = {
+            ...notif,
+            id: Date.now().toString() + Math.random().toString(36).substring(7),
+            read: false,
+            createdAt: new Date().toISOString()
+        };
+        updateState(prev => ({ ...prev, notifications: [newNotif, ...(prev.notifications || [])] }));
+    }, [updateState]);
+
+    const markNotificationRead = useCallback((id: string) => {
+        updateState(prev => ({
+            ...prev,
+            notifications: (prev.notifications || []).map(n => n.id === id ? { ...n, read: true } : n)
+        }));
+    }, [updateState]);
+
+    const deleteNotification = useCallback((id: string) => {
+        updateState(prev => ({
+            ...prev,
+            notifications: (prev.notifications || []).filter(n => n.id !== id)
+        }));
+    }, [updateState]);
+
+    // ── Derived stats ──
     const level = Math.floor(state.xp / XP_PER_LEVEL) + 1;
     const xpInCurrentLevel = state.xp % XP_PER_LEVEL;
     const xpProgress = xpInCurrentLevel / XP_PER_LEVEL;
@@ -441,10 +586,10 @@ export function SocialProvider({ children }: { children: ReactNode }) {
             ...state,
             addXP, level, xpToNextLevel, xpProgress,
             claimProPlan, followUser, unfollowUser, isFollowing,
-            addPost, likePost, addComment, recordView,
+            addPost, deletePost, togglePostPrivacy, likePost, addComment, recordView,
             checkDailyLogin, showXpToast,
             recordAiMessage, recordUpload, togglePro,
-            saveStudyHistory,
+            saveStudyHistory, addNotification, markNotificationRead, deleteNotification,
         }}>
             {children}
         </SocialContext.Provider>

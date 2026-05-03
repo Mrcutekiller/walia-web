@@ -20,7 +20,24 @@ import {
   Dimensions
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { format, addDays, startOfWeek, isSameDay, parseISO } from 'date-fns';
+// Simple native date helpers to replace date-fns
+const formatDate = (date: Date) => date.toISOString().split('T')[0];
+const addDays = (date: Date, days: number) => {
+    const result = new Date(date);
+    result.setDate(result.getDate() + days);
+    return result;
+};
+const startOfWeek = (date: Date) => {
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Monday
+    return new Date(d.setDate(diff));
+};
+const isSameDay = (d1: Date, d2: Date) => {
+    return d1.getFullYear() === d2.getFullYear() &&
+           d1.getMonth() === d2.getMonth() &&
+           d1.getDate() === d2.getDate();
+};
 import { LinearGradient } from 'expo-linear-gradient';
 
 const { width } = Dimensions.get('window');
@@ -36,7 +53,7 @@ export default function DailyPlanScreen() {
   const [loading, setLoading] = useState(true);
 
   // Generate 14 days starting from this week's Monday
-  const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+  const weekStart = startOfWeek(new Date());
   const weekDays = useMemo(() => Array.from({ length: 14 }, (_, i) => addDays(weekStart, i)), [weekStart]);
 
   useEffect(() => {
@@ -61,7 +78,7 @@ export default function DailyPlanScreen() {
         userId: user.id,
         title: taskTitle,
         completed: false,
-        date: format(selectedDate, 'yyyy-MM-dd'),
+        date: formatDate(selectedDate),
         createdAt: serverTimestamp(),
       });
     } catch (e) {
@@ -86,7 +103,7 @@ export default function DailyPlanScreen() {
   };
 
   const filteredTasks = useMemo(() => 
-    tasks.filter(t => t.date === format(selectedDate, 'yyyy-MM-dd')),
+    tasks.filter(t => t.date === formatDate(selectedDate)),
     [tasks, selectedDate]
   );
 
@@ -147,8 +164,8 @@ export default function DailyPlanScreen() {
                     isSelected && styles.dateCardActive
                   ]}
                 >
-                  <Text style={[styles.dateDay, { color: isSelected ? '#fff' : colors.textTertiary }]}>{format(date, 'EEE')}</Text>
-                  <Text style={[styles.dateNum, { color: isSelected ? '#fff' : colors.text }]}>{format(date, 'd')}</Text>
+                  <Text style={[styles.dateDay, { color: isSelected ? '#fff' : colors.textTertiary }]}>{date.toLocaleDateString('en-US', { weekday: 'short' })}</Text>
+                  <Text style={[styles.dateNum, { color: isSelected ? '#fff' : colors.text }]}>{date.getDate()}</Text>
                   {isToday && !isSelected && <View style={[styles.todayMarker, { backgroundColor: colors.primary }]} />}
                 </TouchableOpacity>
               );
@@ -160,7 +177,7 @@ export default function DailyPlanScreen() {
         <View style={styles.tasksBody}>
           <View style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>
-                {isSameDay(selectedDate, new Date()) ? "Today's Tasks" : format(selectedDate, 'MMM d, yyyy')}
+                {isSameDay(selectedDate, new Date()) ? "Today's Tasks" : selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
             </Text>
             <TouchableOpacity style={[styles.filterBtn, { borderColor: colors.border }]}>
                 <Ionicons name="options-outline" size={20} color={colors.textSecondary} />
@@ -186,7 +203,7 @@ export default function DailyPlanScreen() {
                     <Text style={[styles.taskTitle, { color: colors.text, textDecorationLine: item.completed ? 'line-through' : 'none', opacity: item.completed ? 0.4 : 1 }]}>
                         {item.title}
                     </Text>
-                    <Text style={[styles.taskTime, { color: colors.textTertiary }]}>Added {format(item.createdAt?.toDate() || new Date(), 'h:mm a')}</Text>
+                    <Text style={[styles.taskTime, { color: colors.textTertiary }]}>Added {item.createdAt?.toDate ? item.createdAt.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now'}</Text>
                   </View>
                   <TouchableOpacity onPress={() => deleteTask(item.id)} style={styles.deleteBtn}>
                     <Ionicons name="trash-outline" size={18} color={isDark ? '#EF4444' : '#F87171'} />

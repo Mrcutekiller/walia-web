@@ -3,11 +3,14 @@ import { useTheme } from '@/store/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState, useEffect } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Dimensions, Animated, Alert } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { auth, db } from '@/services/firebase';
-import { collection, onSnapshot, query, doc, updateDoc } from 'firebase/firestore';
+import { LinearGradient } from 'expo-linear-gradient';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuth } from '@/store/auth';
+
+const { width } = Dimensions.get('window');
 
 interface Plan {
     id: string;
@@ -26,169 +29,517 @@ export default function CalendarScreen() {
     const [plans, setPlans] = useState<Plan[]>([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        if (!auth.currentUser) return;
-        const q = query(collection(db, `users/${auth.currentUser.uid}/plans`));
-        const unsub = onSnapshot(q, (snap) => {
-            const fetched = snap.docs.map(d => ({ id: d.id, ...d.data() } as Plan));
-            setPlans(fetched);
-            setLoading(false);
-        });
-        return () => unsub();
-    }, []);
+    const bg = isDark ? colors.background : '#F8FAFC';
+    const cardBg = isDark ? colors.surface : '#FFFFFF';
 
-    const cycleStatus = async (planId: string) => {
+    const { user } = useAuth();
+    
+    // Load plans from AsyncStorage
+    const loadPlans = async () => {
+        if (!user) return;
+        try {
+            const data = await AsyncStorage.getItem(`walia_plans_${user.id}`);
+            if (data) setPlans(JSON.parse(data));
+        } catch (e) {
+            console.error('Error loading plans', e);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const savePlans = async (newPlans: Plan[]) => {
+        if (!user) return;
+        setPlans(newPlans);
+        try {
+            await AsyncStorage.setItem(`walia_plans_${user.id}`, JSON.stringify(newPlans));
+        } catch (e) {
+            console.error('Error saving plans', e);
+        }
+    };
+
+    useEffect(() => {
+        loadPlans();
+    }, [user]);
+
+    // Check for notifications
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const now = new Date();
+            const todayStr = now.toISOString().split('T')[0];
+            const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+            
+            plans.forEach(p => {
+                if (p.date === todayStr && p.time === timeStr && p.status !== 'done') {
+                    // Show notification
+                    Alert.alert(
+                        '📅 Task Reminder',
+                        `${p.title}\n\n${p.description || ''}`,
+                        [
+                            { text: 'Done', onPress: () => cycleStatus(p.id, 'done') },
+                            { text: 'Remind me after 10 min', onPress: () => snoozePlan(p.id) },
+                            { text: 'Dismiss', style: 'cancel' }
+                        ]
+                    );
+                }
+            });
+        }, 60000); // Check every minute
+        return () => clearInterval(interval);
+    }, [plans]);
+
+    const snoozePlan = (planId: string) => {
         const plan = plans.find(p => p.id === planId);
-        if (!plan || !auth.currentUser) return;
+        if (!plan) return;
         
+        // Add 10 minutes to current time
+        const [hours, minutes] = plan.time.split(':').map(Number);
+        const date = new Date();
+        date.setHours(hours, minutes + 10);
+        const newTime = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+        
+        savePlans(plans.map(p => p.id === planId ? { ...p, time: newTime } : p));
+    };
+
+    const cycleStatus = async (planId: string, forceStatus?: 'done' | 'ongoing' | 'not-done') => {
+        const plan = plans.find(p => p.id === planId);
+        if (!plan || !user) return;
+
         const nextStatus: Record<string, 'done' | 'ongoing' | 'not-done'> = {
             'not-done': 'ongoing',
             'ongoing': 'done',
             'done': 'not-done'
         };
-        
-        const updatedStatus = nextStatus[plan.status || 'not-done'];
-        const planRef = doc(db, `users/${auth.currentUser.uid}/plans`, planId);
-        await updateDoc(planRef, { status: updatedStatus });
+
+        const updatedStatus = forceStatus || nextStatus[plan.status || 'not-done'];
+        savePlans(plans.map(p => p.id === planId ? { ...p, status: updatedStatus } : p));
     };
 
     const markedDates: any = {};
     plans.forEach(p => {
-        const colors_status: Record<string, string> = { 'done': '#10b981', 'ongoing': '#f59e0b', 'not-done': '#94a3b8' };
-        const statusColor = colors_status[p.status || 'not-done'];
-        markedDates[p.date] = { 
-            marked: true, 
-            dotColor: statusColor, 
-            selected: p.date === selectedDate, 
-            selectedColor: colors.primary 
+        const statusColors: Record<string, string> = {
+            'done': '#10B981',
+            'ongoing': '#F59E0B',
+            'not-done': colors.textTertiary
+        };
+        const statusColor = statusColors[p.status || 'not-done'];
+        markedDates[p.date] = {
+            marked: true,
+            dotColor: statusColor,
+            selected: p.date === selectedDate,
+            selectedColor: '#6366F1'
         };
     });
-    if (selectedDate && !markedDates[selectedDate]) markedDates[selectedDate] = { selected: true, selectedColor: colors.primary };
+    if (selectedDate && !markedDates[selectedDate]) {
+        markedDates[selectedDate] = { selected: true, selectedColor: '#6366F1' };
+    }
 
     const filteredPlans = selectedDate ? plans.filter(p => p.date === selectedDate) : plans;
     const stats = {
         done: plans.filter(p => p.status === 'done').length,
         ongoing: plans.filter(p => p.status === 'ongoing').length,
-        notDone: plans.filter(p => p.status === 'not-done' || !p.status).length,
+        pending: plans.filter(p => p.status === 'not-done' || !p.status).length,
+    };
+
+    const today = new Date().toISOString().split('T')[0];
+    const isToday = selectedDate === today;
+
+    const STATUS_CONFIG = {
+        'done': { icon: 'checkmark-circle', color: '#10B981', label: 'Completed', bg: '#10B98115' },
+        'ongoing': { icon: 'time', color: '#F59E0B', label: 'In Progress', bg: '#F59E0B15' },
+        'not-done': { icon: 'ellipse-outline', color: '#94A3B8', label: 'Planned', bg: '#94A3B815' },
     };
 
     return (
-        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-            <View style={styles.header}>
-                <View>
-                    <Text style={[styles.title, { color: colors.text }]}>Study Plan 📅</Text>
-                    <Text style={{ fontSize: FontSize.sm, color: colors.textSecondary, marginTop: 2 }}>{stats.done} done · {stats.ongoing} ongoing · {stats.notDone} pending</Text>
+        <View style={[styles.container, { backgroundColor: bg }]}>
+
+            {/* ── Header ── */}
+            <LinearGradient
+                colors={isDark ? ['#1E293B', '#0F172A'] : ['#6366F1', '#818CF8']}
+                style={styles.header}
+                start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+            >
+                <SafeAreaView edges={['top']} style={styles.safeHeader}>
+                    <View style={styles.headerRow}>
+                        <View>
+                            <Text style={styles.headerSub}>STUDY COMPANION</Text>
+                            <Text style={styles.headerTitle}>Study Plan</Text>
+                        </View>
+                        <TouchableOpacity
+                            style={styles.addBtn}
+                            onPress={() => router.push('/calendar/add' as any)}
+                        >
+                            <Ionicons name="add" size={24} color="#FFF" />
+                        </TouchableOpacity>
+                    </View>
+
+                    {/* Stats Bar */}
+                    <View style={styles.statsBar}>
+                        {[
+                            { val: stats.done, label: 'Done', color: '#10B981' },
+                            { val: stats.ongoing, label: 'Active', color: '#F59E0B' },
+                            { val: stats.pending, label: 'Pending', color: '#94A3B8' },
+                        ].map((s, i, arr) => (
+                            <React.Fragment key={s.label}>
+                                <View style={styles.statItem}>
+                                    <Text style={styles.statVal}>{s.val}</Text>
+                                    <View style={[styles.statDot, { backgroundColor: s.color }]} />
+                                    <Text style={styles.statLab}>{s.label}</Text>
+                                </View>
+                                {i < arr.length - 1 && <View style={styles.statDivider} />}
+                            </React.Fragment>
+                        ))}
+                    </View>
+                </SafeAreaView>
+                {/* Decorative */}
+                <View style={styles.headerDecor1} />
+                <View style={styles.headerDecor2} />
+            </LinearGradient>
+
+            <ScrollView
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.scrollContent}
+            >
+                {/* ── Calendar Widget ── */}
+                <View style={[styles.calendarCard, {
+                    backgroundColor: cardBg,
+                    borderColor: isDark ? '#1E293B' : '#F1F5F9',
+                }]}>
+                    <Calendar
+                        onDayPress={(day: { dateString: string }) => setSelectedDate(day.dateString)}
+                        markedDates={markedDates}
+                        theme={{
+                            backgroundColor: 'transparent',
+                            calendarBackground: 'transparent',
+                            textSectionTitleColor: colors.textTertiary,
+                            selectedDayBackgroundColor: '#6366F1',
+                            selectedDayTextColor: '#FFF',
+                            todayTextColor: '#6366F1',
+                            dayTextColor: colors.text,
+                            textDisabledColor: colors.textTertiary,
+                            dotColor: '#6366F1',
+                            selectedDotColor: '#FFF',
+                            arrowColor: '#6366F1',
+                            monthTextColor: colors.text,
+                            textMonthFontWeight: '900',
+                            textDayFontSize: 14,
+                            textMonthFontSize: 16,
+                            textDayHeaderFontWeight: '700',
+                            textDayFontWeight: '600',
+                        }}
+                    />
                 </View>
-                <TouchableOpacity style={[styles.addBtn, { backgroundColor: colors.surfaceAlt }]} onPress={() => router.push('/calendar/add' as any)}>
-                    <Ionicons name="add" size={24} color={colors.primary} />
-                </TouchableOpacity>
-            </View>
 
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
-                <Calendar
-                    onDayPress={(day: { dateString: string }) => setSelectedDate(day.dateString)}
-                    markedDates={markedDates}
-                    theme={{
-                        backgroundColor: colors.background,
-                        calendarBackground: colors.surface,
-                        textSectionTitleColor: colors.textSecondary,
-                        selectedDayBackgroundColor: colors.primary,
-                        selectedDayTextColor: '#fff',
-                        todayTextColor: colors.primary,
-                        dayTextColor: colors.text,
-                        textDisabledColor: colors.textTertiary,
-                        dotColor: colors.primary,
-                        arrowColor: colors.primary,
-                        monthTextColor: colors.text,
-                        textMonthFontWeight: FontWeight.bold,
-                        textDayFontSize: FontSize.md,
-                        textMonthFontSize: FontSize.lg,
-                    }}
-                    style={[styles.calendar, { backgroundColor: colors.surface }]}
-                />
-
-                <View style={styles.reminders}>
-                    <View style={styles.remindersHeader}>
-                        <Text style={[styles.remindersTitle, { color: colors.text }]}>{selectedDate ? `Plans for ${selectedDate}` : 'All Plans'}</Text>
-                        {selectedDate && <TouchableOpacity onPress={() => setSelectedDate('')}><Text style={{ fontSize: FontSize.sm, color: colors.primary, fontWeight: FontWeight.bold }}>Show All</Text></TouchableOpacity>}
+                {/* ── Plans Section ── */}
+                <View style={styles.plansSection}>
+                    <View style={styles.plansHeader}>
+                        <View>
+                            <Text style={[styles.plansTitle, { color: colors.text }]}>
+                                {isToday ? "Today's Agenda" : selectedDate
+                                    ? new Date(selectedDate).toLocaleDateString('en', { weekday: 'long', month: 'short', day: 'numeric' })
+                                    : 'All Plans'}
+                            </Text>
+                            <Text style={[styles.plansSub, { color: colors.textTertiary }]}>
+                                {filteredPlans.length} task{filteredPlans.length !== 1 ? 's' : ''} scheduled
+                            </Text>
+                        </View>
+                        <View style={styles.plansActions}>
+                            {selectedDate && (
+                                <TouchableOpacity
+                                    style={[styles.showAllBtn, { backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }]}
+                                    onPress={() => setSelectedDate('')}
+                                >
+                                    <Text style={[styles.showAllText, { color: colors.textSecondary }]}>All</Text>
+                                </TouchableOpacity>
+                            )}
+                            <TouchableOpacity
+                                style={[styles.addPlanBtn, { backgroundColor: '#6366F1' }]}
+                                onPress={() => router.push('/calendar/add' as any)}
+                            >
+                                <Ionicons name="add" size={16} color="#FFF" />
+                            </TouchableOpacity>
+                        </View>
                     </View>
 
                     {filteredPlans.length === 0 ? (
-                        <View style={styles.emptyState}>
-                            <View style={[styles.emptyIcon, { backgroundColor: colors.surfaceAlt }]}>
-                                <Ionicons name="calendar-outline" size={32} color={colors.textTertiary} />
+                        <View style={[styles.emptyState, { backgroundColor: cardBg, borderColor: isDark ? '#1E293B' : '#F1F5F9' }]}>
+                            <View style={[styles.emptyIconBox, { backgroundColor: '#6366F110' }]}>
+                                <Ionicons name="calendar-clear-outline" size={36} color="#6366F1" />
                             </View>
-                            <Text style={{ fontSize: FontSize.md, color: colors.textSecondary, fontWeight: FontWeight.bold }}>No plans for this date</Text>
+                            <Text style={[styles.emptyTitle, { color: colors.text }]}>No tasks scheduled</Text>
+                            <Text style={[styles.emptyText, { color: colors.textTertiary }]}>
+                                {isToday ? "You're all clear today! Add a task to stay organized." : 'No plans for this date.'}
+                            </Text>
+                            <TouchableOpacity
+                                style={styles.createBtn}
+                                onPress={() => router.push('/calendar/add' as any)}
+                            >
+                                <Ionicons name="add-circle-outline" size={16} color="#FFF" />
+                                <Text style={styles.createBtnText}>Add Task</Text>
+                            </TouchableOpacity>
                         </View>
                     ) : (
-                        filteredPlans.map(p => {
-                            const statusInfo = {
-                                'done': { icon: 'checkmark-circle', color: '#10b981', label: 'Done' },
-                                'ongoing': { icon: 'play-circle', color: '#f59e0b', label: 'Ongoing' },
-                                'not-done': { icon: 'ellipse-outline', color: colors.textTertiary, label: 'Pending' }
-                            };
-                            const info = statusInfo[p.status || 'not-done'];
-                            
-                            return (
-                                <TouchableOpacity 
-                                    key={p.id} 
-                                    activeOpacity={0.8}
-                                    onPress={() => cycleStatus(p.id)}
-                                    style={[styles.reminderCard, { backgroundColor: colors.surface, borderColor: colors.divider, borderWidth: 1 }]}
-                                >
-                                    <View style={[styles.reminderAccent, { backgroundColor: info.color }]} />
-                                    <View style={styles.reminderContent}>
-                                        <View style={styles.reminderTopRow}>
-                                            <View style={{ flex: 1 }}>
-                                                <Text style={[styles.reminderTitle, { color: colors.text }, p.status === 'done' && { textDecorationLine: 'line-through', opacity: 0.5 }]}>{p.title}</Text>
-                                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 }}>
-                                                    <Ionicons name={info.icon as any} size={14} color={info.color} />
-                                                    <Text style={{ fontSize: 10, color: info.color, fontWeight: FontWeight.heavy, textTransform: 'uppercase', letterSpacing: 0.5 }}>{info.label}</Text>
+                        <View style={styles.plansList}>
+                            {filteredPlans.map((p) => {
+                                const info = STATUS_CONFIG[p.status || 'not-done'];
+                                return (
+                                    <TouchableOpacity
+                                        key={p.id}
+                                        activeOpacity={0.85}
+                                        onPress={() => cycleStatus(p.id)}
+                                        style={[styles.planCard, {
+                                            backgroundColor: cardBg,
+                                            borderColor: isDark ? '#1E293B' : '#F1F5F9',
+                                        }]}
+                                    >
+                                        {/* Left Accent */}
+                                        <View style={[styles.planAccent, { backgroundColor: info.color }]} />
+
+                                        <View style={styles.planBody}>
+                                            <View style={styles.planTop}>
+                                                <View style={{ flex: 1 }}>
+                                                    <Text style={[
+                                                        styles.planTitle,
+                                                        { color: colors.text },
+                                                        p.status === 'done' && styles.planDone
+                                                    ]}>
+                                                        {p.title}
+                                                    </Text>
+                                                    <View style={styles.planStatusRow}>
+                                                        <View style={[styles.statusBadge, { backgroundColor: info.bg }]}>
+                                                            <Ionicons name={info.icon as any} size={10} color={info.color} />
+                                                            <Text style={[styles.statusLabel, { color: info.color }]}>
+                                                                {info.label}
+                                                            </Text>
+                                                        </View>
+                                                    </View>
+                                                </View>
+                                                <View style={[styles.timeChip, { backgroundColor: isDark ? '#1E293B' : '#F8FAFC' }]}>
+                                                    <Ionicons name="time-outline" size={11} color={colors.textSecondary} />
+                                                    <Text style={[styles.timeText, { color: colors.textSecondary }]}>{p.time}</Text>
                                                 </View>
                                             </View>
-                                            <TouchableOpacity onPress={() => cycleStatus(p.id)} style={[styles.statusTap, { backgroundColor: colors.surfaceAlt }]}>
-                                                <Ionicons name="refresh-outline" size={16} color={colors.textSecondary} />
-                                            </TouchableOpacity>
-                                        </View>
-                                        <Text style={{ fontSize: FontSize.sm, color: colors.textSecondary, marginTop: Spacing.sm }} numberOfLines={2}>{p.description}</Text>
-                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.md, marginTop: Spacing.md }}>
-                                            <View style={styles.metaItem}>
-                                                <Ionicons name="time-outline" size={12} color={colors.textTertiary} />
-                                                <Text style={styles.metaText}>{p.time}</Text>
+
+                                            {p.description ? (
+                                                <Text style={[styles.planDesc, { color: colors.textSecondary }]} numberOfLines={2}>
+                                                    {p.description}
+                                                </Text>
+                                            ) : null}
+
+                                            <View style={styles.planFooter}>
+                                                <TouchableOpacity
+                                                    style={[styles.cycleBtn, { backgroundColor: `${info.color}10`, borderColor: `${info.color}20` }]}
+                                                    onPress={() => cycleStatus(p.id)}
+                                                >
+                                                    <Ionicons name="sync-outline" size={12} color={info.color} />
+                                                    <Text style={[styles.cycleText, { color: info.color }]}>
+                                                        {p.status === 'not-done' ? 'Mark Active' : p.status === 'ongoing' ? 'Mark Done' : 'Reset'}
+                                                    </Text>
+                                                </TouchableOpacity>
                                             </View>
-                                            <View style={styles.metaItem}>
-                                                <Ionicons name="calendar-outline" size={12} color={colors.textTertiary} />
-                                                <Text style={styles.metaText}>{p.date}</Text>
-                                            </View>
                                         </View>
-                                    </View>
-                                </TouchableOpacity>
-                            );
-                        })
+                                    </TouchableOpacity>
+                                );
+                            })}
+                        </View>
                     )}
                 </View>
             </ScrollView>
-        </SafeAreaView>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
     container: { flex: 1 },
-    header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: Spacing.xl, paddingVertical: Spacing.md },
-    title: { fontSize: FontSize.xxl, fontWeight: FontWeight.heavy, letterSpacing: -1 },
-    addBtn: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-    calendar: { borderRadius: 24, marginHorizontal: Spacing.xl, overflow: 'hidden', borderWidth: 1, borderColor: '#E5E7EB' },
-    reminders: { padding: Spacing.xl },
-    remindersHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.lg },
-    remindersTitle: { fontSize: FontSize.lg, fontWeight: FontWeight.heavy, letterSpacing: -0.5 },
-    emptyState: { alignItems: 'center', paddingVertical: 60, gap: 16 },
-    emptyIcon: { width: 80, height: 80, borderRadius: 32, alignItems: 'center', justifyContent: 'center' },
-    reminderCard: { flexDirection: 'row', borderRadius: 24, marginBottom: Spacing.md, overflow: 'hidden' },
-    reminderAccent: { width: 6 },
-    reminderContent: { flex: 1, padding: Spacing.lg },
-    reminderTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-    reminderTitle: { fontSize: FontSize.md, fontWeight: FontWeight.bold, letterSpacing: -0.3 },
-    statusTap: { width: 32, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
-    metaItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-    metaText: { fontSize: 10, fontWeight: FontWeight.bold, color: '#94a3b8' },
+
+    // Header
+    header: {
+        overflow: 'hidden',
+        position: 'relative',
+    },
+    safeHeader: { paddingHorizontal: 22, paddingBottom: 20 },
+    headerRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 20,
+        paddingTop: 8,
+    },
+    headerSub: {
+        color: 'rgba(255,255,255,0.7)',
+        fontSize: 10,
+        fontWeight: '900',
+        letterSpacing: 2,
+        textTransform: 'uppercase',
+    },
+    headerTitle: {
+        color: '#FFF',
+        fontSize: 30,
+        fontWeight: '900',
+        letterSpacing: -0.5,
+        marginTop: 4,
+    },
+    addBtn: {
+        width: 46,
+        height: 46,
+        borderRadius: 15,
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    statsBar: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0,0,0,0.15)',
+        borderRadius: 20,
+        padding: 16,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.1)',
+    },
+    statItem: { flex: 1, alignItems: 'center', gap: 4 },
+    statVal: { color: '#FFF', fontSize: 20, fontWeight: '900' },
+    statDot: { width: 6, height: 6, borderRadius: 3 },
+    statLab: { color: 'rgba(255,255,255,0.6)', fontSize: 10, fontWeight: '800', letterSpacing: 0.5 },
+    statDivider: { width: 1, height: 32, backgroundColor: 'rgba(255,255,255,0.15)' },
+    headerDecor1: {
+        position: 'absolute',
+        width: 180,
+        height: 180,
+        borderRadius: 90,
+        backgroundColor: 'rgba(255,255,255,0.05)',
+        right: -50,
+        top: -50,
+    },
+    headerDecor2: {
+        position: 'absolute',
+        width: 100,
+        height: 100,
+        borderRadius: 50,
+        backgroundColor: 'rgba(255,255,255,0.06)',
+        left: -20,
+        bottom: -30,
+    },
+
+    // Content
+    scrollContent: { paddingBottom: 120 },
+
+    // Calendar Card
+    calendarCard: {
+        margin: 20,
+        borderRadius: 28,
+        padding: 12,
+        borderWidth: 1,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.06,
+        shadowRadius: 12,
+        elevation: 4,
+        marginTop: -20,
+    },
+
+    // Plans
+    plansSection: { paddingHorizontal: 20 },
+    plansHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    plansTitle: { fontSize: 20, fontWeight: '900', letterSpacing: -0.3 },
+    plansSub: { fontSize: 13, fontWeight: '500', marginTop: 3 },
+    plansActions: { flexDirection: 'row', gap: 10, alignItems: 'center' },
+    showAllBtn: {
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: 10,
+    },
+    showAllText: { fontSize: 13, fontWeight: '700' },
+    addPlanBtn: {
+        width: 36,
+        height: 36,
+        borderRadius: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+
+    // Empty State
+    emptyState: {
+        alignItems: 'center',
+        paddingVertical: 44,
+        paddingHorizontal: 32,
+        borderRadius: 28,
+        borderWidth: 1,
+        gap: 10,
+    },
+    emptyIconBox: {
+        width: 72,
+        height: 72,
+        borderRadius: 24,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 8,
+    },
+    emptyTitle: { fontSize: 17, fontWeight: '900' },
+    emptyText: { fontSize: 13, fontWeight: '500', textAlign: 'center', lineHeight: 20 },
+    createBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        backgroundColor: '#6366F1',
+        paddingHorizontal: 22,
+        paddingVertical: 13,
+        borderRadius: 16,
+        marginTop: 8,
+    },
+    createBtnText: { color: '#FFF', fontWeight: '800', fontSize: 14 },
+
+    // Plan Cards
+    plansList: { gap: 14 },
+    planCard: {
+        flexDirection: 'row',
+        borderRadius: 24,
+        overflow: 'hidden',
+        borderWidth: 1,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.04,
+        shadowRadius: 6,
+        elevation: 2,
+    },
+    planAccent: { width: 5 },
+    planBody: { flex: 1, padding: 18 },
+    planTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
+    planTitle: { fontSize: 16, fontWeight: '800', letterSpacing: -0.2, flex: 1 },
+    planDone: { textDecorationLine: 'line-through', opacity: 0.5 },
+    planStatusRow: { marginTop: 6 },
+    statusBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 8,
+        alignSelf: 'flex-start',
+    },
+    statusLabel: { fontSize: 10, fontWeight: '800', textTransform: 'uppercase' },
+    timeChip: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+        borderRadius: 10,
+    },
+    timeText: { fontSize: 11, fontWeight: '700' },
+    planDesc: { fontSize: 13, lineHeight: 19, marginTop: 10 },
+    planFooter: { marginTop: 14 },
+    cycleBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: 10,
+        borderWidth: 1,
+        alignSelf: 'flex-start',
+    },
+    cycleText: { fontSize: 11, fontWeight: '800' },
 });

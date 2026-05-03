@@ -1,9 +1,10 @@
 import { BorderRadius, FontSize, FontWeight, Spacing } from '@/constants/theme';
-import { auth, db } from '@/services/firebase';
 import { useTheme } from '@/store/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { useAuth } from '@/store/auth';
+import { useTokens } from '@/store/tokens';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useState } from 'react';
 import {
     ActivityIndicator,
@@ -31,18 +32,27 @@ export default function AddPlanScreen() {
     const [status, setStatus] = useState<PlanStatus>('not-done');
     const [loading, setLoading] = useState(false);
 
+    const { user } = useAuth();
+    const { consumeTokens } = useTokens();
+    
     const handleAdd = async () => {
-        if (!title.trim() || !auth.currentUser) return;
+        if (!title.trim() || !user) return;
+        if (!consumeTokens('study_plans')) return;
+        
         setLoading(true);
         try {
-            await addDoc(collection(db, `users/${auth.currentUser.uid}/plans`), {
+            const newPlan = {
+                id: Date.now().toString() + Math.random().toString(36).substring(7),
                 title: title.trim(),
                 description: description.trim(),
                 date,
                 time,
                 status,
-                createdAt: serverTimestamp(),
-            });
+                createdAt: new Date().toISOString(),
+            };
+            const existingData = await AsyncStorage.getItem(`walia_plans_${user.id}`);
+            const existingPlans = existingData ? JSON.parse(existingData) : [];
+            await AsyncStorage.setItem(`walia_plans_${user.id}`, JSON.stringify([...existingPlans, newPlan]));
             router.back();
         } catch (error) {
             console.error(error);

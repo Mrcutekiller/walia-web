@@ -5,15 +5,27 @@ import { NextRequest, NextResponse } from 'next/server';
 //  ┌─────────────────────────────┬───────────────────────────────────────────┐
 //  │ Job                         │ Model                                     │
 //  ├─────────────────────────────┼───────────────────────────────────────────┤
-//  │ Chat / text replies         │ Modal GLM-5.1-FP8   (MODAL_API_KEY)      │
+//  │ Chat / text replies         │ OpenRouter API (user-selectable)         │
 //  │ Image analysis (scanner)    │ Google Gemini Flash  (GEMINI_API_KEY)    │
 //  └─────────────────────────────┴───────────────────────────────────────────┘
 // ─────────────────────────────────────────────────────────────────────────────
 
-// ── Modal GLM-5.1 (text chat) ─────────────────────────────────────────────
-const MODAL_API_URL = "https://api.us-west-2.modal.direct/v1/chat/completions";
-const MODAL_API_KEY = process.env.MODAL_API_KEY!;
-const MODAL_MODEL   = "zai-org/GLM-5.1-FP8";
+// ── OpenRouter API ──────────────────────────────────────────────────────────
+const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+const OPENROUTER_ALLOWED_MODELS = [
+    'gpt-4o-mini',
+    'mistralai/mistral-7b-instruct',
+    'google/gemma-7b-it:free',
+    'meta-llama/llama-3.2-3b-instruct:free',
+    'microsoft/wizardlm-2-8x22b:free',
+    'anthropic/claude-3-haiku:free',
+    'nvidia/llama-3.1-nemotron-70b-instruct:free',
+    'qwen/qwen-2.5-7b-instruct:free',
+    'meta-llama/llama-3.1-8b-instruct:free',
+    'google/gemma-2-9b-it:free',
+];
+const DEFAULT_OPENROUTER_MODEL = 'gpt-4o-mini';
 
 // ── Google Gemini (image analysis) ───────────────────────────────────────
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY!;
@@ -23,10 +35,9 @@ const GEMINI_VISION_URL = `https://generativelanguage.googleapis.com/v1beta/mode
 //  SYSTEM PROMPTS
 // ─────────────────────────────────────────────────────────────────────────────
 
-const BASE_SYSTEM_PROMPT = `You are Walia AI, a friendly and highly knowledgeable study assistant built for students worldwide.
-Help with homework, explain concepts clearly, create flashcards, write essays, solve math and science problems, and anything academic.
-Be concise, encouraging, and always respond in the same language the user writes in.
-You are powered by GLM-5.1 — a state-of-the-art AI model. Never claim to be GPT, Claude, or Gemini.`;
+const BASE_SYSTEM_PROMPT = `You are Walia AI, a premium professional assistant. Provide clear, polished, and trustworthy guidance for business, productivity, learning, and planning tasks.
+Maintain a confident yet friendly tone, avoid casual slang, and do not identify as GPT, Claude, Gemini, or any branded model.
+Deliver concise, high-quality responses with useful next steps and a professional presentation.`;
 
 const MODE_PROMPTS: Record<string, string> = {
     scanner:    "You are an expert OCR and document analysis AI. The user has uploaded an image. Extract ALL visible text, equations, diagrams descriptions, and data from the image accurately. Format clearly using markdown.",
@@ -82,30 +93,36 @@ async function analyzeWithGemini(imageBase64: string, mimeType: string, textProm
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  HELPER: Call Modal GLM-5.1 for text chat
+//  HELPER: Call OpenRouter for text chat
 // ─────────────────────────────────────────────────────────────────────────────
-async function chatWithGLM(messages: any[]): Promise<string> {
-    const response = await fetch(MODAL_API_URL, {
+async function chatWithOpenRouter(messages: any[], model: string = DEFAULT_OPENROUTER_MODEL): Promise<string> {
+    if (!OPENROUTER_API_KEY) {
+        throw new Error("Missing OpenRouter API key.");
+    }
+
+    const response = await fetch(OPENROUTER_API_URL, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${MODAL_API_KEY}`,
+            "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+            "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL || "https://walia.app",
+            "X-Title": "Walia AI Assistant"
         },
         body: JSON.stringify({
-            model: MODAL_MODEL,
-            messages,
+            model: model,
+            messages: messages,
             max_tokens: 2000,
             temperature: 0.7,
         }),
     });
 
+    const resultText = await response.text();
     if (!response.ok) {
-        const errBody = await response.text();
-        console.error("Modal GLM API Error:", response.status, errBody);
-        throw new Error(`Modal GLM-5.1 failed: ${response.status}`);
+        console.error("OpenRouter API Error:", response.status, resultText);
+        throw new Error(`OpenRouter failed: ${response.status} - ${resultText}`);
     }
 
-    const data = await response.json();
+    const data = JSON.parse(resultText);
     return data.choices?.[0]?.message?.content || "";
 }
 
@@ -115,12 +132,12 @@ async function chatWithGLM(messages: any[]): Promise<string> {
 export async function POST(req: NextRequest) {
     try {
         // Validate keys
-        if (!MODAL_API_KEY) {
-            console.error("MISSING: MODAL_API_KEY environment variable");
-            return NextResponse.json({ reply: "Chat AI is not configured. Please contact support." }, { status: 500 });
+        if (!OPENROUTER_API_KEY) {
+            console.error("MISSING: OPENROUTER_API_KEY environment variable");
+            return NextResponse.json({ reply: "Chat AI is not configured. Please contact support.", error: "Missing OpenRouter API key." }, { status: 500 });
         }
 
-        const { message, history = [], attachments = [], systemPrompt, mode, isAddingEvent } = await req.json();
+        const { message, history = [], attachments = [], systemPrompt, mode, isAddingEvent, model } = await req.json();
 
         if (!message?.trim() && (!attachments || attachments.length === 0)) {
             return NextResponse.json({ reply: "Please send a message or attachment." }, { status: 400 });
@@ -150,7 +167,7 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ reply, model: "gemini-2.0-flash", job: "image_analysis" });
         }
 
-        // ── ROUTE: Text chat / all other tools → Modal GLM-5.1 ──────────────
+        // ── ROUTE: Text chat / all other tools → OpenRouter ──────────────
 
         // Build system prompt: priority = explicit mode → caller-provided → default
         const detectedMode = mode || "Study";
@@ -163,10 +180,10 @@ export async function POST(req: NextRequest) {
         }
 
         // Assemble messages
-        const glmMessages: any[] = [{ role: "system", content: finalSystemPrompt }];
+        const openRouterMessages: any[] = [{ role: "system", content: finalSystemPrompt }];
 
         for (const msg of history) {
-            glmMessages.push({
+            openRouterMessages.push({
                 role: msg.role === "assistant" || msg.role === "model" ? "assistant" : "user",
                 content: msg.content,
             });
@@ -181,9 +198,15 @@ export async function POST(req: NextRequest) {
         const userContent = [message?.trim(), pdfParts].filter(Boolean).join("\n\n")
             || "Please help me with this request.";
 
-        glmMessages.push({ role: "user", content: userContent });
+        openRouterMessages.push({ role: "user", content: userContent });
 
-        const replyText = await chatWithGLM(glmMessages);
+        // Validate selected model and use OpenRouter default if none selected
+        const selectedModel = model || DEFAULT_OPENROUTER_MODEL;
+        if (!OPENROUTER_ALLOWED_MODELS.includes(selectedModel)) {
+            return NextResponse.json({ reply: "Selected model is unavailable. Please choose a supported OpenRouter model.", error: "Model not permitted." }, { status: 400 });
+        }
+
+        const replyText = await chatWithOpenRouter(openRouterMessages, selectedModel);
 
         // Event extraction: parse JSON response
         if (isAddingEvent) {
@@ -193,22 +216,22 @@ export async function POST(req: NextRequest) {
                 return NextResponse.json({
                     reply: parsed.reply || "Event scheduled successfully!",
                     eventDetails: parsed.eventDetails,
-                    model: "glm-5.1",
+                    model: selectedModel,
                     job: "event_extraction",
                 });
             } catch {
-                console.error("Failed to parse event JSON from GLM response.");
-                return NextResponse.json({ reply: replyText, model: "glm-5.1" });
+                console.error("Failed to parse event JSON from OpenRouter response.");
+                return NextResponse.json({ reply: replyText, model: selectedModel });
             }
         }
 
-        return NextResponse.json({ reply: replyText, model: "glm-5.1", job: "text_chat" });
+        return NextResponse.json({ reply: replyText, model: selectedModel, job: "text_chat" });
 
     } catch (error: any) {
         console.error("Chat API Error:", error.message);
         return NextResponse.json(
-            { reply: "I'm having trouble connecting right now. Please try again in a moment." },
-            { status: 200 }
+            { reply: "I'm having trouble connecting right now. Please try again in a moment.", error: error.message || 'Unknown error' },
+            { status: 500 }
         );
     }
 }

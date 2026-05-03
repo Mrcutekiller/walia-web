@@ -117,14 +117,14 @@ export default function MessagesPage() {
     const selectedConv = conversations.find(c => c.id === activeConv);
 
     return (
-        <div className="flex h-full bg-white dark:bg-[#0A0A18] overflow-hidden">
+        <div className="flex h-full bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-[#0A0A18] dark:via-[#0D0D1A] dark:to-[#0A0A18] overflow-hidden">
             
             {/* ── Left Panel: Conversations ── */}
-            <div className="w-80 md:w-96 border-r border-gray-100 dark:border-white/5 flex flex-col bg-gray-50/50 dark:bg-black/20">
+            <div className="w-80 md:w-96 border-r border-gray-200/60 dark:border-white/5 flex flex-col bg-white/70 dark:bg-black/30 backdrop-blur-xl">
                 <div className="p-6">
                     <div className="flex items-center justify-between mb-8">
                         <h1 className="text-2xl font-black text-black dark:text-white tracking-tighter uppercase">Messages</h1>
-                        <button className="p-2 rounded-xl bg-black dark:bg-white text-white dark:text-black hover:scale-105 transition-all">
+                        <button className="p-2 rounded-xl bg-gradient-to-r from-black to-gray-700 dark:from-white dark:to-gray-300 text-white dark:text-black hover:scale-105 transition-all duration-300 shadow-lg">
                             <Plus className="w-4 h-4" />
                         </button>
                     </div>
@@ -132,25 +132,28 @@ export default function MessagesPage() {
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <input 
                             type="text" placeholder="Search conversations..."
-                            className="w-full pl-12 pr-4 py-3 rounded-2xl bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 text-xs font-medium outline-none focus:border-black dark:focus:border-white transition-all"
+                            className="w-full pl-12 pr-4 py-3 rounded-2xl bg-white dark:bg-white/5 border border-gray-200/60 dark:border-white/10 text-xs font-medium outline-none focus:border-black dark:focus:border-white transition-all duration-300 shadow-sm hover:shadow-md"
                         />
                     </div>
                 </div>
 
                 <div className="flex-1 overflow-y-auto px-3 space-y-1 custom-scrollbar">
-                    {conversations.map(conv => (
-                        <div 
+                    {conversations.map((conv, index) => (
+                        <motion.div 
                             key={conv.id}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: index * 0.05 }}
                             onClick={() => setActiveConv(conv.id)}
-                            className={`group flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all border ${
+                            className={`group flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all duration-300 border ${
                                 activeConv === conv.id 
-                                ? 'bg-black dark:bg-white text-white dark:text-black border-black dark:border-white shadow-xl' 
-                                : 'bg-transparent border-transparent hover:bg-white dark:hover:bg-white/5'
+                                ? 'bg-gradient-to-r from-black to-gray-700 dark:from-white dark:to-gray-200 text-white dark:text-black border-transparent shadow-xl' 
+                                : 'bg-white/50 dark:bg-white/5 border-gray-200/60 dark:border-white/10 hover:border-black/30 dark:hover:border-white/30 hover:shadow-lg'
                             }`}
                         >
                             <div className="relative">
                                 <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-xs uppercase shadow-sm ${
-                                    activeConv === conv.id ? 'bg-white/20' : 'bg-black dark:bg-white text-white dark:text-black'
+                                    activeConv === conv.id ? 'bg-white/20' : 'bg-gradient-to-br from-black to-gray-700 dark:from-white dark:to-gray-300 text-white dark:text-black'
                                 }`}>
                                     {conv.otherUser?.username.slice(0, 2)}
                                 </div>
@@ -167,19 +170,19 @@ export default function MessagesPage() {
                                     {conv.lastMessage}
                                 </p>
                             </div>
-                        </div>
+                        </motion.div>
                     ))}
                 </div>
             </div>
 
             {/* ── Main Chat Window ── */}
-            <div className="flex-1 flex flex-col relative bg-white dark:bg-black/20">
+            <div className="flex-1 flex flex-col relative bg-white/50 dark:bg-black/20 backdrop-blur-xl">
                 {activeConv ? (
                     <>
                         {/* Header */}
-                        <div className="px-8 py-4 border-b border-gray-100 dark:border-white/5 flex items-center justify-between bg-white/80 dark:bg-[#0A0A18]/80 backdrop-blur-md">
+                        <div className="px-8 py-4 border-b border-gray-200/60 dark:border-white/5 flex items-center justify-between bg-white/80 dark:bg-[#0A0A18]/80 backdrop-blur-md">
                             <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-xl bg-black dark:bg-white text-white dark:text-black flex items-center justify-center font-black text-xs uppercase">
+                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-black to-gray-700 dark:from-white dark:to-gray-300 text-white dark:text-black flex items-center justify-center font-black text-xs uppercase shadow-lg">
                                     {selectedConv?.otherUser?.username.slice(0, 2)}
                                 </div>
                                 <div>
@@ -191,9 +194,9 @@ export default function MessagesPage() {
                                 </div>
                             </div>
                             <div className="flex items-center gap-4">
-                                <button className="p-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 text-gray-400 hover:text-black dark:hover:text-white transition-all"><Phone className="w-4 h-4" /></button>
-                                <button className="p-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 text-gray-400 hover:text-black dark:hover:text-white transition-all"><Video className="w-4 h-4" /></button>
-                                <button className="p-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 text-gray-400 hover:text-black dark:hover:text-white transition-all"><Info className="w-4 h-4" /></button>
+                                <button className="p-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 text-gray-400 hover:text-black dark:hover:text-white transition-all duration-300 hover:shadow-md"><Phone className="w-4 h-4" /></button>
+                                <button className="p-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 text-gray-400 hover:text-black dark:hover:text-white transition-all duration-300 hover:shadow-md"><Video className="w-4 h-4" /></button>
+                                <button className="p-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 text-gray-400 hover:text-black dark:hover:text-white transition-all duration-300 hover:shadow-md"><Info className="w-4 h-4" /></button>
                             </div>
                         </div>
 
@@ -203,12 +206,18 @@ export default function MessagesPage() {
                                 {messages.map((m, i) => {
                                     const isMe = m.senderId === user?.uid;
                                     return (
-                                        <div key={m.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                                        <motion.div 
+                                            key={m.id}
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: i * 0.05 }}
+                                            className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}
+                                        >
                                             <div className={`group relative max-w-[70%] flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                                                <div className={`px-5 py-3.5 rounded-[1.75rem] text-sm font-medium leading-relaxed shadow-sm ${
+                                                <div className={`px-5 py-3.5 rounded-[1.75rem] text-sm font-medium leading-relaxed shadow-md ${
                                                     isMe 
-                                                    ? 'bg-black dark:bg-white text-white dark:text-black rounded-tr-none' 
-                                                    : 'bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 text-black dark:text-white rounded-tl-none'
+                                                    ? 'bg-gradient-to-r from-black to-gray-700 dark:from-white dark:to-gray-300 text-white dark:text-black rounded-tr-none' 
+                                                    : 'bg-white/70 dark:bg-white/5 border border-gray-200/60 dark:border-white/10 text-black dark:text-white rounded-tl-none backdrop-blur-sm'
                                                 }`}>
                                                     {m.text}
                                                 </div>
@@ -219,7 +228,7 @@ export default function MessagesPage() {
                                                     {isMe && <CheckCheck className="w-3 h-3 text-emerald-500" />}
                                                 </div>
                                             </div>
-                                        </div>
+                                        </motion.div>
                                     );
                                 })}
                                 <div ref={messagesEndRef} />
@@ -227,18 +236,18 @@ export default function MessagesPage() {
                         </div>
 
                         {/* Input Area */}
-                        <div className="p-6">
+                        <div className="p-6 border-t border-gray-200/60 dark:border-white/5 bg-white/50 dark:bg-black/30 backdrop-blur-xl">
                             <div className="max-w-4xl mx-auto">
                                 <form onSubmit={handleSend} className="relative flex items-center gap-3">
                                     <div className="flex gap-2">
-                                        <button type="button" className="p-3 rounded-2xl bg-gray-50 dark:bg-white/5 hover:bg-black dark:hover:bg-white hover:text-white dark:hover:text-black text-gray-400 transition-all"><Paperclip className="w-4 h-4" /></button>
-                                        <button type="button" className="p-3 rounded-2xl bg-gray-50 dark:bg-white/5 hover:bg-black dark:hover:bg-white hover:text-white dark:hover:text-black text-gray-400 transition-all"><ImageIcon className="w-4 h-4" /></button>
+                                        <button type="button" className="p-3 rounded-2xl bg-white dark:bg-white/5 hover:bg-black dark:hover:bg-white hover:text-white dark:hover:text-black text-gray-400 transition-all duration-300 hover:shadow-md"><Paperclip className="w-4 h-4" /></button>
+                                        <button type="button" className="p-3 rounded-2xl bg-white dark:bg-white/5 hover:bg-black dark:hover:bg-white hover:text-white dark:hover:text-black text-gray-400 transition-all duration-300 hover:shadow-md"><ImageIcon className="w-4 h-4" /></button>
                                     </div>
                                     <div className="flex-1 relative">
                                         <input 
                                             type="text" value={input} onChange={e => setInput(e.target.value)}
                                             placeholder="Type a message..."
-                                            className="w-full pl-6 pr-12 py-4 rounded-[1.75rem] bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 focus:border-black dark:focus:border-white focus:bg-white dark:focus:bg-white/10 outline-none transition-all font-medium text-sm text-black dark:text-white"
+                                            className="w-full pl-6 pr-12 py-4 rounded-[1.75rem] bg-white dark:bg-white/5 border border-gray-200/60 dark:border-white/10 focus:border-black dark:focus:border-white focus:bg-white dark:focus:bg-white/10 outline-none transition-all duration-300 font-medium text-sm text-black dark:text-white shadow-sm hover:shadow-md"
                                         />
                                         <button type="button" className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 hover:text-black dark:hover:text-white transition-all">
                                             <Smile className="w-4 h-4" />
@@ -246,11 +255,11 @@ export default function MessagesPage() {
                                     </div>
                                     <button 
                                         type="submit" disabled={!input.trim()}
-                                        className="w-14 h-14 rounded-2xl bg-black dark:bg-white text-white dark:text-black flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-xl shadow-black/10 disabled:opacity-30"
+                                        className="w-14 h-14 rounded-2xl bg-gradient-to-r from-black to-gray-700 dark:from-white dark:to-gray-300 text-white dark:text-black flex items-center justify-center hover:scale-105 active:scale-95 transition-all duration-300 shadow-xl shadow-black/10 disabled:opacity-30"
                                     >
                                         <Send className="w-5 h-5" />
                                     </button>
-                                    <button type="button" className="p-4 rounded-2xl bg-gray-50 dark:bg-white/5 text-gray-400 hover:text-black dark:hover:text-white transition-all">
+                                    <button type="button" className="p-4 rounded-2xl bg-white dark:bg-white/5 text-gray-400 hover:text-black dark:hover:text-white transition-all duration-300 hover:shadow-md">
                                         <Mic className="w-5 h-5" />
                                     </button>
                                 </form>
@@ -258,16 +267,21 @@ export default function MessagesPage() {
                         </div>
                     </>
                 ) : (
-                    <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
-                        <div className="w-20 h-20 rounded-[1.75rem] bg-black dark:bg-white/10 flex items-center justify-center mb-8 border border-white/5">
-                            <Send className="w-8 h-8 text-white dark:text-white/20" />
+                    <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className="flex-1 flex flex-col items-center justify-center p-6 text-center"
+                    >
+                        <div className="w-24 h-24 rounded-[1.75rem] bg-gradient-to-br from-black to-gray-700 dark:from-white dark:to-gray-300 flex items-center justify-center mb-8 border border-white/5 shadow-2xl">
+                            <Send className="w-10 h-10 text-white dark:text-black" />
                         </div>
                         <h2 className="text-3xl font-black text-black dark:text-white tracking-tighter uppercase mb-2">Select a Conversation</h2>
-                        <p className="text-gray-400 dark:text-gray-500 text-sm font-medium">Send a message to start connecting with the Walia community.</p>
-                        <button className="mt-8 px-8 py-4 rounded-2xl bg-black dark:bg-white text-white dark:text-black font-black text-sm uppercase tracking-widest hover:opacity-90 transition-all shadow-xl shadow-black/10">
+                        <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">Send a message to start connecting with the Walia community.</p>
+                        <button className="mt-8 px-8 py-4 rounded-2xl bg-gradient-to-r from-black to-gray-700 dark:from-white dark:to-gray-300 text-white dark:text-black font-black text-sm uppercase tracking-widest hover:opacity-90 transition-all duration-300 shadow-xl shadow-black/10 hover:-translate-y-0.5">
                             Start New Chat
                         </button>
-                    </div>
+                    </motion.div>
                 )}
             </div>
         </div>

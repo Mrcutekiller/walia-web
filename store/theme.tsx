@@ -3,65 +3,66 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 
 // ─── Color Palettes ───
 const LightColors = {
-    primary: '#000000',
-    primaryLight: '#1A1A1A',
-    primaryDark: '#000000',
-    secondary: '#FF6B6B',
-    accent: '#6C63FF',
-    success: '#2ED573',
-    warning: '#FFA502',
-    error: '#FF4757',
+    primary: '#6366F1', // Indigo 500 — consistent with all dashboard screens
+    primaryLight: '#818CF8',
+    primaryDark: '#4F46E5',
+    secondary: '#EC4899', // Pink 500
+    accent: '#8B5CF6', // Violet 500
+    accentLight: '#A78BFA',
+    success: '#10B981',
+    warning: '#F59E0B',
+    error: '#EF4444',
 
-    background: '#FFFFFF',
+    background: '#F8FAFC', // Soft off-white — premium feel
     surface: '#FFFFFF',
-    surfaceAlt: '#F9FAFB',
+    surfaceAlt: '#F1F5F9', // Slate 100
     card: '#FFFFFF',
 
-    text: '#1A1A2E',
-    textSecondary: '#6B7280',
-    textTertiary: '#9CA3AF',
+    text: '#0F172A',
+    textSecondary: '#475569', // Slate 600
+    textTertiary: '#94A3B8', // Slate 400
     textInverse: '#FFFFFF',
 
-    border: '#E5E7EB',
-    borderLight: '#F3F4F6',
-    divider: '#F0F0F5',
+    border: '#E2E8F0', // Slate 200
+    borderLight: '#F1F5F9',
+    divider: '#F1F5F9',
 
-    sent: '#000000',
-    received: '#F0F0F5',
+    sent: '#6366F1',
+    received: '#F1F5F9',
 
-    overlay: 'rgba(0,0,0,0.5)',
-    shadow: 'rgba(0,0,0,0.08)',
+    overlay: 'rgba(15, 23, 42, 0.5)',
+    shadow: 'rgba(99, 102, 241, 0.08)',
 };
 
 const DarkColors = {
-    primary: '#FFFFFF',
-    primaryLight: '#F9FAFB',
-    primaryDark: '#E5E7EB',
-    secondary: '#FF6B6B',
+    primary: '#6366F1', // Indigo 500 as primary action color in dark mode
+    primaryLight: '#818CF8',
+    primaryDark: '#4F46E5',
+    secondary: '#F472B6',
     accent: '#818CF8',
     success: '#34D399',
     warning: '#FBBF24',
     error: '#F87171',
 
-    background: '#0A0A0A',
-    surface: '#121212',
-    surfaceAlt: '#1A1A1A',
-    card: '#121212',
+    background: '#020617', // Deep slate/navy
+    surface: '#0F172A',
+    surfaceAlt: '#1E293B',
+    card: '#0F172A',
 
-    text: '#FFFFFF',
-    textSecondary: '#9CA3AF',
-    textTertiary: '#6B7280',
-    textInverse: '#000000',
+    text: '#F8FAFC',
+    textSecondary: '#94A3B8',
+    textTertiary: '#64748B',
+    textInverse: '#0F172A',
 
-    border: '#262626',
-    borderLight: '#1A1A1A',
-    divider: '#1A1A1A',
+    border: '#1E293B',
+    borderLight: '#334155',
+    divider: '#1E293B',
 
-    sent: '#FFFFFF',
-    received: '#1A1A1A',
+    sent: '#6366F1',
+    received: '#1E293B',
 
-    overlay: 'rgba(0,0,0,0.7)',
-    shadow: 'rgba(0,0,0,0.3)',
+    overlay: 'rgba(0, 0, 0, 0.8)',
+    shadow: 'rgba(0, 0, 0, 0.4)',
 };
 
 export type ThemeMode = 'light' | 'dark';
@@ -86,11 +87,13 @@ const ThemeContext = createContext<ThemeContextType>({
 const STORAGE_KEY = '@walia_theme';
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-    const [mode, setMode] = useState<ThemeMode>('light');
+    const [mode, setMode] = useState<ThemeMode>('light'); // Always default to light mode
 
     useEffect(() => {
         AsyncStorage.getItem(STORAGE_KEY).then(saved => {
-            if (saved === 'dark' || saved === 'light') setMode(saved);
+            // Only switch to dark if user explicitly chose dark mode
+            if (saved === 'dark') setMode('dark');
+            // Otherwise keep light mode (default)
         });
     }, []);
 

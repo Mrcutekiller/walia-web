@@ -1,7 +1,7 @@
 'use client';
 
 import { DashboardHeader } from '@/components/DashboardHeader';
-import { DashboardShell } from '@/components/DashboardShell';
+import DashboardShell from '@/components/DashboardShell';
 import { useAuth } from '@/context/AuthContext';
 import { db } from '@/lib/firebase';
 import { 
@@ -96,15 +96,15 @@ export default function DailyPlanPage() {
 
             <div className="grid gap-8">
                 {/* Calendar Strip */}
-                <div className="bg-[var(--color-surface-container-lowest)] border border-[var(--color-outline-variant)]/20 rounded-[2.5rem] p-8 shadow-xl">
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="bg-white/70 dark:bg-[var(--color-surface-container-lowest)] border border-gray-200/60 dark:border-[var(--color-outline-variant)]/20 rounded-[2.5rem] p-8 shadow-xl backdrop-blur-sm">
                     <div className="flex items-center justify-between mb-8 px-2">
                         <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-[var(--color-primary-container)] flex items-center justify-center text-[var(--color-primary)]">
+                            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-black to-gray-700 dark:from-white dark:to-gray-300 flex items-center justify-center text-white dark:text-black shadow-lg">
                                 <Calendar className="w-6 h-6" />
                             </div>
                             <div>
-                                <h3 className="font-black text-xl">{format(selectedDate, 'MMMM yyyy')}</h3>
-                                <p className="text-sm text-[var(--color-outline)] font-bold uppercase tracking-wider">Your Weekly Schedule</p>
+                                <h3 className="font-black text-xl text-black dark:text-white">{format(selectedDate, 'MMMM yyyy')}</h3>
+                                <p className="text-sm text-gray-400 dark:text-[var(--color-outline)] font-bold uppercase tracking-wider">Your Weekly Schedule</p>
                             </div>
                         </div>
                     </div>
@@ -136,14 +136,14 @@ export default function DailyPlanPage() {
                             );
                         })}
                     </div>
-                </div>
+                </motion.div>
 
                 <div className="grid lg:grid-cols-3 gap-8">
                     {/* Task List */}
-                    <div className="lg:col-span-2 space-y-6">
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.5 }} className="lg:col-span-2 space-y-6">
                         <div className="flex items-center justify-between px-4">
-                            <h3 className="font-black text-xl">Tasks for {format(selectedDate, 'MMM d')}</h3>
-                            <span className="px-3 py-1 bg-[var(--color-surface-container)] rounded-full text-[10px] font-black uppercase tracking-widest text-[var(--color-outline)]">
+                            <h3 className="font-black text-xl text-black dark:text-white">Tasks for {format(selectedDate, 'MMM d')}</h3>
+                            <span className="px-3 py-1 bg-white dark:bg-[var(--color-surface-container)] rounded-full text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-[var(--color-outline)] border border-gray-200/60 dark:border-transparent">
                                 {filteredTasks.length} {filteredTasks.length === 1 ? 'Task' : 'Tasks'}
                             </span>
                         </div>
@@ -235,24 +235,24 @@ export default function DailyPlanPage() {
                     </div>
 
                     {/* Stats/Inspiration Card */}
-                    <div className="space-y-8">
-                        <div className="bg-[var(--color-primary)] text-[var(--color-on-primary)] rounded-[2.5rem] p-8 shadow-xl shadow-[var(--color-primary)]/20 overflow-hidden relative group">
+                    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2, duration: 0.5 }} className="space-y-8">
+                        <div className="bg-gradient-to-r from-black to-gray-700 dark:from-white dark:to-gray-300 text-white dark:text-black rounded-[2.5rem] p-8 shadow-xl shadow-black/20 overflow-hidden relative group">
                             <div className="relative z-10">
                                 <h4 className="font-black text-2xl mb-2">Keep Going!</h4>
                                 <p className="text-sm opacity-80 font-medium leading-relaxed mb-6">You've completed {tasks.filter(t => t.completed).length} tasks this week. Consistency is key to mastery.</p>
-                                <div className="h-2 bg-white/20 rounded-full overflow-hidden">
+                                <div className="h-2 bg-white/20 dark:bg-black/20 rounded-full overflow-hidden">
                                     <motion.div 
                                         initial={{ width: 0 }}
                                         animate={{ width: `${(tasks.filter(t => t.completed).length / (tasks.length || 1)) * 100}%` }}
-                                        className="h-full bg-white"
+                                        className="h-full bg-white dark:bg-black"
                                     />
                                 </div>
                             </div>
-                            <CheckCircle2 className="absolute -bottom-10 -right-10 w-44 h-44 text-white opacity-10 group-hover:rotate-12 transition-transform duration-700" />
+                            <CheckCircle2 className="absolute -bottom-10 -right-10 w-44 h-44 text-white dark:text-black opacity-10 group-hover:rotate-12 transition-transform duration-700" />
                         </div>
 
-                        <div className="bg-[var(--color-surface-container-low)] rounded-[2.5rem] p-8 border border-[var(--color-outline-variant)]/20">
-                            <h4 className="font-black text-lg mb-4">Study Tips</h4>
+                        <div className="bg-white/70 dark:bg-[var(--color-surface-container-low)] rounded-[2.5rem] p-8 border border-gray-200/60 dark:border-[var(--color-outline-variant)]/20 backdrop-blur-sm">
+                            <h4 className="font-black text-lg mb-4 text-black dark:text-white">Study Tips</h4>
                             <div className="space-y-4">
                                 {[
                                     'Break large tasks into bit-sized chunks.',
@@ -260,15 +260,15 @@ export default function DailyPlanPage() {
                                     'Review your notes shortly after a session.'
                                 ].map((tip, i) => (
                                     <div key={i} className="flex gap-4">
-                                        <div className="shrink-0 w-6 h-6 rounded-lg bg-[var(--color-primary)]/10 text-[var(--color-primary)] flex items-center justify-center text-[10px] font-black">
+                                        <div className="shrink-0 w-6 h-6 rounded-lg bg-black/10 dark:bg-[var(--color-primary)]/10 text-black dark:text-[var(--color-primary)] flex items-center justify-center text-[10px] font-black">
                                             {i + 1}
                                         </div>
-                                        <p className="text-sm text-[var(--color-on-surface-variant)]">{tip}</p>
+                                        <p className="text-sm text-gray-600 dark:text-[var(--color-on-surface-variant)]">{tip}</p>
                                     </div>
                                 ))}
                             </div>
                         </div>
-                    </div>
+                    </motion.div>
                 </div>
             </div>
         </DashboardShell>

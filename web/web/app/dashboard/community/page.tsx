@@ -1,354 +1,254 @@
 'use client';
 
-import { useAuth } from '@/context/AuthContext';
 import { db } from '@/lib/firebase';
-import { cn } from '@/lib/utils';
-import UserBadge from '@/components/UserBadge';
-import {
-    collection,
-    onSnapshot,
-    query,
-    orderBy,
-    limit,
-    doc,
-    updateDoc,
-    arrayUnion,
-    arrayRemove,
-    addDoc,
-    serverTimestamp,
-    getDoc,
-    increment
-} from 'firebase/firestore';
-import {
-    Heart,
-    MessageCircle,
-    Share2,
-    TrendingUp,
-    Send,
-    Plus,
-    Image as ImageIcon,
-    Sparkles,
-    CheckCircle2,
-    Search,
-    PartyPopper,
-    MoreVertical
+import { useAuth } from '@/context/AuthContext';
+import { 
+    Heart, MessageCircle, Share2, Send, Plus, MoreHorizontal, 
+    UserPlus, UserMinus, Search, TrendingUp, Sparkles, X, Image as ImageIcon
 } from 'lucide-react';
-import Link from 'next/link';
-import { Suspense, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { 
+    collection, onSnapshot, orderBy, query, addDoc, 
+    serverTimestamp, doc, updateDoc, arrayUnion, arrayRemove, deleteDoc, getDoc, where
+} from 'firebase/firestore';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useSearchParams } from 'next/navigation';
 
 interface Post {
     id: string;
-    authorId: string;
+    uid: string;
+    username: string;
     content: string;
-    createdAt: any;
     likes: string[];
-    commentCount: number;
-    type: 'general' | 'ai_share' | 'quiz' | 'note' | 'text';
-    title?: string;
-    tags?: string[];
-    isAdminPost?: boolean;
-}
-
-function CommunityContent() {
-    const { user } = useAuth();
-    const searchParams = useSearchParams();
-    const [posts, setPosts] = useState<Post[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [newPost, setNewPost] = useState(searchParams.get('initialText') || '');
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [isAdminPost, setIsAdminPost] = useState(false);
-
-    useEffect(() => {
-        const q = query(collection(db, 'posts'), orderBy('createdAt', 'desc'), limit(50));
-        const unsub = onSnapshot(q, (snap) => {
-            const fetchedPosts = snap.docs.map(d => ({ id: d.id, ...d.data() } as Post));
-            setPosts(fetchedPosts);
-            setLoading(false);
-        });
-        return () => unsub();
-    }, []);
-
-    const handleLike = async (post: Post) => {
-        if (!user) return;
-        const postRef = doc(db, 'posts', post.id);
-        const isLiked = post.likes?.includes(user.id);
-        await updateDoc(postRef, {
-            likes: isLiked ? arrayRemove(user.id) : arrayUnion(user.id)
-        });
-    };
-
-    const handleCreatePost = async () => {
-        if (!user || !newPost.trim()) return;
-        setIsSubmitting(true);
-        try {
-            // Extract hashtags using basic regex (e.g. #FinalsPrep)
-            // match returns array or null, default to empty array
-            const extractedTags = newPost.match(/#\w+/g) || [];
-
-            await addDoc(collection(db, 'posts'), {
-                authorId: user.id,
-                content: newPost.trim(),
-                createdAt: serverTimestamp(),
-                likes: [],
-                commentCount: 0,
-                type: 'general',
-                tags: extractedTags,
-                isAdminPost: user?.isAdmin ? isAdminPost : false,
-            });
-            // Reward Tokens
-            try {
-                await updateDoc(doc(db, 'users', user.id), {
-                    tokensUsed: increment(-10)
-                });
-                alert("🎉 Bonus Tokens! You earned +10 tokens for posting.");
-            } catch (e) {
-                console.error("Token reward failed", e);
-            }
-            setNewPost('');
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
-
-    const formatTimeAgo = (timestamp : any) => {
-        if (!timestamp) return 'Just now';
-        const date = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp);
-        const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
-        
-        let interval = seconds / 31536000;
-        if (interval > 1) return Math.floor(interval) + "y";
-        interval = seconds / 2592000;
-        if (interval > 1) return Math.floor(interval) + "mo";
-        interval = seconds / 86400;
-        if (interval > 1) return Math.floor(interval) + "d";
-        interval = seconds / 3600;
-        if (interval > 1) return Math.floor(interval) + "h";
-        interval = seconds / 60;
-        if (interval > 1) return Math.floor(interval) + "m";
-        return Math.floor(seconds) + "s";
-    };
-
-    const renderTextWithHashtags = (text: string) => {
-        if (!text) return null;
-        const words = text.split(/(\s+)/);
-        return words.map((word, index) => {
-            if (word.match(/^#\w+/)) {
-                return <span key={index} className="text-amber-500 font-bold hover:underline cursor-pointer">{word}</span>;
-            }
-            return <span key={index}>{word}</span>;
-        });
-    };
-
-    return (
-        <div className="flex-1 overflow-y-auto premium-scrollbar min-h-screen">
-            <div className="max-w-[1400px] mx-auto grid grid-cols-12 gap-0">
-                
-                {/* ── LEFT FEED FILTERS ── */}
-                <aside className="col-span-3 hidden lg:block py-10 px-8">
-                    <div className="sticky top-10 flex flex-col gap-8">
-                        <div className="space-y-1">
-                            <h3 className="px-3 text-[10px] font-extrabold text-[var(--color-outline)] uppercase tracking-[0.15em] mb-3 font-[family-name:var(--font-manrope)]">Discovery</h3>
-                            <button className="w-full flex items-center gap-3 px-3 py-2.5 bg-[var(--color-surface-container)] text-[var(--color-primary)] rounded-lg text-sm font-bold tracking-tight font-[family-name:var(--font-manrope)]">
-                                <TrendingUp className="w-5 h-5 flex-shrink-0" />
-                                Trending
-                            </button>
-                            <button className="w-full flex items-center gap-3 px-3 py-2.5 text-[var(--color-secondary)] hover:bg-[var(--color-surface-container)]/50 rounded-lg text-sm font-medium transition-all font-[family-name:var(--font-manrope)]">
-                                <Sparkles className="w-5 h-5 flex-shrink-0" />
-                                For You
-                            </button>
-                            <button className="w-full flex items-center gap-3 px-3 py-2.5 text-[var(--color-secondary)] hover:bg-[var(--color-surface-container)]/50 rounded-lg text-sm font-medium transition-all font-[family-name:var(--font-manrope)]">
-                                <MessageCircle className="w-5 h-5 flex-shrink-0" />
-                                Groups
-                            </button>
-                        </div>
-                        <div className="space-y-4">
-                            <h3 className="px-3 text-[10px] font-extrabold text-[var(--color-outline)] uppercase tracking-[0.15em] font-[family-name:var(--font-manrope)]">Live Pulse</h3>
-                            <div className="p-4 bg-[var(--color-surface-container-low)] rounded-xl border border-[var(--color-outline)]/5">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <span className="relative flex h-2 w-2 flex-shrink-0">
-                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-tertiary)] opacity-75"></span>
-                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--color-tertiary)]"></span>
-                                    </span>
-                                    <span className="text-[11px] font-bold uppercase tracking-tight font-[family-name:var(--font-manrope)]">New Discussion</span>
-                                </div>
-                                <p className="text-xs text-[var(--color-on-surface-variant)] leading-relaxed font-medium">Join the live study session starting in 15 mins.</p>
-                            </div>
-                        </div>
-                    </div>
-                </aside>
-
-                {/* ── CENTER FEED ── */}
-                <section className="col-span-12 xl:col-span-6 lg:col-span-9 border-x border-[var(--color-outline)]/10 min-h-screen bg-[var(--color-surface-container-lowest)]">
-                    {/* Top Bar (Mobile/Tablet visible) */}
-                    <div className="sticky top-0 z-10 bg-[var(--color-surface-container-lowest)]/80 backdrop-blur-md px-6 py-4 flex items-center justify-between border-b border-[var(--color-outline)]/10">
-                        <h2 className="text-lg font-bold font-[family-name:var(--font-manrope)] tracking-tight">Community Feed</h2>
-                        <div className="xl:hidden text-[var(--color-outline)]">
-                            <Search className="w-5 h-5" />
-                        </div>
-                    </div>
-
-                    {/* Post Composer */}
-                    <div className="p-6 border-b border-[var(--color-outline)]/10 bg-[var(--color-surface-container-low)]/30">
-                        <div className="flex gap-4">
-                            <div className="w-12 h-12 rounded-full overflow-hidden bg-[var(--color-surface-container)] shrink-0 flex items-center justify-center">
-                                {user?.photoURL ? <img src={user.photoURL} alt="User" className="w-full h-full object-cover grayscale contrast-125" /> : <span className="font-bold text-[var(--color-outline-variant)] uppercase">{user?.name?.charAt(0) || 'U'}</span>}
-                            </div>
-                            <div className="flex-1">
-                                <textarea 
-                                    value={newPost}
-                                    onChange={(e) => setNewPost(e.target.value)}
-                                    className="w-full bg-transparent border-none focus:ring-0 text-[var(--color-on-surface)] placeholder-[var(--color-outline)] text-lg resize-none min-h-[50px] p-0 font-medium leading-tight font-[family-name:var(--font-inter)]" 
-                                    placeholder="What's happening in the lab?"
-                                />
-                                <div className="flex items-center justify-between mt-4">
-                                    <div className="flex gap-1 text-[var(--color-secondary)]">
-                                        <button className="p-2 hover:bg-[var(--color-surface-container)] rounded-full transition-colors"><ImageIcon className="w-5 h-5 text-[var(--color-secondary)]" /></button>
-                                        <button className="p-2 hover:bg-[var(--color-surface-container)] rounded-full transition-colors"><Sparkles className="w-5 h-5 text-[var(--color-secondary)]" /></button>
-                                        {user?.isAdmin && (
-                                            <label className="flex items-center gap-2 text-xs font-bold ml-2 cursor-pointer text-[var(--color-tertiary)] bg-[var(--color-tertiary-container)]/50 px-3 py-1.5 rounded-full">
-                                                <input type="checkbox" checked={isAdminPost} onChange={(e) => setIsAdminPost(e.target.checked)} className="rounded border-[var(--color-tertiary)] bg-[var(--color-surface-container-lowest)] text-[var(--color-tertiary)] focus:ring-[var(--color-tertiary)] focus:ring-offset-0 w-3 h-3" />
-                                                Official
-                                            </label>
-                                        )}
-                                    </div>
-                                    <button 
-                                        onClick={handleCreatePost}
-                                        disabled={!newPost.trim() || isSubmitting}
-                                        className="bg-[var(--color-primary)] text-[var(--color-on-primary)] px-6 py-2 rounded-full text-sm font-bold tracking-tight hover:opacity-90 active:scale-95 transition-all font-[family-name:var(--font-manrope)] disabled:opacity-50"
-                                    >
-                                        {isSubmitting ? 'Posting...' : 'Post'}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Feed Posts List */}
-                    <div className="divide-y divide-[var(--color-outline)]/5 pb-24">
-                        {loading ? (
-                            <div className="p-8 text-center text-[var(--color-outline)] font-medium text-sm">Loading feed...</div>
-                        ) : (
-                            posts.map((post) => {
-                                const isLiked = post.likes?.includes(user?.id || '');
-                                return (
-                                    <article key={post.id} className={cn("p-6 transition-colors hover:bg-[var(--color-surface-container-low)]/20", post.isAdminPost && "bg-[var(--color-tertiary-container)]/10")}>
-                                        <div className="flex gap-4">
-                                            <div className="w-12 h-12 shrink-0 flex justify-center mt-1">
-                                                <UserBadge uid={post.authorId} size="md" className="grayscale contrast-125" />
-                                            </div>
-                                            <div className="flex-1 space-y-3 min-w-0">
-                                                <div className="flex items-center justify-between">
-                                                    <div className="flex items-center gap-2 overflow-hidden">
-                                                        <span className="font-bold font-[family-name:var(--font-manrope)] text-sm tracking-tight truncate">User {post.authorId.substring(0, 4)}</span>
-                                                        <span className="text-xs text-[var(--color-outline)] font-medium shrink-0">• {formatTimeAgo(post.createdAt)}</span>
-                                                        {post.isAdminPost && <span className="bg-[var(--color-tertiary)] text-[var(--color-on-primary)] text-[9px] px-1.5 py-0.5 rounded font-bold uppercase tracking-widest shrink-0">Admin</span>}
-                                                    </div>
-                                                </div>
-                                                
-                                                {/* Text Content */}
-                                                <p className="text-[15px] leading-relaxed text-[var(--color-on-surface)] font-medium whitespace-pre-wrap break-words">
-                                                    {post.title && <span className="block font-bold mb-2 font-[family-name:var(--font-manrope)]">{post.title}</span>}
-                                                    {renderTextWithHashtags(post.content)}
-                                                </p>
-
-                                                {/* AI Output / Special Format Content */}
-                                                {post.type !== 'general' && (
-                                                    <div className={cn("p-4 rounded-2xl border-none mt-3", post.type === 'ai_share' ? "bg-[var(--color-tertiary-container)]/20" : "bg-[var(--color-surface-container)]")}>
-                                                        <div className={cn("flex items-center gap-2 mb-1.5", post.type === 'ai_share' ? "text-[var(--color-tertiary)]" : "text-[var(--color-primary)]")}>
-                                                            <Sparkles className="w-3.5 h-3.5" />
-                                                            <span className="text-[9px] font-extrabold uppercase tracking-[0.1em]">{post.type.replace('_share', ' Insight')}</span>
-                                                        </div>
-                                                        <p className={cn("text-[12px] leading-normal font-medium", post.type === 'ai_share' ? "text-[var(--color-tertiary)]/90" : "text-[var(--color-on-surface-variant)]")}>
-                                                            This post was generated or shared from a specific tool context.
-                                                        </p>
-                                                    </div>
-                                                )}
-
-                                                {/* Interaction Bar */}
-                                                <div className="flex items-center justify-between max-w-sm pt-2 text-[var(--color-outline)] font-semibold">
-                                                    <Link href={`/dashboard/community/${post.id}`} className="flex items-center gap-1.5 hover:text-blue-500 transition-colors text-xs font-[family-name:var(--font-inter)]">
-                                                        <MessageCircle className="w-[18px] h-[18px]" /> {post.commentCount || 0}
-                                                    </Link>
-                                                    <button className="flex items-center gap-1.5 hover:text-green-500 transition-colors text-xs">
-                                                        <TrendingUp className="w-[18px] h-[18px]" />
-                                                    </button>
-                                                    <button onClick={() => handleLike(post)} className={cn("flex items-center gap-1.5 transition-colors text-xs", isLiked ? "text-red-500" : "hover:text-red-500")}>
-                                                        <Heart className={cn("w-[18px] h-[18px]", isLiked && "fill-current")} /> {post.likes?.length || 0}
-                                                    </button>
-                                                    <button className="flex items-center gap-1.5 hover:text-blue-500 transition-colors text-xs">
-                                                        <Share2 className="w-[18px] h-[18px]" />
-                                                    </button>
-                                                </div>
-
-                                            </div>
-                                        </div>
-                                    </article>
-                                );
-                            })
-                        )}
-                    </div>
-                </section>
-
-                {/* ── RIGHT CONTEXT ── */}
-                <aside className="col-span-3 hidden xl:block py-10 px-8">
-                    <div className="sticky top-10 space-y-6">
-                        {/* Search */}
-                        <div className="relative group">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-outline)] group-focus-within:text-[var(--color-primary)] transition-colors w-[18px] h-[18px]" />
-                            <input type="text" className="w-full pl-11 pr-4 py-2.5 bg-[var(--color-surface-container)] border-none rounded-full text-sm placeholder:text-[var(--color-outline)] font-medium focus:ring-0 focus:bg-[var(--color-surface-container-low)] transition-all font-[family-name:var(--font-inter)] text-[var(--color-on-surface)]" placeholder="Search Community" />
-                        </div>
-                        
-                        {/* Premium Tonal Block */}
-                        <div className="bg-[var(--color-primary)] p-6 rounded-3xl relative overflow-hidden text-[var(--color-on-primary)] shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)]">
-                            <div className="absolute -right-6 -top-6 w-32 h-32 bg-[var(--color-surface-container-lowest)] opacity-5 rounded-full blur-3xl"></div>
-                            <h3 className="text-xl font-bold font-[family-name:var(--font-manrope)] mb-2 leading-tight">Elevate your study game.</h3>
-                            <p className="text-[var(--color-on-primary)]/70 text-xs mb-6 leading-relaxed font-medium font-[family-name:var(--font-inter)]">Get advanced AI analysis, unlimited cloud storage, and priority support.</p>
-                            <Link href="/dashboard/upgrade" className="block text-center w-full py-3 bg-[var(--color-surface-container-lowest)] text-[var(--color-primary)] rounded-xl text-xs font-bold uppercase tracking-widest hover:scale-[0.98] transition-all font-[family-name:var(--font-manrope)]">
-                                Join Walia Pro
-                            </Link>
-                        </div>
-                        
-                        {/* Trending Topics */}
-                        <div className="bg-[var(--color-surface-container-low)] rounded-3xl p-6">
-                            <h3 className="text-sm font-bold font-[family-name:var(--font-manrope)] mb-5 px-1 tracking-tight text-[var(--color-on-surface)]">Trending Topics</h3>
-                            <div className="space-y-5">
-                                {[
-                                    { cat: 'Academics', title: '#FinalsPrep', stat: '2.4k Posts' },
-                                    { cat: 'Technology', title: '#AIHacks', stat: '12.1k Posts' },
-                                    { cat: 'Community', title: '#WaliaMeetup', stat: '840 Posts' }
-                                ].map((t, idx) => (
-                                    <div key={idx} className="px-1 group cursor-pointer">
-                                        <p className="text-[9px] text-[var(--color-outline)] font-extrabold uppercase tracking-widest mb-1 font-[family-name:var(--font-inter)]">{t.cat}</p>
-                                        <h4 className="text-[13px] font-bold text-[var(--color-on-surface)] group-hover:underline font-[family-name:var(--font-manrope)]">{t.title}</h4>
-                                        <p className="text-[10px] text-[var(--color-outline-variant)] font-semibold font-[family-name:var(--font-inter)]">{t.stat}</p>
-                                    </div>
-                                ))}
-                            </div>
-                            <button className="mt-6 text-[11px] font-bold text-[var(--color-primary)] hover:opacity-70 px-1 font-[family-name:var(--font-inter)]">Show more</button>
-                        </div>
-
-                        {/* Footer */}
-                        <footer className="px-1 flex flex-wrap gap-x-3 gap-y-1 opacity-40">
-                            {['Privacy', 'Terms', 'Cookies', 'Advertising'].map(link => (
-                                <a key={link} href="#" className="text-[10px] text-[var(--color-on-surface)] font-semibold hover:underline font-[family-name:var(--font-inter)]">{link}</a>
-                            ))}
-                            <p className="text-[10px] text-[var(--color-on-surface)] font-semibold w-full mt-2 font-[family-name:var(--font-inter)]">© {new Date().getFullYear()} Walia AI Inc.</p>
-                        </footer>
-                    </div>
-                </aside>
-            </div>
-        </div>
-    );
+    commentsCount: number;
+    createdAt: any;
 }
 
 export default function CommunityPage() {
+    const { user } = useAuth();
+    const [posts, setPosts] = useState<Post[]>([]);
+    const [content, setContent] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [following, setFollowing] = useState<string[]>([]);
+
+    useEffect(() => {
+        const q = query(collection(db, 'posts'), orderBy('createdAt', 'desc'));
+        return onSnapshot(q, snap => {
+            setPosts(snap.docs.map(d => ({ id: d.id, ...d.data() } as Post)));
+        });
+    }, []);
+
+    useEffect(() => {
+        if (!user) return;
+        return onSnapshot(doc(db, 'users', user.uid), snap => {
+            setFollowing(snap.data()?.following || []);
+        });
+    }, [user]);
+
+    const handlePost = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!content.trim() || !user || loading) return;
+        setLoading(true);
+        try {
+            await addDoc(collection(db, 'posts'), {
+                uid: user.uid,
+                username: user.username || 'User',
+                content: content.trim(),
+                likes: [],
+                commentsCount: 0,
+                createdAt: serverTimestamp()
+            });
+            setContent('');
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleLike = async (post: Post) => {
+        if (!user) return;
+        const ref = doc(db, 'posts', post.id);
+        const isLiked = post.likes.includes(user.uid);
+        await updateDoc(ref, {
+            likes: isLiked ? arrayRemove(user.uid) : arrayUnion(user.uid)
+        });
+    };
+
+    const handleFollow = async (postUid: string) => {
+        if (!user || user.uid === postUid) return;
+        const isFollowing = following.includes(postUid);
+        const userRef = doc(db, 'users', user.uid);
+        await updateDoc(userRef, {
+            following: isFollowing ? arrayRemove(postUid) : arrayUnion(postUid)
+        });
+    };
+
     return (
-        <Suspense fallback={<div>Loading Community...</div>}>
-            <CommunityContent />
-        </Suspense>
+        <div className="flex h-full bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-[#0A0A18] dark:via-[#0D0D1A] dark:to-[#0A0A18]">
+            {/* ── Main Feed ── */}
+            <div className="flex-1 overflow-y-auto custom-scrollbar">
+                <div className="max-w-2xl mx-auto px-6 py-10">
+                    
+                    {/* Header */}
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="flex items-center justify-between mb-10">
+                        <div>
+                            <h1 className="text-3xl font-black text-black dark:text-white tracking-tighter uppercase">Community</h1>
+                            <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mt-1">Connect with the herd</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <div className="relative">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                <input 
+                                    type="text" placeholder="Search posts..."
+                                    className="pl-10 pr-4 py-2 rounded-xl bg-white dark:bg-white/5 border border-gray-200/60 dark:border-white/10 text-xs font-medium outline-none focus:border-black dark:focus:border-white transition-all duration-300 w-40 md:w-60 shadow-sm hover:shadow-md"
+                                />
+                            </div>
+                        </div>
+                    </motion.div>
+
+                    {/* Create Post */}
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.5 }} className="mb-12 p-6 rounded-[2.5rem] bg-white/70 dark:bg-white/5 border border-gray-200/60 dark:border-white/5 shadow-inner backdrop-blur-sm">
+                        <div className="flex gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-black to-gray-700 dark:from-white dark:to-gray-300 flex items-center justify-center text-white dark:text-black font-black text-xs shrink-0 shadow-lg">
+                                {user?.username?.slice(0, 2) || 'U'}
+                            </div>
+                            <form onSubmit={handlePost} className="flex-1">
+                                <textarea 
+                                    value={content} onChange={e => setContent(e.target.value)}
+                                    placeholder="Write something to the community..."
+                                    className="w-full bg-transparent border-none outline-none resize-none text-sm font-medium text-black dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-600 mb-4"
+                                    rows={3}
+                                />
+                                <div className="flex items-center justify-between border-t border-gray-200/60 dark:border-white/5 pt-4">
+                                    <div className="flex gap-2">
+                                        <button type="button" className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-white/10 text-gray-400 transition-all duration-300 hover:shadow-md"><ImageIcon className="w-4 h-4" /></button>
+                                        <button type="button" className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-white/10 text-gray-400 transition-all duration-300 hover:shadow-md"><Sparkles className="w-4 h-4" /></button>
+                                    </div>
+                                    <button 
+                                        type="submit" disabled={!content.trim() || loading}
+                                        className="px-6 py-2 rounded-xl bg-gradient-to-r from-black to-gray-700 dark:from-white dark:to-gray-300 text-white dark:text-black font-black text-xs uppercase tracking-widest hover:opacity-90 active:scale-95 transition-all duration-300 shadow-xl shadow-black/10 disabled:opacity-30"
+                                    >
+                                        {loading ? "Posting..." : "Post"}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </motion.div>
+
+                    {/* Feed */}
+                    <div className="space-y-6">
+                        {posts.map((post, index) => (
+                            <motion.div 
+                                key={post.id}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.2 + index * 0.05 }}
+                                className="p-8 rounded-[2.5rem] bg-white/70 dark:bg-white/5 border border-gray-200/60 dark:border-white/10 shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 group backdrop-blur-sm"
+                            >
+                                <div className="flex items-start justify-between mb-6">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-black to-gray-700 dark:from-white dark:to-gray-300 border border-black/5 dark:border-white/10 flex items-center justify-center text-white dark:text-black font-black text-xs uppercase shadow-sm">
+                                            {post.username.slice(0, 2)}
+                                        </div>
+                                        <div>
+                                            <div className="flex items-center gap-2">
+                                                <h3 className="text-sm font-black text-black dark:text-white uppercase tracking-tight">{post.username}</h3>
+                                                {post.uid === 'founder' && <Sparkles className="w-3 h-3 text-amber-500" />}
+                                            </div>
+                                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+                                                {post.createdAt?.toDate ? new Date(post.createdAt.toDate()).toLocaleDateString() : 'Just now'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    {user && user.uid !== post.uid && (
+                                        <button 
+                                            onClick={() => handleFollow(post.uid)}
+                                            className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${
+                                                following.includes(post.uid)
+                                                ? 'bg-gray-100 dark:bg-white/5 text-gray-400 hover:text-red-500'
+                                                : 'bg-gradient-to-r from-black to-gray-700 dark:from-white dark:to-gray-300 text-white dark:text-black hover:opacity-90'
+                                            }`}
+                                        >
+                                            {following.includes(post.uid) ? 'Following' : 'Follow'}
+                                        </button>
+                                    )}
+                                </div>
+
+                                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 leading-relaxed mb-8 whitespace-pre-line">
+                                    {post.content}
+                                </p>
+
+                                <div className="flex items-center gap-6 pt-6 border-t border-gray-200/60 dark:border-white/5">
+                                    <button 
+                                        onClick={() => handleLike(post)}
+                                        className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${
+                                            post.likes.includes(user?.uid || '') 
+                                            ? 'text-red-500' 
+                                            : 'text-gray-400 hover:text-black dark:hover:text-white'
+                                        }`}
+                                    >
+                                        <Heart className={`w-4 h-4 ${post.likes.includes(user?.uid || '') ? 'fill-current' : ''}`} />
+                                        {post.likes.length} Likes
+                                    </button>
+                                    <button className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-black dark:hover:text-white transition-all duration-300">
+                                        <MessageCircle className="w-4 h-4" />
+                                        {post.commentsCount} Comments
+                                    </button>
+                                    <button className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-black dark:hover:text-white transition-all duration-300 ml-auto">
+                                        <Share2 className="w-4 h-4" />
+                                        Share
+                                    </button>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* ── Right Panel: Trending/Suggested ── */}
+            <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3, duration: 0.5 }} className="hidden lg:flex w-80 border-l border-gray-200/60 dark:border-white/5 flex-col p-8 bg-white/70 dark:bg-black/30 backdrop-blur-xl overflow-y-auto custom-scrollbar">
+                <div className="mb-10">
+                    <div className="flex items-center gap-2 mb-6">
+                        <TrendingUp className="w-4 h-4 text-black dark:text-white" />
+                        <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-black dark:text-white">Trending Topics</h2>
+                    </div>
+                    <div className="space-y-4">
+                        {['#XAUUSD', '#AI_Assistant', '#WaliaLaunch', '#EthiopiaTech'].map((tag, index) => (
+                            <motion.div key={tag} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 + index * 0.05 }} className="group cursor-pointer">
+                                <p className="text-xs font-black text-black dark:text-white group-hover:underline transition-all duration-300">{tag}</p>
+                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">1.2K posts</p>
+                            </motion.div>
+                        ))}
+                    </div>
+                </div>
+
+                <div>
+                    <div className="flex items-center gap-2 mb-6">
+                        <Sparkles className="w-4 h-4 text-black dark:text-white" />
+                        <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-black dark:text-white">Who to follow</h2>
+                    </div>
+                    <div className="space-y-6">
+                        {[
+                            { name: 'Mrcute', role: 'Founder', tag: '@mrcute_killer' },
+                            { name: 'GoldWatcher', role: 'Trader', tag: '@gold_king' },
+                            { name: 'AIBrain', role: 'Developer', tag: '@dev_walia' }
+                        ].map((u, index) => (
+                            <motion.div key={u.tag} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 + index * 0.05 }} className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-black to-gray-700 dark:from-white dark:to-gray-300 text-white dark:text-black flex items-center justify-center font-black text-xs uppercase shadow-sm">
+                                    {u.name.slice(0, 2)}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-xs font-black text-black dark:text-white truncate uppercase tracking-tight">{u.name}</p>
+                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest truncate">{u.tag}</p>
+                                </div>
+                                <button className="p-1.5 rounded-lg bg-gray-100 dark:bg-white/5 hover:bg-black dark:hover:bg-white text-gray-400 hover:text-white dark:hover:text-black transition-all duration-300 hover:shadow-md">
+                                    <Plus className="w-4 h-4" />
+                                </button>
+                            </motion.div>
+                        ))}
+                    </div>
+                </div>
+            </motion.div>
+        </div>
     );
 }
