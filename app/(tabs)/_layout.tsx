@@ -1,6 +1,6 @@
 import { useTheme } from '@/store/theme';
 import { useAuth } from '@/store/auth';
-import { useTokens } from '@/store/tokens';
+import { useSocial } from '@/store/social';
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -19,7 +19,7 @@ function FloatingTabBar({ state, navigation }: any) {
   const insets = useSafeAreaInsets();
   const { colors, isDark, toggleTheme } = useTheme();
   const { user } = useAuth();
-  const { isPro } = useTokens();
+  const { isPro } = useSocial();
   const router = useRouter();
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
 
