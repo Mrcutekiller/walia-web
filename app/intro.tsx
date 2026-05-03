@@ -47,15 +47,22 @@ export default function IntroScreen() {
         try {
             await AsyncStorage.setItem('has_seen_intro', 'true');
         } catch (e) {}
-        router.replace('/(auth)/welcome');
+        router.replace('/(auth)/signup');
     };
 
     return (
         <View style={styles.container}>
             <StatusBar style="light" />
             
-            <View style={[StyleSheet.absoluteFill, { backgroundColor: '#000' }]} />
-            <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(99,102,241,0.05)' }]} />
+            <Video
+                source={require('../assets/videos/welcome-bg.mp4')}
+                style={StyleSheet.absoluteFill}
+                resizeMode={ResizeMode.COVER}
+                shouldPlay
+                isLooping
+                isMuted
+            />
+            <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.45)' }]} />
             
             <SafeAreaView style={styles.content}>
                 <Animated.View 
