@@ -58,6 +58,10 @@ function AIChatContent() {
     const [apiError, setApiError] = useState<string | null>(null);
     const [modelFilter, setModelFilter] = useState<'all' | 'coding' | 'general'>('all');
     const [showFilterSelector, setShowFilterSelector] = useState(false);
+    const [showReplyTone, setShowReplyTone] = useState(false);
+    const [replyToneData, setReplyToneData] = useState({
+        message: '', type: 'Work', rizzTarget: 'Girl', rizzStyle: 'Smooth'
+    });
 
     const filteredModels = AVAILABLE_MODELS.filter(m => modelFilter === 'all' || m.category === modelFilter).sort((a, b) => {
         if (modelFilter === 'coding') {
@@ -126,6 +130,18 @@ function AIChatContent() {
             createdAt: serverTimestamp()
         });
         setActiveChat(ref.id);
+    };
+
+    const handleReplyToneSubmit = () => {
+        if (!replyToneData.message.trim()) return;
+        let prompt = `I received this message: "${replyToneData.message}".\nPlease generate a reply. `;
+        if (replyToneData.type === 'Rizz') {
+            prompt += `Tone: Rizz (Flirting). Target: ${replyToneData.rizzTarget}. Style: ${replyToneData.rizzStyle}.`;
+        } else {
+            prompt += `Tone: ${replyToneData.type}.`;
+        }
+        setInput(prompt);
+        setShowReplyTone(false);
     };
 
     const handleSend = async (e?: React.FormEvent) => {
@@ -461,6 +477,14 @@ function AIChatContent() {
                                     </div>
                                 )}
                             </div>
+                            <button
+                                type="button"
+                                onClick={() => setShowReplyTone(true)}
+                                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-black to-gray-700 dark:from-white dark:to-gray-300 text-white dark:text-black hover:scale-105 transition-all duration-300 text-sm font-black uppercase tracking-widest shadow-md"
+                            >
+                                <Sparkles className="w-4 h-4" />
+                                Reply Tone
+                            </button>
                             <div className="flex-1" />
                         </div>
 
@@ -498,12 +522,6 @@ function AIChatContent() {
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
                             className="relative w-full max-w-lg bg-white dark:bg-[#0A0A18] rounded-[3rem] p-10 border border-gray-100 dark:border-white/10 shadow-2xl text-center overflow-hidden"
                         >
-                            {/* Decorative Background */}
-                            <div className="absolute top-0 left-0 w-full h-32 bg-black dark:bg-white overflow-hidden">
-                                <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
-                                <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-40 h-40 bg-white/20 dark:bg-black/20 rounded-full blur-3xl" />
-                            </div>
-
                             <div className="relative mt-12 mb-8">
                                 <div className="w-24 h-24 rounded-[2rem] bg-white dark:bg-black border-4 border-black dark:border-white flex items-center justify-center mx-auto shadow-2xl animate-float">
                                     <Image src="/logo.png" alt="Walia" width={64} height={64} unoptimized />

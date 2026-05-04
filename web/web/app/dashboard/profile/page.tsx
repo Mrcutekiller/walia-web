@@ -171,7 +171,7 @@ export default function ProfilePage() {
                         { label: 'Followers', value: profile.followersCount, icon: Users },
                         { label: 'Following', value: profile.following?.length || 0, icon: Heart },
                         { label: 'Posts', value: posts.length, icon: MessageCircle },
-                        { label: 'XP', value: profile.xp, icon: Sparkles },
+                        { label: 'Walia Points', value: profile.xp, icon: Sparkles },
                     ].map((stat, i) => (
                         <motion.div 
                             key={i}

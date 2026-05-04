@@ -23,12 +23,23 @@ interface Post {
     createdAt: any;
 }
 
+interface Story {
+    id: string;
+    uid: string;
+    username: string;
+    image: string;
+    hasUnseen: boolean;
+    createdAt: any;
+}
+
 export default function CommunityPage() {
     const { user } = useAuth();
     const [posts, setPosts] = useState<Post[]>([]);
     const [content, setContent] = useState('');
     const [loading, setLoading] = useState(false);
     const [following, setFollowing] = useState<string[]>([]);
+
+    const [stories, setStories] = useState<Story[]>([]);
 
     useEffect(() => {
         const q = query(collection(db, 'posts'), orderBy('createdAt', 'desc'));
@@ -38,11 +49,35 @@ export default function CommunityPage() {
     }, []);
 
     useEffect(() => {
+        const q = query(collection(db, 'stories'), orderBy('createdAt', 'desc'));
+        return onSnapshot(q, snap => {
+            setStories(snap.docs.map(d => ({ id: d.id, ...d.data() } as Story)));
+        });
+    }, []);
+
+    useEffect(() => {
         if (!user) return;
         return onSnapshot(doc(db, 'users', user.uid), snap => {
             setFollowing(snap.data()?.following || []);
         });
     }, [user]);
+
+    const handleAddStory = async () => {
+        if (!user) return;
+        const text = window.prompt("What's your story?");
+        if (!text) return;
+        try {
+            await addDoc(collection(db, 'stories'), {
+                uid: user.uid,
+                username: user.username || 'User',
+                image: (user.username || 'U').charAt(0).toUpperCase(),
+                hasUnseen: true,
+                createdAt: serverTimestamp()
+            });
+        } catch (err) {
+            console.error(err);
+        }
+    };
 
     const handlePost = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -104,6 +139,28 @@ export default function CommunityPage() {
                                 />
                             </div>
                         </div>
+                    </motion.div>
+
+                    {/* Stories */}
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05, duration: 0.5 }} className="mb-10 flex gap-4 overflow-x-auto custom-scrollbar pb-4">
+                        {/* Add Story */}
+                        <div onClick={handleAddStory} className="flex flex-col items-center gap-2 cursor-pointer group shrink-0">
+                            <div className="relative">
+                                <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center border-2 border-dashed border-gray-300 dark:border-white/20 group-hover:border-black dark:group-hover:border-white transition-all">
+                                    <Plus className="w-6 h-6 text-gray-400 group-hover:text-black dark:group-hover:text-white transition-colors" />
+                                </div>
+                            </div>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-black dark:text-white mt-1">Your Story</span>
+                        </div>
+                        {/* Real Stories */}
+                        {stories.map(story => (
+                            <div key={story.id} className="flex flex-col items-center gap-2 cursor-pointer group shrink-0" onClick={() => window.alert('Story feature coming soon!')}>
+                                <div className={`w-16 h-16 rounded-full flex items-center justify-center text-xl font-black uppercase bg-gradient-to-br from-black to-gray-700 dark:from-white dark:to-gray-300 text-white dark:text-black ${story.hasUnseen ? 'ring-2 ring-offset-2 ring-black dark:ring-white dark:ring-offset-[#0A0A18]' : 'opacity-70 ring-1 ring-offset-1 ring-gray-300 dark:ring-white/20 dark:ring-offset-[#0A0A18]'}`}>
+                                    {story.image}
+                                </div>
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 mt-1">{story.username}</span>
+                            </div>
+                        ))}
                     </motion.div>
 
                     {/* Create Post */}

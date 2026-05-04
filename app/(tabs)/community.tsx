@@ -14,7 +14,7 @@ export default function CommunityScreen() {
     const router = useRouter();
     const { colors, isDark } = useTheme();
     const { user } = useAuth();
-    const { posts, likePost, deletePost, togglePostPrivacy, addXP } = useSocial();
+    const { posts, stories, likePost, deletePost, togglePostPrivacy, addXP, addStory } = useSocial();
     const [quizAnswers, setQuizAnswers] = useState<Record<string, number>>({});
 
     const bg = isDark ? colors.background : '#F8FAFC';
@@ -72,6 +72,29 @@ export default function CommunityScreen() {
                 style={styles.content}
                 contentContainerStyle={{ paddingBottom: 120, paddingTop: 16 }}
             >
+                {/* Stories */}
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.storiesScroll}>
+                    <TouchableOpacity activeOpacity={0.8} style={styles.storyContainer} onPress={() => {
+                        Alert.prompt('Add Story', 'What is on your mind?', [
+                            { text: 'Cancel', style: 'cancel' },
+                            { text: 'Post', onPress: (text) => text && addStory(text) }
+                        ]);
+                    }}>
+                        <View style={[styles.storyCircle, { borderColor: isDark ? '#334155' : '#E2E8F0', borderStyle: 'dashed', borderWidth: 2, backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }]}>
+                            <Ionicons name="add" size={24} color={colors.textTertiary} />
+                        </View>
+                        <Text style={[styles.storyUsername, { color: colors.text }]}>Your Story</Text>
+                    </TouchableOpacity>
+                    {stories.map(story => (
+                        <TouchableOpacity activeOpacity={0.8} key={story.id} style={styles.storyContainer} onPress={() => Alert.alert('Story', 'Story viewing coming soon!')}>
+                            <View style={[styles.storyCircle, { backgroundColor: isDark ? '#FFFFFF' : '#000000', borderColor: story.hasUnseen ? colors.text : 'transparent', borderWidth: story.hasUnseen ? 2 : 0 }]}>
+                                <Text style={[styles.storyAvatarText, { color: isDark ? '#000000' : '#FFFFFF' }]}>{story.image}</Text>
+                            </View>
+                            <Text style={[styles.storyUsername, { color: colors.textTertiary }]}>{story.username}</Text>
+                        </TouchableOpacity>
+                    ))}
+                </ScrollView>
+
                 {/* Trending Tags */}
                 <ScrollView
                     horizontal
@@ -166,6 +189,13 @@ const styles = StyleSheet.create({
     },
 
     content: { flex: 1 },
+
+    // Stories
+    storiesScroll: { paddingHorizontal: 20, paddingBottom: 16, gap: 16 },
+    storyContainer: { alignItems: 'center', gap: 6 },
+    storyCircle: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center' },
+    storyAvatarText: { fontSize: 24, fontWeight: '900' },
+    storyUsername: { fontSize: 10, fontWeight: '800', textTransform: 'uppercase' },
 
     // Trending Tags
     tagsScroll: { paddingHorizontal: 20, paddingVertical: 10, gap: 10, marginBottom: 4 },

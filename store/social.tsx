@@ -71,6 +71,24 @@ export interface Comment {
     timestamp: string;
 }
 
+export interface Story {
+    id: string;
+    uid: string;
+    username: string;
+    image: string;
+    hasUnseen: boolean;
+    createdAt: any;
+}
+
+export interface Note {
+    id: string;
+    uid: string;
+    username: string;
+    image: string;
+    note: string;
+    createdAt: any;
+}
+
 export interface Notification {
     id: string;
     userId: string;
@@ -102,6 +120,8 @@ export interface SocialState {
     lastUpdateDate: string;
     studyHistory: StudyHistoryItem[];
     notifications: Notification[];
+    stories: Story[];
+    notes: Note[];
 }
 
 export interface StudyHistoryItem {
@@ -136,6 +156,8 @@ interface SocialContextType extends SocialState {
     addNotification: (notif: Omit<Notification, 'id' | 'read' | 'createdAt'>) => void;
     markNotificationRead: (id: string) => void;
     deleteNotification: (id: string) => void;
+    addStory: (text: string) => void;
+    addNote: (text: string) => void;
 }
 
 const SocialContext = createContext<SocialContextType | undefined>(undefined);
@@ -183,15 +205,15 @@ export function XpToastContainer() {
 const xpStyles = StyleSheet.create({
     container: { position: 'absolute', bottom: 130, right: 16, alignItems: 'flex-end', zIndex: 9999 },
     toast: {
-        backgroundColor: '#6366F1',
+        backgroundColor: '#000',
         borderRadius: 28,
         paddingHorizontal: 16,
         paddingVertical: 10,
         marginTop: 8,
-        shadowColor: '#6366F1',
+        shadowColor: '#000',
         shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.45,
-        shadowRadius: 12,
+        shadowOpacity: 0.3,
+        shadowRadius: 10,
         elevation: 10,
         flexDirection: 'row',
         gap: 6,
@@ -220,6 +242,8 @@ export function SocialProvider({ children }: { children: ReactNode }) {
         lastUpdateDate: new Date().toISOString().slice(0, 10),
         studyHistory: [],
         notifications: [],
+        stories: [],
+        notes: [],
     });
 
     // ── Real-time Sync ──
@@ -260,10 +284,22 @@ export function SocialProvider({ children }: { children: ReactNode }) {
             });
         }
 
+        const storiesQuery = query(collection(db, 'stories'), orderBy('createdAt', 'desc'));
+        const unsubscribeStories = onSnapshot(storiesQuery, (snap: any) => {
+            setState(prev => ({ ...prev, stories: snap.docs.map((d: any) => ({ id: d.id, ...d.data() })) }));
+        });
+
+        const notesQuery = query(collection(db, 'notes'), orderBy('createdAt', 'desc'));
+        const unsubscribeNotes = onSnapshot(notesQuery, (snap: any) => {
+            setState(prev => ({ ...prev, notes: snap.docs.map((d: any) => ({ id: d.id, ...d.data() })) }));
+        });
+
         return () => {
             clearTimeout(fallbackTimer);
             unsubscribePosts();
             unsubscribeStats();
+            unsubscribeStories();
+            unsubscribeNotes();
         };
     }, [auth.currentUser]);
 
@@ -551,15 +587,37 @@ export function SocialProvider({ children }: { children: ReactNode }) {
         updateState(prev => ({ ...prev, totalViews: prev.totalViews + 1 }));
     }, [updateState]);
 
-    const addNotification = useCallback((notif: Omit<Notification, 'id' | 'read' | 'createdAt'>) => {
-        const newNotif: Notification = {
+    const addNotification = useCallback(async (notif: Omit<Notification, 'id' | 'read' | 'createdAt'>) => {
+        if (!auth.currentUser) return;
+        await addDoc(collection(db, 'notifications'), {
             ...notif,
-            id: Date.now().toString() + Math.random().toString(36).substring(7),
+            userId: auth.currentUser.uid,
             read: false,
-            createdAt: new Date().toISOString()
-        };
-        updateState(prev => ({ ...prev, notifications: [newNotif, ...(prev.notifications || [])] }));
-    }, [updateState]);
+            createdAt: serverTimestamp()
+        });
+    }, []);
+
+    const addStory = useCallback(async (text: string) => {
+        if (!auth.currentUser) return;
+        await addDoc(collection(db, 'stories'), {
+            uid: auth.currentUser.uid,
+            username: auth.currentUser.displayName || 'User',
+            image: (auth.currentUser.displayName || 'U').charAt(0).toUpperCase(),
+            hasUnseen: true,
+            createdAt: serverTimestamp()
+        });
+    }, []);
+
+    const addNote = useCallback(async (text: string) => {
+        if (!auth.currentUser) return;
+        await addDoc(collection(db, 'notes'), {
+            uid: auth.currentUser.uid,
+            username: auth.currentUser.displayName || 'User',
+            image: (auth.currentUser.displayName || 'U').charAt(0).toUpperCase(),
+            note: text.slice(0, 50),
+            createdAt: serverTimestamp()
+        });
+    }, []);
 
     const markNotificationRead = useCallback((id: string) => {
         updateState(prev => ({
@@ -590,6 +648,8 @@ export function SocialProvider({ children }: { children: ReactNode }) {
             checkDailyLogin, showXpToast,
             recordAiMessage, recordUpload, togglePro,
             saveStudyHistory, addNotification, markNotificationRead, deleteNotification,
+            addStory,
+            addNote
         }}>
             {children}
         </SocialContext.Provider>

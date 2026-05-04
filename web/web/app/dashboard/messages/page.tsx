@@ -30,7 +30,20 @@ interface Conversation {
         username: string;
         displayName: string;
         photoURL?: string;
+    otherUser?: {
+        username: string;
+        displayName: string;
+        photoURL?: string;
     };
+}
+
+interface Note {
+    id: string;
+    uid: string;
+    username: string;
+    image: string;
+    note: string;
+    createdAt: any;
 }
 
 export default function MessagesPage() {
@@ -38,9 +51,18 @@ export default function MessagesPage() {
     const [conversations, setConversations] = useState<Conversation[]>([]);
     const [activeConv, setActiveConv] = useState<string | null>(null);
     const [messages, setMessages] = useState<Message[]>([]);
+    const [notes, setNotes] = useState<Note[]>([]);
     const [input, setInput] = useState('');
     const [search, setSearch] = useState('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    // Fetch notes
+    useEffect(() => {
+        const q = query(collection(db, 'notes'), orderBy('createdAt', 'desc'));
+        return onSnapshot(q, snap => {
+            setNotes(snap.docs.map(d => ({ id: d.id, ...d.data() } as Note)));
+        });
+    }, []);
 
     // Fetch conversations
     useEffect(() => {
@@ -114,6 +136,23 @@ export default function MessagesPage() {
         }
     };
 
+    const handleAddNote = async () => {
+        if (!user) return;
+        const text = window.prompt("Share a thought...");
+        if (!text) return;
+        try {
+            await addDoc(collection(db, 'notes'), {
+                uid: user.uid,
+                username: user.username || 'User',
+                image: (user.username || 'U').charAt(0).toUpperCase(),
+                note: text.slice(0, 50), // limit note length
+                createdAt: serverTimestamp()
+            });
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
     const selectedConv = conversations.find(c => c.id === activeConv);
 
     return (
@@ -138,6 +177,34 @@ export default function MessagesPage() {
                 </div>
 
                 <div className="flex-1 overflow-y-auto px-3 space-y-1 custom-scrollbar">
+                    {/* Notes */}
+                    <div className="flex gap-4 overflow-x-auto custom-scrollbar pb-4 pt-4 px-1 mb-4 border-b border-gray-200/60 dark:border-white/5">
+                        {/* Add Note */}
+                        <div onClick={handleAddNote} className="flex flex-col items-center gap-1 cursor-pointer group shrink-0 relative mt-6">
+                            <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-white dark:bg-white/10 border border-gray-200 dark:border-white/10 px-3 py-1.5 rounded-2xl rounded-bl-sm shadow-sm opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                                <span className="text-[9px] font-bold text-gray-500 dark:text-gray-400">Share a thought...</span>
+                            </div>
+                            <div className="relative">
+                                <div className="w-14 h-14 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center border border-dashed border-gray-300 dark:border-white/20 group-hover:border-black dark:group-hover:border-white transition-all">
+                                    <Plus className="w-5 h-5 text-gray-400 group-hover:text-black dark:group-hover:text-white transition-colors" />
+                                </div>
+                            </div>
+                            <span className="text-[9px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 mt-1">Note</span>
+                        </div>
+                        {/* Real Notes */}
+                        {notes.map(note => (
+                            <div key={note.id} className="flex flex-col items-center gap-1 cursor-pointer group shrink-0 relative mt-6" onClick={() => window.alert('Note feature coming soon!')}>
+                                <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-white dark:bg-white/10 border border-gray-200 dark:border-white/10 px-3 py-1.5 rounded-2xl rounded-bl-sm shadow-sm whitespace-nowrap z-10">
+                                    <span className="text-[10px] font-bold text-black dark:text-white">{note.note}</span>
+                                </div>
+                                <div className="w-14 h-14 rounded-full flex items-center justify-center text-lg font-black uppercase bg-gradient-to-br from-black to-gray-700 dark:from-white dark:to-gray-300 text-white dark:text-black ring-1 ring-offset-1 ring-gray-200 dark:ring-white/10 dark:ring-offset-[#0A0A18]">
+                                    {note.image}
+                                </div>
+                                <span className="text-[9px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 mt-1">{note.username}</span>
+                            </div>
+                        ))}
+                    </div>
+
                     {conversations.map((conv, index) => (
                         <motion.div 
                             key={conv.id}

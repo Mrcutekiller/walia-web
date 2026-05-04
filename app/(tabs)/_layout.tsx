@@ -8,11 +8,11 @@ import { Animated, Keyboard, Platform, StyleSheet, Text, TouchableOpacity, View,
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const TAB_CONFIG: Record<string, { icon: string; label: string; activeColor: string }> = {
-  ai: { icon: 'sparkles', label: 'AI', activeColor: '#6366F1' },
-  chat: { icon: 'chatbubbles', label: 'Chat', activeColor: '#3B82F6' },
-  community: { icon: 'people', label: 'Community', activeColor: '#06B6D4' },
-  calendar: { icon: 'calendar', label: 'Calendar', activeColor: '#8B5CF6' },
-  profile: { icon: 'person', label: 'Profile', activeColor: '#EC4899' },
+  ai: { icon: 'sparkles', label: 'AI Chat', activeColor: '#000' },
+  chat: { icon: 'chatbubbles', label: 'Messages', activeColor: '#000' },
+  community: { icon: 'people', label: 'Community', activeColor: '#000' },
+  calendar: { icon: 'calendar', label: 'Calendar', activeColor: '#000' },
+  profile: { icon: 'person', label: 'Profile', activeColor: '#000' },
 };
 
 function AnimatedTabItem({ route, isFocused, onPress, config, colors, isDark }: any) {
@@ -41,9 +41,9 @@ function AnimatedTabItem({ route, isFocused, onPress, config, colors, isDark }: 
     >
       <Animated.View style={[styles.tabItemInner, { transform: [{ scale: scaleAnim }] }]}>
         {isFocused ? (
-          <View style={[styles.activeTab, { backgroundColor: config.activeColor }]}>
-            <Ionicons name={config.icon as any} size={16} color="#FFF" />
-            <Text style={styles.activeLabel}>{config.label}</Text>
+          <View style={[styles.activeTab, { backgroundColor: isDark ? '#FFF' : '#000' }]}>
+            <Ionicons name={config.icon as any} size={16} color={isDark ? '#000' : '#FFF'} />
+            <Text style={[styles.activeLabel, { color: isDark ? '#000' : '#FFF' }]}>{config.label}</Text>
           </View>
         ) : (
           <View style={styles.inactiveTab}>

@@ -31,14 +31,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 // ── Navigation items — same as app TAB_CONFIG ──
 const NAV_LINKS = [
-    { name: 'AI Hub',     href: '/dashboard/ai',        icon: Sparkles,     color: '#6366F1' },
-    { name: 'Messages',   href: '/dashboard/messages',  icon: MessageSquare,color: '#3B82F6' },
-    { name: 'Notes',      href: '/dashboard/notes',     icon: BookOpen,     color: '#10B981' },
-    { name: 'Daily Plan', href: '/dashboard/plan',      icon: LayoutList,   color: '#F43F5E' },
-    { name: 'Tools',      href: '/dashboard/tools',     icon: Wrench,       color: '#F59E0B' },
-    { name: 'Community',  href: '/dashboard/community', icon: Users,        color: '#06B6D4' },
-    { name: 'Calendar',   href: '/dashboard/calendar',  icon: CalendarIcon, color: '#8B5CF6' },
-    { name: 'Profile',    href: '/dashboard/profile',   icon: User,         color: '#EC4899' },
+    { name: 'AI Chat',    href: '/dashboard/ai',        icon: Sparkles },
+    { name: 'Messages',   href: '/dashboard/messages',  icon: MessageSquare },
+    { name: 'Community',  href: '/dashboard/community', icon: Users },
+    { name: 'Calendar',   href: '/dashboard/calendar',  icon: CalendarIcon },
+    { name: 'Profile',    href: '/dashboard/profile',   icon: User },
+    { name: 'Settings',   href: '/dashboard/settings',  icon: Settings },
 ];
 
 interface SidebarProps {
@@ -174,12 +172,12 @@ export default function Sidebar({ isOpen, onClose, isMinimized, onToggleMinimize
                                     style={{
                                         backgroundColor: isActive
                                             ? 'rgba(255,255,255,0.18)'
-                                            : link.color + '1A', // 10% opacity
+                                            : 'rgba(128,128,128,0.1)', // Gray/White 10% opacity
                                     }}
                                 >
                                     <Icon
                                         className="w-4 h-4 transition-all"
-                                        style={{ color: isActive ? (isDark ? '#000' : '#FFF') : link.color }}
+                                        style={{ color: isActive ? (isDark ? '#000' : '#FFF') : '#888' }}
                                     />
                                 </div>
 

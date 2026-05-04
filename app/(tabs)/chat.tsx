@@ -10,7 +10,7 @@ import {
     Alert, Animated, Modal, Platform, ScrollView, StyleSheet,
     Switch, Text, TextInput, TouchableOpacity, View
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSocial } from '@/store/social';
 
 type TabType = 'messages' | 'groups';
 
@@ -18,6 +18,7 @@ export default function ChatScreen() {
     const router = useRouter();
     const { colors, isDark } = useTheme();
     const { user } = useAuth();
+    const { notes, addNote } = useSocial();
     const [activeTab, setActiveTab] = useState<TabType>('messages');
     const [chats, setChats] = useState<any[]>([]);
 
@@ -231,6 +232,37 @@ export default function ChatScreen() {
             >
                 {activeTab === 'messages' && (
                     <View style={styles.section}>
+                        {/* Notes Section */}
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.notesScroll}>
+                            <TouchableOpacity activeOpacity={0.8} style={styles.noteContainer} onPress={() => {
+                                Alert.prompt('Add Note', 'Share a thought...', [
+                                    { text: 'Cancel', style: 'cancel' },
+                                    { text: 'Share', onPress: (text) => text && addNote(text) }
+                                ]);
+                            }}>
+                                <View style={[styles.noteBubble, { backgroundColor: cardBg, borderColor: isDark ? '#334155' : '#E2E8F0' }]}>
+                                    <Text style={[styles.noteText, { color: colors.textTertiary }]}>Share a thought...</Text>
+                                    <View style={[styles.noteTail, { borderTopColor: cardBg }]} />
+                                </View>
+                                <View style={[styles.storyCircle, { borderColor: isDark ? '#334155' : '#E2E8F0', borderStyle: 'dashed', borderWidth: 2, backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }]}>
+                                    <Ionicons name="add" size={20} color={colors.textTertiary} />
+                                </View>
+                                <Text style={[styles.storyUsername, { color: colors.textTertiary }]}>Note</Text>
+                            </TouchableOpacity>
+                            {notes.map(note => (
+                                <TouchableOpacity activeOpacity={0.8} key={note.id} style={styles.noteContainer} onPress={() => Alert.alert('Note', 'Note viewing coming soon!')}>
+                                    <View style={[styles.noteBubble, { backgroundColor: cardBg, borderColor: isDark ? '#334155' : '#E2E8F0' }]}>
+                                        <Text style={[styles.noteText, { color: colors.text }]} numberOfLines={1}>{note.note}</Text>
+                                        <View style={[styles.noteTail, { borderTopColor: cardBg }]} />
+                                    </View>
+                                    <View style={[styles.storyCircle, { backgroundColor: isDark ? '#FFFFFF' : '#000000', borderWidth: 1, borderColor: isDark ? '#334155' : '#E2E8F0' }]}>
+                                        <Text style={[styles.storyAvatarText, { color: isDark ? '#000000' : '#FFFFFF' }]}>{note.image}</Text>
+                                    </View>
+                                    <Text style={[styles.storyUsername, { color: colors.textTertiary }]}>{note.username}</Text>
+                                </TouchableOpacity>
+                            ))}
+                        </ScrollView>
+
                         <View style={styles.sectionHeader}>
                             <Text style={[styles.sectionLabel, { color: colors.textTertiary }]}>DIRECT MESSAGES</Text>
                             <TouchableOpacity
@@ -599,6 +631,22 @@ const styles = StyleSheet.create({
         elevation: 4,
     },
     tabText: { fontSize: 14, fontWeight: '800' },
+
+    // Notes
+    notesScroll: { paddingBottom: 16, gap: 16, marginHorizontal: -20, paddingHorizontal: 20 },
+    noteContainer: { alignItems: 'center', gap: 4, marginTop: 32 },
+    noteBubble: {
+        position: 'absolute', top: -38, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 16, borderWidth: 1,
+        maxWidth: 80, alignItems: 'center', justifyContent: 'center', zIndex: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 2
+    },
+    noteText: { fontSize: 9, fontWeight: '700', textAlign: 'center' },
+    noteTail: {
+        position: 'absolute', bottom: -5, width: 0, height: 0, borderLeftWidth: 5, borderRightWidth: 5, borderTopWidth: 5, borderStyle: 'solid',
+        backgroundColor: 'transparent', borderLeftColor: 'transparent', borderRightColor: 'transparent'
+    },
+    storyCircle: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center' },
+    storyAvatarText: { fontSize: 20, fontWeight: '900' },
+    storyUsername: { fontSize: 10, fontWeight: '800', textTransform: 'uppercase' },
 
     // Content
     content: { flex: 1 },

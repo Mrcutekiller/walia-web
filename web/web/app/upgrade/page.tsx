@@ -71,7 +71,7 @@ function UpgradeContent() {
             setSuccess(true);
         } catch (e) {
             console.error(e);
-            alert('Failed to process XP upgrade');
+            alert('Failed to process Walia Points upgrade');
         } finally {
             setUploading(false);
         }
@@ -248,15 +248,15 @@ function UpgradeContent() {
                                 >
                                     <div className="flex items-center gap-2 font-black text-sm uppercase tracking-widest">
                                         <Zap className="w-4 h-4" />
-                                        Unlock with 10,000 XP
+                                        Unlock with 10,000 Walia Points
                                     </div>
                                     <span className="text-[10px] font-bold uppercase opacity-60">
-                                        Your Balance: {user?.xp || 0} XP
+                                        Your Balance: {user?.xp || 0} Points
                                     </span>
                                 </button>
                                 {!canAffordWithXp && (
                                     <p className="text-[10px] text-center text-white/20 font-bold uppercase tracking-widest mt-2">
-                                        Need {(10000 - (user?.xp || 0)).toLocaleString()} more XP
+                                        Need {(10000 - (user?.xp || 0)).toLocaleString()} more Points
                                     </p>
                                 )}
                             </div>

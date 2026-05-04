@@ -53,9 +53,9 @@ const MOCKUP_SCREENS = [
 ];
 
 const tickerItems = [
-  'Walia AI','·','Climb Higher','·','Think Smarter','·','Ethiopia','·',
+  'Walia AI','·','Climb Higher','·','Think Smarter','·','Next-Gen','·',
   'GPT-4','·','Study Tools','·','Community','·','Calendar','·',
-  'Walia AI','·','Climb Higher','·','Think Smarter','·','Ethiopia','·',
+  'Walia AI','·','Climb Higher','·','Think Smarter','·','Next-Gen','·',
   'GPT-4','·','Study Tools','·','Community','·','Calendar','·',
 ];
 
@@ -152,7 +152,7 @@ export default function Home() {
                 <span className="w-2.5 h-2.5 rounded-full bg-green-400 mr-3 animate-pulse shadow-[0_0_12px_rgba(74,222,128,0.8)]" />
                 <span className="text-xs font-black text-white tracking-widest uppercase">v1.0 — Now on Android</span>
               </div>
-              <p className="text-[11px] font-black uppercase tracking-[0.5em] text-white/40 mb-6">From the Mountains of Ethiopia</p>
+              <p className="text-[11px] font-black uppercase tracking-[0.5em] text-white/40 mb-6">Designed for Excellence</p>
               <div className="flex items-center gap-8 mb-8">
                 <div className="w-28 h-28 md:w-36 md:h-36 rounded-[40px] bg-white border-2 border-white/30 flex items-center justify-center shadow-[0_0_60px_rgba(255,255,255,0.3)] p-3 shrink-0 hover:scale-105 transition-transform duration-500">
                   <img src="/logo.png" alt="Walia Logo" className="w-full h-full object-contain" />

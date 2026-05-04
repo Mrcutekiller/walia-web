@@ -141,6 +141,8 @@ export default function AITabScreen() {
     const [hasInitialLoaded, setHasInitialLoaded] = useState(false);
     const [shareModalVisible, setShareModalVisible] = useState(false);
     const [shareText, setShareText] = useState('');
+    const [showReplyTone, setShowReplyTone] = useState(false);
+    const [replyToneData, setReplyToneData] = useState({ message: '', type: 'Work', rizzTarget: 'Girl', rizzStyle: 'Smooth' });
     const scrollRef = useRef<ScrollView>(null);
     const inputRef = useRef<TextInput>(null);
 
@@ -323,12 +325,23 @@ export default function AITabScreen() {
         if (!result.canceled && result.assets[0]) sendMessage('Analyze this image', result.assets[0].uri);
     };
 
+    const handleReplyToneSubmit = () => {
+        if (!replyToneData.message.trim()) return;
+        let prompt = `I received this message: "${replyToneData.message}".\nPlease generate a reply. `;
+        if (replyToneData.type === 'Rizz') {
+            prompt += `Tone: Rizz (Flirting). Target: ${replyToneData.rizzTarget}. Style: ${replyToneData.rizzStyle}.`;
+        } else {
+            prompt += `Tone: ${replyToneData.type}.`;
+        }
+        setMessage(prompt);
+        setShowReplyTone(false);
+    };
+
     const takePhoto = async () => {
         const { status } = await ImagePicker.requestCameraPermissionsAsync();
         if (status !== 'granted') { Alert.alert('Permission needed', 'Allow camera access to take photos.'); return; }
         const result = await ImagePicker.launchCameraAsync({ allowsEditing: true, quality: 0.8 });
         if (!result.canceled && result.assets[0]) sendMessage('Analyze this image', result.assets[0].uri);
-    };
 
     const SUGGESTIONS = [
         { label: 'Explain AI 🤖', q: 'Explain AI simply' },
@@ -589,6 +602,13 @@ export default function AITabScreen() {
                         <Ionicons name="chevron-up" size={12} color={colors.textTertiary} />
                     </TouchableOpacity>
 
+                    <TouchableOpacity
+                        style={[styles.modelToggleBtn, { backgroundColor: isDark ? '#1E293B' : '#F1F5F9', borderColor: isDark ? '#334155' : '#E2E8F0', marginLeft: 8 }]}
+                        onPress={() => setShowReplyTone(true)}
+                    >
+                        <Ionicons name="sparkles" size={16} color={colors.text} />
+                    </TouchableOpacity>
+
                     <View style={[
                         styles.inputWrap,
                         {
@@ -637,6 +657,108 @@ export default function AITabScreen() {
                     </TouchableOpacity>
                 </View>
             </KeyboardAvoidingView>
+
+            {/* ── Reply Tone Modal ── */}
+            {showReplyTone && (
+                <View style={styles.modalOverlay}>
+                    <TouchableOpacity style={styles.modalBlur} onPress={() => setShowReplyTone(false)} />
+                    <Animated.View style={[styles.personaModal, { backgroundColor: colors.surface }]}>
+                        <View style={styles.modalHeader}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                                <Ionicons name="sparkles" size={20} color={colors.text} />
+                                <Text style={[styles.modalTitle, { color: colors.text }]}>REPLY TONE</Text>
+                            </View>
+                            <TouchableOpacity onPress={() => setShowReplyTone(false)}>
+                                <Ionicons name="close" size={24} color={colors.textTertiary} />
+                            </TouchableOpacity>
+                        </View>
+                        <ScrollView style={{ padding: 20 }}>
+                            <Text style={[styles.shareSectionLabel, { color: colors.textTertiary, marginBottom: 8 }]}>MESSAGE TO REPLY TO</Text>
+                            <TextInput
+                                style={[styles.input, { color: colors.text, backgroundColor: colors.surfaceAlt, borderColor: colors.border, borderWidth: 1, borderRadius: 12, padding: 12, height: 80, textAlignVertical: 'top', marginBottom: 20 }]}
+                                placeholder="Paste the message here..."
+                                placeholderTextColor={colors.textTertiary}
+                                value={replyToneData.message}
+                                onChangeText={text => setReplyToneData(d => ({ ...d, message: text }))}
+                                multiline
+                            />
+
+                            <Text style={[styles.shareSectionLabel, { color: colors.textTertiary, marginBottom: 8 }]}>STEP 1: CHOOSE CHAT TYPE</Text>
+                            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
+                                {['Work', 'Friend Chat', 'Mentor Chat', 'Rizz'].map(type => (
+                                    <TouchableOpacity
+                                        key={type}
+                                        onPress={() => setReplyToneData(d => ({ ...d, type }))}
+                                        style={{
+                                            paddingVertical: 10, paddingHorizontal: 16, borderRadius: 20, borderWidth: 1,
+                                            backgroundColor: replyToneData.type === type ? colors.text : colors.surfaceAlt,
+                                            borderColor: replyToneData.type === type ? colors.text : colors.border
+                                        }}
+                                    >
+                                        <Text style={{
+                                            fontSize: 12, fontWeight: '800', textTransform: 'uppercase',
+                                            color: replyToneData.type === type ? colors.surface : colors.textSecondary
+                                        }}>
+                                            {type}
+                                        </Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+
+                            {replyToneData.type === 'Rizz' && (
+                                <View style={{ marginBottom: 20 }}>
+                                    <Text style={[styles.shareSectionLabel, { color: colors.textTertiary, marginBottom: 8 }]}>STEP 2: TARGET</Text>
+                                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+                                        {['Girl', 'Boy', 'Girlfriend', 'Crush', 'New girl'].map(t => (
+                                            <TouchableOpacity
+                                                key={t}
+                                                onPress={() => setReplyToneData(d => ({ ...d, rizzTarget: t }))}
+                                                style={{
+                                                    paddingVertical: 8, paddingHorizontal: 12, borderRadius: 16, borderWidth: 1,
+                                                    backgroundColor: replyToneData.rizzTarget === t ? colors.text : colors.surfaceAlt,
+                                                    borderColor: replyToneData.rizzTarget === t ? colors.text : colors.border
+                                                }}
+                                            >
+                                                <Text style={{ fontSize: 11, fontWeight: '700', color: replyToneData.rizzTarget === t ? colors.surface : colors.textSecondary }}>{t}</Text>
+                                            </TouchableOpacity>
+                                        ))}
+                                    </View>
+
+                                    <Text style={[styles.shareSectionLabel, { color: colors.textTertiary, marginBottom: 8 }]}>STEP 3: STYLE</Text>
+                                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                                        {['Smooth', 'Funny', 'Confident', 'Flirty'].map(t => (
+                                            <TouchableOpacity
+                                                key={t}
+                                                onPress={() => setReplyToneData(d => ({ ...d, rizzStyle: t }))}
+                                                style={{
+                                                    paddingVertical: 8, paddingHorizontal: 12, borderRadius: 16, borderWidth: 1,
+                                                    backgroundColor: replyToneData.rizzStyle === t ? colors.text : colors.surfaceAlt,
+                                                    borderColor: replyToneData.rizzStyle === t ? colors.text : colors.border
+                                                }}
+                                            >
+                                                <Text style={{ fontSize: 11, fontWeight: '700', color: replyToneData.rizzStyle === t ? colors.surface : colors.textSecondary }}>{t}</Text>
+                                            </TouchableOpacity>
+                                        ))}
+                                    </View>
+                                </View>
+                            )}
+
+                            <TouchableOpacity
+                                style={{
+                                    backgroundColor: replyToneData.message.trim() ? colors.text : colors.surfaceAlt,
+                                    padding: 16, borderRadius: 16, alignItems: 'center', marginTop: 10, marginBottom: 40,
+                                }}
+                                onPress={handleReplyToneSubmit}
+                                disabled={!replyToneData.message.trim()}
+                            >
+                                <Text style={{ color: replyToneData.message.trim() ? colors.surface : colors.textSecondary, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 1 }}>
+                                    PREPARE REPLY
+                                </Text>
+                            </TouchableOpacity>
+                        </ScrollView>
+                    </Animated.View>
+                </View>
+            )}
 
             {/* ── Share Modal ── */}
             {shareModalVisible && (
