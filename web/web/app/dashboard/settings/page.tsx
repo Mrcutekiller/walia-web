@@ -1,6 +1,8 @@
 'use client';
 
 import { useAuth } from '@/context/AuthContext';
+import { useTheme } from '@/context/ThemeContext';
+import { useRouter } from 'next/navigation';
 import { 
     User, Lock, Bell, Shield, LogOut, ChevronRight, 
     Smartphone, Moon, Globe, Trash2, Mail, AlertCircle, Sparkles, Check
@@ -10,6 +12,8 @@ import { motion } from 'framer-motion';
 
 export default function SettingsPage() {
     const { user, logout } = useAuth();
+    const { isDark, toggleTheme } = useTheme();
+    const router = useRouter();
     const [notifications, setNotifications] = useState({
         email: true,
         push: false,
@@ -64,6 +68,10 @@ export default function SettingsPage() {
                                         initial={{ opacity: 0, x: -20 }}
                                         animate={{ opacity: 1, x: 0 }}
                                         transition={{ delay: 0.2 + i * 0.1 + j * 0.05 }}
+                                        onClick={() => {
+                                            if (item.toggle) toggleTheme();
+                                            else if (item.href) router.push(item.href);
+                                        }}
                                         className="group flex items-center gap-5 p-5 rounded-[2rem] bg-white/70 dark:bg-white/5 border border-gray-200/60 dark:border-white/5 hover:border-black dark:hover:border-white transition-all duration-300 cursor-pointer shadow-sm hover:shadow-xl hover:-translate-y-0.5 backdrop-blur-sm"
                                     >
                                         <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-black to-gray-700 dark:from-white dark:to-gray-300 text-white dark:text-black flex items-center justify-center shrink-0 shadow-lg shadow-black/5">
@@ -74,8 +82,8 @@ export default function SettingsPage() {
                                             <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">{item.desc}</p>
                                         </div>
                                         {item.toggle ? (
-                                            <div className="w-12 h-6 rounded-full bg-gradient-to-r from-black to-gray-700 dark:from-white dark:to-gray-300 p-1 flex items-center justify-end">
-                                                <div className="w-4 h-4 rounded-full bg-white dark:bg-black" />
+                                            <div className={`w-12 h-6 rounded-full p-1 flex items-center transition-all duration-300 ${isDark ? 'bg-white justify-end' : 'bg-black justify-start'}`}>
+                                                <div className={`w-4 h-4 rounded-full ${isDark ? 'bg-black' : 'bg-white'}`} />
                                             </div>
                                         ) : (
                                             <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-black dark:group-hover:text-white transition-colors" />

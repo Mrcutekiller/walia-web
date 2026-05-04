@@ -30,7 +30,7 @@ const footerLinks = [
 
 export default function Footer() {
     return (
-        <footer className="w-full bg-black border-t border-white/5 pt-20 pb-10">
+        <footer className="w-full bg-[var(--background)] border-t border-gray-200 dark:border-white/5 pt-20 pb-10 transition-colors duration-500">
             <div className="container mx-auto px-6 md:px-12">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-16">
                     {/* Brand */}
@@ -39,9 +39,9 @@ export default function Footer() {
                             <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden transition-all duration-500 group-hover:scale-110 group-hover:bg-white/10 group-hover:border-white/20">
                                 <Image src="/logo.png" alt="Walia" width={32} height={32} unoptimized className="object-contain" />
                             </div>
-                            <span className="text-2xl font-black tracking-tight text-white uppercase">Walia</span>
+                            <span className="text-2xl font-black tracking-tight text-black dark:text-white uppercase">Walia</span>
                         </Link>
-                        <p className="text-white/40 max-w-sm leading-relaxed text-sm">
+                        <p className="text-black/40 dark:text-white/40 max-w-sm leading-relaxed text-sm">
                             From the Mountains of Ethiopia. Empowering students with AI-powered study tools,
                             real-time collaboration, and a professional workspace. Climb Higher. Think Smarter.
                         </p>
@@ -50,7 +50,7 @@ export default function Footer() {
                                 <a
                                     key={i}
                                     href="#"
-                                    className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/30 hover:text-white hover:border-white/30 transition-all"
+                                    className="w-10 h-10 rounded-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 flex items-center justify-center text-black/30 dark:text-white/30 hover:text-black dark:hover:text-white hover:border-black/30 dark:hover:border-white/30 transition-all"
                                 >
                                     <Icon className="w-4 h-4" />
                                 </a>
@@ -67,7 +67,7 @@ export default function Footer() {
                                     <li key={link.name}>
                                         <Link
                                             href={link.href}
-                                            className="text-white/40 hover:text-white transition-colors text-sm font-medium"
+                                            className="text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white transition-colors text-sm font-medium"
                                         >
                                             {link.name}
                                         </Link>

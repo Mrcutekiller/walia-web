@@ -69,7 +69,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         applyTheme(newTheme);
 
         if (auth.currentUser) {
-            await updateDoc(doc(db, 'users', auth.currentUser.uid), { theme: newTheme });
+            try {
+                await updateDoc(doc(db, 'users', auth.currentUser.uid), { theme: newTheme });
+            } catch (e) {
+                console.error("Failed to sync theme to firestore", e);
+            }
         }
     };
 
@@ -91,14 +95,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
                         const userData = snap.data();
                         // If user has no theme preference set, default to light
                         if (!userData.theme) {
-                            setThemeState('light');
-                            localStorage.setItem('walia-theme', 'light');
-                            applyTheme('light');
-                        } else if (userData.theme !== theme) {
+                            // Don't override local if firestore is empty
+                        } else {
                             const userTheme = userData.theme as Theme;
-                            setThemeState(userTheme);
-                            localStorage.setItem('walia-theme', userTheme);
-                            applyTheme(userTheme);
+                            if (userTheme !== localStorage.getItem('walia-theme')) {
+                                setThemeState(userTheme);
+                                localStorage.setItem('walia-theme', userTheme);
+                                applyTheme(userTheme);
+                            }
                         }
                     }
                 });

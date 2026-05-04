@@ -23,7 +23,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body suppressHydrationWarning className={`${inter.variable} ${manrope.variable} font-sans antialiased transition-colors duration-300`}>
+      <body suppressHydrationWarning className={`${inter.variable} ${manrope.variable} font-sans antialiased transition-colors duration-300 bg-[var(--background)] text-[var(--foreground)] min-h-screen`}>
         <AuthProvider>
           <NotificationProvider>
             <ThemeProvider>

@@ -104,6 +104,23 @@
   --color-outline-variant: #262626;
 }
 
+:root {
+  --background: #f9f9f9;
+  --foreground: #2d3435;
+}
+
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ffffff;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+  font-family: var(--font-inter);
+}
+
 /* ─── Base ─── */
 *,
 *::before,
@@ -115,12 +132,7 @@ html {
   scroll-behavior: smooth;
 }
 
-body {
-  background-color: var(--color-surface);
-  color: var(--color-on-background);
-  -webkit-font-smoothing: antialiased;
-  font-family: var(--font-inter);
-}
+/* Body style moved above */
 
 /* ─── Scrollbar ─── */
 .custom-scrollbar::-webkit-scrollbar {

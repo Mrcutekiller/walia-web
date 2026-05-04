@@ -137,7 +137,7 @@ export default function Home() {
   return (
     <>
       <Navbar />
-      <main className="w-full overflow-hidden bg-white">
+      <main className="w-full overflow-hidden bg-[var(--background)] text-[var(--foreground)] transition-colors duration-500">
 
         {/* ━━━━ HERO — FULLSCREEN VIDEO ━━━━ */}
         <section className="relative w-full h-screen min-h-[600px] overflow-hidden">
@@ -148,11 +148,7 @@ export default function Home() {
 
           <div className="absolute bottom-0 left-0 right-0 z-10 container mx-auto px-10 md:px-16 pb-16 md:pb-24">
             <div className="max-w-3xl animate-fade-in-up">
-              <div className="inline-flex items-center px-5 py-2 rounded-full bg-white/10 border border-white/20 backdrop-blur-md mb-8 shadow-2xl">
-                <span className="w-2.5 h-2.5 rounded-full bg-green-400 mr-3 animate-pulse shadow-[0_0_12px_rgba(74,222,128,0.8)]" />
-                <span className="text-xs font-black text-white tracking-widest uppercase">Now Live: Real Stories & Community Posts</span>
-              </div>
-              <p className="text-[11px] font-black uppercase tracking-[0.5em] text-white/40 mb-6">Walia Intelligence Ecosystem</p>
+            <div className="max-w-3xl animate-fade-in-up pt-12">
               <div className="flex items-center gap-8 mb-8">
                 <div className="w-28 h-28 md:w-36 md:h-36 rounded-[40px] bg-white border-2 border-white/30 flex items-center justify-center shadow-[0_0_60px_rgba(255,255,255,0.3)] p-3 shrink-0 hover:scale-105 transition-transform duration-500">
                   <img src="/logo.png" alt="Walia Logo" className="w-full h-full object-contain" />
@@ -198,7 +194,7 @@ export default function Home() {
         </div>
 
         {/* ━━━━ FEATURES ━━━━ */}
-        <section className="py-32 bg-white">
+        <section className="py-32 bg-[var(--background)] transition-colors duration-500">
           <div className="container mx-auto px-6 md:px-12">
             <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-24 gap-8">
               <div className="space-y-5 reveal">
@@ -213,7 +209,7 @@ export default function Home() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 stagger">
               {features.map((F, i) => (
-                <div key={i} className="reveal group block p-10 rounded-[2.5rem] bg-gray-50 border border-gray-200 hover:border-black/30 transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_30px_80px_rgba(0,0,0,0.12)]">
+                <div key={i} className="reveal group block p-10 rounded-[2.5rem] bg-[var(--background)] border border-gray-200 dark:border-white/10 hover:border-black dark:hover:border-white transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_30px_80px_rgba(0,0,0,0.12)]">
                   <div className="w-16 h-16 rounded-3xl bg-black flex items-center justify-center mb-8 transition-transform group-hover:scale-110 group-hover:rotate-3">
                     <F.icon className="w-8 h-8 text-white" />
                   </div>
@@ -229,7 +225,7 @@ export default function Home() {
         </section>
 
         {/* ━━━━ INTERACTIVE PHONE MOCKUP ━━━━ */}
-        <section className="py-32 bg-black overflow-hidden" ref={mockupRef}>
+        <section className="py-32 bg-gray-50 dark:bg-black/40 overflow-hidden transition-colors duration-500" ref={mockupRef}>
           <div className="container mx-auto px-6 md:px-12">
             <div className="text-center mb-16 reveal">
               <div className="inline-flex items-center px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-[10px] font-black uppercase text-white/50 tracking-widest mb-4">
