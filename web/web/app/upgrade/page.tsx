@@ -51,20 +51,20 @@ function UpgradeContent() {
 
     const currentPrice = yearly ? yearlyPrice : monthlyPrice;
     
-    const canAffordWithXp = (user?.xp || 0) >= 10000;
+    const canAffordWithPoints = (user?.waliaPoints || 0) >= 10000;
 
-    const handleXpUpgrade = async () => {
-        if (!canAffordWithXp || !user) return;
+    const handlePointsUpgrade = async () => {
+        if (!canAffordWithPoints || !user) return;
         setUploading(true);
         try {
             await addDoc(collection(db, 'payments'), {
                 userId: user.id,
                 userEmail: user.email,
                 userName: user?.name,
-                plan: 'xp_unlock',
+                plan: 'points_unlock',
                 amount: 10000,
-                currency: 'XP',
-                method: 'XP Unlock',
+                currency: 'Points',
+                method: 'Points Unlock',
                 status: 'pending',
                 createdAt: serverTimestamp()
             });
@@ -242,21 +242,21 @@ function UpgradeContent() {
                                 <div className="p-1 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mb-4" />
 
                                 <button 
-                                    onClick={handleXpUpgrade}
-                                    disabled={!canAffordWithXp || uploading}
-                                    className={`w-full py-4 rounded-2xl flex flex-col items-center justify-center gap-1 transition-all ${canAffordWithXp ? 'bg-gradient-to-br from-amber-400 to-amber-600 text-black shadow-xl shadow-amber-500/20 hover:scale-[1.02]' : 'bg-white/5 border border-white/5 opacity-50 text-white/40'}`}
+                                    onClick={handlePointsUpgrade}
+                                    disabled={!canAffordWithPoints || uploading}
+                                    className={`w-full py-4 rounded-2xl flex flex-col items-center justify-center gap-1 transition-all ${canAffordWithPoints ? 'bg-gradient-to-br from-amber-400 to-amber-600 text-black shadow-xl shadow-amber-500/20 hover:scale-[1.02]' : 'bg-white/5 border border-white/5 opacity-50 text-white/40'}`}
                                 >
                                     <div className="flex items-center gap-2 font-black text-sm uppercase tracking-widest">
                                         <Zap className="w-4 h-4" />
                                         Unlock with 10,000 Walia Points
                                     </div>
                                     <span className="text-[10px] font-bold uppercase opacity-60">
-                                        Your Balance: {user?.xp || 0} Points
+                                        Your Balance: {(user as any)?.waliaPoints || (user as any)?.xp || 0} Points
                                     </span>
                                 </button>
-                                {!canAffordWithXp && (
+                                {!canAffordWithPoints && (
                                     <p className="text-[10px] text-center text-white/20 font-bold uppercase tracking-widest mt-2">
-                                        Need {(10000 - (user?.xp || 0)).toLocaleString()} more Points
+                                        Need {(10000 - ((user as any)?.waliaPoints || (user as any)?.xp || 0)).toLocaleString()} more Points
                                     </p>
                                 )}
                             </div>
