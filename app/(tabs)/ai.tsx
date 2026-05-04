@@ -139,6 +139,7 @@ export default function AITabScreen() {
     const [activeSession, setActiveSession] = useState<string | null>(null);
     const [isCreatingNew, setIsCreatingNew] = useState(false);
     const [hasInitialLoaded, setHasInitialLoaded] = useState(false);
+    const [historyModalVisible, setHistoryModalVisible] = useState(false);
     const [shareModalVisible, setShareModalVisible] = useState(false);
     const [shareText, setShareText] = useState('');
     const [showReplyTone, setShowReplyTone] = useState(false);
@@ -390,6 +391,12 @@ export default function AITabScreen() {
                             >
                                 <Ionicons name="add-circle-outline" size={26} color={colors.primary} />
                             </TouchableOpacity>
+                            <TouchableOpacity 
+                                style={[styles.newChatBtn, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]}
+                                onPress={() => setHistoryModalVisible(true)}
+                            >
+                                <Ionicons name="time-outline" size={26} color={colors.textSecondary} />
+                            </TouchableOpacity>
                             <View style={[styles.tokenPill, { backgroundColor: isPro ? '#6366F120' : colors.surfaceAlt, borderColor: isPro ? '#6366F140' : colors.border }]}>
                                 <Text style={{ fontSize: 12 }}>⭐</Text>
                                 <Text style={[styles.tokenText, { color: isPro ? '#6366F1' : colors.text }]}>{isPro ? '∞' : `${xp.toLocaleString()} pts`}</Text>
@@ -528,19 +535,10 @@ export default function AITabScreen() {
                         </View>
 
                         <View style={styles.recentSection}>
-                            <Text style={[styles.recentLabel, { color: colors.textTertiary }]}>CONTINUE EXPLORING</Text>
-                            {sessions.slice(0, 3).map(c => (
-                                <TouchableOpacity key={c.id} style={[styles.recentCard, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={() => setActiveSession(c.id)}>
-                                    <View style={[styles.recentIcon, { backgroundColor: colors.surfaceAlt }]}>
-                                        <Ionicons name="chatbubble-outline" size={20} color={colors.textSecondary} />
-                                    </View>
-                                    <View style={{ flex: 1 }}>
-                                        <Text style={[styles.recentTitle, { color: colors.text }]} numberOfLines={1}>{c.title}</Text>
-                                        <Text style={[styles.recentSub, { color: colors.textTertiary }]} numberOfLines={1}>{c.lastText}</Text>
-                                    </View>
-                                    <Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />
-                                </TouchableOpacity>
-                            ))}
+                            <Text style={[styles.recentLabel, { color: colors.textTertiary }]}>QUICK SUGGESTIONS</Text>
+                            <Text style={[styles.emptyDesc, { color: colors.textTertiary, fontSize: 13, marginTop: -20 }]}>
+                                Select a topic above or start typing below to begin.
+                            </Text>
                         </View>
                     </View>
                 )}
@@ -755,6 +753,44 @@ export default function AITabScreen() {
                                     PREPARE REPLY
                                 </Text>
                             </TouchableOpacity>
+                        </ScrollView>
+                    </Animated.View>
+                </View>
+            )}
+
+            {/* ── History Modal ── */}
+            {historyModalVisible && (
+                <View style={styles.modalOverlay}>
+                    <TouchableOpacity style={styles.modalBlur} onPress={() => setHistoryModalVisible(false)} />
+                    <Animated.View style={[styles.personaModal, { backgroundColor: colors.surface }]}>
+                        <View style={styles.modalHeader}>
+                            <Text style={[styles.modalTitle, { color: colors.text }]}>CHAT HISTORY</Text>
+                            <TouchableOpacity onPress={() => setHistoryModalVisible(false)}>
+                                <Ionicons name="close" size={24} color={colors.textTertiary} />
+                            </TouchableOpacity>
+                        </View>
+                        <ScrollView style={{ padding: 16 }}>
+                            {sessions.length === 0 ? (
+                                <View style={{ py: 40, alignItems: 'center', opacity: 0.3 }}>
+                                    <Ionicons name="time-outline" size={48} color={colors.textTertiary} />
+                                    <Text style={{ mt: 10, fontWeight: '700' }}>No history found</Text>
+                                </View>
+                            ) : sessions.map(session => (
+                                <TouchableOpacity 
+                                    key={session.id} 
+                                    style={[styles.recentCard, { backgroundColor: colors.surfaceAlt, borderColor: colors.border }]} 
+                                    onPress={() => { setActiveSession(session.id); setHistoryModalVisible(false); }}
+                                >
+                                    <View style={[styles.recentIcon, { backgroundColor: colors.surface }]}>
+                                        <Ionicons name="chatbubble-outline" size={20} color={colors.primary} />
+                                    </View>
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={[styles.recentTitle, { color: colors.text }]} numberOfLines={1}>{session.title}</Text>
+                                        <Text style={[styles.recentSub, { color: colors.textTertiary }]} numberOfLines={1}>{session.lastText || 'No messages'}</Text>
+                                    </View>
+                                    <Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />
+                                </TouchableOpacity>
+                            ))}
                         </ScrollView>
                     </Animated.View>
                 </View>
