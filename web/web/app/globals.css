@@ -105,13 +105,17 @@
 }
 
 :root {
-  --background: #f9f9f9;
-  --foreground: #2d3435;
+  --background: #ffffff;
+  --foreground: #000000;
+  --surface: #f8f9fa;
+  --border: #e9ecef;
 }
 
 .dark {
-  --background: #0a0a0a;
+  --background: #000000;
   --foreground: #ffffff;
+  --surface: #111111;
+  --border: #222222;
 }
 
 body {

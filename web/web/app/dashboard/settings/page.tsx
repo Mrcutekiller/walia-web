@@ -69,10 +69,16 @@ export default function SettingsPage() {
                                         animate={{ opacity: 1, x: 0 }}
                                         transition={{ delay: 0.2 + i * 0.1 + j * 0.05 }}
                                         onClick={() => {
-                                            if (item.toggle) toggleTheme();
-                                            else if (item.href) router.push(item.href);
+                                            if (item.toggle) {
+                                                toggleTheme();
+                                            } else if (item.href) {
+                                                router.push(item.href);
+                                            } else {
+                                                // Alert for non-implemented features
+                                                alert(`${item.label} settings coming soon!`);
+                                            }
                                         }}
-                                        className="group flex items-center gap-5 p-5 rounded-[2rem] bg-white/70 dark:bg-white/5 border border-gray-200/60 dark:border-white/5 hover:border-black dark:hover:border-white transition-all duration-300 cursor-pointer shadow-sm hover:shadow-xl hover:-translate-y-0.5 backdrop-blur-sm"
+                                        className="group flex items-center gap-5 p-5 rounded-[2rem] bg-white/70 dark:bg-white/5 border border-gray-200/60 dark:border-white/10 hover:border-black dark:hover:border-white transition-all duration-300 cursor-pointer shadow-sm hover:shadow-xl hover:-translate-y-0.5 backdrop-blur-sm"
                                     >
                                         <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-black to-gray-700 dark:from-white dark:to-gray-300 text-white dark:text-black flex items-center justify-center shrink-0 shadow-lg shadow-black/5">
                                             <item.icon className="w-5 h-5" />

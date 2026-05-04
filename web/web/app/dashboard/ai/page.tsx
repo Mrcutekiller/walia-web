@@ -249,7 +249,7 @@ function AIChatContent() {
                     </div>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                     <button 
                         onClick={startNewChat}
                         className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-black dark:bg-white text-white dark:text-black font-black text-[10px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-black/10"
@@ -258,9 +258,11 @@ function AIChatContent() {
                     </button>
                     <button 
                         onClick={() => setShowHistory(true)}
-                        className="p-2.5 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 hover:border-black dark:hover:border-white text-black dark:text-white transition-all"
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 hover:border-black dark:hover:border-white text-black dark:text-white transition-all group"
+                        title="View Chat History"
                     >
-                        <History className="w-5 h-5" />
+                        <History className="w-4 h-4" />
+                        <span className="text-[10px] font-black uppercase tracking-widest">History</span>
                     </button>
                 </div>
             </div>
@@ -319,7 +321,7 @@ function AIChatContent() {
                 </AnimatePresence>
 
                 {/* ── Main Chat Content ── */}
-                <div className="flex-1 flex flex-col relative h-full">
+                <div className="flex-1 flex flex-col relative min-h-0">
                 {!activeChat && messages.length === 0 ? (
                     <motion.div 
                         initial={{ opacity: 0, y: 20 }}
@@ -409,7 +411,7 @@ function AIChatContent() {
                 )}
 
                 {/* ── Input Area ── */}
-                <div className="p-8 pb-12 border-t border-gray-200/60 dark:border-white/5 bg-white/50 dark:bg-black/30 backdrop-blur-xl shrink-0 z-10">
+                <div className="p-4 md:p-8 pb-8 md:pb-10 border-t border-gray-200/60 dark:border-white/10 bg-white/80 dark:bg-black/50 backdrop-blur-2xl shrink-0 z-10">
                     <form onSubmit={handleSend} className="max-w-4xl mx-auto relative group">
                         {/* Model Selector */}
                         <div className="flex items-center gap-3 mb-5">
@@ -514,7 +516,7 @@ function AIChatContent() {
                         <input 
                             type="text" value={input} onChange={e => setInput(e.target.value)}
                             placeholder="Message Walia AI..."
-                            className="w-full pl-6 pr-16 py-5 rounded-[2rem] bg-white dark:bg-white/5 border border-gray-200/60 dark:border-white/10 focus:border-black dark:focus:border-white focus:bg-white dark:focus:bg-white/10 outline-none transition-all duration-300 font-medium text-base text-black dark:text-white shadow-inner hover:shadow-xl"
+                            className="w-full pl-6 pr-16 py-5 rounded-[2rem] bg-gray-50 dark:bg-white/10 border border-gray-200/60 dark:border-white/20 focus:border-black dark:focus:border-white focus:bg-white dark:focus:bg-black outline-none transition-all duration-300 font-medium text-base text-black dark:text-white shadow-inner hover:shadow-xl"
                         />
                         <button 
                             type="submit" disabled={!input.trim() || loading}
