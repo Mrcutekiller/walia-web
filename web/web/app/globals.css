@@ -74,6 +74,36 @@
   --font-inter: "Inter", sans-serif;
 }
 
+.dark {
+  --color-surface: #0a0a0a;
+  --color-surface-container: #141414;
+  --color-surface-container-low: #0f0f0f;
+  --color-surface-container-high: #1a1a1a;
+  --color-surface-container-highest: #222222;
+  --color-surface-container-lowest: #050505;
+  --color-surface-bright: #1a1a1a;
+  --color-surface-dim: #050505;
+  --color-surface-variant: #1a1a1a;
+
+  --color-primary: #ffffff;
+  --color-primary-dim: #e5e5e5;
+  --color-primary-container: #262626;
+  --color-on-primary: #000000;
+  --color-on-primary-container: #ffffff;
+
+  --color-secondary: #e5e5e5;
+  --color-secondary-container: #262626;
+  --color-on-secondary: #000000;
+
+  --color-on-surface: #ffffff;
+  --color-on-surface-variant: #a3a3a3;
+  --color-on-background: #ffffff;
+  --color-background: #0a0a0a;
+
+  --color-outline: #404040;
+  --color-outline-variant: #262626;
+}
+
 /* ─── Base ─── */
 *,
 *::before,

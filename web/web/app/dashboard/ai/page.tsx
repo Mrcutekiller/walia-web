@@ -59,6 +59,7 @@ function AIChatContent() {
     const [modelFilter, setModelFilter] = useState<'all' | 'coding' | 'general'>('all');
     const [showFilterSelector, setShowFilterSelector] = useState(false);
     const [showReplyTone, setShowReplyTone] = useState(false);
+    const [showHistory, setShowHistory] = useState(false);
     const [replyToneData, setReplyToneData] = useState({
         message: '', type: 'Work', rizzTarget: 'Girl', rizzStyle: 'Smooth'
     });
@@ -235,76 +236,98 @@ function AIChatContent() {
     };
 
     return (
-        <div className="flex h-full bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-[#0A0A18] dark:via-[#0D0D1A] dark:to-[#0A0A18] overflow-hidden">
-            {/* ── Left Panel: Chat History ── */}
-            <div className="w-80 border-r border-gray-200/60 dark:border-white/5 flex flex-col bg-white/70 dark:bg-black/30 backdrop-blur-xl">
-                <div className="p-6">
+        <div className="flex flex-col h-full bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-[#0A0A18] dark:via-[#0D0D1A] dark:to-[#0A0A18] overflow-hidden">
+            {/* ── Top Header ── */}
+            <div className="px-8 py-4 border-b border-gray-200/60 dark:border-white/5 bg-white/70 dark:bg-black/30 backdrop-blur-xl flex items-center justify-between z-30">
+                <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-2xl bg-black dark:bg-white flex items-center justify-center">
+                        <Sparkles className="w-5 h-5 text-white dark:text-black" />
+                    </div>
+                    <div>
+                        <h1 className="text-xl font-black text-black dark:text-white uppercase tracking-tighter">Walia AI</h1>
+                        <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">Advanced Intelligence</p>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-3">
                     <button 
                         onClick={startNewChat}
-                        className="w-full py-4 rounded-2xl bg-gradient-to-r from-black to-gray-800 dark:from-white dark:to-gray-200 text-white dark:text-black font-black text-sm flex items-center justify-center gap-2 hover:shadow-2xl hover:-translate-y-0.5 transition-all duration-300 shadow-lg"
+                        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-black dark:bg-white text-white dark:text-black font-black text-[10px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-black/10"
                     >
-                        <Plus className="w-4 h-4" /> New Chat
+                        <Plus className="w-3.5 h-3.5" /> New Chat
                     </button>
-                </div>
-
-                <div className="flex-1 overflow-y-auto px-4 space-y-2 custom-scrollbar">
-                    <p className="px-3 text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-4">Recent Conversations</p>
-                    {chats.length === 0 ? (
-                        <div className="text-center py-10 opacity-30">
-                            <History className="w-10 h-10 mx-auto mb-2" />
-                            <p className="text-xs font-bold">No history</p>
-                        </div>
-                    ) : chats.map((chat, index) => (
-                        <motion.div 
-                            key={chat.id}
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: index * 0.05 }}
-                            onClick={() => setActiveChat(chat.id)}
-                            className={`group flex items-center gap-3 p-4 rounded-2xl cursor-pointer transition-all duration-300 border ${
-                                activeChat === chat.id 
-                                ? 'bg-gradient-to-r from-black to-gray-800 dark:from-white dark:to-gray-200 text-white dark:text-black border-transparent shadow-xl' 
-                                : 'bg-white/50 dark:bg-white/5 border-gray-200/60 dark:border-white/10 hover:border-black/30 dark:hover:border-white/30 hover:shadow-lg'
-                            }`}
-                        >
-                            <MessageSquare className={`w-4 h-4 shrink-0 ${activeChat === chat.id ? 'text-white dark:text-black' : 'text-gray-400 dark:text-gray-500'}`} />
-                            <span className="flex-1 text-xs font-bold truncate">{chat.title}</span>
-                            <button 
-                                onClick={(e) => deleteChat(chat.id, e)}
-                                className={`opacity-0 group-hover:opacity-100 p-1.5 rounded-lg transition-all ${
-                                    activeChat === chat.id ? 'hover:bg-white/20 text-white dark:text-black' : 'hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400'
-                                }`}
-                            >
-                                <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                        </motion.div>
-                    ))}
-                </div>
-
-                {/* Profile Peek */}
-                <div className="p-6 border-t border-gray-200/60 dark:border-white/5">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-black to-gray-700 dark:from-white dark:to-gray-300 flex items-center justify-center text-white dark:text-black font-black text-xs uppercase shadow-lg">
-                            {user?.username?.slice(0, 2) || 'U'}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <p className="text-xs font-black truncate text-black dark:text-white uppercase tracking-tight">{user?.username || 'User'}</p>
-                            <p className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-widest">{user?.isPro ? 'Pro Member' : 'Free Plan'}</p>
-                        </div>
-                    </div>
+                    <button 
+                        onClick={() => setShowHistory(true)}
+                        className="p-2.5 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 hover:border-black dark:hover:border-white text-black dark:text-white transition-all"
+                    >
+                        <History className="w-5 h-5" />
+                    </button>
                 </div>
             </div>
 
-            {/* ── Main Chat Area ── */}
-            <div className="flex-1 flex flex-col relative">
+            <div className="flex-1 flex overflow-hidden relative">
+                {/* ── Slide-over: Chat History ── */}
+                <AnimatePresence>
+                    {showHistory && (
+                        <>
+                            <motion.div 
+                                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                                className="absolute inset-0 bg-black/60 backdrop-blur-sm z-40"
+                                onClick={() => setShowHistory(false)}
+                            />
+                            <motion.div 
+                                initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }}
+                                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                                className="absolute left-0 top-0 bottom-0 w-80 bg-white dark:bg-[#0A0A18] border-r border-gray-200/60 dark:border-white/10 z-50 flex flex-col shadow-2xl"
+                            >
+                                <div className="p-6 border-b border-gray-100 dark:border-white/5 flex items-center justify-between">
+                                    <h3 className="text-sm font-black uppercase tracking-widest text-black dark:text-white">Chat History</h3>
+                                    <button onClick={() => setShowHistory(false)} className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400"><X className="w-5 h-5" /></button>
+                                </div>
+                                <div className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar">
+                                    {chats.length === 0 ? (
+                                        <div className="text-center py-20 opacity-30">
+                                            <History className="w-12 h-12 mx-auto mb-3" />
+                                            <p className="text-xs font-bold uppercase">No history found</p>
+                                        </div>
+                                    ) : chats.map((chat, index) => (
+                                        <div 
+                                            key={chat.id}
+                                            onClick={() => { setActiveChat(chat.id); setShowHistory(false); }}
+                                            className={`group flex items-center gap-3 p-4 rounded-2xl cursor-pointer transition-all duration-300 border ${
+                                                activeChat === chat.id 
+                                                ? 'bg-black dark:bg-white text-white dark:text-black border-transparent shadow-xl' 
+                                                : 'bg-gray-50 dark:bg-white/5 border-gray-100 dark:border-white/10 hover:border-black dark:hover:border-white hover:shadow-lg'
+                                            }`}
+                                        >
+                                            <MessageSquare className={`w-4 h-4 shrink-0 ${activeChat === chat.id ? 'text-white dark:text-black' : 'text-gray-400 dark:text-gray-500'}`} />
+                                            <span className="flex-1 text-[11px] font-bold truncate uppercase tracking-tight">{chat.title}</span>
+                                            <button 
+                                                onClick={(e) => { e.stopPropagation(); deleteChat(chat.id, e); }}
+                                                className={`opacity-0 group-hover:opacity-100 p-1.5 rounded-lg transition-all ${
+                                                    activeChat === chat.id ? 'hover:bg-white/20 text-white dark:text-black' : 'hover:bg-gray-200 dark:hover:bg-white/10 text-gray-400'
+                                                }`}
+                                            >
+                                                <Trash2 className="w-3.5 h-3.5" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </motion.div>
+                        </>
+                    )}
+                </AnimatePresence>
+
+                {/* ── Main Chat Content ── */}
+                <div className="flex-1 flex flex-col relative h-full">
                 {!activeChat && messages.length === 0 ? (
                     <motion.div 
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
-                        className="flex-1 flex flex-col items-center justify-center p-6 text-center"
+                        className="flex-1 flex flex-col items-center justify-center p-6 text-center overflow-y-auto custom-scrollbar"
                     >
-                        <div className="w-32 h-32 rounded-[2.5rem] bg-gradient-to-br from-black to-gray-700 dark:from-white dark:to-gray-300 flex items-center justify-center mb-10 shadow-2xl shadow-black/20 hover:scale-105 transition-transform duration-500">
+                        <div className="w-32 h-32 rounded-[2.5rem] bg-gradient-to-br from-black to-gray-700 dark:from-white dark:to-gray-300 flex items-center justify-center mb-8 shadow-2xl shadow-black/20 hover:scale-105 transition-transform duration-500 shrink-0">
                             <Sparkles className="w-16 h-16 text-white dark:text-black" />
                         </div>
                         <h2 className="text-5xl font-black text-black dark:text-white tracking-tighter mb-6 uppercase">How can I help you, {user?.username?.split(' ')[0]}?</h2>
@@ -386,7 +409,7 @@ function AIChatContent() {
                 )}
 
                 {/* ── Input Area ── */}
-                <div className="p-8 border-t border-gray-200/60 dark:border-white/5 bg-white/50 dark:bg-black/30 backdrop-blur-xl">
+                <div className="p-8 pb-12 border-t border-gray-200/60 dark:border-white/5 bg-white/50 dark:bg-black/30 backdrop-blur-xl shrink-0 z-10">
                     <form onSubmit={handleSend} className="max-w-4xl mx-auto relative group">
                         {/* Model Selector */}
                         <div className="flex items-center gap-3 mb-5">
