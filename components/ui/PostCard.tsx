@@ -6,7 +6,7 @@ import { useTheme } from '@/store/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
 import { Avatar } from './Avatar';
 
 interface PostCardProps {
@@ -115,6 +115,17 @@ export function PostCard({ post, onLike, onComment, onShare, onOptions, onPress,
                 </Text>
             </View>
 
+            {/* Post Image */}
+            {post.image && (
+                <View style={styles.imageContainer}>
+                    <Image 
+                        source={{ uri: post.image }} 
+                        style={styles.postImage}
+                        resizeMode="cover"
+                    />
+                </View>
+            )}
+
             {/* Quiz options — with inline result highlighting */}
             {post.type === 'quiz' && post.quizOptions && (
                 <View style={styles.quizOptions}>
@@ -179,6 +190,8 @@ const styles = StyleSheet.create({
     contentBody: { marginBottom: Spacing.xl },
     title: { fontSize: FontSize.lg, fontWeight: FontWeight.black, marginBottom: Spacing.sm, letterSpacing: -0.5 },
     content: { fontSize: FontSize.sm, lineHeight: 22, fontWeight: FontWeight.medium, opacity: 0.9 },
+    imageContainer: { marginBottom: Spacing.xl, borderRadius: 20, overflow: 'hidden' },
+    postImage: { width: '100%', height: 250 },
     quizOptions: { marginBottom: Spacing.xl },
     quizOption: { flexDirection: 'row', alignItems: 'center', borderRadius: 20, padding: Spacing.lg, marginBottom: Spacing.md, gap: Spacing.md, borderWidth: 1, borderColor: 'transparent' },
     quizLetter: { fontSize: FontSize.xs, fontWeight: FontWeight.black, width: 20 },

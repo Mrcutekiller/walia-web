@@ -18,8 +18,10 @@ import {
     TextInput,
     TouchableOpacity,
     View,
+    Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as ImagePicker from 'expo-image-picker';
 
 type PostType = 'text' | 'quiz';
 
@@ -39,6 +41,7 @@ export default function NewPostScreen() {
     const [quizAnswer, setQuizAnswer] = useState(0);
     const [loading, setLoading] = useState(false);
     const [isAdminPost, setIsAdminPost] = useState(false);
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const contentInputRef = useRef<TextInput>(null);
 
     const hasWaliaTag = content.toLowerCase().includes('#walia');
@@ -60,7 +63,7 @@ export default function NewPostScreen() {
                 quizAnswer: type === 'quiz' ? quizAnswer : undefined,
                 tags: extractedTags,
                 isAdminPost: user?.isAdmin ? isAdminPost : false,
-            });
+            }, selectedImage || undefined);
             router.back();
         } catch (error) {
             console.error(error);
@@ -73,6 +76,18 @@ export default function NewPostScreen() {
         const next = [...quizOptions];
         next[index] = val;
         setQuizOptions(next);
+    };
+
+    const pickImage = async () => {
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 0.7,
+        });
+        if (!result.canceled) {
+            setSelectedImage(result.assets[0].uri);
+        }
     };
 
     const appendTag = (tag: string) => {
@@ -208,9 +223,34 @@ export default function NewPostScreen() {
                         placeholderTextColor={colors.textTertiary}
                         style={[
                             styles.contentInput,
-                            { color: colors.text, minHeight: type === 'text' ? 180 : 100 }
+                            { color: colors.text, minHeight: type === 'text' ? 120 : 80 }
                         ]}
                     />
+
+                    {/* Image Attachment */}
+                    {type === 'text' && (
+                        <View style={styles.imageSection}>
+                            {selectedImage ? (
+                                <View style={styles.previewContainer}>
+                                    <Image source={{ uri: selectedImage }} style={styles.imagePreview} />
+                                    <TouchableOpacity 
+                                        onPress={() => setSelectedImage(null)}
+                                        style={styles.removeImageBtn}
+                                    >
+                                        <Ionicons name="close-circle" size={24} color="#EF4444" />
+                                    </TouchableOpacity>
+                                </View>
+                            ) : (
+                                <TouchableOpacity 
+                                    onPress={pickImage}
+                                    style={[styles.addImageBtn, { backgroundColor: isDark ? '#1E293B' : '#F1F5F9', borderColor: isDark ? '#334155' : '#E2E8F0' }]}
+                                >
+                                    <Ionicons name="image-outline" size={24} color={colors.primary} />
+                                    <Text style={[styles.addImageText, { color: colors.textSecondary }]}>Add Photo</Text>
+                                </TouchableOpacity>
+                            )}
+                        </View>
+                    )}
 
                     {/* Character count & tag preview */}
                     {content.length > 0 && (
@@ -542,4 +582,21 @@ const styles = StyleSheet.create({
     pointsTotal: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 12, borderTopWidth: 1, marginTop: 4 },
     pointsTotalLabel: { fontSize: 15, fontWeight: '900' },
     pointsTotalVal: { fontSize: 15, fontWeight: '900', color: '#6366F1' },
+
+    // Image Picker
+    imageSection: { marginBottom: 20 },
+    addImageBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+        padding: 16,
+        borderRadius: 18,
+        borderWidth: 1.5,
+        borderStyle: 'dashed',
+    },
+    addImageText: { fontSize: 14, fontWeight: '700' },
+    previewContainer: { position: 'relative', borderRadius: 18, overflow: 'hidden' },
+    imagePreview: { width: '100%', height: 200, borderRadius: 18 },
+    removeImageBtn: { position: 'absolute', top: 8, right: 8, backgroundColor: '#FFF', borderRadius: 12 },
 });

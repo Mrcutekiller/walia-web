@@ -4,7 +4,7 @@ import { db } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
 import { 
     Search, Plus, MoreVertical, Send, Image as ImageIcon, 
-    Mic, Phone, Video, Info, Check, CheckCheck, Smile, Paperclip
+    Mic, Phone, Video, Info, Check, CheckCheck, Smile, Paperclip, X, Sparkles
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { 
@@ -12,6 +12,7 @@ import {
     serverTimestamp, orderBy, doc, getDoc, limit, setDoc 
 } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTheme } from '@/context/ThemeContext';
 
 interface Message {
     id: string;
@@ -26,10 +27,9 @@ interface Conversation {
     participants: string[];
     lastMessage: string;
     updatedAt: any;
-    otherUser?: {
-        username: string;
-        displayName: string;
-        photoURL?: string;
+    isGroup?: boolean;
+    groupName?: string;
+    groupIcon?: string;
     otherUser?: {
         username: string;
         displayName: string;
@@ -48,13 +48,28 @@ interface Note {
 
 export default function MessagesPage() {
     const { user } = useAuth();
+    const { isDark } = useTheme();
     const [conversations, setConversations] = useState<Conversation[]>([]);
     const [activeConv, setActiveConv] = useState<string | null>(null);
     const [messages, setMessages] = useState<Message[]>([]);
     const [notes, setNotes] = useState<Note[]>([]);
+    const [selectedNote, setSelectedNote] = useState<Note | null>(null);
+    const [showGroupModal, setShowGroupModal] = useState(false);
+    const [groupName, setGroupName] = useState('');
+    const [allUsers, setAllUsers] = useState<any[]>([]);
+    const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
     const [input, setInput] = useState('');
     const [search, setSearch] = useState('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    // AI Reply Tone State
+    const [replyToneModalOpen, setReplyToneModalOpen] = useState(false);
+    const [selectedMessageForReply, setSelectedMessageForReply] = useState<string | null>(null);
+    const [chatType, setChatType] = useState<string>('Work');
+    const [rizzTarget, setRizzTarget] = useState<string>('Girl');
+    const [rizzRelation, setRizzRelation] = useState<string>('Crush');
+    const [replyStyle, setReplyStyle] = useState<string>('Smooth');
+    const [isGeneratingReply, setIsGeneratingReply] = useState(false);
 
     // Fetch notes
     useEffect(() => {
@@ -136,6 +151,29 @@ export default function MessagesPage() {
         }
     };
 
+    const handleCreateGroup = async () => {
+        if (!user || !groupName.trim() || selectedUsers.length === 0) return;
+        try {
+            const groupData = {
+                participants: [user.uid, ...selectedUsers],
+                isGroup: true,
+                groupName: groupName.trim(),
+                groupIcon: groupName.charAt(0).toUpperCase(),
+                lastMessage: 'Group created',
+                updatedAt: serverTimestamp(),
+                createdAt: serverTimestamp(),
+                adminId: user.uid
+            };
+            const docRef = await addDoc(collection(db, 'conversations'), groupData);
+            setActiveConv(docRef.id);
+            setShowGroupModal(false);
+            setGroupName('');
+            setSelectedUsers([]);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
     const handleAddNote = async () => {
         if (!user) return;
         const text = window.prompt("Share a thought...");
@@ -153,6 +191,38 @@ export default function MessagesPage() {
         }
     };
 
+    const generateAIReply = async () => {
+        if (!selectedMessageForReply) return;
+        setIsGeneratingReply(true);
+        // Simulate AI generation based on prompt
+        setTimeout(() => {
+            let promptContext = `Type: ${chatType}`;
+            if (chatType === 'Rizz') {
+                promptContext += ` | Target: ${rizzTarget} | Relation: ${rizzRelation} | Style: ${replyStyle}`;
+            }
+            
+            // Mock AI Response
+            let generatedReply = "";
+            if (chatType === 'Rizz') {
+                if (replyStyle === 'Funny') generatedReply = "Haha that's actually hilarious 😂 You always know what to say.";
+                else if (replyStyle === 'Smooth') generatedReply = "I was just thinking about that... great minds think alike 😉";
+                else if (replyStyle === 'Flirty') generatedReply = "Stop it, you're making me blush 😳";
+                else generatedReply = "I love that confidence. Tell me more.";
+            } else if (chatType === 'Work') {
+                generatedReply = "Noted. I'll get back to you on this shortly. Thanks!";
+            } else if (chatType === 'Mentor Chat') {
+                generatedReply = "Thank you for the guidance, I truly appreciate the insight!";
+            } else {
+                generatedReply = "That sounds awesome! Catch up soon?";
+            }
+            
+            setInput(generatedReply);
+            setReplyToneModalOpen(false);
+            setIsGeneratingReply(false);
+            setSelectedMessageForReply(null);
+        }, 1500);
+    };
+
     const selectedConv = conversations.find(c => c.id === activeConv);
 
     return (
@@ -163,7 +233,10 @@ export default function MessagesPage() {
                 <div className="p-6">
                     <div className="flex items-center justify-between mb-8">
                         <h1 className="text-2xl font-black text-black dark:text-white tracking-tighter uppercase">Messages</h1>
-                        <button className="p-2 rounded-xl bg-gradient-to-r from-black to-gray-700 dark:from-white dark:to-gray-300 text-white dark:text-black hover:scale-105 transition-all duration-300 shadow-lg">
+                        <button 
+                            onClick={() => setShowGroupModal(true)}
+                            className="p-2 rounded-xl bg-gradient-to-r from-black to-gray-700 dark:from-white dark:to-gray-300 text-white dark:text-black hover:scale-105 transition-all duration-300 shadow-lg"
+                        >
                             <Plus className="w-4 h-4" />
                         </button>
                     </div>
@@ -193,8 +266,8 @@ export default function MessagesPage() {
                         </div>
                         {/* Real Notes */}
                         {notes.map(note => (
-                            <div key={note.id} className="flex flex-col items-center gap-1 cursor-pointer group shrink-0 relative mt-6" onClick={() => window.alert('Note feature coming soon!')}>
-                                <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-white dark:bg-white/10 border border-gray-200 dark:border-white/10 px-3 py-1.5 rounded-2xl rounded-bl-sm shadow-sm whitespace-nowrap z-10">
+                            <div key={note.id} className="flex flex-col items-center gap-1 cursor-pointer group shrink-0 relative mt-6" onClick={() => setSelectedNote(note)}>
+                                <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-white dark:bg-white/10 border border-gray-200 dark:border-white/10 px-3 py-1.5 rounded-2xl rounded-bl-sm shadow-sm whitespace-nowrap z-10 opacity-0 group-hover:opacity-100 transition-opacity">
                                     <span className="text-[10px] font-bold text-black dark:text-white">{note.note}</span>
                                 </div>
                                 <div className="w-14 h-14 rounded-full flex items-center justify-center text-lg font-black uppercase bg-gradient-to-br from-black to-gray-700 dark:from-white dark:to-gray-300 text-white dark:text-black ring-1 ring-offset-1 ring-gray-200 dark:ring-white/10 dark:ring-offset-[#0A0A18]">
@@ -222,13 +295,15 @@ export default function MessagesPage() {
                                 <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-xs uppercase shadow-sm ${
                                     activeConv === conv.id ? 'bg-white/20' : 'bg-gradient-to-br from-black to-gray-700 dark:from-white dark:to-gray-300 text-white dark:text-black'
                                 }`}>
-                                    {conv.otherUser?.username.slice(0, 2)}
+                                    {conv.isGroup ? conv.groupIcon : conv.otherUser?.username.slice(0, 2)}
                                 </div>
-                                <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white dark:border-[#0A0A18]" />
+                                {!conv.isGroup && <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white dark:border-[#0A0A18]" />}
                             </div>
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-center justify-between mb-0.5">
-                                    <h3 className="text-xs font-black uppercase tracking-tight truncate">{conv.otherUser?.displayName}</h3>
+                                    <h3 className={`text-xs font-black uppercase tracking-tight truncate ${activeConv === conv.id ? 'text-white dark:text-black' : 'text-black dark:text-white'}`}>
+                                        {conv.isGroup ? conv.groupName : (conv.otherUser?.displayName || conv.otherUser?.username)}
+                                    </h3>
                                     <span className={`text-[9px] font-bold uppercase ${activeConv === conv.id ? 'text-white/50' : 'text-gray-400'}`}>
                                         {conv.updatedAt?.toDate ? new Date(conv.updatedAt.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                                     </span>
@@ -295,6 +370,18 @@ export default function MessagesPage() {
                                                     {isMe && <CheckCheck className="w-3 h-3 text-emerald-500" />}
                                                 </div>
                                             </div>
+                                            {!isMe && (
+                                                <button 
+                                                    onClick={() => {
+                                                        setSelectedMessageForReply(m.text);
+                                                        setReplyToneModalOpen(true);
+                                                    }}
+                                                    className="opacity-0 group-hover:opacity-100 p-2 rounded-xl bg-gradient-to-r from-black to-gray-700 dark:from-white dark:to-gray-300 text-white dark:text-black hover:scale-110 active:scale-95 transition-all duration-300 shadow-lg ml-2 self-center mt-2"
+                                                    title="Generate Reply Tone"
+                                                >
+                                                    <Sparkles className="w-3 h-3" />
+                                                </button>
+                                            )}
                                         </motion.div>
                                     );
                                 })}
@@ -351,6 +438,195 @@ export default function MessagesPage() {
                     </motion.div>
                 )}
             </div>
+
+            {/* AI Reply Tone Modal */}
+            <AnimatePresence>
+                {replyToneModalOpen && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+                        <motion.div 
+                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                            onClick={() => setReplyToneModalOpen(false)}
+                        />
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className="relative w-full max-w-lg bg-white/90 dark:bg-[#0A0A18]/90 backdrop-blur-xl rounded-[2.5rem] p-8 border border-gray-200/60 dark:border-white/10 shadow-2xl"
+                        >
+                            <div className="flex items-center justify-between mb-8">
+                                <h3 className="text-xl font-black text-black dark:text-white uppercase tracking-tighter flex items-center gap-2">
+                                    <Sparkles className="w-5 h-5 text-indigo-500" /> AI Reply Tone
+                                </h3>
+                                <button onClick={() => setReplyToneModalOpen(false)} className="p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 transition-all">
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+
+                            <div className="mb-6 bg-gray-50 dark:bg-white/5 p-4 rounded-2xl border border-gray-100 dark:border-white/10">
+                                <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mb-1">Replying to:</p>
+                                <p className="text-sm text-black dark:text-white font-medium italic">"{selectedMessageForReply}"</p>
+                            </div>
+
+                            <div className="space-y-6">
+                                <div>
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-3 block">Step 1: Choose Chat Type</label>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {['Work', 'Friend Chat', 'Mentor Chat', 'Rizz'].map(type => (
+                                            <button 
+                                                key={type}
+                                                onClick={() => setChatType(type)}
+                                                className={`py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all border ${
+                                                    chatType === type 
+                                                    ? 'bg-black dark:bg-white text-white dark:text-black border-transparent shadow-md' 
+                                                    : 'bg-transparent border-gray-200 dark:border-white/10 text-gray-500 dark:text-gray-400 hover:border-black/30 dark:hover:border-white/30'
+                                                }`}
+                                            >
+                                                {type}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {chatType === 'Rizz' && (
+                                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-6 pt-4 border-t border-gray-200/60 dark:border-white/5">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-3 block">Target</label>
+                                                <div className="flex gap-2">
+                                                    {['Girl', 'Boy'].map(t => (
+                                                        <button 
+                                                            key={t} onClick={() => setRizzTarget(t)}
+                                                            className={`flex-1 py-2 rounded-lg text-[10px] font-bold uppercase transition-all border ${rizzTarget === t ? 'bg-indigo-500 text-white border-transparent' : 'border-gray-200 dark:border-white/10 text-gray-500'}`}
+                                                        >{t}</button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-3 block">Relation</label>
+                                                <div className="flex gap-2">
+                                                    {['Girlfriend', 'Crush', 'New girl'].map(r => (
+                                                        <button 
+                                                            key={r} onClick={() => setRizzRelation(r)}
+                                                            className={`flex-1 py-2 rounded-lg text-[10px] font-bold uppercase transition-all border ${rizzRelation === r ? 'bg-indigo-500 text-white border-transparent' : 'border-gray-200 dark:border-white/10 text-gray-500'}`}
+                                                        >{r}</button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div>
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-3 block">Style</label>
+                                            <div className="grid grid-cols-4 gap-2">
+                                                {['Smooth', 'Funny', 'Confident', 'Flirty'].map(style => (
+                                                    <button 
+                                                        key={style} onClick={() => setReplyStyle(style)}
+                                                        className={`py-2 rounded-lg text-[10px] font-bold uppercase transition-all border ${replyStyle === style ? 'bg-pink-500 text-white border-transparent' : 'border-gray-200 dark:border-white/10 text-gray-500'}`}
+                                                    >{style}</button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                )}
+
+                                <button 
+                                    onClick={generateAIReply} disabled={isGeneratingReply}
+                                    className="w-full py-4 mt-4 rounded-2xl bg-gradient-to-r from-black to-gray-700 dark:from-white dark:to-gray-300 text-white dark:text-black font-black text-sm uppercase tracking-widest hover:opacity-90 active:scale-95 transition-all duration-300 shadow-xl shadow-black/10 flex items-center justify-center gap-2"
+                                >
+                                    {isGeneratingReply ? 'Generating...' : <><Sparkles className="w-4 h-4" /> Generate Reply</>}
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+            {/* Group Modal */}
+            <AnimatePresence>
+                {showGroupModal && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+                            className="w-full max-w-md bg-white dark:bg-[#0F0F1A] rounded-[2.5rem] border border-gray-200 dark:border-white/10 shadow-2xl overflow-hidden"
+                        >
+                            <div className="p-8 border-b border-gray-100 dark:border-white/5 flex items-center justify-between bg-gray-50/50 dark:bg-white/5">
+                                <div>
+                                    <h2 className="text-xl font-black text-black dark:text-white uppercase tracking-tighter">Create Group</h2>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Start a new herd</p>
+                                </div>
+                                <button onClick={() => setShowGroupModal(false)} className="p-2 rounded-xl hover:bg-gray-200 dark:hover:bg-white/10 transition-all">
+                                    <X className="w-5 h-5 text-gray-400" />
+                                </button>
+                            </div>
+                            <div className="p-8 space-y-6">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Group Name</label>
+                                    <input 
+                                        type="text" value={groupName} onChange={e => setGroupName(e.target.value)}
+                                        placeholder="Enter group name..."
+                                        className="w-full px-5 py-3.5 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm font-medium outline-none focus:border-black dark:focus:border-white transition-all shadow-inner"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Add Members</label>
+                                    <div className="max-h-48 overflow-y-auto custom-scrollbar space-y-2 pr-2">
+                                        {/* Mock users for now or fetch from DB */}
+                                        {['Alex', 'Sarah', 'Yared', 'Beza', 'Abel'].map(u => (
+                                            <div 
+                                                key={u} onClick={() => setSelectedUsers(prev => prev.includes(u) ? prev.filter(x => x !== u) : [...prev, u])}
+                                                className={`flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-all border ${selectedUsers.includes(u) ? 'bg-black dark:bg-white border-transparent' : 'bg-gray-50 dark:bg-white/5 border-gray-100 dark:border-white/5 hover:border-gray-300 dark:hover:border-white/20'}`}
+                                            >
+                                                <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-xs uppercase ${selectedUsers.includes(u) ? (isDark ? 'bg-black text-white' : 'bg-white text-black') : 'bg-gray-200 dark:bg-white/10 text-gray-500'}`}>
+                                                    {u.slice(0, 2)}
+                                                </div>
+                                                <span className={`text-xs font-bold uppercase tracking-tight ${selectedUsers.includes(u) ? (isDark ? 'text-black' : 'text-white') : 'text-gray-600 dark:text-white/60'}`}>{u}</span>
+                                                {selectedUsers.includes(u) && <Check className={`w-4 h-4 ml-auto ${isDark ? 'text-black' : 'text-white'}`} />}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                                <button 
+                                    onClick={handleCreateGroup}
+                                    disabled={!groupName.trim() || selectedUsers.length === 0}
+                                    className="w-full py-4 rounded-2xl bg-black dark:bg-white text-white dark:text-black font-black text-xs uppercase tracking-[0.2em] shadow-xl hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-30 disabled:pointer-events-none mt-4"
+                                >
+                                    Launch Group
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Note Viewer Modal */}
+            <AnimatePresence>
+                {selectedNote && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md p-4" onClick={() => setSelectedNote(null)}>
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+                            className="w-full max-w-sm bg-white dark:bg-[#0F0F1A] rounded-[2.5rem] border border-gray-200 dark:border-white/10 shadow-2xl overflow-hidden"
+                            onClick={e => e.stopPropagation()}
+                        >
+                            <div className="p-8 text-center space-y-6">
+                                <div className="w-20 h-20 rounded-full mx-auto flex items-center justify-center text-3xl font-black uppercase bg-gradient-to-br from-black to-gray-700 dark:from-white dark:to-gray-300 text-white dark:text-black shadow-xl ring-4 ring-white/10">
+                                    {selectedNote?.image}
+                                </div>
+                                <div>
+                                    <h2 className="text-sm font-black text-black dark:text-white uppercase tracking-widest">{selectedNote?.username}</h2>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Shared a thought</p>
+                                </div>
+                                <div className="p-6 rounded-[2rem] bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5 shadow-inner">
+                                    <p className="text-base font-medium text-black dark:text-white leading-relaxed italic">
+                                        "{selectedNote?.note}"
+                                    </p>
+                                </div>
+                                <button onClick={() => setSelectedNote(null)} className="w-full py-4 rounded-2xl bg-black dark:bg-white text-white dark:text-black font-black text-xs uppercase tracking-widest shadow-lg hover:opacity-90 transition-all">
+                                    Close
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

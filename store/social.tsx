@@ -53,6 +53,7 @@ export interface SocialPost {
     type: 'quiz' | 'note' | 'ai_share' | 'general' | 'text';
     title?: string;
     content: string;
+    image?: string;
     createdAt: any;
     likes: string[];
     commentCount: number;
@@ -141,7 +142,7 @@ interface SocialContextType extends SocialState {
     followUser: (userId: string) => void;
     unfollowUser: (userId: string) => void;
     isFollowing: (userId: string) => boolean;
-    addPost: (post: Omit<SocialPost, 'id' | 'authorId' | 'likes' | 'commentCount' | 'comments' | 'createdAt'>) => void;
+    addPost: (post: Omit<SocialPost, 'id' | 'authorId' | 'likes' | 'commentCount' | 'comments' | 'createdAt'>, imageUri?: string) => Promise<void>;
     deletePost: (postId: string) => void;
     togglePostPrivacy: (postId: string) => void;
     likePost: (postId: string) => void;
@@ -426,10 +427,21 @@ export function SocialProvider({ children }: { children: ReactNode }) {
     const isFollowing = useCallback((userId: string) => state.following.includes(userId), [state.following]);
 
     // ── Posts ──
-    const addPost = useCallback(async (post: Omit<SocialPost, 'id' | 'authorId' | 'likes' | 'commentCount' | 'comments' | 'createdAt'>) => {
+    const addPost = useCallback(async (post: Omit<SocialPost, 'id' | 'authorId' | 'likes' | 'commentCount' | 'comments' | 'createdAt'>, imageUri?: string) => {
         if (!auth.currentUser) return;
+        
+        let imageUrl = post.image;
+        if (imageUri) {
+            try {
+                imageUrl = await uploadFile(imageUri, 'posts');
+            } catch (e) {
+                console.error('Failed to upload post image', e);
+            }
+        }
+
         const newPostData = {
             ...post,
+            image: imageUrl,
             authorId: auth.currentUser.uid,
             likes: [],
             commentCount: 0,
@@ -620,16 +632,31 @@ export function SocialProvider({ children }: { children: ReactNode }) {
         });
     }, []);
 
-    const addStory = useCallback(async (text: string) => {
+    const uploadFile = async (uri: string, path: string) => {
+        const { ref, uploadBytes, getDownloadURL } = await import('firebase/storage');
+        const response = await fetch(uri);
+        const blob = await response.blob();
+        const storageRef = ref(storage, `${path}/${Date.now()}`);
+        await uploadBytes(storageRef, blob);
+        return await getDownloadURL(storageRef);
+    };
+
+    const addStory = useCallback(async (uri: string) => {
         if (!auth.currentUser) return;
-        await addDoc(collection(db, 'stories'), {
-            uid: auth.currentUser.uid,
-            username: auth.currentUser.displayName || 'User',
-            image: (auth.currentUser.displayName || 'U').charAt(0).toUpperCase(),
-            hasUnseen: true,
-            createdAt: serverTimestamp()
-        });
-    }, []);
+        try {
+            const url = await uploadFile(uri, 'stories');
+            await addDoc(collection(db, 'stories'), {
+                uid: auth.currentUser.uid,
+                username: auth.currentUser.displayName || 'User',
+                image: url,
+                hasUnseen: true,
+                createdAt: serverTimestamp()
+            });
+            addXP(XP_REWARDS.post_created, 'Story posted 📸');
+        } catch (e) {
+            console.error('Failed to add story', e);
+        }
+    }, [addXP]);
 
     const addNote = useCallback(async (text: string) => {
         if (!auth.currentUser) return;
@@ -637,10 +664,11 @@ export function SocialProvider({ children }: { children: ReactNode }) {
             uid: auth.currentUser.uid,
             username: auth.currentUser.displayName || 'User',
             image: (auth.currentUser.displayName || 'U').charAt(0).toUpperCase(),
-            note: text.slice(0, 50),
+            note: text.slice(0, 60),
             createdAt: serverTimestamp()
         });
-    }, []);
+        addXP(XP_REWARDS.comment_added, 'Note updated 💭');
+    }, [addXP]);
 
     const markNotificationRead = useCallback((id: string) => {
         updateState(prev => ({

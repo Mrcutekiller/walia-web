@@ -55,7 +55,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
     );
 }
 
-const inputCls = "w-full py-3.5 rounded-2xl bg-gray-100 dark:bg-white/5 border-2 border-transparent focus:border-black dark:focus:border-white focus:bg-white dark:focus:bg-white/8 outline-none transition-all text-sm font-medium text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-white/25";
+const inputCls = "w-full py-3.5 px-6 rounded-2xl bg-gray-100 dark:bg-white/[0.08] border-2 border-transparent focus:border-black dark:focus:border-white focus:bg-white dark:focus:bg-[#0A0A1F] outline-none transition-all text-sm font-medium text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-white/40 shadow-inner";
 
 export default function SignupPage() {
     const [step, setStep] = useState(1);

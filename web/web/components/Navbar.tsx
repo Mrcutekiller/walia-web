@@ -101,10 +101,10 @@ export default function Navbar() {
                             <Link
                                 href="/dashboard/ai"
                                 className={cn(
-                                    "px-5 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-all duration-200",
+                                    "px-7 py-2.5 rounded-2xl text-sm font-black uppercase tracking-widest flex items-center gap-2.5 transition-all duration-300 shadow-xl active:scale-[0.98]",
                                     scrolled || !isDarkHeroPage
-                                        ? 'bg-black dark:bg-white text-white dark:text-black hover:bg-black/85 dark:hover:bg-gray-100 shadow-lg shadow-black/20'
-                                        : 'bg-white text-black hover:bg-white/90 shadow-lg'
+                                        ? 'bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-gray-100 shadow-black/10'
+                                        : 'bg-white text-black hover:bg-white/95 shadow-white/20'
                                 )}
                             >
                                 <LayoutDashboard className="w-4 h-4" />
@@ -115,10 +115,10 @@ export default function Navbar() {
                                 <Link
                                     href="/login"
                                     className={cn(
-                                        "px-4 py-2 text-sm font-bold transition-colors rounded-xl",
+                                        "px-5 py-2 text-[13px] font-black uppercase tracking-widest transition-all rounded-xl",
                                         scrolled || !isDarkHeroPage
-                                            ? 'text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10'
-                                            : 'text-white/75 hover:text-white hover:bg-white/12'
+                                            ? 'text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10'
+                                            : 'text-white/60 hover:text-white hover:bg-white/10'
                                     )}
                                 >
                                     Log In
@@ -126,14 +126,14 @@ export default function Navbar() {
                                 <Link
                                     href="/signup"
                                     className={cn(
-                                        "px-5 py-2 rounded-xl text-sm font-black flex items-center gap-2 transition-all duration-200 shadow-lg",
+                                        "px-7 py-2.5 rounded-2xl text-sm font-black uppercase tracking-widest flex items-center gap-2 transition-all duration-300 shadow-xl active:scale-[0.98]",
                                         scrolled || !isDarkHeroPage
-                                            ? 'bg-black dark:bg-white text-white dark:text-black hover:bg-black/85 dark:hover:bg-gray-100 shadow-black/20'
-                                            : 'bg-white text-black hover:bg-white/90'
+                                            ? 'bg-black dark:bg-white text-white dark:text-black hover:bg-black/90 dark:hover:bg-gray-100 shadow-black/10'
+                                            : 'bg-white text-black hover:bg-white/95 shadow-white/20'
                                     )}
                                 >
                                     Get Started
-                                    <ArrowRight className="w-3.5 h-3.5" />
+                                    <ArrowRight className="w-4 h-4" />
                                 </Link>
                             </>
                         )}

@@ -36,10 +36,10 @@ export default function Footer() {
                     {/* Brand */}
                     <div className="lg:col-span-2 space-y-6">
                         <Link href="/" className="flex items-center space-x-3 group">
-                            <div className="w-11 h-11 rounded-[10px] bg-white border border-white/10 flex items-center justify-center overflow-hidden shadow-md group-hover:scale-105 transition-transform">
-                                <Image src="/walia-logo.png" alt="Walia" width={28} height={28} unoptimized className="object-contain w-7 h-7" />
+                            <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden transition-all duration-500 group-hover:scale-110 group-hover:bg-white/10 group-hover:border-white/20">
+                                <Image src="/logo.png" alt="Walia" width={32} height={32} unoptimized className="object-contain" />
                             </div>
-                            <span className="text-2xl font-black tracking-widest uppercase text-white">Walia</span>
+                            <span className="text-2xl font-black tracking-tight text-white uppercase">Walia</span>
                         </Link>
                         <p className="text-white/40 max-w-sm leading-relaxed text-sm">
                             From the Mountains of Ethiopia. Empowering students with AI-powered study tools,

@@ -555,6 +555,107 @@ function AIChatContent() {
                         </motion.div>
                     </div>
                 )}
+
+                {showReplyTone && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+                        <motion.div 
+                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                            className="absolute inset-0 bg-black/60 backdrop-blur-md"
+                            onClick={() => setShowReplyTone(false)}
+                        />
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className="relative w-full max-w-xl bg-white dark:bg-[#0A0A18] rounded-[3rem] p-10 border border-gray-100 dark:border-white/10 shadow-2xl overflow-hidden"
+                        >
+                            <div className="flex justify-between items-center mb-8">
+                                <h2 className="text-3xl font-black text-black dark:text-white tracking-tighter uppercase">Reply Tone</h2>
+                                <button onClick={() => setShowReplyTone(false)} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400"><X className="w-6 h-6" /></button>
+                            </div>
+
+                            <div className="space-y-6">
+                                <div>
+                                    <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest mb-3 block">Step 1: Paste Message</label>
+                                    <textarea 
+                                        value={replyToneData.message}
+                                        onChange={(e) => setReplyToneData({...replyToneData, message: e.target.value})}
+                                        placeholder="Paste the message you want to reply to..."
+                                        className="w-full p-6 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 outline-none text-sm font-medium h-32 focus:border-black dark:focus:border-white transition-all"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest mb-3 block">Step 2: Choose Tone</label>
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                        {['Work', 'Friend Chat', 'Mentor Chat', 'Rizz'].map(t => (
+                                            <button 
+                                                key={t}
+                                                onClick={() => setReplyToneData({...replyToneData, type: t})}
+                                                className={`py-3 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all ${
+                                                    replyToneData.type === t 
+                                                    ? 'bg-black dark:bg-white text-white dark:text-black border-transparent shadow-lg' 
+                                                    : 'bg-white dark:bg-white/5 border-gray-100 dark:border-white/10 text-gray-400 hover:border-black dark:hover:border-white'
+                                                }`}
+                                            >
+                                                {t}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {replyToneData.type === 'Rizz' && (
+                                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-6">
+                                        <div>
+                                            <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest mb-3 block">Target</label>
+                                            <div className="grid grid-cols-2 gap-3">
+                                                {['Girl', 'Boy'].map(t => (
+                                                    <button 
+                                                        key={t}
+                                                        onClick={() => setReplyToneData({...replyToneData, rizzTarget: t})}
+                                                        className={`py-3 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all ${
+                                                            replyToneData.rizzTarget === t 
+                                                            ? 'bg-black dark:bg-white text-white dark:text-black border-transparent shadow-lg' 
+                                                            : 'bg-white dark:bg-white/5 border-gray-100 dark:border-white/10 text-gray-400 hover:border-black dark:hover:border-white'
+                                                        }`}
+                                                    >
+                                                        {t}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest mb-3 block">Style</label>
+                                            <div className="grid grid-cols-4 gap-2">
+                                                {['Smooth', 'Funny', 'Confident', 'Flirty'].map(s => (
+                                                    <button 
+                                                        key={s}
+                                                        onClick={() => setReplyToneData({...replyToneData, rizzStyle: s})}
+                                                        className={`py-3 rounded-xl border text-[9px] font-black uppercase tracking-widest transition-all ${
+                                                            replyToneData.rizzStyle === s 
+                                                            ? 'bg-black dark:bg-white text-white dark:text-black border-transparent shadow-lg' 
+                                                            : 'bg-white dark:bg-white/5 border-gray-100 dark:border-white/10 text-gray-400 hover:border-black dark:hover:border-white'
+                                                        }`}
+                                                    >
+                                                        {s}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                )}
+
+                                <button 
+                                    onClick={handleReplyToneSubmit}
+                                    disabled={!replyToneData.message.trim()}
+                                    className="w-full py-5 rounded-2xl bg-black dark:bg-white text-white dark:text-black font-black text-sm uppercase tracking-widest hover:opacity-90 transition-all active:scale-95 shadow-xl shadow-black/10 disabled:opacity-20 mt-4"
+                                >
+                                    Generate Reply
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
             </AnimatePresence>
         </div>
     );

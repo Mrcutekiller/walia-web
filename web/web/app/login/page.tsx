@@ -150,7 +150,7 @@ function LoginContent() {
                                     value={identifier}
                                     onChange={e => setIdentifier(e.target.value)}
                                     placeholder="your@email.com"
-                                    className="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-gray-100 dark:bg-white/5 border-2 border-transparent focus:border-black dark:focus:border-white focus:bg-white dark:focus:bg-white/8 outline-none transition-all text-sm font-medium text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-white/25"
+                                    className="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-gray-100 dark:bg-white/[0.08] border-2 border-transparent focus:border-black dark:focus:border-white focus:bg-white dark:focus:bg-[#0A0A1F] outline-none transition-all text-sm font-medium text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-white/40 shadow-inner"
                                 />
                             </div>
                         </div>
@@ -173,7 +173,7 @@ function LoginContent() {
                                     value={password}
                                     onChange={e => setPassword(e.target.value)}
                                     placeholder="Your password"
-                                    className="w-full pl-11 pr-12 py-3.5 rounded-2xl bg-gray-100 dark:bg-white/5 border-2 border-transparent focus:border-black dark:focus:border-white focus:bg-white dark:focus:bg-white/8 outline-none transition-all text-sm font-medium text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-white/25"
+                                    className="w-full pl-11 pr-12 py-3.5 rounded-2xl bg-gray-100 dark:bg-white/[0.08] border-2 border-transparent focus:border-black dark:focus:border-white focus:bg-white dark:focus:bg-[#0A0A1F] outline-none transition-all text-sm font-medium text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-white/40 shadow-inner"
                                 />
                                 <button
                                     type="button"

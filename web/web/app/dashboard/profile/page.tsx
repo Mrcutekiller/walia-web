@@ -25,7 +25,7 @@ interface UserProfile {
     following: string[];
     followersCount: number;
     level: number;
-    xp: number;
+    waliaPoints: number;
     isPro: boolean;
     createdAt: string;
 }
@@ -171,7 +171,7 @@ export default function ProfilePage() {
                         { label: 'Followers', value: profile.followersCount, icon: Users },
                         { label: 'Following', value: profile.following?.length || 0, icon: Heart },
                         { label: 'Posts', value: posts.length, icon: MessageCircle },
-                        { label: 'Walia Points', value: profile.xp, icon: Sparkles },
+                        { label: 'Walia Points', value: (profile as any).waliaPoints || (profile as any).xp || 0, icon: Sparkles },
                     ].map((stat, i) => (
                         <motion.div 
                             key={i}

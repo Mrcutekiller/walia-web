@@ -12,12 +12,14 @@ import {
     serverTimestamp, doc, updateDoc, arrayUnion, arrayRemove, deleteDoc, getDoc, where
 } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'framer-motion';
+import React from 'react';
 
 interface Post {
     id: string;
     uid: string;
     username: string;
     content: string;
+    image?: string;
     likes: string[];
     commentsCount: number;
     createdAt: any;
@@ -38,6 +40,7 @@ export default function CommunityPage() {
     const [content, setContent] = useState('');
     const [loading, setLoading] = useState(false);
     const [following, setFollowing] = useState<string[]>([]);
+    const [selectedStory, setSelectedStory] = useState<Story | null>(null);
 
     const trendingTags = React.useMemo(() => {
         const tagCounts: Record<string, number> = {};
@@ -78,37 +81,58 @@ export default function CommunityPage() {
         });
     }, [user]);
 
-    const handleAddStory = async () => {
-        if (!user) return;
-        const text = window.prompt("What's your story?");
-        if (!text) return;
+    const [storyFile, setStoryFile] = useState<File | null>(null);
+    const [postFile, setPostFile] = useState<File | null>(null);
+    const [uploading, setUploading] = useState(false);
+
+    const uploadFile = async (file: File, path: string) => {
+        const { storage } = await import('@/lib/firebase');
+        const { ref, uploadBytes, getDownloadURL } = await import('firebase/storage');
+        const storageRef = ref(storage, `${path}/${Date.now()}_${file.name}`);
+        await uploadBytes(storageRef, file);
+        return await getDownloadURL(storageRef);
+    };
+
+    const handleAddStory = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file || !user) return;
+        setUploading(true);
         try {
+            const url = await uploadFile(file, 'stories');
             await addDoc(collection(db, 'stories'), {
                 uid: user.uid,
                 username: user.username || 'User',
-                image: (user.username || 'U').charAt(0).toUpperCase(),
+                image: url,
                 hasUnseen: true,
                 createdAt: serverTimestamp()
             });
         } catch (err) {
             console.error(err);
+        } finally {
+            setUploading(false);
         }
     };
 
     const handlePost = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!content.trim() || !user || loading) return;
+        if ((!content.trim() && !postFile) || !user || loading) return;
         setLoading(true);
         try {
+            let imageUrl = '';
+            if (postFile) {
+                imageUrl = await uploadFile(postFile, 'posts');
+            }
             await addDoc(collection(db, 'posts'), {
                 uid: user.uid,
                 username: user.username || 'User',
                 content: content.trim(),
+                image: imageUrl,
                 likes: [],
                 commentsCount: 0,
                 createdAt: serverTimestamp()
             });
             setContent('');
+            setPostFile(null);
         } catch (err) {
             console.error(err);
         } finally {
@@ -182,19 +206,28 @@ export default function CommunityPage() {
                     {/* Stories */}
                     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05, duration: 0.5 }} className="mb-10 flex gap-4 overflow-x-auto custom-scrollbar pb-4">
                         {/* Add Story */}
-                        <div onClick={handleAddStory} className="flex flex-col items-center gap-2 cursor-pointer group shrink-0">
+                        <label className="flex flex-col items-center gap-2 cursor-pointer group shrink-0">
+                            <input type="file" accept="image/*" className="hidden" onChange={handleAddStory} />
                             <div className="relative">
                                 <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center border-2 border-dashed border-gray-300 dark:border-white/20 group-hover:border-black dark:group-hover:border-white transition-all">
-                                    <Plus className="w-6 h-6 text-gray-400 group-hover:text-black dark:group-hover:text-white transition-colors" />
+                                    {uploading ? (
+                                        <div className="w-5 h-5 border-2 border-gray-300 border-t-black dark:border-t-white rounded-full animate-spin" />
+                                    ) : (
+                                        <Plus className="w-6 h-6 text-gray-400 group-hover:text-black dark:group-hover:text-white transition-colors" />
+                                    )}
                                 </div>
                             </div>
                             <span className="text-[10px] font-black uppercase tracking-widest text-black dark:text-white mt-1">Your Story</span>
-                        </div>
+                        </label>
                         {/* Real Stories */}
                         {stories.map(story => (
-                            <div key={story.id} className="flex flex-col items-center gap-2 cursor-pointer group shrink-0" onClick={() => window.alert('Story feature coming soon!')}>
-                                <div className={`w-16 h-16 rounded-full flex items-center justify-center text-xl font-black uppercase bg-gradient-to-br from-black to-gray-700 dark:from-white dark:to-gray-300 text-white dark:text-black ${story.hasUnseen ? 'ring-2 ring-offset-2 ring-black dark:ring-white dark:ring-offset-[#0A0A18]' : 'opacity-70 ring-1 ring-offset-1 ring-gray-300 dark:ring-white/20 dark:ring-offset-[#0A0A18]'}`}>
-                                    {story.image}
+                            <div key={story.id} className="flex flex-col items-center gap-2 cursor-pointer group shrink-0" onClick={() => setSelectedStory(story)}>
+                                <div className={`w-16 h-16 rounded-full overflow-hidden border-2 ${story.hasUnseen ? 'border-black dark:border-white' : 'border-gray-200 dark:border-white/10'}`}>
+                                    {story.image.startsWith('http') ? (
+                                        <img src={story.image} alt={story.username} className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center bg-black text-white font-black text-xl">{story.image}</div>
+                                    )}
                                 </div>
                                 <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 mt-1">{story.username}</span>
                             </div>
@@ -215,8 +248,16 @@ export default function CommunityPage() {
                                     rows={3}
                                 />
                                 <div className="flex items-center justify-between border-t border-gray-200/60 dark:border-white/5 pt-4">
-                                    <div className="flex gap-2">
-                                        <button type="button" className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-white/10 text-gray-400 transition-all duration-300 hover:shadow-md"><ImageIcon className="w-4 h-4" /></button>
+                                    <div className="flex gap-2 items-center">
+                                        <label className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-white/10 text-gray-400 cursor-pointer transition-all duration-300 hover:shadow-md">
+                                            <input type="file" accept="image/*" className="hidden" onChange={(e) => setPostFile(e.target.files?.[0] || null)} />
+                                            <ImageIcon className="w-4 h-4" />
+                                        </label>
+                                        {postFile && (
+                                            <span className="text-[10px] font-bold text-black dark:text-white bg-gray-100 dark:bg-white/10 px-2 py-1 rounded-md flex items-center gap-1">
+                                                {postFile.name.slice(0, 10)}... <X className="w-2 h-2 cursor-pointer" onClick={() => setPostFile(null)} />
+                                            </span>
+                                        )}
                                         <button type="button" className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-white/10 text-gray-400 transition-all duration-300 hover:shadow-md"><Sparkles className="w-4 h-4" /></button>
                                     </div>
                                     <button 
@@ -272,6 +313,12 @@ export default function CommunityPage() {
                                 <p className="text-sm font-medium text-gray-700 dark:text-gray-300 leading-relaxed mb-8 whitespace-pre-line">
                                     {post.content}
                                 </p>
+
+                                {post.image && (
+                                    <div className="mb-8 rounded-[2rem] overflow-hidden border border-gray-100 dark:border-white/10 shadow-lg">
+                                        <img src={post.image} alt="Post content" className="w-full h-auto object-cover max-h-[500px]" />
+                                    </div>
+                                )}
 
                                 <div className="flex items-center gap-6 pt-6 border-t border-gray-200/60 dark:border-white/5">
                                     <button 
@@ -346,6 +393,57 @@ export default function CommunityPage() {
                     </div>
                 </div>
             </motion.div>
+
+            {/* Story Viewer Modal */}
+            <AnimatePresence>
+                {selectedStory && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-xl p-4 md:p-8" onClick={() => setSelectedStory(null)}>
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className="relative w-full max-w-lg aspect-[9/16] bg-black rounded-[3rem] overflow-hidden shadow-[0_0_80px_rgba(0,0,0,0.5)]"
+                            onClick={e => e.stopPropagation()}
+                        >
+                            <img src={selectedStory.image} alt={selectedStory.username} className="w-full h-full object-cover" />
+                            
+                            {/* Overlay Top */}
+                            <div className="absolute top-0 left-0 right-0 p-8 bg-gradient-to-b from-black/80 to-transparent">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-2xl bg-white flex items-center justify-center text-black font-black shadow-lg">
+                                            {selectedStory.username.slice(0, 1).toUpperCase()}
+                                        </div>
+                                        <div>
+                                            <p className="text-white font-black text-sm uppercase tracking-widest">{selectedStory.username}</p>
+                                            <p className="text-white/40 text-[10px] font-bold uppercase tracking-[0.2em]">
+                                                {selectedStory.createdAt?.toDate ? new Date(selectedStory.createdAt.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recently'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <button 
+                                        onClick={() => setSelectedStory(null)}
+                                        className="w-10 h-10 rounded-2xl bg-white/10 backdrop-blur-md text-white flex items-center justify-center hover:bg-white/20 transition-all border border-white/10"
+                                    >
+                                        <X className="w-6 h-6" />
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Progress Bar */}
+                            <div className="absolute top-4 left-8 right-8 h-1 bg-white/20 rounded-full overflow-hidden">
+                                <motion.div 
+                                    initial={{ width: 0 }}
+                                    animate={{ width: '100%' }}
+                                    transition={{ duration: 5, ease: 'linear' }}
+                                    onAnimationComplete={() => setSelectedStory(null)}
+                                    className="h-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)]"
+                                />
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

@@ -7,8 +7,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as ImagePicker from 'expo-image-picker';
 
 export default function CommunityScreen() {
     const router = useRouter();
@@ -91,11 +92,16 @@ export default function CommunityScreen() {
             >
                 {/* Stories */}
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.storiesScroll}>
-                    <TouchableOpacity activeOpacity={0.8} style={styles.storyContainer} onPress={() => {
-                        Alert.prompt('Add Story', 'What is on your mind?', [
-                            { text: 'Cancel', style: 'cancel' },
-                            { text: 'Post', onPress: (text) => text && addStory(text) }
-                        ]);
+                    <TouchableOpacity activeOpacity={0.8} style={styles.storyContainer} onPress={async () => {
+                        const result = await ImagePicker.launchImageLibraryAsync({
+                            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                            allowsEditing: true,
+                            aspect: [9, 16],
+                            quality: 0.7,
+                        });
+                        if (!result.canceled && result.assets[0].uri) {
+                            addStory(result.assets[0].uri);
+                        }
                     }}>
                         <View style={[styles.storyCircle, { borderColor: isDark ? '#334155' : '#E2E8F0', borderStyle: 'dashed', borderWidth: 2, backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }]}>
                             <Ionicons name="add" size={24} color={colors.textTertiary} />
@@ -104,8 +110,12 @@ export default function CommunityScreen() {
                     </TouchableOpacity>
                     {stories.map(story => (
                         <TouchableOpacity activeOpacity={0.8} key={story.id} style={styles.storyContainer} onPress={() => Alert.alert('Story', 'Story viewing coming soon!')}>
-                            <View style={[styles.storyCircle, { backgroundColor: isDark ? '#FFFFFF' : '#000000', borderColor: story.hasUnseen ? colors.text : 'transparent', borderWidth: story.hasUnseen ? 2 : 0 }]}>
-                                <Text style={[styles.storyAvatarText, { color: isDark ? '#000000' : '#FFFFFF' }]}>{story.image}</Text>
+                            <View style={[styles.storyCircle, { backgroundColor: isDark ? '#334155' : '#E2E8F0', borderColor: story.hasUnseen ? colors.primary : 'transparent', borderWidth: story.hasUnseen ? 2 : 0, overflow: 'hidden' }]}>
+                                {story.image.startsWith('http') ? (
+                                    <Image source={{ uri: story.image }} style={{ width: '100%', height: '100%' }} />
+                                ) : (
+                                    <Text style={[styles.storyAvatarText, { color: isDark ? '#FFF' : '#000' }]}>{story.image}</Text>
+                                )}
                             </View>
                             <Text style={[styles.storyUsername, { color: colors.textTertiary }]}>{story.username}</Text>
                         </TouchableOpacity>

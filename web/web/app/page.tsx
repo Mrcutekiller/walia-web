@@ -150,19 +150,19 @@ export default function Home() {
             <div className="max-w-3xl animate-fade-in-up">
               <div className="inline-flex items-center px-5 py-2 rounded-full bg-white/10 border border-white/20 backdrop-blur-md mb-8 shadow-2xl">
                 <span className="w-2.5 h-2.5 rounded-full bg-green-400 mr-3 animate-pulse shadow-[0_0_12px_rgba(74,222,128,0.8)]" />
-                <span className="text-xs font-black text-white tracking-widest uppercase">v1.0 — Now on Android</span>
+                <span className="text-xs font-black text-white tracking-widest uppercase">Now Live: Real Stories & Community Posts</span>
               </div>
-              <p className="text-[11px] font-black uppercase tracking-[0.5em] text-white/40 mb-6">Designed for Excellence</p>
+              <p className="text-[11px] font-black uppercase tracking-[0.5em] text-white/40 mb-6">Walia Intelligence Ecosystem</p>
               <div className="flex items-center gap-8 mb-8">
                 <div className="w-28 h-28 md:w-36 md:h-36 rounded-[40px] bg-white border-2 border-white/30 flex items-center justify-center shadow-[0_0_60px_rgba(255,255,255,0.3)] p-3 shrink-0 hover:scale-105 transition-transform duration-500">
                   <img src="/logo.png" alt="Walia Logo" className="w-full h-full object-contain" />
                 </div>
                 <div>
                   <h1 className="text-7xl md:text-9xl font-black text-white tracking-tighter leading-[0.85] animate-fade-in-up delay-100 uppercase mb-4">
-                    Everything<br />you need.
+                    Climb<br />Higher.
                   </h1>
                   <p className="text-xl md:text-2xl font-semibold text-white/60 mb-8 max-w-lg animate-fade-in-up delay-200 leading-relaxed">
-                    The premier AI platform with integrated tools, smart community, and everything to help you climb higher.
+                    The ultimate AI ecosystem for students. Smart tools, real-time collaboration, and a community built for your success.
                   </p>
                 </div>
               </div>
@@ -187,10 +187,12 @@ export default function Home() {
         </section>
 
         {/* ━━━━ TICKER ━━━━ */}
-        <div className="w-full overflow-hidden bg-black border-y border-white/10 py-6">
-          <div className="flex whitespace-nowrap animate-ticker">
-            {tickerItems.map((item, i) => (
-              <span key={i} className="text-sm font-black uppercase tracking-[0.3em] text-white/50 px-8">{item}</span>
+        <div className="relative w-full overflow-hidden bg-black py-6 border-y border-white/5">
+          <div className="flex animate-ticker whitespace-nowrap">
+            {tickerItems.concat(tickerItems).map((item, i) => (
+              <span key={i} className={`text-[10px] font-black uppercase tracking-[0.4em] mx-8 ${item === '·' ? 'text-white/20' : 'text-white/60'}`}>
+                {item}
+              </span>
             ))}
           </div>
         </div>
@@ -201,12 +203,12 @@ export default function Home() {
             <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-24 gap-8">
               <div className="space-y-5 reveal">
                 <div className="inline-flex items-center px-4 py-2 rounded-full bg-black/5 border border-black/10 text-[10px] font-black uppercase text-black tracking-widest">
-                  <Zap className="w-3 h-3 mr-2" /> Features
+                  <Zap className="w-3 h-3 mr-2" /> Ecosystem
                 </div>
-                <h2 className="text-5xl md:text-7xl font-black text-black tracking-tight leading-[0.95]">Everything<br />you need.</h2>
+                <h2 className="text-5xl md:text-7xl font-black text-black tracking-tight leading-[0.95]">Powerful<br />by design.</h2>
               </div>
               <p className="text-lg text-gray-500 max-w-md font-medium leading-relaxed reveal-right">
-                From AI chat to community tools — Walia gives you the unfair advantage.
+                Integrated tools that work together to give you the ultimate advantage.
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 stagger">
@@ -328,69 +330,15 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ━━━━ LIVE STATS ━━━━ */}
-        <section className="py-32 bg-white">
-          <div className="container mx-auto px-6 md:px-12 text-center">
-            <div className="mb-16 reveal">
-              <div className="inline-flex items-center px-3 py-1.5 rounded-full bg-black/5 border border-black/10 text-[10px] font-black uppercase text-black tracking-widest mb-4">
-                <Zap className="w-3 h-3 mr-2" /> Live Numbers
-              </div>
-              <h2 className="text-4xl md:text-5xl font-black text-black tracking-tight">Growing every day.</h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto stagger">
-              {[
-                { target: globalStats.students, label: 'Total Users', icon: Users },
-                { target: globalStats.downloads, label: 'Total Downloads', icon: Download },
-                { target: globalStats.messages, label: 'Active Sessions', icon: MessageSquare },
-              ].map((s, i) => (
-                <div key={i} className="reveal p-10 rounded-3xl bg-black text-white hover:-translate-y-2 transition-all duration-500 shadow-2xl">
-                  <s.icon className="w-8 h-8 mb-4 opacity-40" />
-                  <CountUp target={s.target} />
-                  <p className="text-xs text-white/40 font-bold uppercase tracking-widest mt-2">{s.label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ━━━━ REVIEWS ━━━━ */}
-        {reviews.length > 0 && (
-          <section className="py-32 bg-gray-50 border-y border-gray-100">
-            <div className="container mx-auto px-6 md:px-12">
-              <div className="text-center mb-16 reveal">
-                <h2 className="text-4xl md:text-5xl font-black text-black tracking-tight">Trusted worldwide.</h2>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 stagger">
-                {reviews.slice(0, 3).map((r) => (
-                  <div key={r.id} className="reveal p-8 rounded-3xl bg-white border border-gray-200 hover:shadow-xl hover:-translate-y-1 transition-all">
-                    <div className="flex gap-1 mb-4">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className={`w-3.5 h-3.5 ${i < r.rating ? 'fill-black text-black' : 'text-gray-200'}`} />
-                      ))}
-                    </div>
-                    <p className="text-sm text-gray-600 leading-relaxed mb-6">"{r.comment}"</p>
-                    <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
-                      <div className="w-9 h-9 rounded-full bg-black flex items-center justify-center text-white text-sm font-black">
-                        {r.userName.charAt(0).toUpperCase()}
-                      </div>
-                      <p className="text-sm font-black text-black">{r.userName}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
-
         {/* ━━━━ CTA ━━━━ */}
         <section className="py-40 bg-black relative overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(99,102,241,0.1)_0%,transparent_70%)]" />
           <div className="container mx-auto px-6 md:px-12 text-center reveal-scale relative z-10">
-            <p className="text-[10px] font-black uppercase tracking-[0.5em] text-white/30 mb-8">From the Mountains of Ethiopia</p>
-            <h2 className="text-5xl md:text-8xl font-black text-white tracking-tight leading-[0.9] mb-8">
-              Climb Higher.<br />Think Smarter.
+            <p className="text-[10px] font-black uppercase tracking-[0.5em] text-white/30 mb-8">Ready to evolve?</p>
+            <h2 className="text-5xl md:text-8xl font-black text-white tracking-tight leading-[0.9] mb-8 uppercase">
+              Join the<br />Walia Herd.
             </h2>
-            <p className="text-xl text-white/40 max-w-lg mx-auto mb-12 font-medium">Join thousands already using Walia.</p>
+            <p className="text-xl text-white/40 max-w-lg mx-auto mb-12 font-medium">Be part of the next generation of intelligent students.</p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-5">
               <Link href="/signup" className="px-12 py-6 rounded-3xl bg-white text-black font-black text-lg hover:bg-white/95 transition-all shadow-2xl hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(255,255,255,0.3)]">
                 Get Started Free
