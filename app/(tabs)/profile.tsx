@@ -1,12 +1,12 @@
 import MembershipCard from '@/components/MembershipCard';
 import { PostCard } from '@/components/ui/PostCard';
 import { useAuth } from '@/store/auth';
-import { PRO_PLAN_XP_COST, useSocial } from '@/store/social';
+import { PRO_PLAN_waliaPoints_COST, useSocial } from '@/store/social';
 import { useTheme } from '@/store/theme';
-import { Ionicons } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
-import { LinearGradient } from 'expo-linear-gradient';
-import { useRouter } from 'expo-router';
+import { Ionicons } from '@ewaliaPointso/vector-icons';
+import * as ImagePicker from 'ewaliaPointso-image-picker';
+import { LinearGradient } from 'ewaliaPointso-linear-gradient';
+import { useRouter } from 'ewaliaPointso-router';
 import React, { useState, useRef } from 'react';
 import {
     Alert, Animated, Image, Linking, Modal, ScrollView,
@@ -16,14 +16,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
 
-export default function ProfileScreen() {
+ewaliaPointsort default function ProfileScreen() {
     const router = useRouter();
     const { colors, isDark, toggleTheme } = useTheme();
     const { user, logout, uploadAvatar } = useAuth();
     const [updatingAvatar, setUpdatingAvatar] = useState(false);
     const social = useSocial();
 
-    const { xp, followers, following, posts, isPro } = social;
+    const { waliaPoints, followers, following, posts, isPro } = social;
     const myPosts = posts.filter(p => p.authorId === user?.id);
 
     const scaleAnim = useRef(new Animated.Value(1)).current;
@@ -61,7 +61,7 @@ export default function ProfileScreen() {
         router.push('/edit-profile');
     };
 
-    const xpToProPct = Math.min(100, Math.round((xp / PRO_PLAN_XP_COST) * 100));
+    const waliaPointsToProPct = Math.min(100, Math.round((waliaPoints / PRO_PLAN_waliaPoints_COST) * 100));
 
     const MENU_ITEMS = [
         { icon: 'moon-outline', label: 'Dark Mode', color: '#6366F1', toggle: true, value: isDark, action: toggleTheme },
@@ -132,7 +132,7 @@ export default function ProfileScreen() {
 
                             <View style={styles.userInfo}>
                                 <Text style={[styles.userName, { color: colors.text }]}>
-                                    {user?.name || 'Explorer'}
+                                    {user?.name || 'EwaliaPointslorer'}
                                 </Text>
                                 <Text style={[styles.userHandle, { color: colors.textTertiary }]}>
                                     @{user?.username || 'walia_user'}
@@ -166,7 +166,7 @@ export default function ProfileScreen() {
                                 { val: myPosts.length, label: 'Posts' },
                                 { val: followers.length, label: 'Followers' },
                                 { val: following.length, label: 'Following' },
-                                { val: xp.toLocaleString(), label: '⭐ pts' },
+                                { val: waliaPoints.toLocaleString(), label: '⭐ pts' },
                             ].map((stat, i, arr) => (
                                 <React.Fragment key={stat.label}>
                                     <View style={styles.statItem}>
@@ -206,7 +206,7 @@ export default function ProfileScreen() {
                                     <Text style={styles.membershipSub}>
                                         {isPro
                                             ? 'Full access to all AI models & features'
-                                            : `${xp.toLocaleString()} / 10,000 Walia Points to free Pro`}
+                                            : `${waliaPoints.toLocaleString()} / 10,000 Walia Points to free Pro`}
                                     </Text>
                                 </View>
                                 <View style={styles.membershipArrow}>
@@ -216,7 +216,7 @@ export default function ProfileScreen() {
 
                             {!isPro && (
                                 <View style={styles.progressBg}>
-                                    <View style={[styles.progressBar, { width: `${xpToProPct}%` }]} />
+                                    <View style={[styles.progressBar, { width: `${waliaPointsToProPct}%` }]} />
                                 </View>
                             )}
 
@@ -274,13 +274,13 @@ export default function ProfileScreen() {
                                         Walia Points to Pro
                                     </Text>
                                     <Text style={[styles.planProgressVal, { color: '#6366F1' }]}>
-                                        {xp.toLocaleString()} / 10,000
+                                        {waliaPoints.toLocaleString()} / 10,000
                                     </Text>
                                 </View>
                                 <View style={[styles.planProgressBg, { backgroundColor: isDark ? '#334155' : '#F1F5F9' }]}>
                                     <LinearGradient
                                         colors={['#6366F1', '#8B5CF6']}
-                                        style={[styles.planProgressFill, { width: `${Math.min(100, (xp / 10000) * 100)}%` as any }]}
+                                        style={[styles.planProgressFill, { width: `${Math.min(100, (waliaPoints / 10000) * 100)}%` as any }]}
                                         start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
                                     />
                                 </View>
