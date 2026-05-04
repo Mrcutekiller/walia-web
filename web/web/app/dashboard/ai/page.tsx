@@ -681,6 +681,7 @@ function AIChatContent() {
                 )}
             </AnimatePresence>
         </div>
+    </div>
     );
 }
 
