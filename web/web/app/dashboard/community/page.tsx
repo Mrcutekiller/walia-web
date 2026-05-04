@@ -39,6 +39,22 @@ export default function CommunityPage() {
     const [loading, setLoading] = useState(false);
     const [following, setFollowing] = useState<string[]>([]);
 
+    const trendingTags = React.useMemo(() => {
+        const tagCounts: Record<string, number> = {};
+        posts.forEach(post => {
+            const matches = post.content.match(/#\w+/g);
+            if (matches) {
+                matches.forEach(tag => {
+                    tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+                });
+            }
+        });
+        return Object.entries(tagCounts)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 4)
+            .map(([tag, count]) => ({ tag, count }));
+    }, [posts]);
+
     const [stories, setStories] = useState<Story[]>([]);
 
     useEffect(() => {
@@ -107,6 +123,17 @@ export default function CommunityPage() {
         await updateDoc(ref, {
             likes: isLiked ? arrayRemove(user.uid) : arrayUnion(user.uid)
         });
+
+        if (!isLiked && post.uid !== user.uid) {
+            await addDoc(collection(db, 'notifications'), {
+                userId: post.uid,
+                type: 'community',
+                title: 'New Like',
+                message: `${user.username || 'Someone'} liked your post.`,
+                read: false,
+                createdAt: serverTimestamp()
+            });
+        }
     };
 
     const handleFollow = async (postUid: string) => {
@@ -116,6 +143,17 @@ export default function CommunityPage() {
         await updateDoc(userRef, {
             following: isFollowing ? arrayRemove(postUid) : arrayUnion(postUid)
         });
+
+        if (!isFollowing) {
+            await addDoc(collection(db, 'notifications'), {
+                userId: postUid,
+                type: 'community',
+                title: 'New Follower',
+                message: `${user.username || 'Someone'} started following you.`,
+                read: false,
+                createdAt: serverTimestamp()
+            });
+        }
     };
 
     return (
@@ -270,12 +308,14 @@ export default function CommunityPage() {
                         <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-black dark:text-white">Trending Topics</h2>
                     </div>
                     <div className="space-y-4">
-                        {['#XAUUSD', '#AI_Assistant', '#WaliaLaunch', '#EthiopiaTech'].map((tag, index) => (
+                        {trendingTags.length > 0 ? trendingTags.map(({tag, count}, index) => (
                             <motion.div key={tag} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 + index * 0.05 }} className="group cursor-pointer">
                                 <p className="text-xs font-black text-black dark:text-white group-hover:underline transition-all duration-300">{tag}</p>
-                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">1.2K posts</p>
+                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{count} posts</p>
                             </motion.div>
-                        ))}
+                        )) : (
+                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">No trending tags yet</p>
+                        )}
                     </div>
                 </div>
 

@@ -7,19 +7,20 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Dimensions, Anima
 import { Calendar } from 'react-native-calendars';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '@/store/auth';
+import { db } from '@/services/firebase';
+import { collection, query, where, onSnapshot, doc, updateDoc, addDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 
 const { width } = Dimensions.get('window');
 
 interface Plan {
     id: string;
     title: string;
-    description: string;
+    description?: string;
     date: string;
     time: string;
-    status: 'done' | 'ongoing' | 'not-done';
-    color?: string;
+    completed: boolean;
+    uid?: string;
 }
 
 export default function CalendarScreen() {
@@ -34,31 +35,18 @@ export default function CalendarScreen() {
 
     const { user } = useAuth();
     
-    // Load plans from AsyncStorage
-    const loadPlans = async () => {
-        if (!user) return;
-        try {
-            const data = await AsyncStorage.getItem(`walia_plans_${user.id}`);
-            if (data) setPlans(JSON.parse(data));
-        } catch (e) {
-            console.error('Error loading plans', e);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const savePlans = async (newPlans: Plan[]) => {
-        if (!user) return;
-        setPlans(newPlans);
-        try {
-            await AsyncStorage.setItem(`walia_plans_${user.id}`, JSON.stringify(newPlans));
-        } catch (e) {
-            console.error('Error saving plans', e);
-        }
-    };
-
     useEffect(() => {
-        loadPlans();
+        if (!user) return;
+        const q = query(collection(db, 'tasks'), where('uid', '==', user.id));
+        const unsubscribe = onSnapshot(q, snap => {
+            const data = snap.docs.map(d => ({ id: d.id, ...d.data() } as Plan));
+            setPlans(data);
+            setLoading(false);
+        }, (err) => {
+            console.error(err);
+            setLoading(false);
+        });
+        return unsubscribe;
     }, [user]);
 
     // Check for notifications
@@ -69,13 +57,13 @@ export default function CalendarScreen() {
             const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
             
             plans.forEach(p => {
-                if (p.date === todayStr && p.time === timeStr && p.status !== 'done') {
+                if (p.date === todayStr && p.time === timeStr && !p.completed) {
                     // Show notification
                     Alert.alert(
                         '📅 Task Reminder',
                         `${p.title}\n\n${p.description || ''}`,
                         [
-                            { text: 'Done', onPress: () => cycleStatus(p.id, 'done') },
+                            { text: 'Done', onPress: () => toggleStatus(p.id) },
                             { text: 'Remind me after 10 min', onPress: () => snoozePlan(p.id) },
                             { text: 'Dismiss', style: 'cancel' }
                         ]
@@ -86,7 +74,7 @@ export default function CalendarScreen() {
         return () => clearInterval(interval);
     }, [plans]);
 
-    const snoozePlan = (planId: string) => {
+    const snoozePlan = async (planId: string) => {
         const plan = plans.find(p => p.id === planId);
         if (!plan) return;
         
@@ -96,31 +84,18 @@ export default function CalendarScreen() {
         date.setHours(hours, minutes + 10);
         const newTime = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
         
-        savePlans(plans.map(p => p.id === planId ? { ...p, time: newTime } : p));
+        await updateDoc(doc(db, 'tasks', planId), { time: newTime });
     };
 
-    const cycleStatus = async (planId: string, forceStatus?: 'done' | 'ongoing' | 'not-done') => {
+    const toggleStatus = async (planId: string) => {
         const plan = plans.find(p => p.id === planId);
         if (!plan || !user) return;
-
-        const nextStatus: Record<string, 'done' | 'ongoing' | 'not-done'> = {
-            'not-done': 'ongoing',
-            'ongoing': 'done',
-            'done': 'not-done'
-        };
-
-        const updatedStatus = forceStatus || nextStatus[plan.status || 'not-done'];
-        savePlans(plans.map(p => p.id === planId ? { ...p, status: updatedStatus } : p));
+        await updateDoc(doc(db, 'tasks', planId), { completed: !plan.completed });
     };
 
     const markedDates: any = {};
     plans.forEach(p => {
-        const statusColors: Record<string, string> = {
-            'done': '#10B981',
-            'ongoing': '#F59E0B',
-            'not-done': colors.textTertiary
-        };
-        const statusColor = statusColors[p.status || 'not-done'];
+        const statusColor = p.completed ? '#10B981' : colors.textTertiary;
         markedDates[p.date] = {
             marked: true,
             dotColor: statusColor,
@@ -134,9 +109,8 @@ export default function CalendarScreen() {
 
     const filteredPlans = selectedDate ? plans.filter(p => p.date === selectedDate) : plans;
     const stats = {
-        done: plans.filter(p => p.status === 'done').length,
-        ongoing: plans.filter(p => p.status === 'ongoing').length,
-        pending: plans.filter(p => p.status === 'not-done' || !p.status).length,
+        done: plans.filter(p => p.completed).length,
+        pending: plans.filter(p => !p.completed).length,
     };
 
     const today = new Date().toISOString().split('T')[0];
@@ -144,7 +118,6 @@ export default function CalendarScreen() {
 
     const STATUS_CONFIG = {
         'done': { icon: 'checkmark-circle', color: '#10B981', label: 'Completed', bg: '#10B98115' },
-        'ongoing': { icon: 'time', color: '#F59E0B', label: 'In Progress', bg: '#F59E0B15' },
         'not-done': { icon: 'ellipse-outline', color: '#94A3B8', label: 'Planned', bg: '#94A3B815' },
     };
 
@@ -175,7 +148,6 @@ export default function CalendarScreen() {
                     <View style={styles.statsBar}>
                         {[
                             { val: stats.done, label: 'Done', color: '#10B981' },
-                            { val: stats.ongoing, label: 'Active', color: '#F59E0B' },
                             { val: stats.pending, label: 'Pending', color: '#94A3B8' },
                         ].map((s, i, arr) => (
                             <React.Fragment key={s.label}>
@@ -278,13 +250,13 @@ export default function CalendarScreen() {
                         </View>
                     ) : (
                         <View style={styles.plansList}>
-                            {filteredPlans.map((p) => {
-                                const info = STATUS_CONFIG[p.status || 'not-done'];
+                                {filteredPlans.map((p) => {
+                                const info = STATUS_CONFIG[p.completed ? 'done' : 'not-done'];
                                 return (
                                     <TouchableOpacity
                                         key={p.id}
                                         activeOpacity={0.85}
-                                        onPress={() => cycleStatus(p.id)}
+                                        onPress={() => toggleStatus(p.id)}
                                         style={[styles.planCard, {
                                             backgroundColor: cardBg,
                                             borderColor: isDark ? '#1E293B' : '#F1F5F9',
@@ -299,7 +271,7 @@ export default function CalendarScreen() {
                                                     <Text style={[
                                                         styles.planTitle,
                                                         { color: colors.text },
-                                                        p.status === 'done' && styles.planDone
+                                                        p.completed && styles.planDone
                                                     ]}>
                                                         {p.title}
                                                     </Text>
@@ -327,11 +299,11 @@ export default function CalendarScreen() {
                                             <View style={styles.planFooter}>
                                                 <TouchableOpacity
                                                     style={[styles.cycleBtn, { backgroundColor: `${info.color}10`, borderColor: `${info.color}20` }]}
-                                                    onPress={() => cycleStatus(p.id)}
+                                                    onPress={() => toggleStatus(p.id)}
                                                 >
                                                     <Ionicons name="sync-outline" size={12} color={info.color} />
                                                     <Text style={[styles.cycleText, { color: info.color }]}>
-                                                        {p.status === 'not-done' ? 'Mark Active' : p.status === 'ongoing' ? 'Mark Done' : 'Reset'}
+                                                        {p.completed ? 'Mark Not Done' : 'Mark Done'}
                                                     </Text>
                                                 </TouchableOpacity>
                                             </View>

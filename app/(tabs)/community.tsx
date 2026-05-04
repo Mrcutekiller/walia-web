@@ -17,6 +17,23 @@ export default function CommunityScreen() {
     const { posts, stories, likePost, deletePost, togglePostPrivacy, addXP, addStory } = useSocial();
     const [quizAnswers, setQuizAnswers] = useState<Record<string, number>>({});
 
+    const trendingTags = React.useMemo(() => {
+        const tagCounts: Record<string, number> = {};
+        posts.forEach(post => {
+            const matches = post.content.match(/#\w+/g);
+            if (matches) {
+                matches.forEach(tag => {
+                    tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+                });
+            }
+        });
+        const colorsArr = ['#6366F1', '#10B981', '#F59E0B', '#F43F5E', '#06B6D4'];
+        return Object.entries(tagCounts)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 5)
+            .map(([tag, count], i) => ({ tag, count, color: colorsArr[i % colorsArr.length] }));
+    }, [posts]);
+
     const bg = isDark ? colors.background : '#F8FAFC';
     const cardBg = isDark ? colors.surface : '#FFFFFF';
 
@@ -96,27 +113,23 @@ export default function CommunityScreen() {
                 </ScrollView>
 
                 {/* Trending Tags */}
-                <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.tagsScroll}
-                >
-                    {[
-                        { tag: '#AIHacks', color: '#6366F1' },
-                        { tag: '#StudySession', color: '#10B981' },
-                        { tag: '#WaliaGold', color: '#F59E0B' },
-                        { tag: '#FinalsPrep', color: '#F43F5E' },
-                        { tag: '#CodeTalk', color: '#06B6D4' },
-                    ].map((item, i) => (
-                        <TouchableOpacity
-                            key={i}
-                            style={[styles.tag, { backgroundColor: `${item.color}12`, borderColor: `${item.color}30` }]}
-                            activeOpacity={0.7}
-                        >
-                            <Text style={[styles.tagText, { color: item.color }]}>{item.tag}</Text>
-                        </TouchableOpacity>
-                    ))}
-                </ScrollView>
+                {trendingTags.length > 0 && (
+                    <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={styles.tagsScroll}
+                    >
+                        {trendingTags.map((item, i) => (
+                            <TouchableOpacity
+                                key={i}
+                                style={[styles.tag, { backgroundColor: `${item.color}12`, borderColor: `${item.color}30` }]}
+                                activeOpacity={0.7}
+                            >
+                                <Text style={[styles.tagText, { color: item.color }]}>{item.tag}</Text>
+                            </TouchableOpacity>
+                        ))}
+                    </ScrollView>
+                )}
 
                 {/* Compose Bar */}
                 <TouchableOpacity

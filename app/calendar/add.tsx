@@ -4,7 +4,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/store/auth';
 import { useTokens } from '@/store/tokens';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { db } from '@/services/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import React, { useState } from 'react';
 import {
     ActivityIndicator,
@@ -41,18 +42,15 @@ export default function AddPlanScreen() {
         
         setLoading(true);
         try {
-            const newPlan = {
-                id: Date.now().toString() + Math.random().toString(36).substring(7),
+            await addDoc(collection(db, 'tasks'), {
+                uid: user.id,
                 title: title.trim(),
                 description: description.trim(),
                 date,
                 time,
-                status,
-                createdAt: new Date().toISOString(),
-            };
-            const existingData = await AsyncStorage.getItem(`walia_plans_${user.id}`);
-            const existingPlans = existingData ? JSON.parse(existingData) : [];
-            await AsyncStorage.setItem(`walia_plans_${user.id}`, JSON.stringify([...existingPlans, newPlan]));
+                completed: status === 'done',
+                createdAt: serverTimestamp(),
+            });
             router.back();
         } catch (error) {
             console.error(error);
@@ -63,7 +61,6 @@ export default function AddPlanScreen() {
 
     const STATUSES: { key: PlanStatus; label: string; icon: any; color: string }[] = [
         { key: 'not-done', label: 'Pending', icon: 'ellipse-outline', color: '#94a3b8' },
-        { key: 'ongoing', label: 'Ongoing', icon: 'play-circle', color: '#f59e0b' },
         { key: 'done', label: 'Done', icon: 'checkmark-circle', color: '#10b981' },
     ];
 

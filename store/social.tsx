@@ -382,28 +382,46 @@ export function SocialProvider({ children }: { children: ReactNode }) {
 
     // ── Follow ──
     const followUser = useCallback(async (userId: string) => {
+        if (!auth.currentUser) return;
         const isCurrentlyFollowing = state.following.includes(userId);
-        updateState(prev => ({
-            ...prev,
-            following: isCurrentlyFollowing ? prev.following : [...prev.following, userId],
-        }));
-        if (!isCurrentlyFollowing && auth.currentUser) {
-            try {
-                await updateDoc(doc(db, 'users', auth.currentUser.uid), {
-                    tokensUsed: increment(-5)
-                });
-            } catch (e) {
-                console.error('Failed to reward tokens', e);
-            }
-        }
-    }, [state.following, updateState]);
+        if (isCurrentlyFollowing) return;
 
-    const unfollowUser = useCallback((userId: string) => {
-        updateState(prev => ({
-            ...prev,
-            following: prev.following.filter(id => id !== userId),
-        }));
-    }, [updateState]);
+        try {
+            // Update local user's following
+            await updateDoc(doc(db, 'users', auth.currentUser.uid), {
+                following: arrayUnion(userId)
+            });
+            // Update target user's followers
+            await updateDoc(doc(db, 'users', userId), {
+                followers: arrayUnion(auth.currentUser.uid)
+            });
+            // Add Notification
+            await addDoc(collection(db, 'notifications'), {
+                userId: userId,
+                type: 'community',
+                title: 'New Follower',
+                message: `${auth.currentUser.displayName || 'Someone'} started following you.`,
+                read: false,
+                createdAt: serverTimestamp()
+            });
+        } catch (e) {
+            console.error('Failed to follow', e);
+        }
+    }, [state.following]);
+
+    const unfollowUser = useCallback(async (userId: string) => {
+        if (!auth.currentUser) return;
+        try {
+            await updateDoc(doc(db, 'users', auth.currentUser.uid), {
+                following: arrayRemove(userId)
+            });
+            await updateDoc(doc(db, 'users', userId), {
+                followers: arrayRemove(auth.currentUser.uid)
+            });
+        } catch (e) {
+            console.error('Failed to unfollow', e);
+        }
+    }, []);
 
     const isFollowing = useCallback((userId: string) => state.following.includes(userId), [state.following]);
 
@@ -457,72 +475,77 @@ export function SocialProvider({ children }: { children: ReactNode }) {
     }, [addXP]);
 
     const likePost = useCallback(async (postId: string) => {
-        // No-op for local-only state right now, but would normally hit firestore
-        // To support local, we'll update the state directly:
-        updateState(prev => {
-            const post = prev.posts.find(p => p.id === postId);
-            if (!post) return prev;
-            const alreadyLiked = post.likes.includes(auth.currentUser?.uid || 'user');
-            
-            const nextPosts = prev.posts.map(p => {
-                if (p.id !== postId) return p;
-                const likes = alreadyLiked 
-                    ? p.likes.filter(id => id !== (auth.currentUser?.uid || 'user'))
-                    : [...p.likes, (auth.currentUser?.uid || 'user')];
-                return { ...p, likes };
+        if (!auth.currentUser) return;
+        const post = state.posts.find(p => p.id === postId);
+        if (!post) return;
+        
+        const alreadyLiked = post.likes.includes(auth.currentUser.uid);
+        const ref = doc(db, 'posts', postId);
+        
+        try {
+            await updateDoc(ref, {
+                likes: alreadyLiked ? arrayRemove(auth.currentUser.uid) : arrayUnion(auth.currentUser.uid)
             });
 
-            return {
-                ...prev,
-                posts: nextPosts,
-                likedPostIds: alreadyLiked 
-                    ? prev.likedPostIds.filter(id => id !== postId)
-                    : [...prev.likedPostIds, postId]
-            };
-        });
-    }, [updateState]);
+            if (!alreadyLiked && post.authorId !== auth.currentUser.uid) {
+                await addDoc(collection(db, 'notifications'), {
+                    userId: post.authorId,
+                    type: 'community',
+                    title: 'New Like',
+                    message: `${auth.currentUser.displayName || 'Someone'} liked your post.`,
+                    read: false,
+                    createdAt: serverTimestamp()
+                });
+            }
+        } catch (e) {
+            console.error('Failed to like post', e);
+        }
+    }, [state.posts]);
 
-    const deletePost = useCallback((postId: string) => {
-        updateState(prev => ({
-            ...prev,
-            posts: prev.posts.filter(p => p.id !== postId)
-        }));
-    }, [updateState]);
+    const deletePost = useCallback(async (postId: string) => {
+        try {
+            await deleteDoc(doc(db, 'posts', postId));
+        } catch (e) {
+            console.error('Failed to delete post', e);
+        }
+    }, []);
 
-    const togglePostPrivacy = useCallback((postId: string) => {
-        updateState(prev => ({
-            ...prev,
-            posts: prev.posts.map(p => p.id === postId ? { ...p, isPrivate: !p.isPrivate } : p)
-        }));
-    }, [updateState]);
+    const togglePostPrivacy = useCallback(async (postId: string) => {
+        const post = state.posts.find(p => p.id === postId);
+        if (!post) return;
+        try {
+            await updateDoc(doc(db, 'posts', postId), {
+                isPrivate: !post.isPrivate
+            });
+        } catch (e) {
+            console.error('Failed to toggle privacy', e);
+        }
+    }, [state.posts]);
 
-    const addComment = useCallback((postId: string, comment: Omit<Comment, 'id' | 'timestamp'>) => {
-        const newComment: Comment = { ...comment, id: Date.now().toString(), timestamp: 'Just now' };
-        updateState(prev => {
-            const post = prev.posts.find(p => p.id === postId);
-            
-            // Add a notification for the author of the post (if local)
-            let newNotifications = prev.notifications || [];
-            if (post && post.authorId === auth.currentUser?.uid) {
-                newNotifications = [{
-                    id: Date.now().toString() + Math.random().toString(36).substring(7),
+    const addComment = useCallback(async (postId: string, comment: Omit<Comment, 'id' | 'timestamp'>) => {
+        if (!auth.currentUser) return;
+        const newComment: Comment = { ...comment, id: Date.now().toString(), timestamp: new Date().toISOString() };
+        try {
+            await updateDoc(doc(db, 'posts', postId), {
+                comments: arrayUnion(newComment),
+                commentCount: increment(1)
+            });
+            const post = state.posts.find(p => p.id === postId);
+            if (post && post.authorId !== auth.currentUser.uid) {
+                await addDoc(collection(db, 'notifications'), {
                     userId: post.authorId,
                     type: 'community',
                     title: 'New Comment',
-                    message: 'Someone commented on your post.',
+                    message: `${auth.currentUser.displayName || 'Someone'} commented on your post.`,
                     read: false,
-                    createdAt: new Date().toISOString(),
-                }, ...newNotifications];
+                    createdAt: serverTimestamp()
+                });
             }
-
-            return {
-                ...prev,
-                posts: prev.posts.map(p => p.id === postId ? { ...p, comments: [...p.comments, newComment], commentCount: (p.commentCount || 0) + 1 } : p),
-                notifications: newNotifications
-            };
-        });
-        addXP(XP_REWARDS.comment_added, 'Comment added 💬');
-    }, [updateState, addXP]);
+            addXP(XP_REWARDS.comment_added, 'Comment added 💬');
+        } catch (e) {
+            console.error('Failed to add comment', e);
+        }
+    }, [addXP, state.posts]);
 
     // ── Limits ──
     const resetDailyIfNewDay = useCallback((s: SocialState) => {
