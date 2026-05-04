@@ -11,35 +11,60 @@ import {
     Users,
     Wrench,
     X,
-    Zap,
     ShieldCheck,
     LayoutList,
     Crown,
     LogOut,
     ChevronRight,
-    Search
+    Search,
+    Sun,
+    Moon,
+    TrendingUp,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { usePathname } from 'next/navigation';
 import { useTokens } from '@/context/TokenContext';
-import ThemeToggle from './ThemeToggle';
+import { useTheme } from '@/context/ThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useState } from 'react';
 
 const sidebarLinks = [
-    { name: 'AI Hub', href: '/dashboard/ai', icon: Sparkles, color: 'text-indigo-500' },
-    { name: 'Messages', href: '/dashboard/messages', icon: MessageSquare, color: 'text-blue-500' },
-    { name: 'Notes', href: '/dashboard/notes', icon: BookOpen, color: 'text-emerald-500' },
-    { name: 'Daily Plan', href: '/dashboard/plan', icon: LayoutList, color: 'text-rose-500' },
-    { name: 'Tools', href: '/dashboard/tools', icon: Wrench, color: 'text-amber-500' },
-    { name: 'Community', href: '/dashboard/community', icon: Users, color: 'text-cyan-500' },
-    { name: 'Calendar', href: '/dashboard/calendar', icon: CalendarIcon, color: 'text-purple-500' },
-    { name: 'Profile', href: '/dashboard/profile', icon: User, color: 'text-slate-500' },
+    { name: 'AI Hub', href: '/dashboard/ai', icon: Sparkles, color: 'indigo' },
+    { name: 'Messages', href: '/dashboard/messages', icon: MessageSquare, color: 'blue' },
+    { name: 'Notes', href: '/dashboard/notes', icon: BookOpen, color: 'emerald' },
+    { name: 'Daily Plan', href: '/dashboard/plan', icon: LayoutList, color: 'rose' },
+    { name: 'Tools', href: '/dashboard/tools', icon: Wrench, color: 'amber' },
+    { name: 'Community', href: '/dashboard/community', icon: Users, color: 'cyan' },
+    { name: 'Calendar', href: '/dashboard/calendar', icon: CalendarIcon, color: 'purple' },
+    { name: 'Profile', href: '/dashboard/profile', icon: User, color: 'slate' },
 ];
 
-export default function Sidebar({ isOpen, onClose, isMinimized, onToggleMinimize }: { 
-    isOpen: boolean, 
+const colorMap: Record<string, string> = {
+    indigo: 'group-hover:text-indigo-500',
+    blue: 'group-hover:text-blue-500',
+    emerald: 'group-hover:text-emerald-500',
+    rose: 'group-hover:text-rose-500',
+    amber: 'group-hover:text-amber-500',
+    cyan: 'group-hover:text-cyan-500',
+    purple: 'group-hover:text-purple-500',
+    slate: 'group-hover:text-slate-500',
+};
+
+const bgColorMap: Record<string, string> = {
+    indigo: 'bg-indigo-500/10 text-indigo-500',
+    blue: 'bg-blue-500/10 text-blue-500',
+    emerald: 'bg-emerald-500/10 text-emerald-500',
+    rose: 'bg-rose-500/10 text-rose-500',
+    amber: 'bg-amber-500/10 text-amber-500',
+    cyan: 'bg-cyan-500/10 text-cyan-500',
+    purple: 'bg-purple-500/10 text-purple-500',
+    slate: 'bg-slate-500/10 text-slate-500',
+};
+
+export default function Sidebar({ isOpen, onClose, isMinimized, onToggleMinimize }: {
+    isOpen: boolean,
     onClose: () => void,
     isMinimized: boolean,
     onToggleMinimize: () => void
@@ -47,6 +72,8 @@ export default function Sidebar({ isOpen, onClose, isMinimized, onToggleMinimize
     const { user, logout } = useAuth();
     const pathname = usePathname();
     const { tokenDisplay, isPro } = useTokens();
+    const { theme, toggleTheme, isDark } = useTheme();
+    const [searchFocused, setSearchFocused] = useState(false);
 
     return (
         <>
@@ -57,7 +84,7 @@ export default function Sidebar({ isOpen, onClose, isMinimized, onToggleMinimize
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-black/40 backdrop-blur-[2px] z-40 lg:hidden"
+                        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
                         onClick={onClose}
                     />
                 )}
@@ -66,212 +93,265 @@ export default function Sidebar({ isOpen, onClose, isMinimized, onToggleMinimize
             {/* Sidebar */}
             <aside
                 className={cn(
-                    "fixed top-0 left-0 bottom-0 bg-white dark:bg-[#050505] border-r border-gray-100 dark:border-white/5 z-50 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] lg:translate-x-0 shadow-2xl lg:shadow-none",
-                    isOpen ? "translate-x-0 w-[19rem]" : "-translate-x-full w-[19rem]",
-                    isMinimized ? "lg:w-20" : "lg:w-[19rem]"
+                    "fixed top-0 left-0 bottom-0 z-50 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] lg:translate-x-0",
+                    "bg-white dark:bg-[#080810] border-r border-gray-100/80 dark:border-white/[0.05]",
+                    "shadow-[4px_0_24px_rgba(0,0,0,0.06)] dark:shadow-[4px_0_24px_rgba(0,0,0,0.4)]",
+                    isOpen ? "translate-x-0 w-72" : "-translate-x-full w-72",
+                    isMinimized ? "lg:w-20" : "lg:w-72"
                 )}
             >
                 <div className="flex flex-col h-full">
-                    {/* Header/Branding */}
-                    <div className="p-8 pb-4">
-                        <div className="flex items-center justify-between mb-8">
-                            <Link href="/" className="flex items-center space-x-3 group">
-                                <div className="relative w-11 h-11 flex items-center justify-center rounded-2xl bg-black dark:bg-white shadow-xl shadow-black/10 transition-all duration-500 group-hover:rotate-6 group-hover:scale-105">
-                                    <Image src="/logo.png" alt="Walia" width={32} height={32} className="object-contain invert dark:invert-0" unoptimized />
-                                    <div className="absolute inset-0 rounded-2xl bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                    {/* ── Header / Branding ── */}
+                    <div className="px-5 pt-6 pb-4">
+                        <div className="flex items-center justify-between mb-6">
+                            <Link href="/" className="flex items-center gap-3 group min-w-0">
+                                <div className="relative w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-2xl bg-black dark:bg-white shadow-lg shadow-black/20 dark:shadow-white/10 transition-all duration-500 group-hover:scale-110 group-hover:rotate-3">
+                                    <Image src="/logo.png" alt="Walia" width={26} height={26} className="object-contain invert dark:invert-0" unoptimized />
+                                    <div className="absolute inset-0 rounded-2xl ring-2 ring-black/0 group-hover:ring-black/10 dark:group-hover:ring-white/20 transition-all" />
                                 </div>
-                                <div className={`flex flex-col transition-opacity duration-300 ${isMinimized ? 'lg:opacity-0 lg:pointer-events-none' : 'opacity-100'}`}>
-                                    <span className="text-xl font-black text-black dark:text-white tracking-tighter uppercase italic leading-none">Walia</span>
-                                    <span className="text-[10px] font-black text-black/30 dark:text-white/20 uppercase tracking-[0.2em] mt-1">Intelligence</span>
+                                <div className={cn("flex flex-col min-w-0 transition-all duration-300", isMinimized ? "lg:hidden" : "")}>
+                                    <span className="text-[17px] font-black text-black dark:text-white tracking-tight leading-none">Walia AI</span>
+                                    <span className="text-[10px] font-bold text-black/30 dark:text-white/25 tracking-[0.18em] uppercase mt-0.5">Intelligence</span>
                                 </div>
                             </Link>
-                            <div className="flex items-center gap-2">
-                                <button 
+
+                            <div className="flex items-center gap-1.5 flex-shrink-0">
+                                {/* Theme Toggle */}
+                                <button
+                                    onClick={toggleTheme}
+                                    className="p-2 rounded-xl text-gray-400 hover:text-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 transition-all duration-200"
+                                    title={isDark ? 'Light mode' : 'Dark mode'}
+                                >
+                                    {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                                </button>
+                                {/* Collapse toggle */}
+                                <button
                                     onClick={onToggleMinimize}
-                                    className="hidden lg:flex p-2.5 rounded-xl bg-gray-50 dark:bg-white/5 text-gray-400 hover:text-black dark:hover:text-white transition-all hover:rotate-180 duration-300"
+                                    className="hidden lg:flex p-2 rounded-xl text-gray-400 hover:text-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 transition-all duration-200"
                                 >
                                     <ChevronRight className={cn("w-4 h-4 transition-transform duration-300", isMinimized ? "rotate-180" : "")} />
                                 </button>
-                                <button className="lg:hidden p-2.5 rounded-xl bg-gray-50 dark:bg-white/5 text-gray-400 hover:text-black dark:hover:text-white transition-all" onClick={onClose}>
-                                    <X className="w-5 h-5" />
+                                {/* Mobile close */}
+                                <button
+                                    className="lg:hidden p-2 rounded-xl text-gray-400 hover:text-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 transition-all"
+                                    onClick={onClose}
+                                >
+                                    <X className="w-4 h-4" />
                                 </button>
                             </div>
                         </div>
 
-                        {/* Search Bar Stub (Premium Touch) */}
-                        <div className="relative group cursor-pointer">
-                            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                                <Search className="w-4 h-4 text-gray-400 group-hover:text-black dark:group-hover:text-white transition-colors" />
+                        {/* Search */}
+                        {!isMinimized && (
+                            <div className={cn("relative group transition-all duration-200", searchFocused ? "ring-1 ring-black dark:ring-white rounded-2xl" : "")}>
+                                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 transition-colors group-focus-within:text-black dark:group-focus-within:text-white" />
+                                <input
+                                    type="text"
+                                    readOnly
+                                    placeholder="Search modules..."
+                                    onFocus={() => setSearchFocused(true)}
+                                    onBlur={() => setSearchFocused(false)}
+                                    className="w-full bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/[0.06] rounded-2xl py-2.5 pl-9 pr-10 text-[12px] font-semibold text-gray-500 dark:text-white/40 outline-none placeholder:text-gray-400 dark:placeholder:text-white/25 transition-all cursor-pointer"
+                                />
+                                <div className="absolute right-3 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded-md bg-gray-200 dark:bg-white/10 text-[9px] font-black text-gray-400 dark:text-white/30">
+                                    ⌘ K
+                                </div>
                             </div>
-                            <input 
-                                type="text" 
-                                readOnly 
-                                placeholder="Search modules..."
-                                className="w-full bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5 rounded-2xl py-3 pl-11 pr-4 text-xs font-bold text-gray-500 outline-none transition-all group-hover:border-gray-200 dark:group-hover:border-white/10"
-                            />
-                            <div className="absolute right-3 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded-md bg-gray-200 dark:bg-white/10 text-[9px] font-black text-gray-400">
-                                ⌘ K
-                            </div>
-                        </div>
+                        )}
                     </div>
 
-                    {/* Navigation */}
-                    <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto custom-scrollbar">
-                        <div className="px-4 flex items-center justify-between mb-4">
-                            <span className="text-[10px] font-black text-black/20 dark:text-white/10 uppercase tracking-[0.25em]">Dashboard</span>
-                            <div className="h-px flex-1 ml-4 bg-gray-100 dark:bg-white/5" />
+                    {/* ── Navigation ── */}
+                    <nav className="flex-1 px-3 py-2 space-y-0.5 overflow-y-auto custom-scrollbar">
+                        <div className={cn("px-3 flex items-center gap-3 mb-3 mt-1", isMinimized ? "lg:justify-center lg:px-0" : "")}>
+                            {!isMinimized && (
+                                <span className="text-[10px] font-black text-black/20 dark:text-white/15 uppercase tracking-[0.25em]">
+                                    Menu
+                                </span>
+                            )}
+                            <div className="flex-1 h-px bg-gray-100 dark:bg-white/[0.05]" />
                         </div>
-                        
+
                         {sidebarLinks.map((link) => {
                             const isActive = pathname === link.href;
+                            const Icon = link.icon;
                             return (
                                 <Link
                                     key={link.name}
                                     href={link.href}
                                     onClick={() => { if (window.innerWidth < 1024) onClose(); }}
                                     className={cn(
-                                        "group flex items-center px-4 py-3.5 rounded-2xl transition-all duration-300 relative",
+                                        "group flex items-center rounded-2xl transition-all duration-200 relative overflow-hidden",
+                                        isMinimized ? "lg:justify-center lg:px-0 lg:py-3" : "px-3 py-3 gap-3",
                                         isActive
-                                            ? "bg-black dark:bg-white shadow-xl shadow-black/10 dark:shadow-white/5"
+                                            ? "bg-black dark:bg-white shadow-lg shadow-black/10 dark:shadow-white/5"
                                             : "hover:bg-gray-50 dark:hover:bg-white/[0.03]"
                                     )}
+                                    title={isMinimized ? link.name : undefined}
                                 >
-                                    <link.icon className={cn(
-                                        "w-[1.125rem] h-[1.125rem] transition-all duration-300 group-hover:scale-110 flex-shrink-0",
-                                        isMinimized ? "lg:mx-auto" : "mr-4",
-                                        isActive 
-                                            ? "text-white dark:text-black" 
-                                            : cn("text-gray-400 group-hover:text-black dark:group-hover:text-white", link.color.replace('text-', 'group-hover:text-'))
-                                    )} />
-                                    <span className={cn(
-                                        "text-sm font-bold tracking-tight transition-all duration-300 whitespace-nowrap",
-                                        isMinimized ? "lg:opacity-0 lg:w-0 lg:overflow-hidden" : "opacity-100 w-auto",
-                                        isActive ? "text-white dark:text-black" : "text-gray-500 group-hover:text-black dark:text-white/50 dark:group-hover:text-white"
-                                    )}>
-                                        {link.name}
-                                    </span>
-                                    
-                                    {!isActive && !isMinimized && (
-                                        <ChevronRight className="ml-auto w-3.5 h-3.5 text-gray-200 dark:text-white/5 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
-                                    )}
-                                    
+                                    {/* Active bg glow */}
                                     {isActive && (
-                                        <motion.div 
-                                            layoutId="active-nav-glow"
-                                            className="absolute -right-1 top-1/2 -translate-y-1/2 w-2 h-6 bg-black dark:bg-white rounded-l-full blur-[2px] opacity-20" 
-                                        />
+                                        <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity bg-white dark:bg-black rounded-2xl" />
+                                    )}
+
+                                    <div className={cn(
+                                        "flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-xl transition-all duration-200",
+                                        isMinimized ? "lg:w-10 lg:h-10 lg:rounded-2xl" : "",
+                                        isActive
+                                            ? "bg-white/20 dark:bg-black/20"
+                                            : bgColorMap[link.color] + " group-hover:scale-110"
+                                    )}>
+                                        <Icon className={cn(
+                                            "w-4 h-4 transition-all duration-200",
+                                            isMinimized ? "lg:w-5 lg:h-5" : "",
+                                            isActive ? "text-white dark:text-black" : ""
+                                        )} />
+                                    </div>
+
+                                    {!isMinimized && (
+                                        <span className={cn(
+                                            "text-[13.5px] font-semibold tracking-tight whitespace-nowrap transition-colors",
+                                            isActive ? "text-white dark:text-black" : "text-gray-600 dark:text-white/50 group-hover:text-black dark:group-hover:text-white"
+                                        )}>
+                                            {link.name}
+                                        </span>
+                                    )}
+
+                                    {isActive && !isMinimized && (
+                                        <div className="ml-auto w-1.5 h-1.5 rounded-full bg-white/60 dark:bg-black/40" />
                                     )}
                                 </Link>
                             );
                         })}
 
-                        {user?.isAdmin && (
-                            <div className="mt-8 pt-4 border-t border-gray-100 dark:border-white/5">
+                        {/* Admin */}
+                        {(user as any)?.isAdmin && (
+                            <div className="mt-4 pt-3 border-t border-gray-100 dark:border-white/5">
                                 <Link
                                     href="/dashboard/admin"
                                     onClick={() => { if (window.innerWidth < 1024) onClose(); }}
-                                    className="group flex items-center px-4 py-4 rounded-2xl bg-amber-500/5 hover:bg-amber-500/10 transition-all border border-transparent hover:border-amber-500/20"
+                                    className="group flex items-center gap-3 px-3 py-3 rounded-2xl bg-amber-500/8 hover:bg-amber-500/15 transition-all border border-transparent hover:border-amber-500/20"
                                 >
-                                    <ShieldCheck className="w-5 h-5 mr-4 text-amber-500 group-hover:scale-110 transition-transform" />
-                                    <span className="font-black text-xs text-amber-600 uppercase tracking-widest">Admin Control</span>
+                                    <div className="w-8 h-8 flex items-center justify-center rounded-xl bg-amber-500/15">
+                                        <ShieldCheck className="w-4 h-4 text-amber-500 group-hover:scale-110 transition-transform" />
+                                    </div>
+                                    {!isMinimized && (
+                                        <span className="font-black text-[11px] text-amber-600 dark:text-amber-400 uppercase tracking-widest">Admin</span>
+                                    )}
                                 </Link>
                             </div>
                         )}
                     </nav>
 
-                    {/* Bottom Section */}
-                    <div className="p-6 space-y-4 border-t border-gray-100 dark:border-white/5">
-                        
-                        {/* Plan & Upgrade Card */}
-                        <Link
-                            href="/dashboard/upgrade"
-                            className={cn(
-                                "group relative block overflow-hidden shadow-xl transition-all duration-500 hover:scale-[1.02] active:scale-95 rounded-3xl",
-                                isPro ? "bg-gradient-to-br from-indigo-500 to-purple-600" : "bg-black dark:bg-white",
-                                isMinimized ? "lg:p-3" : "p-5"
-                            )}
-                        >
-                            <div className="absolute inset-0 opacity-20 group-hover:opacity-30 transition-opacity">
-                                <div className="absolute top-0 right-0 w-24 h-24 bg-white rounded-full blur-[30px] -mr-8 -mt-8" />
-                            </div>
+                    {/* ── Bottom Section ── */}
+                    <div className={cn("p-4 space-y-3 border-t border-gray-100 dark:border-white/[0.05]")}>
 
-                            <div className={cn("relative z-10", isMinimized ? "lg:hidden" : "")}>
-                                <div className="flex items-center gap-2 mb-3">
-                                    <div className="w-7 h-7 rounded-xl bg-white/20 dark:bg-black/10 flex items-center justify-center">
-                                        <Crown className="w-4 h-4 text-white dark:text-black" />
+                        {/* Plan Upgrade Card */}
+                        {!isMinimized && (
+                            <Link
+                                href="/dashboard/upgrade"
+                                className={cn(
+                                    "group relative block overflow-hidden rounded-2xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]",
+                                    isPro
+                                        ? "bg-gradient-to-br from-violet-600 via-indigo-600 to-purple-700 p-4"
+                                        : "bg-black dark:bg-white p-4"
+                                )}
+                            >
+                                {/* Glow overlay */}
+                                <div className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity bg-white rounded-2xl" />
+                                <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full blur-2xl -mr-8 -mt-8 group-hover:scale-125 transition-transform duration-500" />
+
+                                <div className="relative z-10 flex items-start justify-between">
+                                    <div className="flex-1">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <div className="w-6 h-6 rounded-lg bg-white/20 flex items-center justify-center">
+                                                <Crown className="w-3.5 h-3.5 text-white dark:text-black" />
+                                            </div>
+                                            <span className="text-[10px] font-black uppercase tracking-[0.18em] text-white/70 dark:text-black/60">
+                                                {isPro ? 'Pro Plan' : 'Free Plan'}
+                                            </span>
+                                        </div>
+                                        <h4 className="text-sm font-black text-white dark:text-black tracking-tight mb-0.5">
+                                            {isPro ? 'You are on Pro 🎉' : 'Upgrade to Pro'}
+                                        </h4>
+                                        <p className="text-[11px] text-white/55 dark:text-black/45 font-medium leading-relaxed">
+                                            {isPro ? 'Unlimited AI access active.' : 'Unlock all AI models & tools.'}
+                                        </p>
                                     </div>
-                                    <span className="text-[10px] font-black text-white/80 dark:text-black/70 uppercase tracking-[0.2em]">
-                                        {isPro ? 'Pro Plan' : 'Free Plan'}
-                                    </span>
+                                    {!isPro && (
+                                        <div className="flex-shrink-0 ml-3 mt-1">
+                                            <ChevronRight className="w-4 h-4 text-white/50 dark:text-black/50 group-hover:translate-x-0.5 transition-transform" />
+                                        </div>
+                                    )}
                                 </div>
-                                <h4 className="text-base font-black text-white dark:text-black tracking-tight mb-1">
-                                    {isPro ? 'You are on Pro' : 'Upgrade to Pro'}
-                                </h4>
-                                <p className="text-[11px] text-white/60 dark:text-black/50 font-medium mb-3">
-                                    {isPro ? 'Enjoy unlimited AI access.' : 'Unlock unlimited AI & tools.'}
-                                </p>
                                 {!isPro && (
-                                    <div className="flex items-center gap-1.5">
-                                        <span className="text-[10px] font-black text-white dark:text-black uppercase tracking-widest underline decoration-white/30 dark:decoration-black/20 underline-offset-4">Upgrade</span>
-                                        <ChevronRight className="w-3 h-3 text-white dark:text-black group-hover:translate-x-1 transition-transform" />
+                                    <div className="mt-3 flex items-center gap-1.5">
+                                        <TrendingUp className="w-3 h-3 text-white/50 dark:text-black/40" />
+                                        <span className="text-[10px] font-bold text-white/50 dark:text-black/40">Unlimited AI · All Models · Priority</span>
                                     </div>
                                 )}
-                            </div>
-                            {isMinimized && (
-                                <div className="lg:flex hidden items-center justify-center p-2">
-                                    <Crown className="w-5 h-5 text-white dark:text-black" />
-                                </div>
-                            )}
-                        </Link>
+                            </Link>
+                        )}
 
-                        {/* Theme & Settings Row */}
+                        {/* Minimized: just crown icon */}
+                        {isMinimized && (
+                            <Link href="/dashboard/upgrade" className="flex items-center justify-center p-3 rounded-2xl bg-black dark:bg-white transition-all hover:scale-105" title="Upgrade to Pro">
+                                <Crown className="w-5 h-5 text-white dark:text-black" />
+                            </Link>
+                        )}
+
+                        {/* Settings & Theme row */}
                         {!isMinimized && (
-                            <div className="flex items-center justify-between gap-2">
-                                <div className="flex-1 flex items-center justify-between px-4 py-3 rounded-2xl bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5">
-                                    <span className="text-xs font-bold text-gray-500 dark:text-white/50">Theme</span>
-                                    <ThemeToggle />
-                                </div>
-                                <Link 
+                            <div className="flex items-center gap-2">
+                                <Link
                                     href="/dashboard/settings"
-                                    className="p-3.5 rounded-2xl bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5 text-gray-400 hover:text-black dark:hover:text-white transition-all hover:rotate-90 hover:bg-gray-100 dark:hover:bg-white/10"
+                                    className="flex-1 flex items-center justify-between px-3 py-2.5 rounded-xl bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5 text-gray-500 dark:text-white/40 hover:text-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/[0.06] transition-all"
                                 >
-                                    <Settings className="w-4 h-4" />
+                                    <span className="text-[11px] font-bold">Settings</span>
+                                    <Settings className="w-3.5 h-3.5 hover:rotate-90 transition-transform duration-300" />
                                 </Link>
                             </div>
                         )}
 
-                        {/* User Profile Card */}
+                        {/* User Profile */}
                         <div className={cn(
-                            "rounded-3xl bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/5 flex items-center gap-3 group relative transition-all duration-300 overflow-hidden",
-                            isMinimized ? "lg:p-2 lg:justify-center" : "p-2.5"
+                            "flex items-center gap-3 rounded-2xl transition-all duration-200 overflow-hidden",
+                            isMinimized
+                                ? "lg:justify-center lg:p-2 lg:bg-transparent"
+                                : "p-3 bg-gray-50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/[0.05] hover:bg-gray-100 dark:hover:bg-white/[0.06]"
                         )}>
-                            <div className="relative shrink-0">
-                                <div className="w-10 h-10 rounded-2xl bg-black dark:bg-white flex items-center justify-center text-white dark:text-black shadow-sm">
+                            {/* Avatar */}
+                            <div className="relative flex-shrink-0">
+                                <div className={cn(
+                                    "rounded-2xl bg-black dark:bg-white flex items-center justify-center text-white dark:text-black font-black overflow-hidden shadow-sm",
+                                    isMinimized ? "w-10 h-10" : "w-9 h-9"
+                                )}>
                                     {user?.photoURL ? (
-                                        <Image src={user.photoURL} alt={user.name || ''} width={40} height={40} className="rounded-2xl object-cover" />
+                                        <Image src={user.photoURL} alt={user.name || ''} width={40} height={40} className="rounded-2xl object-cover w-full h-full" />
                                     ) : (
-                                        <span className="font-black text-base">{user?.name?.charAt(0) || 'U'}</span>
+                                        <span className="text-sm">{user?.name?.charAt(0)?.toUpperCase() || 'U'}</span>
                                     )}
                                 </div>
-                                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white dark:border-[#050505]" />
-                            </div>
-                            
-                            <div className={cn("flex-1 min-w-0 transition-opacity duration-300", isMinimized ? "lg:hidden" : "")}>
-                                <p className="text-sm font-bold text-black dark:text-white truncate">{user?.name || 'User'}</p>
-                                <p className="text-[10px] text-gray-400 font-medium truncate mt-0.5">Level {user?.level || 1} Explorer</p>
+                                <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white dark:border-[#080810]" />
                             </div>
 
-                            {/* Logout button */}
-                            <button 
-                                onClick={() => logout?.()}
-                                className={cn(
-                                    "flex items-center justify-center rounded-xl transition-all duration-300 text-gray-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10",
-                                    isMinimized ? "lg:hidden" : "w-10 h-10"
-                                )}
-                                title="Log out"
-                            >
-                                <LogOut className="w-4 h-4" />
-                            </button>
+                            {!isMinimized && (
+                                <>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-[13px] font-bold text-black dark:text-white truncate leading-tight">{user?.name || 'User'}</p>
+                                        <p className="text-[10px] text-gray-400 dark:text-white/30 font-medium truncate mt-0.5">
+                                            {isPro ? '✦ Pro Member' : `Level ${(user as any)?.level || 1} Explorer`}
+                                        </p>
+                                    </div>
+                                    <button
+                                        onClick={() => logout?.()}
+                                        className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-xl text-gray-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all"
+                                        title="Log out"
+                                    >
+                                        <LogOut className="w-3.5 h-3.5" />
+                                    </button>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>
