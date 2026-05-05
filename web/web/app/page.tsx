@@ -147,7 +147,6 @@ export default function Home() {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(99,102,241,0.15)_0%,transparent_50%)]" />
 
           <div className="absolute bottom-0 left-0 right-0 z-10 container mx-auto px-10 md:px-16 pb-16 md:pb-24">
-            <div className="max-w-3xl animate-fade-in-up">
             <div className="max-w-3xl animate-fade-in-up pt-12">
               <div className="flex items-center gap-8 mb-8">
                 <div className="w-28 h-28 md:w-36 md:h-36 rounded-[40px] bg-white border-2 border-white/30 flex items-center justify-center shadow-[0_0_60px_rgba(255,255,255,0.3)] p-3 shrink-0 hover:scale-105 transition-transform duration-500">

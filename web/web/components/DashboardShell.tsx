@@ -54,7 +54,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
                     isSidebarOpen={isSidebarOpen}
                     isMinimized={isMinimized}
                 />
-                <main className="flex-1 overflow-auto">
+                <main className="flex-1 overflow-hidden flex flex-col">
                     {children}
                 </main>
             </div>

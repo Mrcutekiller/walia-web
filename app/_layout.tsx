@@ -144,16 +144,21 @@ function InnerApp() {
   );
 }
 
+import { ConvexProvider } from 'convex/react';
+import { convex } from '@/services/convex';
+
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <ThemeProvider>
-        <SocialProvider>
-          <TokenProvider>
-            <InnerApp />
-          </TokenProvider>
-        </SocialProvider>
-      </ThemeProvider>
-    </AuthProvider>
+    <ConvexProvider client={convex}>
+      <AuthProvider>
+        <ThemeProvider>
+          <SocialProvider>
+            <TokenProvider>
+              <InnerApp />
+            </TokenProvider>
+          </SocialProvider>
+        </ThemeProvider>
+      </AuthProvider>
+    </ConvexProvider>
   );
 }

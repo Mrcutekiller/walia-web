@@ -146,7 +146,10 @@ export default function SettingsPage() {
                                 You are currently on the <span className="font-black text-white dark:text-black">Free Plan</span>. Upgrade to unlock unlimited AI chats, real-time trading signals, and professional tools.
                             </p>
                         </div>
-                        <button className="ml-auto px-8 py-4 rounded-2xl bg-white dark:bg-black text-black dark:text-white font-black text-xs uppercase tracking-widest hover:opacity-90 active:scale-95 transition-all duration-300 shadow-xl shadow-black/10 hover:-translate-y-0.5">
+                        <button 
+                            onClick={() => router.push('/dashboard/upgrade')}
+                            className="ml-auto px-8 py-4 rounded-2xl bg-white dark:bg-black text-black dark:text-white font-black text-xs uppercase tracking-widest hover:opacity-90 active:scale-95 transition-all duration-300 shadow-xl shadow-black/10 hover:-translate-y-0.5"
+                        >
                             Upgrade Now
                         </button>
                     </div>

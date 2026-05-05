@@ -13,13 +13,14 @@
  * ─────────────────────────────────────────────────────────────────────────────
  * Reach 10,000 Walia Points → Unlock Pro Plan FREE!
  */
-import { auth, db } from '@/services/firebase';
+import { auth, db, storage } from '@/services/firebase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
     addDoc,
     arrayRemove,
     arrayUnion,
     collection,
+    deleteDoc,
     doc,
     limit as firestoreLimit,
     increment,
@@ -33,7 +34,7 @@ import React, { createContext, ReactNode, useCallback, useContext, useEffect, us
 import { Alert, Animated, StyleSheet, Text, View } from 'react-native';
 
 // ─── Walia Points config ──────────────────────────────────────────────────────
-ewaliaPointsort const WALIA_POINT_REWARDS = {
+export const WALIA_POINT_REWARDS = {
     daily_login: 50,
     post_created: 100,
     hashtag_walia: 200,  // bonus for using #walia in a post
@@ -42,12 +43,12 @@ ewaliaPointsort const WALIA_POINT_REWARDS = {
     tool_used: 20,
     comment_added: 10,
 };
-ewaliaPointsort const PRO_PLAN_POINTS_COST = 10000;  // 10k Walia Points → Pro
-ewaliaPointsort const PRO_PLAN_ETB_COST = 1350;
-ewaliaPointsort const POINTS_PER_LEVEL = 500;
+export const PRO_PLAN_POINTS_COST = 10000;  // 10k Walia Points → Pro
+export const PRO_PLAN_ETB_COST = 1350;
+export const POINTS_PER_LEVEL = 500;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-ewaliaPointsort interface SocialPost {
+export interface SocialPost {
     id: string;
     authorId: string;
     type: 'quiz' | 'note' | 'ai_share' | 'general' | 'text';
@@ -65,14 +66,14 @@ ewaliaPointsort interface SocialPost {
     isPrivate?: boolean;
 }
 
-ewaliaPointsort interface Comment {
+export interface Comment {
     id: string;
     userId: string;
     text: string;
     timestamp: string;
 }
 
-ewaliaPointsort interface Story {
+export interface Story {
     id: string;
     uid: string;
     username: string;
@@ -81,7 +82,7 @@ ewaliaPointsort interface Story {
     createdAt: any;
 }
 
-ewaliaPointsort interface Note {
+export interface Note {
     id: string;
     uid: string;
     username: string;
@@ -90,7 +91,7 @@ ewaliaPointsort interface Note {
     createdAt: any;
 }
 
-ewaliaPointsort interface Notification {
+export interface Notification {
     id: string;
     userId: string;
     type: 'payment' | 'message' | 'system' | 'community';
@@ -100,12 +101,12 @@ ewaliaPointsort interface Notification {
     createdAt: string;
 }
 
-ewaliaPointsort interface FollowRelation {
+export interface FollowRelation {
     followerId: string;
     followingId: string;
 }
 
-ewaliaPointsort interface SocialState {
+export interface SocialState {
     waliaPoints: number;
     isPro: boolean;
     followers: string[];
@@ -125,7 +126,7 @@ ewaliaPointsort interface SocialState {
     notes: Note[];
 }
 
-ewaliaPointsort interface StudyHistoryItem {
+export interface StudyHistoryItem {
     id: string;
     tool: 'flashcard' | 'summarize' | 'quiz' | 'notes';
     title: string;
@@ -168,7 +169,7 @@ const DEFAULT_POSTS: SocialPost[] = [];
 // ─── Walia Points Toast ───────────────────────────────────────────────────────
 let _showPointsToastGlobal = (_amount: number, _reason: string) => { };
 
-ewaliaPointsort function PointsToastContainer() {
+export function PointsToastContainer() {
     const [toasts, setToasts] = useState<{ id: string; amount: number; reason: string; anim: Animated.Value }[]>([]);
 
     useEffect(() => {
@@ -226,7 +227,7 @@ const waliaPointsStyles = StyleSheet.create({
 });
 
 // ─── Provider ─────────────────────────────────────────────────────────────────
-ewaliaPointsort function SocialProvider({ children }: { children: ReactNode }) {
+export function SocialProvider({ children }: { children: ReactNode }) {
     const [state, setState] = useState<SocialState>({
         waliaPoints: 0,
         isPro: false,
@@ -237,7 +238,7 @@ ewaliaPointsort function SocialProvider({ children }: { children: ReactNode }) {
         totalLikesReceived: 0,
         totalViews: 0,
         lastLoginDate: '',
-        waliaPointsHistory: [],
+        pointsHistory: [],
         dailyAiCount: 0,
         dailyUploadCount: 0,
         lastUpdateDate: new Date().toISOString().slice(0, 10),
@@ -313,27 +314,27 @@ ewaliaPointsort function SocialProvider({ children }: { children: ReactNode }) {
     }, []);
 
     // ── Walia Points (waliaPoints) ──
-    const showwaliaPointsToast = useCallback((amount: number, reason: string) => {
-        _showwaliaPointsToastGlobal(amount, reason);
+    const showPointsToast = useCallback((amount: number, reason: string) => {
+        _showPointsToastGlobal(amount, reason);
     }, []);
 
-    const addwaliaPoints = useCallback(async (amount: number, reason: string) => {
+    const addPoints = useCallback(async (amount: number, reason: string) => {
         if (!auth.currentUser) return;
         const userRef = doc(db, 'users', auth.currentUser.uid);
         await updateDoc(userRef, {
             waliaPoints: increment(amount),
-            waliaPointsHistory: arrayUnion({ amount, reason, timestamp: new Date().toISOString() })
+            pointsHistory: arrayUnion({ amount, reason, timestamp: new Date().toISOString() })
         });
-        showwaliaPointsToast(amount, reason);
+        showPointsToast(amount, reason);
 
         // Auto-unlock Pro at 10k points
         setState(prev => {
-            if (!prev.isPro && (prev.waliaPoints + amount) >= PRO_PLAN_waliaPoints_COST) {
+            if (!prev.isPro && (prev.waliaPoints + amount) >= PRO_PLAN_POINTS_COST) {
                 // Notify but don't auto-set — let claimProPlan handle it
             }
             return prev;
         });
-    }, [showwaliaPointsToast]);
+    }, [showPointsToast]);
 
     const claimProPlan = useCallback(() => {
         setState(prev => {
@@ -341,24 +342,24 @@ ewaliaPointsort function SocialProvider({ children }: { children: ReactNode }) {
                 Alert.alert('✅ Already Pro!', 'You are already on the Pro plan.');
                 return prev;
             }
-            if (prev.waliaPoints < PRO_PLAN_waliaPoints_COST) {
+            if (prev.waliaPoints < PRO_PLAN_POINTS_COST) {
                 Alert.alert(
                     '⭐ Walia Points needed',
-                    `You need ${PRO_PLAN_waliaPoints_COST.toLocaleString()} Walia Points.\nYou have ${prev.waliaPoints.toLocaleString()} pts.\n\nKeep chatting with AI, posting, and using tools!`
+                    `You need ${PRO_PLAN_POINTS_COST.toLocaleString()} Walia Points.\nYou have ${prev.waliaPoints.toLocaleString()} pts.\n\nKeep chatting with AI, posting, and using tools!`
                 );
                 return prev;
             }
             if (auth.currentUser) {
                 updateDoc(doc(db, 'users', auth.currentUser.uid), {
                     isPro: true,
-                    waliaPoints: increment(-PRO_PLAN_waliaPoints_COST)
+                    waliaPoints: increment(-PRO_PLAN_POINTS_COST)
                 }).catch(() => { });
             }
             Alert.alert(
                 '🎉 Welcome to Walia Pro!',
                 'You unlocked Pro with 10,000 Walia Points!\n\nEnjoy unlimited AI chats, advanced tools and priority support.'
             );
-            return { ...prev, waliaPoints: prev.waliaPoints - PRO_PLAN_waliaPoints_COST, isPro: true };
+            return { ...prev, waliaPoints: prev.waliaPoints - PRO_PLAN_POINTS_COST, isPro: true };
         });
     }, []);
 
@@ -370,16 +371,16 @@ ewaliaPointsort function SocialProvider({ children }: { children: ReactNode }) {
             const next = {
                 ...prev,
                 lastLoginDate: today,
-                waliaPoints: prev.waliaPoints + waliaPoints_REWARDS.daily_login,
-                waliaPointsHistory: [
-                    { amount: waliaPoints_REWARDS.daily_login, reason: 'Daily login 🌟', timestamp: new Date().toISOString() },
-                    ...prev.waliaPointsHistory.slice(0, 49)
+                waliaPoints: prev.waliaPoints + WALIA_POINT_REWARDS.daily_login,
+                pointsHistory: [
+                    { amount: WALIA_POINT_REWARDS.daily_login, reason: 'Daily login 🌟', timestamp: new Date().toISOString() },
+                    ...prev.pointsHistory.slice(0, 49)
                 ],
             };
-            setTimeout(() => showwaliaPointsToast(waliaPoints_REWARDS.daily_login, 'Daily login 🌟'), 2000);
+            setTimeout(() => showPointsToast(WALIA_POINT_REWARDS.daily_login, 'Daily login 🌟'), 2000);
             return next;
         });
-    }, [showwaliaPointsToast]);
+    }, [showPointsToast]);
 
     // ── Follow ──
     const followUser = useCallback(async (userId: string) => {
@@ -451,7 +452,7 @@ ewaliaPointsort function SocialProvider({ children }: { children: ReactNode }) {
         await addDoc(collection(db, 'posts'), newPostData);
 
         // Local base points for posting
-        addwaliaPoints(waliaPoints_REWARDS.post_created, 'Post created 📝');
+        addPoints(WALIA_POINT_REWARDS.post_created, 'Post created 📝');
 
         // Add local notification
         const newNotif: Notification = {
@@ -473,7 +474,7 @@ ewaliaPointsort function SocialProvider({ children }: { children: ReactNode }) {
         const hasWaliaTag = post.content.toLowerCase().includes('#walia') ||
             (post.tags || []).some(t => t.toLowerCase() === '#walia');
         if (hasWaliaTag) {
-            setTimeout(() => addwaliaPoints(waliaPoints_REWARDS.hashtag_walia, '#walia bonus 🌟'), 800);
+            setTimeout(() => addPoints(WALIA_POINT_REWARDS.hashtag_walia, '#walia bonus 🌟'), 800);
         }
 
         // Reward tokens
@@ -484,7 +485,7 @@ ewaliaPointsort function SocialProvider({ children }: { children: ReactNode }) {
         } catch (e) {
             console.error('Failed to reward tokens', e);
         }
-    }, [addwaliaPoints]);
+    }, [addPoints]);
 
     const likePost = useCallback(async (postId: string) => {
         if (!auth.currentUser) return;
@@ -553,11 +554,11 @@ ewaliaPointsort function SocialProvider({ children }: { children: ReactNode }) {
                     createdAt: serverTimestamp()
                 });
             }
-            addwaliaPoints(waliaPoints_REWARDS.comment_added, 'Comment added 💬');
+            addPoints(WALIA_POINT_REWARDS.comment_added, 'Comment added 💬');
         } catch (e) {
             console.error('Failed to add comment', e);
         }
-    }, [addwaliaPoints, state.posts]);
+    }, [addPoints, state.posts]);
 
     // ── Limits ──
     const resetDailyIfNewDay = useCallback((s: SocialState) => {
@@ -581,10 +582,10 @@ ewaliaPointsort function SocialProvider({ children }: { children: ReactNode }) {
         });
         // Award Walia Points for every AI message
         if (allowed) {
-            addwaliaPoints(waliaPoints_REWARDS.ai_chat, 'AI chat 🤖');
+            addPoints(WALIA_POINT_REWARDS.ai_chat, 'AI chat 🤖');
         }
         return allowed;
-    }, [updateState, resetDailyIfNewDay, addwaliaPoints]);
+    }, [updateState, resetDailyIfNewDay, addPoints]);
 
     const recordUpload = useCallback(() => {
         let allowed = true;
@@ -613,10 +614,10 @@ ewaliaPointsort function SocialProvider({ children }: { children: ReactNode }) {
         const userRef = doc(db, 'users', auth.currentUser.uid);
         await updateDoc(userRef, {
             studyHistory: arrayUnion(newItem),
-            waliaPoints: increment(waliaPoints_REWARDS.tool_used)
+            waliaPoints: increment(WALIA_POINT_REWARDS.tool_used)
         });
-        showwaliaPointsToast(waliaPoints_REWARDS.tool_used, `${item.tool.charAt(0).toUpperCase() + item.tool.slice(1)} completed 🎓`);
-    }, [showwaliaPointsToast]);
+        showPointsToast(WALIA_POINT_REWARDS.tool_used, `${item.tool.charAt(0).toUpperCase() + item.tool.slice(1)} completed 🎓`);
+    }, [showPointsToast]);
 
     const recordView = useCallback(() => {
         updateState(prev => ({ ...prev, totalViews: prev.totalViews + 1 }));
@@ -652,11 +653,11 @@ ewaliaPointsort function SocialProvider({ children }: { children: ReactNode }) {
                 hasUnseen: true,
                 createdAt: serverTimestamp()
             });
-            addwaliaPoints(waliaPoints_REWARDS.post_created, 'Story posted 📸');
+            addPoints(WALIA_POINT_REWARDS.post_created, 'Story posted 📸');
         } catch (e) {
             console.error('Failed to add story', e);
         }
-    }, [addwaliaPoints]);
+    }, [addPoints]);
 
     const addNote = useCallback(async (text: string) => {
         if (!auth.currentUser) return;
@@ -667,8 +668,8 @@ ewaliaPointsort function SocialProvider({ children }: { children: ReactNode }) {
             note: text.slice(0, 60),
             createdAt: serverTimestamp()
         });
-        addwaliaPoints(waliaPoints_REWARDS.comment_added, 'Note updated 💭');
-    }, [addwaliaPoints]);
+        addPoints(WALIA_POINT_REWARDS.comment_added, 'Note updated 💭');
+    }, [addPoints]);
 
     const markNotificationRead = useCallback((id: string) => {
         updateState(prev => ({
@@ -685,18 +686,18 @@ ewaliaPointsort function SocialProvider({ children }: { children: ReactNode }) {
     }, [updateState]);
 
     // ── Derived stats ──
-    const level = Math.floor(state.waliaPoints / waliaPoints_PER_LEVEL) + 1;
-    const waliaPointsInCurrentLevel = state.waliaPoints % waliaPoints_PER_LEVEL;
-    const waliaPointsProgress = waliaPointsInCurrentLevel / waliaPoints_PER_LEVEL;
-    const waliaPointsToNextLevel = waliaPoints_PER_LEVEL - waliaPointsInCurrentLevel;
+    const level = Math.floor(state.waliaPoints / POINTS_PER_LEVEL) + 1;
+    const pointsInCurrentLevel = state.waliaPoints % POINTS_PER_LEVEL;
+    const pointsProgress = pointsInCurrentLevel / POINTS_PER_LEVEL;
+    const pointsToNextLevel = POINTS_PER_LEVEL - pointsInCurrentLevel;
 
     return (
         <SocialContext.Provider value={{
             ...state,
-            addwaliaPoints, level, waliaPointsToNextLevel, waliaPointsProgress,
+            addPoints, level, pointsToNextLevel, pointsProgress,
             claimProPlan, followUser, unfollowUser, isFollowing,
             addPost, deletePost, togglePostPrivacy, likePost, addComment, recordView,
-            checkDailyLogin, showwaliaPointsToast,
+            checkDailyLogin, showPointsToast,
             recordAiMessage, recordUpload, togglePro,
             saveStudyHistory, addNotification, markNotificationRead, deleteNotification,
             addStory,
@@ -707,7 +708,7 @@ ewaliaPointsort function SocialProvider({ children }: { children: ReactNode }) {
     );
 }
 
-ewaliaPointsort function useSocial() {
+export function useSocial() {
     const ctx = useContext(SocialContext);
     if (!ctx) throw new Error('useSocial must be used within SocialProvider');
     return ctx;

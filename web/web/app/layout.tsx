@@ -16,6 +16,8 @@ import ReviewPopup from '@/components/ReviewPopup';
 import { NotificationProvider } from '@/context/NotificationContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 
+import { ConvexClientProvider } from '@/components/ConvexClientProvider';
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -24,15 +26,17 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body suppressHydrationWarning className={`${inter.variable} ${manrope.variable} font-sans antialiased transition-colors duration-300 bg-[var(--background)] text-[var(--foreground)] min-h-screen`}>
-        <AuthProvider>
-          <NotificationProvider>
-            <ThemeProvider>
-              {children}
-              <ReviewPopup />
-              <GoogleTranslate />
-            </ThemeProvider>
-          </NotificationProvider>
-        </AuthProvider>
+        <ConvexClientProvider>
+          <AuthProvider>
+            <NotificationProvider>
+              <ThemeProvider>
+                {children}
+                <ReviewPopup />
+                <GoogleTranslate />
+              </ThemeProvider>
+            </NotificationProvider>
+          </AuthProvider>
+        </ConvexClientProvider>
       </body>
     </html>
   );

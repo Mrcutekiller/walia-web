@@ -252,17 +252,18 @@ function AIChatContent() {
                 <div className="flex items-center gap-2">
                     <button 
                         onClick={startNewChat}
-                        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-black dark:bg-white text-white dark:text-black font-black text-[10px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-black/10"
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-black dark:bg-white text-white dark:text-black font-black text-[10px] uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-black/10"
+                        title="New Chat"
                     >
-                        <Plus className="w-3.5 h-3.5" /> New Chat
+                        <Plus className="w-4 h-4" />
+                        <span className="hidden sm:inline">New Chat</span>
                     </button>
                     <button 
                         onClick={() => setShowHistory(true)}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 hover:border-black dark:hover:border-white text-black dark:text-white transition-all group"
+                        className="p-2.5 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 hover:border-black dark:hover:border-white text-black dark:text-white transition-all hover:scale-105 active:scale-95"
                         title="View Chat History"
                     >
                         <History className="w-4 h-4" />
-                        <span className="text-[10px] font-black uppercase tracking-widest">History</span>
                     </button>
                 </div>
             </div>
@@ -360,8 +361,8 @@ function AIChatContent() {
                         </div>
                     </motion.div>
                 ) : (
-                    <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
-                        <div className="max-w-4xl mx-auto space-y-8">
+                    <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 md:space-y-8 custom-scrollbar">
+                        <div className="max-w-4xl mx-auto space-y-6 md:space-y-8">
                             {messages.map((m, i) => (
                                 <div key={m.id} className={`flex gap-4 ${m.role === 'user' ? 'flex-row-reverse' : ''}`}>
                                     <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ring-2 ring-indigo-200 ${
